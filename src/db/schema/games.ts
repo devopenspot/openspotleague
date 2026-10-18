@@ -1,0 +1,38 @@
+// Domain barrel: game & challenge tables.
+export {
+  gameSessions,
+  gamePlayers,
+  gameRounds,
+  gameAttempts,
+  gameActionRequests,
+  gameLocationVerifications,
+  gameRaceLaps,
+  gameRealtimeSignals,
+  spotChallengeRecords,
+  riderStats,
+  riderScoreEvents,
+} from "./index";
+
+export type {
+  GamePlayerIdSnapshot,
+  GameRotationOrder,
+  SpotTypesUsed,
+  RoundCountBySpotType,
+  WeatherIconSnapshot,
+  GameAttemptRow,
+  NewGameAttemptRow,
+  GameActionRequestRow,
+  NewGameActionRequestRow,
+  GameLocationVerificationRow,
+  NewGameLocationVerificationRow,
+  GameRaceLapRow,
+  NewGameRaceLapRow,
+  GameRealtimeSignalRow,
+  NewGameRealtimeSignalRow,
+  SpotChallengeRecordRow,
+  NewSpotChallengeRecordRow,
+  RiderStatsRow,
+  NewRiderStatsRow,
+  RiderScoreEventRow,
+  NewRiderScoreEventRow,
+} from "./index";

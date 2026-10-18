@@ -1,0 +1,752 @@
+{
+  "version": "bmx-2",
+  "discipline": "bmx",
+  "tricks": [
+    {
+      "id": "bunny-hop",
+      "name": "Bunny Hop",
+      "description": "Hop the front wheel, then the rear, to clear obstacles and gaps cleanly.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark",
+        "stair"
+      ]
+    },
+    {
+      "id": "manual",
+      "name": "Manual",
+      "description": "Lift the front wheel and balance on the rear without pedaling for as long as you can.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "wheelie",
+      "name": "Wheelie",
+      "description": "Balance on the rear wheel while pedaling and ride it out with control.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "endo",
+      "name": "Endo",
+      "description": "Apply the front brake, lift the rear wheel, and hold the endo before rolling off.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "footjam",
+      "name": "Footjam",
+      "description": "Jam the front foot between the tire and fork to stop the bike and hold the pivot.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "fakie",
+      "name": "Fakie",
+      "description": "Ride backward after a half turn and roll away without touching a foot down.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "x-up",
+      "name": "X-Up",
+      "description": "Spin the bars 180 mid-air and snap them back before landing.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "barspin",
+      "name": "Barspin",
+      "description": "Spin the handlebars a full 360 while airborne and catch them clean.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "tabletop",
+      "name": "Tabletop",
+      "description": "Lay the bike flat over the obstacle mid-air and pull it back for the landing.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark",
+        "bowl"
+      ]
+    },
+    {
+      "id": "one-footer",
+      "name": "One Footer",
+      "description": "Kick one foot off the pedal mid-air and bring it back before touching down.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "no-hander",
+      "name": "No Hander",
+      "description": "Take both hands off the bars mid-air and grab them again before landing.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "180",
+      "name": "180",
+      "description": "Spin a half turn with the bike and land rolling away in the opposite direction.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "drop-in",
+      "name": "Drop In",
+      "description": "Roll from the coping straight down the ramp and commit to the drop.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "kickturn",
+      "name": "Kickturn",
+      "description": "Lift the front wheel and pivot on the rear wheel to turn around in the transition.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "rock-to-fakie",
+      "name": "Rock to Fakie",
+      "description": "Ride up the wall, rock the front wheel over the coping, and roll back in fakie.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "double-peg-grind",
+      "name": "Double Peg Grind",
+      "description": "Lock both pegs on the obstacle and ride the grind all the way to the end.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "rails",
+        "ledges",
+        "box"
+      ]
+    },
+    {
+      "id": "feeble-grind",
+      "name": "Feeble Grind",
+      "description": "Lock the front peg with the rear wheel dropping off the far side of the rail.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "rails",
+        "ledges"
+      ]
+    },
+    {
+      "id": "tire-tap",
+      "name": "Tire Tap",
+      "description": "Ride up the ramp, tap the front tire on the coping, and roll back in fakie.",
+      "level": 1,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "360",
+      "name": "360",
+      "description": "Rotate a full 360 with the bike and stomp the landing facing the same direction.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "tailwhip",
+      "name": "Tailwhip",
+      "description": "Kick the rear of the bike around a full 360 under you and land with the rear wheel back.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "no-footed-can",
+      "name": "No Footed Can",
+      "description": "Kick both feet off the pedals mid-air and bring them back before the landing.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "tuck-no-hander",
+      "name": "Tuck No Hander",
+      "description": "Let go of the bars and tuck the arms close while flying over the jumps.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "180-barspin",
+      "name": "180 Barspin",
+      "description": "Spin a 180 while throwing the bars a full rotation and catch them clean.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "crank-flip",
+      "name": "Crank Flip",
+      "description": "Spin the cranks a full 360 while airborne and land back on the pedals.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "turndown",
+      "name": "Turndown",
+      "description": "Turn the bars and bike into a twisted position mid-air and return before landing.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "can-can",
+      "name": "Can Can",
+      "description": "Kick one foot over the top tube and back across the bike mid-air.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "disaster",
+      "name": "Disaster",
+      "description": "Stall both pegs on the coping and pivot back in without touching down.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "smith-grind",
+      "name": "Smith Grind",
+      "description": "Lock the front peg on the obstacle with the rear wheel tucking behind the rail.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "rails",
+        "ledges"
+      ]
+    },
+    {
+      "id": "crooked-grind",
+      "name": "Crooked Grind",
+      "description": "Lock the front peg and cross the rear of the bike over the obstacle at an angle.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "ledges",
+        "box",
+        "rails"
+      ]
+    },
+    {
+      "id": "icepick-grind",
+      "name": "Icepick Grind",
+      "description": "Balance the rear peg on the edge and ride the icepick down the full ledge.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "ledges",
+        "box"
+      ]
+    },
+    {
+      "id": "superman-seat-grab",
+      "name": "Superman Seat Grab",
+      "description": "Push the bike out in front of you, grab the seat, and pull it back in.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "wallride",
+      "name": "Wallride",
+      "description": "Ride up a wall, roll along it sideways, and drop back down with control.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "half-cab",
+      "name": "Half Cab",
+      "description": "Spin a 180 out of fakie and ride forward in your natural stance.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "alley-oop",
+      "name": "Alley Oop",
+      "description": "Ride up the wall and spin the opposite way before dropping back in.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "nose-pick",
+      "name": "Nose Pick",
+      "description": "Balance the front peg on the edge with the rear wheel lifted off the obstacle.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "ledges",
+        "box"
+      ]
+    },
+    {
+      "id": "smith-stall",
+      "name": "Smith Stall",
+      "description": "Stall the front peg on the coping in the smith position and roll back in.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl"
+      ]
+    },
+    {
+      "id": "feeble-stall",
+      "name": "Feeble Stall",
+      "description": "Stall the front peg on the coping and drop back into the ramp.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl"
+      ]
+    },
+    {
+      "id": "nose-wheelie",
+      "name": "Nose Wheelie",
+      "description": "Balance on the front wheel while pedaling and hold the nose wheelie.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "rock-n-roll",
+      "name": "Rock n Roll",
+      "description": "Rock the front wheel over the coping and turn back in frontside.",
+      "level": 2,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "full-cab",
+      "name": "Full Cab",
+      "description": "Spin a 360 out of fakie and roll away forward in your natural stance.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "opposite-whip",
+      "name": "Opposite Whip",
+      "description": "Whip the rear end around the opposite way and pull it back before landing.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "downside-whip",
+      "name": "Downside Whip",
+      "description": "Throw the whip on the downside of the lip and catch it back under you.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl"
+      ]
+    },
+    {
+      "id": "double-whip",
+      "name": "Double Whip",
+      "description": "Kick the rear of the bike around two full spins and land square.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "skatepark"
+      ]
+    },
+    {
+      "id": "candybar",
+      "name": "Candybar",
+      "description": "Kick both feet over the top tube and back in one clean motion.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "toboggan",
+      "name": "Toboggan",
+      "description": "Lift both feet over the front of the bike and hold the toboggan through the air.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "truckdriver",
+      "name": "Truckdriver",
+      "description": "Grab the seat and spin the whole bike a full rotation around you.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "superman",
+      "name": "Superman",
+      "description": "Push the bike out fully in front of you and pull it back before the landing.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "decade",
+      "name": "Decade",
+      "description": "Spin the bars and body 360 while keeping the bike straight beneath you.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "540",
+      "name": "540",
+      "description": "Rotate a 540 above the lip and stomp the landing back in the ramp.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "720",
+      "name": "720",
+      "description": "Rotate two full spins above the ramp and land clean on the transition.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "backflip",
+      "name": "Backflip",
+      "description": "Rotate the whole bike backward over the lip and land back in the transition.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl"
+      ]
+    },
+    {
+      "id": "frontflip",
+      "name": "Frontflip",
+      "description": "Rotate the whole bike forward mid-air and stomp the landing.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl"
+      ]
+    },
+    {
+      "id": "flair",
+      "name": "Flair",
+      "description": "Combine a backflip with a 180 rotation and land the flair in the ramp.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl"
+      ]
+    },
+    {
+      "id": "bike-flip",
+      "name": "Bike Flip",
+      "description": "Flip the entire bike a full rotation while keeping your body in place.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "barspin-to-tailwhip",
+      "name": "Barspin to Tailwhip",
+      "description": "Throw a barspin into a tailwhip and catch both before the landing.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "360-barspin",
+      "name": "360 Barspin",
+      "description": "Rotate a full 360 while spinning the bars a full rotation.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "fakie-tailwhip",
+      "name": "Fakie Tailwhip",
+      "description": "Whip the rear of the bike 360 while riding fakie and land rolling forward.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "pedal-grind",
+      "name": "Pedal Grind",
+      "description": "Lock the pedals and crank on the rail and ride the pedal grind to the end.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "rails",
+        "ledges"
+      ]
+    },
+    {
+      "id": "fufanu",
+      "name": "Fufanu",
+      "description": "Jam the foot into the wheel, spin the bike around the ledge, and ride out.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "ledges",
+        "box",
+        "rails"
+      ]
+    },
+    {
+      "id": "footjam-tailwhip",
+      "name": "Footjam Tailwhip",
+      "description": "Jam the front foot and spin the rear wheel around a full 360 before riding out.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark",
+        "box"
+      ]
+    },
+    {
+      "id": "suicide-no-hander",
+      "name": "Suicide No Hander",
+      "description": "Take both hands off the bars and arch way back before pulling it in.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "bowl",
+        "vert"
+      ]
+    },
+    {
+      "id": "kickflip",
+      "name": "Kickflip",
+      "description": "Flip the entire bike 360 around its axis with a flick of the feet.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "360-tailwhip",
+      "name": "360 Tailwhip",
+      "description": "Rotate a full 360 while kicking a tailwhip in the same motion.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "plaza",
+        "diy",
+        "skatepark"
+      ]
+    },
+    {
+      "id": "abubaca",
+      "name": "Abubaca",
+      "description": "Plant the rear peg on the coping and hold the abubaca above the ramp.",
+      "level": 3,
+      "discipline": "bmx",
+      "compatibleSpotTypes": [
+        "vert",
+        "bowl"
+      ]
+    }
+  ]
+}

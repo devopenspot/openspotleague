@@ -1,0 +1,1079 @@
+@import "tailwindcss";
+
+@custom-variant data-open (&:where([data-state="open"]));
+@custom-variant data-closed (&:where([data-state="closed"]));
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(
+      --radix-accordion-content-height,
+      var(--accordion-panel-height, auto)
+    );
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(
+      --radix-accordion-content-height,
+      var(--accordion-panel-height, auto)
+    );
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes ledOn {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes ledBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@theme {
+  --color-surface: #f7f9fb;
+  --color-surface-dim: #d8dadc;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #edf0f3;
+  --color-surface-container-high: #e7eaee;
+  --color-surface-container-highest: #e1e5e9;
+  --color-on-surface: #121212;
+  --color-on-surface-variant: #44474a;
+  --color-inverse-surface: #402b29;
+  --color-inverse-on-surface: #ffedea;
+  --color-outline: #74777a;
+  --color-outline-variant: #c4c7ca;
+  --color-surface-tint: #0a0a0a;
+  --color-primary: #0a0a0a;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e8e8e8;
+  --color-on-primary-container: #1a1a1a;
+  --color-inverse-primary: #a3a3a3;
+  --color-secondary: #565f69;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #dae3ef;
+  --color-on-secondary-container: #131c25;
+  --color-tertiary: #635b70;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #e9def8;
+  --color-on-tertiary-container: #1f182b;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #410002;
+  --color-primary-fixed: #e8e8e8;
+  --color-primary-fixed-dim: #d4d4d4;
+  --color-on-primary-fixed: #0a0a0a;
+  --color-on-primary-fixed-variant: #404040;
+  --color-secondary-fixed: #dae3ef;
+  --color-secondary-fixed-dim: #bec7d3;
+  --color-on-secondary-fixed: #141c25;
+  --color-on-secondary-fixed-variant: #3f4851;
+  --color-tertiary-fixed: #e9def7;
+  --color-tertiary-fixed-dim: #cdc2db;
+  --color-on-tertiary-fixed: #1f182a;
+  --color-on-tertiary-fixed-variant: #4b4357;
+  --color-background: #fff8f7;
+  --color-on-background: #291715;
+  --color-surface-variant: #e8e8e8;
+
+  /* Gradients — one wash per route (DESIGN.md pages.*). Keep literals blessed only here.
+   * Only spelling in components: `bg-gradient-*` utility or `var(--gradient-*)`.
+   * Raw Tailwind from-orange / via-red / to-red literals are banned even when near-equal. */
+  --color-accent-start: #ea580c;
+  --color-accent-via: #dc2626;
+  --color-accent-end: #b91c1c;
+  --gradient-primary: linear-gradient(
+    to right,
+    var(--color-accent-start),
+    var(--color-accent-via),
+    var(--color-accent-end)
+  );
+  --color-on-gradient: #ffffff;
+  --color-gradient-explore-start: #22d3ee;
+  --color-gradient-explore-mid: #2dd4bf;
+  --color-gradient-explore-end: #0d9488;
+  --gradient-explore: linear-gradient(
+    to bottom,
+    var(--color-gradient-explore-start),
+    var(--color-gradient-explore-mid),
+    var(--color-gradient-explore-end)
+  );
+  --color-gradient-profile-start: #ecfccb;
+  --color-gradient-profile-mid: #d9f99d;
+  --color-gradient-profile-end: #a3e635;
+  --gradient-profile: linear-gradient(
+    to right,
+    var(--color-gradient-profile-start),
+    var(--color-gradient-profile-mid),
+    var(--color-gradient-profile-end)
+  );
+
+  /* Wire — inverted dark rail (landing marquee). Token-mapped from primary
+   * so skeleton + marquee share one source; avoids hard bg-black.
+   * On wire surfaces use wire-* tokens, never white/* literals:
+   * text-white → text-on-wire, text-white/60-70 → text-wire-muted,
+   * border-white/15 → border-wire-border(-strong), bg-white/10-15 → bg-wire-border(-strong).
+   * ring-white + from-wire edge fades stay (focus ring needs pure white). */
+  --color-wire: var(--color-primary);
+  --color-on-wire: var(--color-on-primary);
+  --color-wire-border: color-mix(in srgb, var(--color-on-primary) 10%, transparent);
+  --color-wire-border-strong: color-mix(
+    in srgb,
+    var(--color-on-primary) 15%,
+    transparent
+  );
+  --color-wire-muted: color-mix(
+    in srgb,
+    var(--color-on-primary) 60%,
+    transparent
+  );
+
+  /* TV inverse overlay — translucent white on dark (tv pages only) */
+  --color-tv-overlay: rgba(255, 255, 255, 0.04);
+  --color-tv-overlay-strong: rgba(255, 255, 255, 0.1);
+  --color-tv-overlay-border: rgba(255, 255, 255, 0.1);
+
+  /* Documented status/activity exceptions to the monochrome product palette. */
+  --color-permission-granted: #16a34a;
+  --color-permission-pending: #f59e0b;
+  --color-permission-denied: #dc2626;
+  --color-activity-empty: #f0fdf4;
+  --color-activity-low: #bbf7d0;
+  --color-activity-medium: #4ade80;
+  --color-activity-high: #16a34a;
+  --color-activity-peak: #166534;
+
+  --font-display:
+    var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+
+  /* Typography scale — DESIGN.md scale-live + tracking-steps canonical.
+   * --text-* kept as legacy alias (parity). */
+  --text-micro: 9px;
+  --text-display: 48px;
+  --text-headline: 32px;
+  --text-title: 20px;
+  --text-body: 16px;
+  --text-label: 12px;
+  --text-display-lg: 48px;
+  --text-display-lg-mobile: 32px;
+  --leading-display: 1.2;
+  --leading-headline: 1.3;
+  --leading-title: 1.4;
+  --leading-body: 1.5;
+  --leading-label: 1.2;
+  --tracking-display: -0.02em;
+  --tracking-label: 0.05em;
+  /* Blessed tracking steps (DESIGN.md tracking-steps) — no other tracking literals. */
+  --tracking-dense: 0.04em;
+  --tracking-pill: 0.08em;
+  --tracking-eyebrow: 0.12em;
+
+  --spacing-section: 5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gap-sm: 0.5rem;
+  --spacing-gap-md: 1rem;
+  --spacing-gap-lg: 1.5rem;
+  --spacing-stack-sm: 0.5rem;
+  --spacing-stack-md: 1.5rem;
+  --spacing-margin-mobile: 1.25rem;
+  --spacing-margin-desktop: 2.5rem;
+  --mobile-nav-h: 64px;
+
+  /* Radii — relaxed 16/full for interactive, 14 (inner) for rows/cards nested
+   * inside a 16px parent or photo card, tight 4/8/12 only where listed. */
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-card: 12px;
+  --radius-inner: 14px;
+  --radius-lg: 16px;
+  --radius-chassis: 20px;
+  --radius-xl: 24px;
+  --radius: 8px;
+  --radius-md-rounded: 0.75rem;
+  --radius-full: 9999px;
+
+  /* Map-only theme tokens from DESIGN_MAP.md (lifted 20% for contrast & legibility) —
+   * applied strictly to map canvases, tile layers (.leaflet-tile-pane and .map-tile-dark),
+   * and on-map markers/overlays while surrounding page/layout chrome stays light. */
+  --map-tile-filter: grayscale(100%) invert(100%) contrast(85%) brightness(125%);
+  --color-map-surface: #242424;
+  --color-map-surface-dim: #1f1f1f;
+  --color-map-surface-bright: #4d4d4d;
+  --color-map-surface-container-lowest: #1b1b1b;
+  --color-map-surface-container-low: #2b2b2b;
+  --color-map-surface-container: #303030;
+  --color-map-surface-container-high: #3b3b3b;
+  --color-map-surface-container-highest: #474747;
+  --color-map-on-surface: #efefef;
+  --color-map-on-surface-variant: #f0ccc9;
+  --color-map-inverse-surface: #efefef;
+  --color-map-inverse-on-surface: #3d3d3d;
+  --color-map-outline: #c29e99;
+  --color-map-outline-variant: #75524e;
+  --color-map-surface-tint: #ffc4bd;
+  --color-map-primary: #ffc4bd;
+  --color-map-on-primary: #690006;
+  --color-map-primary-container: #ff6b63;
+  --color-map-on-primary-container: #5c0005;
+  --color-map-inverse-primary: #c00014;
+  --color-map-electric: #ff3131;
+  --color-map-secondary: #d6d4d3;
+  --color-map-on-secondary: #3d3c3c;
+  --color-map-secondary-container: #595958;
+  --color-map-on-secondary-container: #cecccb;
+  --color-map-tertiary: #82ddf7;
+  --color-map-on-tertiary: #003642;
+  --color-map-tertiary-container: #36b1d0;
+  --color-map-on-tertiary-container: #002e3a;
+  --color-map-error: #ffc4bd;
+  --color-map-on-error: #690005;
+  --color-map-error-container: #93000a;
+  --color-map-on-error-container: #ffdad6;
+  --color-map-primary-fixed: #ffdad6;
+  --color-map-primary-fixed-dim: #ffc4bd;
+  --color-map-on-primary-fixed: #410002;
+  --color-map-on-primary-fixed-variant: #93000c;
+  --color-map-secondary-fixed: #eceae9;
+  --color-map-secondary-fixed-dim: #d6d4d3;
+  --color-map-on-secondary-fixed: #262525;
+  --color-map-on-secondary-fixed-variant: #595958;
+  --color-map-tertiary-fixed: #c4f0ff;
+  --color-map-tertiary-fixed-dim: #82ddf7;
+  --color-map-on-tertiary-fixed: #001f27;
+  --color-map-on-tertiary-fixed-variant: #004e5f;
+  --color-map-background: #242424;
+  --color-map-on-background: #efefef;
+  --color-map-surface-variant: #474747;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-background);
+    font-family: var(--font-sans);
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Account for sticky header when scrolling to focused elements */
+  :target,
+  *:focus-visible {
+    scroll-margin-top: 80px;
+  }
+
+  /* Prevent iOS Safari auto-zoom on focus (threshold 16px). Keep form
+     controls at 16px on mobile; desktop may use smaller sizes via
+     sm:text-sm utilities which naturally override on >=640px.
+     NOTE: input:not([type]) is load-bearing — bare <input> defaults to
+     text behavior but never matches input[type="text"], so without it
+     components like GuestNicknameField slip through and zoom on iOS. */
+  input:not([type]),
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="time"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Mobile safety net: force 16px on <640px even when a component uses
+   text-sm/text-xs utilities (which would otherwise win over @layer base).
+   Desktop (>=640px) is unaffected so sm:text-sm can still apply there.
+   SearchOverlay (src/components/shell/SearchOverlay.tsx:227) already uses
+   text-base and remains unchanged. */
+@media (max-width: 639px) {
+  input:not([type]),
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="time"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+@layer base {
+  /* Keep Leaflet chrome in the DESIGN_MAP.md high-contrast nocturnal HUD palette. */
+  .leaflet-control-zoom {
+    overflow: hidden;
+    border: 1px solid var(--color-map-outline-variant) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none !important;
+  }
+  .leaflet-control-zoom a,
+  .leaflet-bar a,
+  .leaflet-bar a:hover {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .leaflet-control-zoom a + a {
+    border-top: 1px solid var(--color-map-outline-variant);
+  }
+  .leaflet-control-zoom a,
+  .leaflet-bar a {
+    border-color: var(--color-map-outline-variant);
+    background-color: var(--color-map-surface-container);
+    color: var(--color-map-on-surface);
+  }
+  .leaflet-control-zoom a:hover,
+  .leaflet-bar a:hover {
+    background-color: var(--color-map-surface-container-high);
+    color: var(--color-map-primary);
+  }
+  .leaflet-control-attribution {
+    border-radius: 8px 0 0 0;
+    background-color: color-mix(in srgb, var(--color-map-surface) 88%, transparent);
+    color: var(--color-map-secondary);
+    border-top: 1px solid var(--color-map-outline-variant);
+    border-left: 1px solid var(--color-map-outline-variant);
+  }
+  .leaflet-control-attribution a {
+    color: var(--color-map-primary);
+    font-weight: 600;
+  }
+  .leaflet-container {
+    background: var(--color-map-surface-container-lowest);
+    font-family: var(--font-sans);
+  }
+  /* General rule: all map tiles render in DESIGN_MAP.md high-contrast dark mode while page/layout chrome stays light. */
+  .leaflet-tile-pane,
+  .map-tile-dark {
+    filter: var(--map-tile-filter);
+  }
+  /* Component-scoped +10% lighter map theme for MapInfoPopup and SpotStaticMap. */
+  .map-theme-lighter {
+    --map-tile-filter: grayscale(100%) invert(100%) contrast(82%) brightness(138%);
+    --color-map-surface: #3a3a3a;
+    --color-map-surface-dim: #353535;
+    --color-map-surface-bright: #5f5f5f;
+    --color-map-surface-container-lowest: #323232;
+    --color-map-surface-container-low: #404040;
+    --color-map-surface-container: #454545;
+    --color-map-surface-container-high: #4f4f4f;
+    --color-map-surface-container-highest: #595959;
+    --color-map-on-surface: #f5f5f5;
+    --color-map-on-surface-variant: #f3d5d2;
+    --color-map-inverse-surface: #f5f5f5;
+    --color-map-inverse-on-surface: #4a4a4a;
+    --color-map-outline: #cca9a4;
+    --color-map-outline-variant: #866561;
+    --color-map-surface-tint: #ffcdc7;
+    --color-map-primary: #ffcdc7;
+    --color-map-primary-container: #ff7c75;
+    --color-map-secondary: #dcdad9;
+    --color-map-secondary-container: #6b6b6a;
+    --color-map-on-secondary-container: #d5d4d3;
+    --color-map-tertiary: #91e1f8;
+    --color-map-tertiary-container: #4cbada;
+    --color-map-tertiary-fixed: #cbf2ff;
+    --color-map-background: #3a3a3a;
+    --color-map-on-background: #f5f5f5;
+    --color-map-surface-variant: #595959;
+  }
+
+  /* Custom divIcon pins — DESIGN_MAP.md high-contrast nocturnal HUD surfaces over dark tiles.
+   * Width/height come from Tailwind utility classes on the divIcon HTML so
+   * the pin scales with the viewport. Base layer holds color/border/halo state. */
+  .leaflet-pin {
+    background: transparent;
+    border: 0;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .leaflet-pin__surface {
+    position: relative;
+    min-height: 24px;
+    border: 1px solid var(--color-map-outline);
+    background: var(--color-map-surface-container);
+    color: var(--color-map-on-surface);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-radius: var(--radius-sm);
+    box-sizing: border-box;
+  }
+  .leaflet-pin__glyph {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+  .leaflet-pin__row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+  }
+  .leaflet-pin__conditions {
+    min-height: 32px;
+    gap: 6px;
+  }
+  .leaflet-pin__weather {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    color: inherit;
+  }
+  .leaflet-pin__temp {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+  .leaflet-pin--active .leaflet-pin__temp {
+    font-size: 16px;
+  }
+  .leaflet-pin__label {
+    font-family: var(--font-sans);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: inherit;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.1;
+  }
+  .leaflet-pin__description,
+  .leaflet-pin__distance {
+    font-family: var(--font-sans);
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    color: var(--color-map-secondary);
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 1px;
+  }
+  .leaflet-pin__distance {
+    color: var(--color-map-on-surface-variant);
+  }
+  .leaflet-pin--active .leaflet-pin__description,
+  .leaflet-pin--active .leaflet-pin__distance {
+    color: var(--color-on-primary);
+  }
+  .leaflet-pin--active .leaflet-pin__description {
+    max-width: 120px;
+  }
+  .leaflet-pin--active .leaflet-pin__distance {
+    max-width: 120px;
+  }
+
+  /* Saved — elevated dark surface (#2a2a2a) with luminous salmon border (#ffb4ab) + vibrant corner notch (#ff544b) */
+  .leaflet-pin--saved .leaflet-pin__surface::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 7px;
+    height: 7px;
+    background: var(--color-map-primary-container);
+    border-left: 1px solid var(--color-map-surface-container-high);
+    border-bottom: 1px solid var(--color-map-surface-container-high);
+  }
+  .leaflet-pin--saved .leaflet-pin__surface {
+    background: var(--color-map-surface-container-high);
+    color: var(--color-map-primary);
+    border: 1.5px solid var(--color-map-primary);
+  }
+  .leaflet-pin--saved .leaflet-pin__label {
+    color: var(--color-map-primary);
+  }
+
+  /* Active — DESIGN_MAP.md electric red (#ff3131) with luminous #ffb4ab ring and ambient glow */
+  .leaflet-pin--active {
+    animation: leafletPinPulse 180ms ease-out 1;
+  }
+  .leaflet-pin--active .leaflet-pin__surface {
+    background: var(--color-map-electric);
+    border-color: var(--color-map-primary);
+    color: var(--color-on-primary);
+    outline: 2px solid var(--color-map-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--color-map-electric) 35%, transparent);
+  }
+  .leaflet-pin--active.leaflet-pin--saved .leaflet-pin__surface::after {
+    background: var(--color-map-primary);
+    border-left-color: var(--color-map-electric);
+    border-bottom-color: var(--color-map-electric);
+  }
+  .leaflet-pin__surface--weather {
+    min-height: 50px;
+  }
+  .leaflet-pin--active .leaflet-pin__surface--weather {
+    min-height: 56px;
+  }
+  .leaflet-pin--active .leaflet-pin__conditions {
+    min-height: 40px;
+  }
+  .leaflet-pin--active .leaflet-pin__label {
+    color: var(--color-on-primary);
+  }
+
+  /* Cluster chip — elevated dark surface (#2a2a2a) with #ff544b border and #ffb4ab count */
+  .leaflet-cluster {
+    background: transparent;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .leaflet-cluster__chip {
+    width: 30px;
+    height: 30px;
+    background: var(--color-map-surface-container-high);
+    color: var(--color-map-primary);
+    border: 1.5px solid var(--color-map-primary-container);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-map-electric) 25%, transparent);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .leaflet-marker-icon:focus-visible {
+    outline: 3px solid var(--color-map-electric);
+    outline-offset: 3px;
+  }
+
+  /* User-location pin — DESIGN_MAP.md tertiary cyan (#6ad4f4) crosshair, ping ring, and center dot. */
+  .leaflet-user-pin {
+    border: 0;
+    position: relative;
+    background:
+      linear-gradient(
+        to right,
+        transparent calc(50% - 0.75px),
+        var(--color-map-tertiary) calc(50% - 0.75px),
+        var(--color-map-tertiary) calc(50% + 0.75px),
+        transparent calc(50% + 0.75px)
+      ),
+      linear-gradient(
+        to bottom,
+        transparent calc(50% - 0.75px),
+        var(--color-map-tertiary) calc(50% - 0.75px),
+        var(--color-map-tertiary) calc(50% + 0.75px),
+        transparent calc(50% + 0.75px)
+      );
+  }
+  .leaflet-user-pin__ring,
+  .leaflet-user-pin__dot {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+  .leaflet-user-pin__ring {
+    border: 2px solid var(--color-map-tertiary);
+    background: transparent;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-map-tertiary) 55%, transparent);
+    animation: leafletUserPing 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .leaflet-user-pin__dot {
+    width: 10px;
+    height: 10px;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-map-tertiary);
+    border: 2px solid var(--color-map-tertiary-fixed);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-map-tertiary) 85%, transparent);
+  }
+  .leaflet-user-pin--nearby .leaflet-user-pin__ring {
+    animation: none;
+    border-style: dotted;
+    transform: scale(1.6);
+    opacity: 0.8;
+  }
+
+  /* Event pin — DESIGN_MAP.md nocturnal HUD surface (#1f1f1f) with #ff544b border and #1b1b1b tier badge. */
+  .leaflet-event-pin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-family: var(--font-sans);
+    line-height: 1;
+    user-select: none;
+    pointer-events: auto;
+  }
+  .leaflet-event-pin__tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid var(--color-map-outline);
+    background: var(--color-map-surface-container-low);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+    padding: 2px 4px;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-map-on-surface-variant);
+    border-radius: var(--radius-sm);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .leaflet-event-pin__square {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 4px;
+    row-gap: 2px;
+    min-width: 88px;
+    max-width: 132px;
+    padding: 4px 6px;
+    border: 1.5px solid var(--color-map-primary-container);
+    border-radius: var(--radius-sm);
+    background: var(--color-map-surface-container);
+    color: var(--color-map-on-surface);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: normal;
+  }
+  .leaflet-event-pin__square[data-status="completed"] {
+    background: var(--color-map-surface-container-low);
+    color: var(--color-map-secondary);
+    border-color: var(--color-map-outline-variant);
+  }
+  .leaflet-event-pin__status-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    flex-shrink: 0;
+    grid-row: 1 / span 2;
+  }
+  /* Status is read by form:
+   * live = solid filled square that pulses
+   * upcoming = hollow square
+   * completed = square with a center dot (target) */
+  .leaflet-event-pin__status-dot--live {
+    background: var(--color-map-electric);
+    animation: pulseDot 2s ease-in-out infinite;
+  }
+  .leaflet-event-pin__status-dot--upcoming {
+    background: transparent;
+    border: 1px solid var(--color-map-primary);
+  }
+  .leaflet-event-pin__status-dot--completed {
+    background: transparent;
+    border: 1px solid var(--color-map-secondary);
+    position: relative;
+  }
+  .leaflet-event-pin__status-dot--completed::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 2px;
+    background: var(--color-map-secondary);
+    transform: translate(-50%, -50%);
+  }
+  .leaflet-event-pin__label {
+    min-width: 0;
+    max-width: 112px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .leaflet-event-pin__date {
+    min-width: 0;
+    max-width: 112px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid var(--color-map-outline-variant);
+    background: var(--color-map-secondary-container);
+    color: var(--color-map-secondary);
+    padding: 2px 4px;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .leaflet-event-pin--active .leaflet-event-pin__square {
+    background: var(--color-map-electric);
+    border-color: var(--color-map-primary);
+    color: var(--color-on-primary);
+    outline: 2px solid var(--color-map-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--color-map-electric) 35%, transparent);
+  }
+  .leaflet-event-pin--active .leaflet-event-pin__status-dot--live {
+    background: var(--color-on-primary);
+  }
+
+  /* Location-permission status LED — color is the signal, animation is
+     secondary. Reduced-motion is honored by the global media query below. */
+  .led__core {
+    fill: var(--color-outline);
+    transition: fill 120ms linear;
+  }
+  .led__core[data-state="denied"],
+  .led__core[data-state="unavailable"] {
+    fill: var(--color-permission-denied);
+  }
+  .led__core[data-state="granted"] {
+    fill: var(--color-permission-granted);
+    animation: ledOn 1.2s ease-in-out infinite;
+  }
+  .led__core[data-state="requesting"] {
+    fill: var(--color-permission-pending);
+    animation: ledBlink 0.6s steps(2, end) infinite;
+  }
+}
+
+@keyframes leafletPinPulse {
+  from {
+    transform: scale(0.85);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes leafletUserPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  75%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: underline;
+  }
+
+  .skip-link:focus {
+    top: 0;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out both;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out both;
+  }
+
+  .animate-spin-slow {
+    animation: spin 8s linear infinite;
+  }
+
+  .animate-pulse-dot {
+    animation: pulseDot 2s ease-in-out infinite;
+  }
+
+  .animate-ping-slow {
+    animation: pingSlow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .animate-radar-sweep {
+    animation: radarSweep 3.5s linear infinite;
+    transform-origin: 50% 50%;
+  }
+
+  .animate-heart-burst {
+    animation: heartBurst 600ms cubic-bezier(0.16, 1, 0.3, 1) 1;
+    transform-origin: 50% 50%;
+  }
+
+  .animate-radar-pulse {
+    animation: radarPulse 1s cubic-bezier(0, 0, 0.8, 1) infinite;
+    transform-origin: 50% 50%;
+  }
+
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+    color: var(--color-on-gradient);
+  }
+
+  .bg-gradient-explore {
+    background-image: var(--gradient-explore);
+    color: var(--color-on-surface);
+  }
+
+  .bg-gradient-profile {
+    background-image: var(--gradient-profile);
+    color: var(--color-on-surface);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes pingSlow {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes radarSweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes heartBurst {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.35);
+  }
+  65% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes radarPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  60%,
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* ── Game Panel — video-game control deck ── */
+@keyframes panel-scan {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes panel-tick {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.panel-chassis {
+  /* mono chassis with subtle inset highlight — keeps DESIGN.md palette */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, transparent 14%),
+    var(--color-surface-container-high);
+}
+
+.panel-screen {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.35) 0%, transparent 55%),
+    var(--color-on-surface);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+    0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+.panel-screen-inner {
+  position: relative;
+}
+
+/* faint CRT scanline — very subtle, monochrome, respects reduced-motion */
+.panel-screen-inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    var(--color-on-surface) 3px
+  );
+}
+
+.panel-deck {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, transparent 18%),
+    var(--color-surface-container);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .panel-screen-inner::after {
+    display: none;
+  }
+}

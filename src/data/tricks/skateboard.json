@@ -1,0 +1,4479 @@
+{
+  "version": "skateboard",
+  "discipline": "skateboard",
+  "tricks": [
+    {
+      "id": "ollie",
+      "name": "Ollie",
+      "description": "Pop the tail, slide the front foot up, and level the board to jump into the air.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["ollie"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie",
+      "name": "Nollie",
+      "description": "Pop the nose with your front foot and slide your back foot up to jump from the nose.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-ollie",
+      "name": "Fakie Ollie",
+      "description": "An ollie performed while riding backwards, popping off the tail in your rolling direction.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["ollie"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-ollie",
+      "name": "Switch Ollie",
+      "description": "An ollie performed in your unnatural stance, popping with your opposite back foot.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "kickflip",
+      "name": "Kickflip",
+      "description": "Flick off the toe side of the nose to flip the board 360 degrees along its length.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "heelflip",
+      "name": "Heelflip",
+      "description": "Flick off the heel side of the nose to make the board spin 360 degrees the opposite way of a kickflip.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "pop-shove-it",
+      "name": "Pop Shove-It",
+      "description": "Pop and scoop the tail backside to spin the board 180 degrees under your feet without body rotation.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "frontside-pop-shove-it",
+      "name": "Frontside Pop Shove-It",
+      "description": "Pop and scoop the tail frontside to spin the board 180 degrees in front of your body.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "varial-kickflip",
+      "name": "Varial Kickflip",
+      "description": "A combination of a backside pop shove-it and a kickflip, spinning and flipping the board at the same time.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "varial-heelflip",
+      "name": "Varial Heelflip",
+      "description": "A combination of a frontside pop shove-it and a heelflip, spinning the board 180 degrees frontside while flipping.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "hardflip",
+      "name": "Hardflip",
+      "description": "A frontside pop shove-it combined with a kickflip, making the board flip vertically between your legs.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "inward-heelflip",
+      "name": "Inward Heelflip",
+      "description": "A backside pop shove-it combined with a heelflip, making the board flip vertically in an inward motion.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "360-flip",
+      "name": "360 Flip",
+      "description": "A 360 backside shove-it combined with a kickflip, scooping the tail in the pocket and flipping the board.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "laser-flip",
+      "name": "Laser Flip",
+      "description": "A 360 frontside shove-it combined with a heelflip, scooping the board frontside while flipping it.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "double-kickflip",
+      "name": "Double Kickflip",
+      "description": "Flick the board with extra force to make it flip twice (720 degrees) before catching it.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "triple-kickflip",
+      "name": "Triple Kickflip",
+      "description": "Flick the board extremely hard to make it flip three times in the air before landing.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "double-heelflip",
+      "name": "Double Heelflip",
+      "description": "Flick the board off the heel side with extra power to complete two full rotations.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "triple-heelflip",
+      "name": "Triple Heelflip",
+      "description": "Flick the board off the heel side to complete three full rotations in the air.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "360-pop-shove-it",
+      "name": "360 Pop Shove-It",
+      "description": "Scoop the tail hard backside to spin the board 360 degrees under your feet without flipping.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "frontside-360-pop-shove-it",
+      "name": "Frontside 360 Pop Shove-It",
+      "description": "Scoop the tail hard frontside to spin the board 360 degrees in front of you.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "impossible",
+      "name": "Impossible",
+      "description": "Wrap the board around your back foot in a vertical loop, scooping it with the back ankle.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "frontside-180-ollie",
+      "name": "Frontside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees frontside, keeping the board with you.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "backside-180-ollie",
+      "name": "Backside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees backside, turning blind to your landing.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "half-cab",
+      "name": "Half Cab",
+      "description": "A fakie backside 180 ollie, turning your back to your direction of travel and landing forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "full-cab",
+      "name": "Full Cab",
+      "description": "A fakie backside 360 ollie, completing a full rotation in the air and landing backwards.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "frontside-half-cab",
+      "name": "Frontside Half Cab",
+      "description": "A fakie frontside 180 ollie, rotating your front body first to land forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "frontside-full-cab",
+      "name": "Frontside Full Cab",
+      "description": "A fakie frontside 360 ollie, completing a full frontside rotation in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "body-varial",
+      "name": "Body Varial",
+      "description": "Jump off the board and spin your body 180 degrees, landing back on the board pointing the same way.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "hippie-jump",
+      "name": "Hippie Jump",
+      "description": "Jump straight up off the board, letting it roll under an obstacle before landing back on it.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "tic-tac",
+      "name": "Tic Tac",
+      "description": "Rhythmically swing the nose back and forth, using the momentum to generate forward speed.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "power-slide",
+      "name": "Power Slide",
+      "description": "Slide your wheels 90 degrees sideways to slow down or stop quickly while rolling.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "manual",
+      "name": "Manual",
+      "description": "Balance on the back two wheels while rolling, keeping the nose of the board in the air.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "nose-manual",
+      "name": "Nose Manual",
+      "description": "Balance on the front two wheels while rolling, keeping the tail of the board in the air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "caveman",
+      "name": "Caveman",
+      "description": "Hold the board, jump into the air, and place it beneath your feet to land on the ground.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "running-caveman",
+      "name": "Running Caveman",
+      "description": "Run forward with the board in hand, jump, and plant it under your feet to roll away with speed.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "no-comply",
+      "name": "No Comply",
+      "description": "Plant your front foot on the ground while popping the tail, allowing the board to rise before jumping on.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "boneless",
+      "name": "Boneless",
+      "description": "Plant your front foot on the ground, grab the middle of the board to lift it, jump, and land back on.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "boneless-180",
+      "name": "Boneless 180",
+      "description": "Perform a boneless but spin your body and the board 180 degrees before landing.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "casper",
+      "name": "Casper",
+      "description": "Flip the board upside down with your front foot underneath and back foot on the tail, balancing on the tail.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "casper-shove",
+      "name": "Casper Shove",
+      "description": "From a Casper stance, flip and spin the board 180 degrees back to a regular landing.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "hospital-flip",
+      "name": "Hospital Flip",
+      "description": "Flick the board halfway into a kickflip, then wrap your front foot to guide it back upright.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "primo",
+      "name": "Primo",
+      "description": "Stand sideways on the rail of your board, keeping your balance directly on the wheels.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "primo-flip",
+      "name": "Primo Flip",
+      "description": "Flip the board from a primo position back onto its wheels and land on it.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "revert",
+      "name": "Revert",
+      "description": "Slide the wheels 180 degrees along the ground immediately after landing a trick to switch stances.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "ollie-north",
+      "name": "Ollie North",
+      "description": "An ollie where you kick your front foot forward off the nose of the board in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "ollie-south",
+      "name": "Ollie South",
+      "description": "An ollie where you kick your back foot straight down and back off the tail in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "bigspin",
+      "name": "Bigspin",
+      "description": "A 360 shove-it combined with a 180 body varial in the same direction.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "frontside-bigspin",
+      "name": "Frontside Bigspin",
+      "description": "A frontside 360 shove-it combined with a 180 frontside body varial.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "heelflip-bigspin",
+      "name": "Heelflip Bigspin",
+      "description": "A varial heelflip combined with a 180 body rotation in the same direction.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "caballerial",
+      "name": "Caballerial",
+      "description": "A fakie backside 360 ollie, named after steve caballero, performed without grabbing.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "vert"]
+    },
+    {
+      "id": "switch-kickflip",
+      "name": "Switch Kickflip",
+      "description": "Flick off the toe side of the nose to flip the board 360 degrees along its length performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-heelflip",
+      "name": "Switch Heelflip",
+      "description": "Flick off the heel side of the nose to make the board spin 360 degrees the opposite way of a kickflip performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-pop-shove-it",
+      "name": "Switch Pop Shove-It",
+      "description": "Pop and scoop the tail backside to spin the board 180 degrees under your feet without body rotation performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-frontside-pop-shove-it",
+      "name": "Switch Frontside Pop Shove-It",
+      "description": "Pop and scoop the tail frontside to spin the board 180 degrees in front of your body performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-varial-kickflip",
+      "name": "Switch Varial Kickflip",
+      "description": "A combination of a backside pop shove-it and a kickflip, spinning and flipping the board at the same time performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-varial-heelflip",
+      "name": "Switch Varial Heelflip",
+      "description": "A combination of a frontside pop shove-it and a heelflip, spinning the board 180 degrees frontside while flipping performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-hardflip",
+      "name": "Switch Hardflip",
+      "description": "A frontside pop shove-it combined with a kickflip, making the board flip vertically between your legs performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-inward-heelflip",
+      "name": "Switch Inward Heelflip",
+      "description": "A backside pop shove-it combined with a heelflip, making the board flip vertically in an inward motion performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-360-flip",
+      "name": "Switch 360 Flip",
+      "description": "A 360 backside shove-it combined with a kickflip, scooping the tail in the pocket and flipping the board performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-laser-flip",
+      "name": "Switch Laser Flip",
+      "description": "A 360 frontside shove-it combined with a heelflip, scooping the board frontside while flipping it performed in your unnatural (switch) stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-double-kickflip",
+      "name": "Switch Double Kickflip",
+      "description": "Flick the board with extra force to make it flip twice (720 degrees) before catching it performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-triple-kickflip",
+      "name": "Switch Triple Kickflip",
+      "description": "Flick the board extremely hard to make it flip three times in the air before landing performed in your unnatural (switch) stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-double-heelflip",
+      "name": "Switch Double Heelflip",
+      "description": "Flick the board off the heel side with extra power to complete two full rotations performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-triple-heelflip",
+      "name": "Switch Triple Heelflip",
+      "description": "Flick the board off the heel side to complete three full rotations in the air performed in your unnatural (switch) stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-360-pop-shove-it",
+      "name": "Switch 360 Pop Shove-It",
+      "description": "Scoop the tail hard backside to spin the board 360 degrees under your feet without flipping performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-frontside-360-pop-shove-it",
+      "name": "Switch Frontside 360 Pop Shove-It",
+      "description": "Scoop the tail hard frontside to spin the board 360 degrees in front of you performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-impossible",
+      "name": "Switch Impossible",
+      "description": "Wrap the board around your back foot in a vertical loop, scooping it with the back ankle performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-frontside-180-ollie",
+      "name": "Switch Frontside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees frontside, keeping the board with you performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-backside-180-ollie",
+      "name": "Switch Backside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees backside, turning blind to your landing performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-half-cab",
+      "name": "Switch Half Cab",
+      "description": "A fakie backside 180 ollie, turning your back to your direction of travel and landing forward performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-full-cab",
+      "name": "Switch Full Cab",
+      "description": "A fakie backside 360 ollie, completing a full rotation in the air and landing backwards performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-frontside-half-cab",
+      "name": "Switch Frontside Half Cab",
+      "description": "A fakie frontside 180 ollie, rotating your front body first to land forward performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-frontside-full-cab",
+      "name": "Switch Frontside Full Cab",
+      "description": "A fakie frontside 360 ollie, completing a full frontside rotation in the air performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-body-varial",
+      "name": "Switch Body Varial",
+      "description": "Jump off the board and spin your body 180 degrees, landing back on the board pointing the same way performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-hippie-jump",
+      "name": "Switch Hippie Jump",
+      "description": "Jump straight up off the board, letting it roll under an obstacle before landing back on it performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-tic-tac",
+      "name": "Switch Tic Tac",
+      "description": "Rhythmically swing the nose back and forth, using the momentum to generate forward speed performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-power-slide",
+      "name": "Switch Power Slide",
+      "description": "Slide your wheels 90 degrees sideways to slow down or stop quickly while rolling performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-manual",
+      "name": "Switch Manual",
+      "description": "Balance on the back two wheels while rolling, keeping the nose of the board in the air performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "switch-nose-manual",
+      "name": "Switch Nose Manual",
+      "description": "Balance on the front two wheels while rolling, keeping the tail of the board in the air performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "switch-caveman",
+      "name": "Switch Caveman",
+      "description": "Hold the board, jump into the air, and place it beneath your feet to land on the ground performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-running-caveman",
+      "name": "Switch Running Caveman",
+      "description": "Run forward with the board in hand, jump, and plant it under your feet to roll away with speed performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-no-comply",
+      "name": "Switch No Comply",
+      "description": "Plant your front foot on the ground while popping the tail, allowing the board to rise before jumping on performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-boneless",
+      "name": "Switch Boneless",
+      "description": "Plant your front foot on the ground, grab the middle of the board to lift it, jump, and land back on performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-boneless-180",
+      "name": "Switch Boneless 180",
+      "description": "Perform a boneless but spin your body and the board 180 degrees before landing performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-casper",
+      "name": "Switch Casper",
+      "description": "Flip the board upside down with your front foot underneath and back foot on the tail, balancing on the tail performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["balance", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-casper-shove",
+      "name": "Switch Casper Shove",
+      "description": "From a Casper stance, flip and spin the board 180 degrees back to a regular landing performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-hospital-flip",
+      "name": "Switch Hospital Flip",
+      "description": "Flick the board halfway into a kickflip, then wrap your front foot to guide it back upright performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-primo",
+      "name": "Switch Primo",
+      "description": "Stand sideways on the rail of your board, keeping your balance directly on the wheels performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "switch-primo-flip",
+      "name": "Switch Primo Flip",
+      "description": "Flip the board from a primo position back onto its wheels and land on it performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "switch-revert",
+      "name": "Switch Revert",
+      "description": "Slide the wheels 180 degrees along the ground immediately after landing a trick to switch stances performed in your unnatural (switch) stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-ollie-north",
+      "name": "Switch Ollie North",
+      "description": "An ollie where you kick your front foot forward off the nose of the board in mid-air performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-ollie-south",
+      "name": "Switch Ollie South",
+      "description": "An ollie where you kick your back foot straight down and back off the tail in mid-air performed in your unnatural (switch) stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "switch-bigspin",
+      "name": "Switch Bigspin",
+      "description": "A 360 shove-it combined with a 180 body varial in the same direction performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-frontside-bigspin",
+      "name": "Switch Frontside Bigspin",
+      "description": "A frontside 360 shove-it combined with a 180 frontside body varial performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-heelflip-bigspin",
+      "name": "Switch Heelflip Bigspin",
+      "description": "A varial heelflip combined with a 180 body rotation in the same direction performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "switch-caballerial",
+      "name": "Switch Caballerial",
+      "description": "A fakie backside 360 ollie, named after steve caballero, performed without grabbing performed in your unnatural (switch) stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "vert"]
+    },
+    {
+      "id": "nollie-ollie",
+      "name": "Nollie Ollie",
+      "description": "Pop the tail, slide the front foot up, and level the board to jump into the air popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-kickflip",
+      "name": "Nollie Kickflip",
+      "description": "Flick off the toe side of the nose to flip the board 360 degrees along its length popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-heelflip",
+      "name": "Nollie Heelflip",
+      "description": "Flick off the heel side of the nose to make the board spin 360 degrees the opposite way of a kickflip popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-pop-shove-it",
+      "name": "Nollie Pop Shove-It",
+      "description": "Pop and scoop the tail backside to spin the board 180 degrees under your feet without body rotation popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-frontside-pop-shove-it",
+      "name": "Nollie Frontside Pop Shove-It",
+      "description": "Pop and scoop the tail frontside to spin the board 180 degrees in front of your body popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-varial-kickflip",
+      "name": "Nollie Varial Kickflip",
+      "description": "A combination of a backside pop shove-it and a kickflip, spinning and flipping the board at the same time popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-varial-heelflip",
+      "name": "Nollie Varial Heelflip",
+      "description": "A combination of a frontside pop shove-it and a heelflip, spinning the board 180 degrees frontside while flipping popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-hardflip",
+      "name": "Nollie Hardflip",
+      "description": "A frontside pop shove-it combined with a kickflip, making the board flip vertically between your legs popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-inward-heelflip",
+      "name": "Nollie Inward Heelflip",
+      "description": "A backside pop shove-it combined with a heelflip, making the board flip vertically in an inward motion popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-360-flip",
+      "name": "Nollie 360 Flip",
+      "description": "A 360 backside shove-it combined with a kickflip, scooping the tail in the pocket and flipping the board popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-laser-flip",
+      "name": "Nollie Laser Flip",
+      "description": "A 360 frontside shove-it combined with a heelflip, scooping the board frontside while flipping it popped off the nose of the board while rolling forward.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-double-kickflip",
+      "name": "Nollie Double Kickflip",
+      "description": "Flick the board with extra force to make it flip twice (720 degrees) before catching it popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-triple-kickflip",
+      "name": "Nollie Triple Kickflip",
+      "description": "Flick the board extremely hard to make it flip three times in the air before landing popped off the nose of the board while rolling forward.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-double-heelflip",
+      "name": "Nollie Double Heelflip",
+      "description": "Flick the board off the heel side with extra power to complete two full rotations popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-triple-heelflip",
+      "name": "Nollie Triple Heelflip",
+      "description": "Flick the board off the heel side to complete three full rotations in the air popped off the nose of the board while rolling forward.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-360-pop-shove-it",
+      "name": "Nollie 360 Pop Shove-It",
+      "description": "Scoop the tail hard backside to spin the board 360 degrees under your feet without flipping popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-frontside-360-pop-shove-it",
+      "name": "Nollie Frontside 360 Pop Shove-It",
+      "description": "Scoop the tail hard frontside to spin the board 360 degrees in front of you popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-impossible",
+      "name": "Nollie Impossible",
+      "description": "Wrap the board around your back foot in a vertical loop, scooping it with the back ankle popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-frontside-180-ollie",
+      "name": "Nollie Frontside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees frontside, keeping the board with you popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-backside-180-ollie",
+      "name": "Nollie Backside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees backside, turning blind to your landing popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-half-cab",
+      "name": "Nollie Half Cab",
+      "description": "A fakie backside 180 ollie, turning your back to your direction of travel and landing forward popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-full-cab",
+      "name": "Nollie Full Cab",
+      "description": "A fakie backside 360 ollie, completing a full rotation in the air and landing backwards popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-frontside-half-cab",
+      "name": "Nollie Frontside Half Cab",
+      "description": "A fakie frontside 180 ollie, rotating your front body first to land forward popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-frontside-full-cab",
+      "name": "Nollie Frontside Full Cab",
+      "description": "A fakie frontside 360 ollie, completing a full frontside rotation in the air popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-body-varial",
+      "name": "Nollie Body Varial",
+      "description": "Jump off the board and spin your body 180 degrees, landing back on the board pointing the same way popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-hippie-jump",
+      "name": "Nollie Hippie Jump",
+      "description": "Jump straight up off the board, letting it roll under an obstacle before landing back on it popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-tic-tac",
+      "name": "Nollie Tic Tac",
+      "description": "Rhythmically swing the nose back and forth, using the momentum to generate forward speed popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-power-slide",
+      "name": "Nollie Power Slide",
+      "description": "Slide your wheels 90 degrees sideways to slow down or stop quickly while rolling popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-manual",
+      "name": "Nollie Manual",
+      "description": "Balance on the back two wheels while rolling, keeping the nose of the board in the air popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "nollie-nose-manual",
+      "name": "Nollie Nose Manual",
+      "description": "Balance on the front two wheels while rolling, keeping the tail of the board in the air popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "nollie-caveman",
+      "name": "Nollie Caveman",
+      "description": "Hold the board, jump into the air, and place it beneath your feet to land on the ground popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-running-caveman",
+      "name": "Nollie Running Caveman",
+      "description": "Run forward with the board in hand, jump, and plant it under your feet to roll away with speed popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-no-comply",
+      "name": "Nollie No Comply",
+      "description": "Plant your front foot on the ground while popping the tail, allowing the board to rise before jumping on popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-boneless",
+      "name": "Nollie Boneless",
+      "description": "Plant your front foot on the ground, grab the middle of the board to lift it, jump, and land back on popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-boneless-180",
+      "name": "Nollie Boneless 180",
+      "description": "Perform a boneless but spin your body and the board 180 degrees before landing popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-casper",
+      "name": "Nollie Casper",
+      "description": "Flip the board upside down with your front foot underneath and back foot on the tail, balancing on the tail popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["balance", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-casper-shove",
+      "name": "Nollie Casper Shove",
+      "description": "From a Casper stance, flip and spin the board 180 degrees back to a regular landing popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-hospital-flip",
+      "name": "Nollie Hospital Flip",
+      "description": "Flick the board halfway into a kickflip, then wrap your front foot to guide it back upright popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-primo",
+      "name": "Nollie Primo",
+      "description": "Stand sideways on the rail of your board, keeping your balance directly on the wheels popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "nollie-primo-flip",
+      "name": "Nollie Primo Flip",
+      "description": "Flip the board from a primo position back onto its wheels and land on it popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "nollie-revert",
+      "name": "Nollie Revert",
+      "description": "Slide the wheels 180 degrees along the ground immediately after landing a trick to switch stances popped off the nose of the board while rolling forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-ollie-north",
+      "name": "Nollie Ollie North",
+      "description": "An ollie where you kick your front foot forward off the nose of the board in mid-air popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-ollie-south",
+      "name": "Nollie Ollie South",
+      "description": "An ollie where you kick your back foot straight down and back off the tail in mid-air popped off the nose of the board while rolling forward.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "nollie-bigspin",
+      "name": "Nollie Bigspin",
+      "description": "A 360 shove-it combined with a 180 body varial in the same direction popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-frontside-bigspin",
+      "name": "Nollie Frontside Bigspin",
+      "description": "A frontside 360 shove-it combined with a 180 frontside body varial popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-heelflip-bigspin",
+      "name": "Nollie Heelflip Bigspin",
+      "description": "A varial heelflip combined with a 180 body rotation in the same direction popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "nollie-caballerial",
+      "name": "Nollie Caballerial",
+      "description": "A fakie backside 360 ollie, named after steve caballero, performed without grabbing popped off the nose of the board while rolling forward.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "vert"]
+    },
+    {
+      "id": "fakie-kickflip",
+      "name": "Fakie Kickflip",
+      "description": "Flick off the toe side of the nose to flip the board 360 degrees along its length performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-heelflip",
+      "name": "Fakie Heelflip",
+      "description": "Flick off the heel side of the nose to make the board spin 360 degrees the opposite way of a kickflip performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-pop-shove-it",
+      "name": "Fakie Pop Shove-It",
+      "description": "Pop and scoop the tail backside to spin the board 180 degrees under your feet without body rotation performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-frontside-pop-shove-it",
+      "name": "Fakie Frontside Pop Shove-It",
+      "description": "Pop and scoop the tail frontside to spin the board 180 degrees in front of your body performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-varial-kickflip",
+      "name": "Fakie Varial Kickflip",
+      "description": "A combination of a backside pop shove-it and a kickflip, spinning and flipping the board at the same time performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-varial-heelflip",
+      "name": "Fakie Varial Heelflip",
+      "description": "A combination of a frontside pop shove-it and a heelflip, spinning the board 180 degrees frontside while flipping performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-hardflip",
+      "name": "Fakie Hardflip",
+      "description": "A frontside pop shove-it combined with a kickflip, making the board flip vertically between your legs performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-inward-heelflip",
+      "name": "Fakie Inward Heelflip",
+      "description": "A backside pop shove-it combined with a heelflip, making the board flip vertically in an inward motion performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-360-flip",
+      "name": "Fakie 360 Flip",
+      "description": "A 360 backside shove-it combined with a kickflip, scooping the tail in the pocket and flipping the board performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-laser-flip",
+      "name": "Fakie Laser Flip",
+      "description": "A 360 frontside shove-it combined with a heelflip, scooping the board frontside while flipping it performed while rolling backwards in your normal stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-double-kickflip",
+      "name": "Fakie Double Kickflip",
+      "description": "Flick the board with extra force to make it flip twice (720 degrees) before catching it performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-triple-kickflip",
+      "name": "Fakie Triple Kickflip",
+      "description": "Flick the board extremely hard to make it flip three times in the air before landing performed while rolling backwards in your normal stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-double-heelflip",
+      "name": "Fakie Double Heelflip",
+      "description": "Flick the board off the heel side with extra power to complete two full rotations performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-triple-heelflip",
+      "name": "Fakie Triple Heelflip",
+      "description": "Flick the board off the heel side to complete three full rotations in the air performed while rolling backwards in your normal stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-360-pop-shove-it",
+      "name": "Fakie 360 Pop Shove-It",
+      "description": "Scoop the tail hard backside to spin the board 360 degrees under your feet without flipping performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-frontside-360-pop-shove-it",
+      "name": "Fakie Frontside 360 Pop Shove-It",
+      "description": "Scoop the tail hard frontside to spin the board 360 degrees in front of you performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-impossible",
+      "name": "Fakie Impossible",
+      "description": "Wrap the board around your back foot in a vertical loop, scooping it with the back ankle performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-frontside-180-ollie",
+      "name": "Fakie Frontside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees frontside, keeping the board with you performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-backside-180-ollie",
+      "name": "Fakie Backside 180 Ollie",
+      "description": "Pop an ollie while rotating your body 180 degrees backside, turning blind to your landing performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-half-cab",
+      "name": "Fakie Half Cab",
+      "description": "A fakie backside 180 ollie, turning your back to your direction of travel and landing forward performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-full-cab",
+      "name": "Fakie Full Cab",
+      "description": "A fakie backside 360 ollie, completing a full rotation in the air and landing backwards performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-frontside-half-cab",
+      "name": "Fakie Frontside Half Cab",
+      "description": "A fakie frontside 180 ollie, rotating your front body first to land forward performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-frontside-full-cab",
+      "name": "Fakie Frontside Full Cab",
+      "description": "A fakie frontside 360 ollie, completing a full frontside rotation in the air performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-body-varial",
+      "name": "Fakie Body Varial",
+      "description": "Jump off the board and spin your body 180 degrees, landing back on the board pointing the same way performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-hippie-jump",
+      "name": "Fakie Hippie Jump",
+      "description": "Jump straight up off the board, letting it roll under an obstacle before landing back on it performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-tic-tac",
+      "name": "Fakie Tic Tac",
+      "description": "Rhythmically swing the nose back and forth, using the momentum to generate forward speed performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-power-slide",
+      "name": "Fakie Power Slide",
+      "description": "Slide your wheels 90 degrees sideways to slow down or stop quickly while rolling performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-manual",
+      "name": "Fakie Manual",
+      "description": "Balance on the back two wheels while rolling, keeping the nose of the board in the air performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "fakie-nose-manual",
+      "name": "Fakie Nose Manual",
+      "description": "Balance on the front two wheels while rolling, keeping the tail of the board in the air performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["manual", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "box"]
+    },
+    {
+      "id": "fakie-caveman",
+      "name": "Fakie Caveman",
+      "description": "Hold the board, jump into the air, and place it beneath your feet to land on the ground performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-running-caveman",
+      "name": "Fakie Running Caveman",
+      "description": "Run forward with the board in hand, jump, and plant it under your feet to roll away with speed performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-no-comply",
+      "name": "Fakie No Comply",
+      "description": "Plant your front foot on the ground while popping the tail, allowing the board to rise before jumping on performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-boneless",
+      "name": "Fakie Boneless",
+      "description": "Plant your front foot on the ground, grab the middle of the board to lift it, jump, and land back on performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-boneless-180",
+      "name": "Fakie Boneless 180",
+      "description": "Perform a boneless but spin your body and the board 180 degrees before landing performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["plant", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-casper",
+      "name": "Fakie Casper",
+      "description": "Flip the board upside down with your front foot underneath and back foot on the tail, balancing on the tail performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-casper-shove",
+      "name": "Fakie Casper Shove",
+      "description": "From a Casper stance, flip and spin the board 180 degrees back to a regular landing performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["shove", "plant"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-hospital-flip",
+      "name": "Fakie Hospital Flip",
+      "description": "Flick the board halfway into a kickflip, then wrap your front foot to guide it back upright performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-primo",
+      "name": "Fakie Primo",
+      "description": "Stand sideways on the rail of your board, keeping your balance directly on the wheels performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "fakie-primo-flip",
+      "name": "Fakie Primo Flip",
+      "description": "Flip the board from a primo position back onto its wheels and land on it performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "balance"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "fakie-revert",
+      "name": "Fakie Revert",
+      "description": "Slide the wheels 180 degrees along the ground immediately after landing a trick to switch stances performed while rolling backwards in your normal stance.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-ollie-north",
+      "name": "Fakie Ollie North",
+      "description": "An ollie where you kick your front foot forward off the nose of the board in mid-air performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-ollie-south",
+      "name": "Fakie Ollie South",
+      "description": "An ollie where you kick your back foot straight down and back off the tail in mid-air performed while rolling backwards in your normal stance.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["ollie", "plant"],
+      "compatibleSpotTypes": [
+        "skatepark",
+        "flatground",
+        "stair",
+        "plaza",
+        "diy"
+      ]
+    },
+    {
+      "id": "fakie-bigspin",
+      "name": "Fakie Bigspin",
+      "description": "A 360 shove-it combined with a 180 body varial in the same direction performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-frontside-bigspin",
+      "name": "Fakie Frontside Bigspin",
+      "description": "A frontside 360 shove-it combined with a 180 frontside body varial performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-heelflip-bigspin",
+      "name": "Fakie Heelflip Bigspin",
+      "description": "A varial heelflip combined with a 180 body rotation in the same direction performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy"]
+    },
+    {
+      "id": "fakie-caballerial",
+      "name": "Fakie Caballerial",
+      "description": "A fakie backside 360 ollie, named after steve caballero, performed without grabbing performed while rolling backwards in your normal stance.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["ollie", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza", "diy", "vert"]
+    },
+    {
+      "id": "frontside-50-50-grind",
+      "name": "Frontside 50-50 Grind",
+      "description": "Approach the obstacle on your frontside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-5-0-grind",
+      "name": "Frontside 5-0 Grind",
+      "description": "Approach the obstacle on your frontside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-nosegrind",
+      "name": "Frontside Nosegrind",
+      "description": "Approach the obstacle on your frontside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-boardslide",
+      "name": "Frontside Boardslide",
+      "description": "Approach the obstacle on your frontside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-lipslide",
+      "name": "Frontside Lipslide",
+      "description": "Approach the obstacle on your frontside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-noseslide",
+      "name": "Frontside Noseslide",
+      "description": "Approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-tailslide",
+      "name": "Frontside Tailslide",
+      "description": "Approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-crooked-grind",
+      "name": "Frontside Crooked Grind",
+      "description": "Approach the obstacle on your frontside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-smith-grind",
+      "name": "Frontside Smith Grind",
+      "description": "Approach the obstacle on your frontside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-feeble-grind",
+      "name": "Frontside Feeble Grind",
+      "description": "Approach the obstacle on your frontside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-salad-grind",
+      "name": "Frontside Salad Grind",
+      "description": "Approach the obstacle on your frontside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-suski-grind",
+      "name": "Frontside Suski Grind",
+      "description": "Approach the obstacle on your frontside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-bennett-grind",
+      "name": "Frontside Bennett Grind",
+      "description": "Approach the obstacle on your frontside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-sasky-grind",
+      "name": "Frontside Sasky Grind",
+      "description": "Approach the obstacle on your frontside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "frontside-bluntslide",
+      "name": "Frontside Bluntslide",
+      "description": "Approach the obstacle on your frontside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-nosebluntslide",
+      "name": "Frontside Nosebluntslide",
+      "description": "Approach the obstacle on your frontside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-50-50-grind",
+      "name": "Backside 50-50 Grind",
+      "description": "Approach the obstacle on your backside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-5-0-grind",
+      "name": "Backside 5-0 Grind",
+      "description": "Approach the obstacle on your backside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-nosegrind",
+      "name": "Backside Nosegrind",
+      "description": "Approach the obstacle on your backside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-boardslide",
+      "name": "Backside Boardslide",
+      "description": "Approach the obstacle on your backside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-lipslide",
+      "name": "Backside Lipslide",
+      "description": "Approach the obstacle on your backside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-noseslide",
+      "name": "Backside Noseslide",
+      "description": "Approach the obstacle on your backside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-tailslide",
+      "name": "Backside Tailslide",
+      "description": "Approach the obstacle on your backside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-crooked-grind",
+      "name": "Backside Crooked Grind",
+      "description": "Approach the obstacle on your backside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-smith-grind",
+      "name": "Backside Smith Grind",
+      "description": "Approach the obstacle on your backside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-feeble-grind",
+      "name": "Backside Feeble Grind",
+      "description": "Approach the obstacle on your backside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-salad-grind",
+      "name": "Backside Salad Grind",
+      "description": "Approach the obstacle on your backside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-suski-grind",
+      "name": "Backside Suski Grind",
+      "description": "Approach the obstacle on your backside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-bennett-grind",
+      "name": "Backside Bennett Grind",
+      "description": "Approach the obstacle on your backside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-sasky-grind",
+      "name": "Backside Sasky Grind",
+      "description": "Approach the obstacle on your backside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "backside-bluntslide",
+      "name": "Backside Bluntslide",
+      "description": "Approach the obstacle on your backside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "backside-nosebluntslide",
+      "name": "Backside Nosebluntslide",
+      "description": "Approach the obstacle on your backside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-50-50-grind",
+      "name": "Nollie Frontside 50-50 Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-50-50-grind",
+      "name": "Switch Frontside 50-50 Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-50-50-grind",
+      "name": "Fakie Frontside 50-50 Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-5-0-grind",
+      "name": "Nollie Frontside 5-0 Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-5-0-grind",
+      "name": "Switch Frontside 5-0 Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-5-0-grind",
+      "name": "Fakie Frontside 5-0 Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-nosegrind",
+      "name": "Nollie Frontside Nosegrind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-nosegrind",
+      "name": "Switch Frontside Nosegrind",
+      "description": "Riding switch, approach the obstacle on your frontside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-nosegrind",
+      "name": "Fakie Frontside Nosegrind",
+      "description": "Riding backwards, approach the obstacle on your frontside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-boardslide",
+      "name": "Nollie Frontside Boardslide",
+      "description": "Popping from the nose, approach the obstacle on your frontside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-boardslide",
+      "name": "Switch Frontside Boardslide",
+      "description": "Riding switch, approach the obstacle on your frontside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-boardslide",
+      "name": "Fakie Frontside Boardslide",
+      "description": "Riding backwards, approach the obstacle on your frontside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-lipslide",
+      "name": "Nollie Frontside Lipslide",
+      "description": "Popping from the nose, approach the obstacle on your frontside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-lipslide",
+      "name": "Switch Frontside Lipslide",
+      "description": "Riding switch, approach the obstacle on your frontside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-lipslide",
+      "name": "Fakie Frontside Lipslide",
+      "description": "Riding backwards, approach the obstacle on your frontside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-noseslide",
+      "name": "Nollie Frontside Noseslide",
+      "description": "Popping from the nose, approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-noseslide",
+      "name": "Switch Frontside Noseslide",
+      "description": "Riding switch, approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-noseslide",
+      "name": "Fakie Frontside Noseslide",
+      "description": "Riding backwards, approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-tailslide",
+      "name": "Nollie Frontside Tailslide",
+      "description": "Popping from the nose, approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-tailslide",
+      "name": "Switch Frontside Tailslide",
+      "description": "Riding switch, approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-tailslide",
+      "name": "Fakie Frontside Tailslide",
+      "description": "Riding backwards, approach the obstacle on your frontside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-crooked-grind",
+      "name": "Nollie Frontside Crooked Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-crooked-grind",
+      "name": "Switch Frontside Crooked Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-crooked-grind",
+      "name": "Fakie Frontside Crooked Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-smith-grind",
+      "name": "Nollie Frontside Smith Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-smith-grind",
+      "name": "Switch Frontside Smith Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-smith-grind",
+      "name": "Fakie Frontside Smith Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-feeble-grind",
+      "name": "Nollie Frontside Feeble Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-feeble-grind",
+      "name": "Switch Frontside Feeble Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-feeble-grind",
+      "name": "Fakie Frontside Feeble Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-salad-grind",
+      "name": "Nollie Frontside Salad Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-salad-grind",
+      "name": "Switch Frontside Salad Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-salad-grind",
+      "name": "Fakie Frontside Salad Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-suski-grind",
+      "name": "Nollie Frontside Suski Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-suski-grind",
+      "name": "Switch Frontside Suski Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-suski-grind",
+      "name": "Fakie Frontside Suski Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-bennett-grind",
+      "name": "Nollie Frontside Bennett Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-bennett-grind",
+      "name": "Switch Frontside Bennett Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-bennett-grind",
+      "name": "Fakie Frontside Bennett Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-sasky-grind",
+      "name": "Nollie Frontside Sasky Grind",
+      "description": "Popping from the nose, approach the obstacle on your frontside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-frontside-sasky-grind",
+      "name": "Switch Frontside Sasky Grind",
+      "description": "Riding switch, approach the obstacle on your frontside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-frontside-sasky-grind",
+      "name": "Fakie Frontside Sasky Grind",
+      "description": "Riding backwards, approach the obstacle on your frontside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-frontside-bluntslide",
+      "name": "Nollie Frontside Bluntslide",
+      "description": "Popping from the nose, approach the obstacle on your frontside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-bluntslide",
+      "name": "Switch Frontside Bluntslide",
+      "description": "Riding switch, approach the obstacle on your frontside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-bluntslide",
+      "name": "Fakie Frontside Bluntslide",
+      "description": "Riding backwards, approach the obstacle on your frontside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-frontside-nosebluntslide",
+      "name": "Nollie Frontside Nosebluntslide",
+      "description": "Popping from the nose, approach the obstacle on your frontside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-frontside-nosebluntslide",
+      "name": "Switch Frontside Nosebluntslide",
+      "description": "Riding switch, approach the obstacle on your frontside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-frontside-nosebluntslide",
+      "name": "Fakie Frontside Nosebluntslide",
+      "description": "Riding backwards, approach the obstacle on your frontside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-50-50-grind",
+      "name": "Nollie Backside 50-50 Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-50-50-grind",
+      "name": "Switch Backside 50-50 Grind",
+      "description": "Riding switch, approach the obstacle on your backside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-50-50-grind",
+      "name": "Fakie Backside 50-50 Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and grind along the edge of the ledge using both your front and back trucks.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-5-0-grind",
+      "name": "Nollie Backside 5-0 Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-5-0-grind",
+      "name": "Switch Backside 5-0 Grind",
+      "description": "Riding switch, approach the obstacle on your backside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-5-0-grind",
+      "name": "Fakie Backside 5-0 Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and grind along the edge of the ledge on only your back truck, keeping your nose in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-nosegrind",
+      "name": "Nollie Backside Nosegrind",
+      "description": "Popping from the nose, approach the obstacle on your backside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-nosegrind",
+      "name": "Switch Backside Nosegrind",
+      "description": "Riding switch, approach the obstacle on your backside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-nosegrind",
+      "name": "Fakie Backside Nosegrind",
+      "description": "Riding backwards, approach the obstacle on your backside and grind along the ledge on only your front truck, keeping your tail elevated.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "balance"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-boardslide",
+      "name": "Nollie Backside Boardslide",
+      "description": "Popping from the nose, approach the obstacle on your backside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-boardslide",
+      "name": "Switch Backside Boardslide",
+      "description": "Riding switch, approach the obstacle on your backside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-boardslide",
+      "name": "Fakie Backside Boardslide",
+      "description": "Riding backwards, approach the obstacle on your backside and slide along the ledge or rail with the middle of your deck perpendicular to the obstacle.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-lipslide",
+      "name": "Nollie Backside Lipslide",
+      "description": "Popping from the nose, approach the obstacle on your backside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-lipslide",
+      "name": "Switch Backside Lipslide",
+      "description": "Riding switch, approach the obstacle on your backside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-lipslide",
+      "name": "Fakie Backside Lipslide",
+      "description": "Riding backwards, approach the obstacle on your backside and pop your back wheels over the rail or ledge to slide with the middle of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-noseslide",
+      "name": "Nollie Backside Noseslide",
+      "description": "Popping from the nose, approach the obstacle on your backside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-noseslide",
+      "name": "Switch Backside Noseslide",
+      "description": "Riding switch, approach the obstacle on your backside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-noseslide",
+      "name": "Fakie Backside Noseslide",
+      "description": "Riding backwards, approach the obstacle on your backside and slide along the ledge or rail using only the underside of the nose of your deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-tailslide",
+      "name": "Nollie Backside Tailslide",
+      "description": "Popping from the nose, approach the obstacle on your backside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-tailslide",
+      "name": "Switch Backside Tailslide",
+      "description": "Riding switch, approach the obstacle on your backside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-tailslide",
+      "name": "Fakie Backside Tailslide",
+      "description": "Riding backwards, approach the obstacle on your backside and slide along the ledge or rail using only the underside of the tail of your deck.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-crooked-grind",
+      "name": "Nollie Backside Crooked Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-crooked-grind",
+      "name": "Switch Backside Crooked Grind",
+      "description": "Riding switch, approach the obstacle on your backside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-crooked-grind",
+      "name": "Fakie Backside Crooked Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and grind on your front truck while keeping the nose sliding along the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-smith-grind",
+      "name": "Nollie Backside Smith Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-smith-grind",
+      "name": "Switch Backside Smith Grind",
+      "description": "Riding switch, approach the obstacle on your backside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-smith-grind",
+      "name": "Fakie Backside Smith Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and grind on your back truck while your front truck is dipped down below the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-feeble-grind",
+      "name": "Nollie Backside Feeble Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-feeble-grind",
+      "name": "Switch Backside Feeble Grind",
+      "description": "Riding switch, approach the obstacle on your backside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-feeble-grind",
+      "name": "Fakie Backside Feeble Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and grind on your back truck while your front truck is angled over the top of the ledge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-salad-grind",
+      "name": "Nollie Backside Salad Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-salad-grind",
+      "name": "Switch Backside Salad Grind",
+      "description": "Riding switch, approach the obstacle on your backside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-salad-grind",
+      "name": "Fakie Backside Salad Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and a crooked grind on your back truck, with your front truck hanging over the ledge edge.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-suski-grind",
+      "name": "Nollie Backside Suski Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-suski-grind",
+      "name": "Switch Backside Suski Grind",
+      "description": "Riding switch, approach the obstacle on your backside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-suski-grind",
+      "name": "Fakie Backside Suski Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and a smith grind but with the front truck pulled up high instead of dipped down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-bennett-grind",
+      "name": "Nollie Backside Bennett Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-bennett-grind",
+      "name": "Switch Backside Bennett Grind",
+      "description": "Riding switch, approach the obstacle on your backside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-bennett-grind",
+      "name": "Fakie Backside Bennett Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and pop a frontside 180 and land in a switch backside smith grind on the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-sasky-grind",
+      "name": "Nollie Backside Sasky Grind",
+      "description": "Popping from the nose, approach the obstacle on your backside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "switch-backside-sasky-grind",
+      "name": "Switch Backside Sasky Grind",
+      "description": "Riding switch, approach the obstacle on your backside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "fakie-backside-sasky-grind",
+      "name": "Fakie Backside Sasky Grind",
+      "description": "Riding backwards, approach the obstacle on your backside and similar to a salad grind, but with your truck hanging off to the side of the ledge.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "box", "plaza", "ledges"]
+    },
+    {
+      "id": "nollie-backside-bluntslide",
+      "name": "Nollie Backside Bluntslide",
+      "description": "Popping from the nose, approach the obstacle on your backside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-bluntslide",
+      "name": "Switch Backside Bluntslide",
+      "description": "Riding switch, approach the obstacle on your backside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-bluntslide",
+      "name": "Fakie Backside Bluntslide",
+      "description": "Riding backwards, approach the obstacle on your backside and slide along the obstacle on your wheels and tail/nose, with the trucks cleared over.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "nollie-backside-nosebluntslide",
+      "name": "Nollie Backside Nosebluntslide",
+      "description": "Popping from the nose, approach the obstacle on your backside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "switch-backside-nosebluntslide",
+      "name": "Switch Backside Nosebluntslide",
+      "description": "Riding switch, approach the obstacle on your backside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "fakie-backside-nosebluntslide",
+      "name": "Fakie Backside Nosebluntslide",
+      "description": "Riding backwards, approach the obstacle on your backside and slide on your nose and front wheels over the obstacle, with the board vertical.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["skatepark", "plaza", "ledges", "rails", "box"]
+    },
+    {
+      "id": "frontside-tail-stall",
+      "name": "Frontside Tail Stall",
+      "description": "Execute a transition maneuver spinning or approaching frontside and ride up the ramp and stall with your tail resting on the coping, balancing before dropping in.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-nose-stall",
+      "name": "Frontside Nose Stall",
+      "description": "Execute a transition maneuver spinning or approaching frontside and ride up the ramp forward or fakey and stall on your nose at the coping.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-axle-stall",
+      "name": "Frontside Axle Stall",
+      "description": "Execute a transition maneuver spinning or approaching frontside and ride up the ramp and lock both your trucks parallel on the coping in a standing position.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-feeble-stall",
+      "name": "Frontside Feeble Stall",
+      "description": "Execute a transition maneuver spinning or approaching frontside and stall on the coping with your back truck locked and your front truck hanging over the deck.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-smith-stall",
+      "name": "Frontside Smith Stall",
+      "description": "Execute a transition maneuver spinning or approaching frontside and stall on the coping with your back truck locked and your front truck dipped into the ramp.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-rock-to-fakey",
+      "name": "Frontside Rock to Fakey",
+      "description": "Execute a transition maneuver spinning or approaching frontside and place your front truck over the coping to rock on the deck, then lift it to clear on the way back down.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-rock-and-roll",
+      "name": "Frontside Rock and Roll",
+      "description": "Execute a transition maneuver spinning or approaching frontside and rock your front trucks over the coping, then lift them and rotate 180 degrees to ride down forward.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-disaster",
+      "name": "Frontside Disaster",
+      "description": "Execute a transition maneuver spinning or approaching frontside and pop an ollie up the ramp and rotate 180 degrees, landing with the center of your board on the coping.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-pivot",
+      "name": "Frontside Pivot",
+      "description": "Execute a transition maneuver spinning or approaching frontside and kickturn on the coping, pausing momentarily with your back truck locked on the edge before dropping in.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-slash-grind",
+      "name": "Frontside Slash Grind",
+      "description": "Execute a transition maneuver spinning or approaching frontside and carve high up the transition and briefly grind your back wheels on the coping without stalling.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-blunt-stall",
+      "name": "Frontside Blunt Stall",
+      "description": "Execute a transition maneuver spinning or approaching frontside and ride all the way up over the coping and stall with your back wheels resting on the deck and tail on the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "frontside-melon-grab",
+      "name": "Frontside Melon Grab",
+      "description": "Execute a transition maneuver spinning or approaching frontside and grab the heelside rail between your feet with your front hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-indy-grab",
+      "name": "Frontside Indy Grab",
+      "description": "Execute a transition maneuver spinning or approaching frontside and grab the toeside rail between your feet with your back hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-mute-grab",
+      "name": "Frontside Mute Grab",
+      "description": "Execute a transition maneuver spinning or approaching frontside and grab the toeside rail with your front hand while in the air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-stalefish-grab",
+      "name": "Frontside Stalefish Grab",
+      "description": "Execute a transition maneuver spinning or approaching frontside and grab the heelside rail behind your back foot with your back hand in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-nosegrab",
+      "name": "Frontside Nosegrab",
+      "description": "Execute a transition maneuver spinning or approaching frontside and grab the nose of the skateboard with your front hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-tailgrab",
+      "name": "Frontside Tailgrab",
+      "description": "Execute a transition maneuver spinning or approaching frontside and grab the tail of the skateboard with your back hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-method-air",
+      "name": "Frontside Method Air",
+      "description": "Execute a transition maneuver spinning or approaching frontside and perform a melon grab and tweak your knees forward and board up toward your back for extra style.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "frontside-sad-plant",
+      "name": "Frontside Sad Plant",
+      "description": "Execute a transition maneuver spinning or approaching frontside and a vert handplant where you grab the front rail and fully extend your body upside down.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["plant", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "frontside-720-spin",
+      "name": "Frontside 720 Spin",
+      "description": "Execute a transition maneuver spinning or approaching frontside and complete two full spins (720 degrees) in mid-air on a vert ramp before landing.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["spin", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "backside-tail-stall",
+      "name": "Backside Tail Stall",
+      "description": "Execute a transition maneuver spinning or approaching backside and ride up the ramp and stall with your tail resting on the coping, balancing before dropping in.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-nose-stall",
+      "name": "Backside Nose Stall",
+      "description": "Execute a transition maneuver spinning or approaching backside and ride up the ramp forward or fakey and stall on your nose at the coping.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-axle-stall",
+      "name": "Backside Axle Stall",
+      "description": "Execute a transition maneuver spinning or approaching backside and ride up the ramp and lock both your trucks parallel on the coping in a standing position.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-feeble-stall",
+      "name": "Backside Feeble Stall",
+      "description": "Execute a transition maneuver spinning or approaching backside and stall on the coping with your back truck locked and your front truck hanging over the deck.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-smith-stall",
+      "name": "Backside Smith Stall",
+      "description": "Execute a transition maneuver spinning or approaching backside and stall on the coping with your back truck locked and your front truck dipped into the ramp.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-rock-to-fakey",
+      "name": "Backside Rock to Fakey",
+      "description": "Execute a transition maneuver spinning or approaching backside and place your front truck over the coping to rock on the deck, then lift it to clear on the way back down.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-rock-and-roll",
+      "name": "Backside Rock and Roll",
+      "description": "Execute a transition maneuver spinning or approaching backside and rock your front trucks over the coping, then lift them and rotate 180 degrees to ride down forward.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-disaster",
+      "name": "Backside Disaster",
+      "description": "Execute a transition maneuver spinning or approaching backside and pop an ollie up the ramp and rotate 180 degrees, landing with the center of your board on the coping.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-pivot",
+      "name": "Backside Pivot",
+      "description": "Execute a transition maneuver spinning or approaching backside and kickturn on the coping, pausing momentarily with your back truck locked on the edge before dropping in.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-slash-grind",
+      "name": "Backside Slash Grind",
+      "description": "Execute a transition maneuver spinning or approaching backside and carve high up the transition and briefly grind your back wheels on the coping without stalling.",
+      "level": 1,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-blunt-stall",
+      "name": "Backside Blunt Stall",
+      "description": "Execute a transition maneuver spinning or approaching backside and ride all the way up over the coping and stall with your back wheels resting on the deck and tail on the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "backside-melon-grab",
+      "name": "Backside Melon Grab",
+      "description": "Execute a transition maneuver spinning or approaching backside and grab the heelside rail between your feet with your front hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-indy-grab",
+      "name": "Backside Indy Grab",
+      "description": "Execute a transition maneuver spinning or approaching backside and grab the toeside rail between your feet with your back hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-mute-grab",
+      "name": "Backside Mute Grab",
+      "description": "Execute a transition maneuver spinning or approaching backside and grab the toeside rail with your front hand while in the air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-stalefish-grab",
+      "name": "Backside Stalefish Grab",
+      "description": "Execute a transition maneuver spinning or approaching backside and grab the heelside rail behind your back foot with your back hand in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-nosegrab",
+      "name": "Backside Nosegrab",
+      "description": "Execute a transition maneuver spinning or approaching backside and grab the nose of the skateboard with your front hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-tailgrab",
+      "name": "Backside Tailgrab",
+      "description": "Execute a transition maneuver spinning or approaching backside and grab the tail of the skateboard with your back hand while in mid-air.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-method-air",
+      "name": "Backside Method Air",
+      "description": "Execute a transition maneuver spinning or approaching backside and perform a melon grab and tweak your knees forward and board up toward your back for extra style.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "backside-sad-plant",
+      "name": "Backside Sad Plant",
+      "description": "Execute a transition maneuver spinning or approaching backside and a vert handplant where you grab the front rail and fully extend your body upside down.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["plant", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "backside-720-spin",
+      "name": "Backside 720 Spin",
+      "description": "Execute a transition maneuver spinning or approaching backside and complete two full spins (720 degrees) in mid-air on a vert ramp before landing.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["spin", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "switch-frontside-tail-stall",
+      "name": "Switch Frontside Tail Stall",
+      "description": "Riding switch stance, execute a frontside transition move where you ride up the ramp and stall with your tail resting on the coping, balancing before dropping in.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-tail-stall",
+      "name": "Fakie Frontside Tail Stall",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you ride up the ramp and stall with your tail resting on the coping, balancing before dropping in.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-nose-stall",
+      "name": "Switch Frontside Nose Stall",
+      "description": "Riding switch stance, execute a frontside transition move where you ride up the ramp forward or fakey and stall on your nose at the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-nose-stall",
+      "name": "Fakie Frontside Nose Stall",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you ride up the ramp forward or fakey and stall on your nose at the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-axle-stall",
+      "name": "Switch Frontside Axle Stall",
+      "description": "Riding switch stance, execute a frontside transition move where you ride up the ramp and lock both your trucks parallel on the coping in a standing position.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-axle-stall",
+      "name": "Fakie Frontside Axle Stall",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you ride up the ramp and lock both your trucks parallel on the coping in a standing position.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-feeble-stall",
+      "name": "Switch Frontside Feeble Stall",
+      "description": "Riding switch stance, execute a frontside transition move where you stall on the coping with your back truck locked and your front truck hanging over the deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-feeble-stall",
+      "name": "Fakie Frontside Feeble Stall",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you stall on the coping with your back truck locked and your front truck hanging over the deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-smith-stall",
+      "name": "Switch Frontside Smith Stall",
+      "description": "Riding switch stance, execute a frontside transition move where you stall on the coping with your back truck locked and your front truck dipped into the ramp.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-smith-stall",
+      "name": "Fakie Frontside Smith Stall",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you stall on the coping with your back truck locked and your front truck dipped into the ramp.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-rock-to-fakey",
+      "name": "Switch Frontside Rock to Fakey",
+      "description": "Riding switch stance, execute a frontside transition move where you place your front truck over the coping to rock on the deck, then lift it to clear on the way back down.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-rock-to-fakey",
+      "name": "Fakie Frontside Rock to Fakey",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you place your front truck over the coping to rock on the deck, then lift it to clear on the way back down.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-rock-and-roll",
+      "name": "Switch Frontside Rock and Roll",
+      "description": "Riding switch stance, execute a frontside transition move where you rock your front trucks over the coping, then lift them and rotate 180 degrees to ride down forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-rock-and-roll",
+      "name": "Fakie Frontside Rock and Roll",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you rock your front trucks over the coping, then lift them and rotate 180 degrees to ride down forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-disaster",
+      "name": "Switch Frontside Disaster",
+      "description": "Riding switch stance, execute a frontside transition move where you pop an ollie up the ramp and rotate 180 degrees, landing with the center of your board on the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-disaster",
+      "name": "Fakie Frontside Disaster",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you pop an ollie up the ramp and rotate 180 degrees, landing with the center of your board on the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-pivot",
+      "name": "Switch Frontside Pivot",
+      "description": "Riding switch stance, execute a frontside transition move where you kickturn on the coping, pausing momentarily with your back truck locked on the edge before dropping in.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-pivot",
+      "name": "Fakie Frontside Pivot",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you kickturn on the coping, pausing momentarily with your back truck locked on the edge before dropping in.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-slash-grind",
+      "name": "Switch Frontside Slash Grind",
+      "description": "Riding switch stance, execute a frontside transition move where you carve high up the transition and briefly grind your back wheels on the coping without stalling.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-slash-grind",
+      "name": "Fakie Frontside Slash Grind",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you carve high up the transition and briefly grind your back wheels on the coping without stalling.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-blunt-stall",
+      "name": "Switch Frontside Blunt Stall",
+      "description": "Riding switch stance, execute a frontside transition move where you ride all the way up over the coping and stall with your back wheels resting on the deck and tail on the coping.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-frontside-blunt-stall",
+      "name": "Fakie Frontside Blunt Stall",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you ride all the way up over the coping and stall with your back wheels resting on the deck and tail on the coping.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-frontside-melon-grab",
+      "name": "Switch Frontside Melon Grab",
+      "description": "Riding switch stance, execute a frontside transition move where you grab the heelside rail between your feet with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-melon-grab",
+      "name": "Fakie Frontside Melon Grab",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you grab the heelside rail between your feet with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-indy-grab",
+      "name": "Switch Frontside Indy Grab",
+      "description": "Riding switch stance, execute a frontside transition move where you grab the toeside rail between your feet with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-indy-grab",
+      "name": "Fakie Frontside Indy Grab",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you grab the toeside rail between your feet with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-mute-grab",
+      "name": "Switch Frontside Mute Grab",
+      "description": "Riding switch stance, execute a frontside transition move where you grab the toeside rail with your front hand while in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-mute-grab",
+      "name": "Fakie Frontside Mute Grab",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you grab the toeside rail with your front hand while in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-stalefish-grab",
+      "name": "Switch Frontside Stalefish Grab",
+      "description": "Riding switch stance, execute a frontside transition move where you grab the heelside rail behind your back foot with your back hand in mid-air.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-stalefish-grab",
+      "name": "Fakie Frontside Stalefish Grab",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you grab the heelside rail behind your back foot with your back hand in mid-air.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-nosegrab",
+      "name": "Switch Frontside Nosegrab",
+      "description": "Riding switch stance, execute a frontside transition move where you grab the nose of the skateboard with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-nosegrab",
+      "name": "Fakie Frontside Nosegrab",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you grab the nose of the skateboard with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-tailgrab",
+      "name": "Switch Frontside Tailgrab",
+      "description": "Riding switch stance, execute a frontside transition move where you grab the tail of the skateboard with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-tailgrab",
+      "name": "Fakie Frontside Tailgrab",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you grab the tail of the skateboard with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-method-air",
+      "name": "Switch Frontside Method Air",
+      "description": "Riding switch stance, execute a frontside transition move where you perform a melon grab and tweak your knees forward and board up toward your back for extra style.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-frontside-method-air",
+      "name": "Fakie Frontside Method Air",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you perform a melon grab and tweak your knees forward and board up toward your back for extra style.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-frontside-sad-plant",
+      "name": "Switch Frontside Sad Plant",
+      "description": "Riding switch stance, execute a frontside transition move where you a vert handplant where you grab the front rail and fully extend your body upside down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["plant", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "fakie-frontside-sad-plant",
+      "name": "Fakie Frontside Sad Plant",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you a vert handplant where you grab the front rail and fully extend your body upside down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["plant", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "switch-frontside-720-spin",
+      "name": "Switch Frontside 720 Spin",
+      "description": "Riding switch stance, execute a frontside transition move where you complete two full spins (720 degrees) in mid-air on a vert ramp before landing.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["spin", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "fakie-frontside-720-spin",
+      "name": "Fakie Frontside 720 Spin",
+      "description": "Riding backwards (fakie), execute a frontside transition move where you complete two full spins (720 degrees) in mid-air on a vert ramp before landing.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["spin", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "switch-backside-tail-stall",
+      "name": "Switch Backside Tail Stall",
+      "description": "Riding switch stance, execute a backside transition move where you ride up the ramp and stall with your tail resting on the coping, balancing before dropping in.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-tail-stall",
+      "name": "Fakie Backside Tail Stall",
+      "description": "Riding backwards (fakie), execute a backside transition move where you ride up the ramp and stall with your tail resting on the coping, balancing before dropping in.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-nose-stall",
+      "name": "Switch Backside Nose Stall",
+      "description": "Riding switch stance, execute a backside transition move where you ride up the ramp forward or fakey and stall on your nose at the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-nose-stall",
+      "name": "Fakie Backside Nose Stall",
+      "description": "Riding backwards (fakie), execute a backside transition move where you ride up the ramp forward or fakey and stall on your nose at the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-axle-stall",
+      "name": "Switch Backside Axle Stall",
+      "description": "Riding switch stance, execute a backside transition move where you ride up the ramp and lock both your trucks parallel on the coping in a standing position.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-axle-stall",
+      "name": "Fakie Backside Axle Stall",
+      "description": "Riding backwards (fakie), execute a backside transition move where you ride up the ramp and lock both your trucks parallel on the coping in a standing position.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-feeble-stall",
+      "name": "Switch Backside Feeble Stall",
+      "description": "Riding switch stance, execute a backside transition move where you stall on the coping with your back truck locked and your front truck hanging over the deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-feeble-stall",
+      "name": "Fakie Backside Feeble Stall",
+      "description": "Riding backwards (fakie), execute a backside transition move where you stall on the coping with your back truck locked and your front truck hanging over the deck.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-smith-stall",
+      "name": "Switch Backside Smith Stall",
+      "description": "Riding switch stance, execute a backside transition move where you stall on the coping with your back truck locked and your front truck dipped into the ramp.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-smith-stall",
+      "name": "Fakie Backside Smith Stall",
+      "description": "Riding backwards (fakie), execute a backside transition move where you stall on the coping with your back truck locked and your front truck dipped into the ramp.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-rock-to-fakey",
+      "name": "Switch Backside Rock to Fakey",
+      "description": "Riding switch stance, execute a backside transition move where you place your front truck over the coping to rock on the deck, then lift it to clear on the way back down.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-rock-to-fakey",
+      "name": "Fakie Backside Rock to Fakey",
+      "description": "Riding backwards (fakie), execute a backside transition move where you place your front truck over the coping to rock on the deck, then lift it to clear on the way back down.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-rock-and-roll",
+      "name": "Switch Backside Rock and Roll",
+      "description": "Riding switch stance, execute a backside transition move where you rock your front trucks over the coping, then lift them and rotate 180 degrees to ride down forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-rock-and-roll",
+      "name": "Fakie Backside Rock and Roll",
+      "description": "Riding backwards (fakie), execute a backside transition move where you rock your front trucks over the coping, then lift them and rotate 180 degrees to ride down forward.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-disaster",
+      "name": "Switch Backside Disaster",
+      "description": "Riding switch stance, execute a backside transition move where you pop an ollie up the ramp and rotate 180 degrees, landing with the center of your board on the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-disaster",
+      "name": "Fakie Backside Disaster",
+      "description": "Riding backwards (fakie), execute a backside transition move where you pop an ollie up the ramp and rotate 180 degrees, landing with the center of your board on the coping.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-pivot",
+      "name": "Switch Backside Pivot",
+      "description": "Riding switch stance, execute a backside transition move where you kickturn on the coping, pausing momentarily with your back truck locked on the edge before dropping in.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-pivot",
+      "name": "Fakie Backside Pivot",
+      "description": "Riding backwards (fakie), execute a backside transition move where you kickturn on the coping, pausing momentarily with your back truck locked on the edge before dropping in.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance", "spin"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-slash-grind",
+      "name": "Switch Backside Slash Grind",
+      "description": "Riding switch stance, execute a backside transition move where you carve high up the transition and briefly grind your back wheels on the coping without stalling.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-slash-grind",
+      "name": "Fakie Backside Slash Grind",
+      "description": "Riding backwards (fakie), execute a backside transition move where you carve high up the transition and briefly grind your back wheels on the coping without stalling.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-blunt-stall",
+      "name": "Switch Backside Blunt Stall",
+      "description": "Riding switch stance, execute a backside transition move where you ride all the way up over the coping and stall with your back wheels resting on the deck and tail on the coping.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "fakie-backside-blunt-stall",
+      "name": "Fakie Backside Blunt Stall",
+      "description": "Riding backwards (fakie), execute a backside transition move where you ride all the way up over the coping and stall with your back wheels resting on the deck and tail on the coping.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["stall", "balance"],
+      "compatibleSpotTypes": ["skatepark", "ramp", "bowl", "mini-ramp"]
+    },
+    {
+      "id": "switch-backside-melon-grab",
+      "name": "Switch Backside Melon Grab",
+      "description": "Riding switch stance, execute a backside transition move where you grab the heelside rail between your feet with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-melon-grab",
+      "name": "Fakie Backside Melon Grab",
+      "description": "Riding backwards (fakie), execute a backside transition move where you grab the heelside rail between your feet with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-indy-grab",
+      "name": "Switch Backside Indy Grab",
+      "description": "Riding switch stance, execute a backside transition move where you grab the toeside rail between your feet with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-indy-grab",
+      "name": "Fakie Backside Indy Grab",
+      "description": "Riding backwards (fakie), execute a backside transition move where you grab the toeside rail between your feet with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-mute-grab",
+      "name": "Switch Backside Mute Grab",
+      "description": "Riding switch stance, execute a backside transition move where you grab the toeside rail with your front hand while in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-mute-grab",
+      "name": "Fakie Backside Mute Grab",
+      "description": "Riding backwards (fakie), execute a backside transition move where you grab the toeside rail with your front hand while in the air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-stalefish-grab",
+      "name": "Switch Backside Stalefish Grab",
+      "description": "Riding switch stance, execute a backside transition move where you grab the heelside rail behind your back foot with your back hand in mid-air.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-stalefish-grab",
+      "name": "Fakie Backside Stalefish Grab",
+      "description": "Riding backwards (fakie), execute a backside transition move where you grab the heelside rail behind your back foot with your back hand in mid-air.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-nosegrab",
+      "name": "Switch Backside Nosegrab",
+      "description": "Riding switch stance, execute a backside transition move where you grab the nose of the skateboard with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-nosegrab",
+      "name": "Fakie Backside Nosegrab",
+      "description": "Riding backwards (fakie), execute a backside transition move where you grab the nose of the skateboard with your front hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-tailgrab",
+      "name": "Switch Backside Tailgrab",
+      "description": "Riding switch stance, execute a backside transition move where you grab the tail of the skateboard with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-tailgrab",
+      "name": "Fakie Backside Tailgrab",
+      "description": "Riding backwards (fakie), execute a backside transition move where you grab the tail of the skateboard with your back hand while in mid-air.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-method-air",
+      "name": "Switch Backside Method Air",
+      "description": "Riding switch stance, execute a backside transition move where you perform a melon grab and tweak your knees forward and board up toward your back for extra style.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "fakie-backside-method-air",
+      "name": "Fakie Backside Method Air",
+      "description": "Riding backwards (fakie), execute a backside transition move where you perform a melon grab and tweak your knees forward and board up toward your back for extra style.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grab", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "vert", "flybox", "bowl", "ramp"]
+    },
+    {
+      "id": "switch-backside-sad-plant",
+      "name": "Switch Backside Sad Plant",
+      "description": "Riding switch stance, execute a backside transition move where you a vert handplant where you grab the front rail and fully extend your body upside down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["plant", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "fakie-backside-sad-plant",
+      "name": "Fakie Backside Sad Plant",
+      "description": "Riding backwards (fakie), execute a backside transition move where you a vert handplant where you grab the front rail and fully extend your body upside down.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["plant", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "switch-backside-720-spin",
+      "name": "Switch Backside 720 Spin",
+      "description": "Riding switch stance, execute a backside transition move where you complete two full spins (720 degrees) in mid-air on a vert ramp before landing.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["spin", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "fakie-backside-720-spin",
+      "name": "Fakie Backside 720 Spin",
+      "description": "Riding backwards (fakie), execute a backside transition move where you complete two full spins (720 degrees) in mid-air on a vert ramp before landing.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["spin", "aerial"],
+      "compatibleSpotTypes": ["skatepark", "bowl", "vert"]
+    },
+    {
+      "id": "hardflip-late-flip",
+      "name": "Hardflip Late Flip",
+      "description": "Perform a hardflip and, at the apex of the height, deliver a quick late flick with your front foot.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "switch-hardflip-late-flip",
+      "name": "Switch Hardflip Late Flip",
+      "description": "Perform a hardflip late flip while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "sigma-flip",
+      "name": "Sigma Flip",
+      "description": "A half varial flip combined with a late feather flip, making the board spin in an unbelievable shape.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "switch-sigma-flip",
+      "name": "Switch Sigma Flip",
+      "description": "Perform a sigma flip while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "360-triple-flip",
+      "name": "360 Triple Flip",
+      "description": "Perform a 360 flip but flip the board three times in the air instead of once.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "switch-360-triple-flip",
+      "name": "Switch 360 Triple Flip",
+      "description": "Perform a 360 triple flip while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "merlin-twist",
+      "name": "Merlin Twist",
+      "description": "A switch front foot impossible combined with a frontside 180 body rotation, landing cleanly.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "switch-merlin-twist",
+      "name": "Switch Merlin Twist",
+      "description": "Perform a merlin twist while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "spin"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "impossible-late-flip",
+      "name": "Impossible Late Flip",
+      "description": "Scoop a vertical impossible with your back foot and then flick it with a late kickflip mid-air.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "switch-impossible-late-flip",
+      "name": "Switch Impossible Late Flip",
+      "description": "Perform a impossible late flip while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "double-dolphin-flip",
+      "name": "Double Dolphin Flip",
+      "description": "A forward-flipping kickflip rotation where the board does a double flip vertically.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "switch-double-dolphin-flip",
+      "name": "Switch Double Dolphin Flip",
+      "description": "Perform a double dolphin flip while riding in your unnatural switch stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip"],
+      "compatibleSpotTypes": ["skatepark", "flatground", "plaza"]
+    },
+    {
+      "id": "dragon-flip",
+      "name": "Dragon Flip",
+      "description": "A highly technical variation of a hardflip combined with a 360 rotation of the board.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "switch-dragon-flip",
+      "name": "Switch Dragon Flip",
+      "description": "Perform a dragon flip while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "late-inward-heelflip",
+      "name": "Late Inward Heelflip",
+      "description": "Pop an ollie first, then quickly slice your foot in the pocket for an inward heelflip in mid-air.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "switch-late-inward-heelflip",
+      "name": "Switch Late Inward Heelflip",
+      "description": "Perform a late inward heelflip while riding in your unnatural switch stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "late-hardflip",
+      "name": "Late Hardflip",
+      "description": "Pop an ollie first, then use your feet to quickly flick a hardflip near the end of the jump.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "switch-late-hardflip",
+      "name": "Switch Late Hardflip",
+      "description": "Perform a late hardflip while riding in your unnatural switch stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "triple-tre-flip",
+      "name": "Triple Tre Flip",
+      "description": "A 360 flip where the board completes three full flips and one full 360 degree spin.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "switch-triple-tre-flip",
+      "name": "Switch Triple Tre Flip",
+      "description": "Perform a triple tre flip while riding in your unnatural switch stance.",
+      "level": 5,
+      "discipline": "skateboard",
+      "categories": ["flip", "shove"],
+      "compatibleSpotTypes": ["skatepark", "flatground"]
+    },
+    {
+      "id": "fs-50-50-to-fs-boardslide",
+      "name": "FS 50-50 to FS Boardslide",
+      "description": "Grind a frontside 50-50, then pop and shift into a frontside boardslide on the ledge.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "slide"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "bs-50-50-to-bs-boardslide",
+      "name": "BS 50-50 to BS Boardslide",
+      "description": "Grind a backside 50-50, then pop and shift into a backside boardslide.",
+      "level": 3,
+      "discipline": "skateboard",
+      "categories": ["grind", "slide"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "fs-50-50-fs-180-out",
+      "name": "FS 50-50 FS 180 Out",
+      "description": "Grind a frontside 50-50 and pop off the end of the ledge with a frontside 180 rotation.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "bs-50-50-bs-180-out",
+      "name": "BS 50-50 BS 180 Out",
+      "description": "Grind a backside 50-50 and pop off the end of the ledge with a backside 180 rotation.",
+      "level": 2,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "fs-nose-slide-fs-270-out",
+      "name": "FS Nose Slide FS 270 Out",
+      "description": "Slide on your nose frontside, then pop off rotating 270 degrees back into regular stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "bs-nose-slide-bs-270-out",
+      "name": "BS Nose Slide BS 270 Out",
+      "description": "Slide on your nose backside, then pop off rotating 270 degrees back into regular stance.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["slide", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "fs-crooked-grind-fs-180-out",
+      "name": "FS Crooked Grind FS 180 Out",
+      "description": "Grind on your front truck frontside, and pop off with a 180-degree frontside spin.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "bs-crooked-grind-bs-180-out",
+      "name": "BS Crooked Grind BS 180 Out",
+      "description": "Grind on your front truck backside, and pop off with a 180-degree backside spin.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "spin"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "fs-smith-grind-kickflip-out",
+      "name": "FS Smith Grind Kickflip Out",
+      "description": "Grind frontside smith and flick a quick kickflip off the ledge to finish the trick.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "flip"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    },
+    {
+      "id": "bs-smith-grind-kickflip-out",
+      "name": "BS Smith Grind Kickflip Out",
+      "description": "Grind backside smith and flick a quick kickflip off the ledge to finish.",
+      "level": 4,
+      "discipline": "skateboard",
+      "categories": ["grind", "flip"],
+      "compatibleSpotTypes": ["skatepark", "box", "ledges"]
+    }
+  ]
+}

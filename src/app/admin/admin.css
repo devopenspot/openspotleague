@@ -1,0 +1,581 @@
+/* Admin + curation — flat monochrome per DESIGN.md pages.admin.
+ * Shell is surface (== surface-bright), borders outline-variant, no wash.
+ * Never add bg-gradient-* / from-* / via-* / scrim / wire tokens in this scope. */
+.admin-route-scope {
+  --admin-control-radius: var(--radius-lg);
+  --admin-panel-radius: var(--radius-lg);
+  --admin-card-radius: var(--radius-card);
+  min-height: 100svh;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope #app-root {
+  min-height: 100svh;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope #app-header {
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-lowest);
+  padding-block: 0.75rem;
+}
+
+.admin-route-scope #app-header > div {
+  min-height: 3rem;
+}
+
+.admin-route-scope #app-header #brand-logo {
+  border-radius: var(--admin-control-radius);
+}
+
+.admin-route-scope #app-header #brand-logo img {
+  width: 3rem;
+  height: 3rem;
+  margin-block: -0.5rem;
+}
+
+.admin-route-scope #app-header #brand-logo + span,
+.admin-route-scope #app-header #brand-logo + span + span {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+.admin-route-scope #app-header a:not(#brand-logo) {
+  min-height: 2.75rem;
+  border-radius: var(--admin-control-radius);
+  padding: 0.625rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-route-scope #app-header a:not(#brand-logo):hover {
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope #app-root > div {
+  width: 100%;
+  max-width: 90rem;
+  align-items: flex-start;
+  gap: 2.5rem;
+  padding: 2.5rem 2.5rem 4rem;
+}
+
+.admin-route-scope #app-root > div > aside {
+  position: sticky;
+  top: 5.75rem;
+  display: block;
+  width: 14rem;
+  flex: 0 0 14rem;
+}
+
+.admin-route-scope #app-root > div > aside nav > span {
+  margin-bottom: 0.75rem;
+  padding-inline: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+.admin-route-scope #app-root > div > aside nav > div > span {
+  margin-bottom: 0.75rem;
+  padding-inline: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+}
+
+.admin-route-scope #app-root > div > aside nav ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-route-scope #app-root > div > aside nav ul > li + li {
+  margin-top: 0;
+}
+
+.admin-route-scope #app-root > div > aside nav a {
+  min-height: 2.75rem;
+  border-left-width: 1px;
+  border-radius: var(--admin-control-radius);
+  padding: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-route-scope #app-root > div > aside nav a:hover {
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope #app-root > div > aside nav a[aria-current="page"] {
+  border-color: var(--color-primary);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope #app-root > div > main {
+  min-width: 0;
+  width: 100%;
+  max-width: 76rem;
+}
+
+.admin-route-scope main > section {
+  width: 100%;
+}
+
+.admin-route-scope main > section > header {
+  border-color: var(--color-outline-variant);
+  gap: 1.5rem;
+}
+
+.admin-route-scope main > section > header > span,
+.admin-route-scope main > section > header > div > span {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+}
+
+.admin-route-scope main h1 {
+  max-width: 24ch;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope main > section > header p {
+  max-width: 70ch;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+
+.admin-route-scope main p {
+  color: var(--color-on-surface-variant);
+}
+
+.admin-route-scope #admin-quick-start,
+.admin-route-scope main dl,
+.admin-route-scope main form[class*="bg-surface-container-low"] {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+}
+
+.admin-route-scope main a.group {
+  border-radius: var(--admin-panel-radius);
+}
+
+.admin-route-scope main a.group > div {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+  box-shadow: none;
+}
+
+.admin-route-scope main a.group:hover > div {
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope main a.group:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+.admin-route-scope :is(input, select, textarea) {
+  min-height: 2.75rem;
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-control-radius);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.4;
+  box-shadow: none;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.admin-route-scope textarea {
+  min-height: 6rem;
+}
+
+.admin-route-scope :is(input, select, textarea)::placeholder {
+  color: var(--color-secondary);
+  opacity: 1;
+}
+
+.admin-route-scope :is(input, select, textarea):hover {
+  border-color: var(--color-outline);
+}
+
+.admin-route-scope :is(input, select, textarea):focus-visible {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.admin-route-scope :is(input, select, textarea):disabled {
+  cursor: not-allowed;
+  background: var(--color-surface-container);
+  opacity: 0.6;
+}
+
+.admin-route-scope input[type="checkbox"],
+.admin-route-scope input[type="radio"] {
+  min-height: 1.125rem;
+  width: 1.125rem;
+  accent-color: var(--color-primary);
+}
+
+.admin-route-scope input[type="file"] {
+  min-height: 2.75rem;
+  padding-block: 0.5rem;
+}
+
+.admin-route-scope label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+}
+
+.admin-route-scope fieldset {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope fieldset legend {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+}
+
+.admin-route-scope fieldset p,
+.admin-route-scope form p {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.admin-route-scope button,
+.admin-route-scope a.inline-flex {
+  min-height: 2.75rem;
+  border-radius: var(--admin-control-radius);
+  font-family: var(--font-sans);
+  transition: border-color 150ms ease, background-color 150ms ease,
+    color 150ms ease, opacity 150ms ease;
+}
+
+.admin-route-scope button:focus-visible,
+.admin-route-scope a.inline-flex:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.admin-route-scope button[type="submit"],
+.admin-route-scope a[href="/admin/spots/new"],
+.admin-route-scope a[href="/admin/events/new"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.admin-route-scope button[type="submit"]:hover,
+.admin-route-scope a[href="/admin/spots/new"]:hover,
+.admin-route-scope a[href="/admin/events/new"]:hover {
+  background: var(--color-surface-tint);
+  color: var(--color-on-primary);
+}
+
+.admin-route-scope button[type="submit"]:disabled,
+.admin-route-scope a[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-route-scope button[type="button"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-route-scope .bg-primary {
+  color: var(--color-on-primary);
+}
+
+.admin-route-scope .grid.gap-3 {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+  padding: 1rem;
+}
+
+.admin-route-scope div.overflow-x-auto {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+  box-shadow: none;
+}
+
+.admin-route-scope table {
+  min-width: 52rem;
+  border-collapse: collapse;
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope thead {
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope th {
+  padding: 0.875rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+}
+
+.admin-route-scope td {
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+.admin-route-scope tbody {
+  background: var(--color-surface-container-lowest);
+}
+
+.admin-route-scope tbody tr {
+  border-color: var(--color-outline-variant);
+}
+
+.admin-route-scope tbody tr:hover {
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope td > div > a,
+.admin-route-scope td > div > button {
+  min-height: 2.5rem;
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+.admin-route-scope td > div > a:hover,
+.admin-route-scope td > div > button:hover {
+  border-color: var(--color-outline);
+  background: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope td > div > button:last-child:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.admin-route-scope [role="status"] {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-low);
+}
+
+.admin-route-scope [role="alert"] {
+  border-radius: var(--admin-panel-radius);
+}
+
+.admin-route-scope [role="listbox"] {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+  box-shadow: none;
+}
+
+.admin-route-scope [role="option"] {
+  min-height: 2.75rem;
+  align-items: center;
+}
+
+.admin-route-scope [role="option"][aria-selected="true"] {
+  font-weight: 700;
+}
+
+.admin-route-scope main > section > section > div > div[class*="border"] {
+  border-width: 1px;
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+}
+
+.admin-route-scope main > section > section button:not([aria-label^="Delete"]):not(.bg-primary) {
+  border: 1px solid var(--color-outline);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.admin-route-scope main > section > section button:not([aria-label^="Delete"]):not(.bg-primary):hover {
+  background: var(--color-surface-container-highest);
+}
+
+.admin-route-scope main > section > section button[aria-label^="Delete"] {
+  border: 1px solid var(--color-error);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-error);
+}
+
+.admin-route-scope main > section > section button[aria-label^="Delete"]:hover {
+  background: var(--color-error-container);
+}
+
+.admin-route-scope [role="alertdialog"] {
+  width: min(28rem, calc(100vw - 2rem));
+}
+
+.admin-route-scope [role="alertdialog"] > div {
+  border-color: var(--color-outline-variant);
+  border-radius: var(--admin-panel-radius);
+  background: var(--color-surface-container-lowest);
+  box-shadow: none;
+}
+
+.admin-route-scope code {
+  color: var(--color-on-surface-variant);
+}
+
+@media (max-width: 767px) {
+  .admin-route-scope #app-header {
+    padding-inline: 1.25rem;
+  }
+
+  .admin-route-scope #app-header > div {
+    gap: 0.75rem;
+  }
+
+  .admin-route-scope #app-header #brand-logo img {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .admin-route-scope #app-header a:not(#brand-logo) {
+    padding-inline: 0.5rem;
+  }
+
+  .admin-route-scope #app-root > div {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1.25rem 3rem;
+  }
+
+  .admin-route-scope #app-root > div > aside {
+    position: static;
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .admin-route-scope #app-root > div > aside nav > span {
+    display: none;
+  }
+
+  .admin-route-scope #app-root > div > aside nav {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .admin-route-scope #app-root > div > aside nav > div > span {
+    display: none;
+  }
+
+  .admin-route-scope #app-root > div > aside nav > div {
+    min-width: 0;
+  }
+
+  .admin-route-scope #app-root > div > aside nav ul {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+
+  .admin-route-scope #app-root > div > aside nav ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-route-scope #app-root > div > aside nav li {
+    flex: 0 0 auto;
+  }
+
+  .admin-route-scope #app-root > div > aside nav a {
+    border-left: 0;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 0.875rem;
+    white-space: nowrap;
+  }
+
+  .admin-route-scope #app-root > div > aside nav a[aria-current="page"] {
+    border-bottom-color: var(--color-primary);
+  }
+
+  .admin-route-scope main h1 {
+    font-size: 2rem;
+  }
+
+  .admin-route-scope :is(input, select, textarea) {
+    font-size: 1rem;
+  }
+
+  .admin-route-scope main > section > header {
+    align-items: flex-start;
+  }
+
+  .admin-route-scope main > section > header > a,
+  .admin-route-scope main > section > header > div + a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-route-scope main form > div.flex.justify-end {
+    flex-direction: column-reverse;
+  }
+
+  .admin-route-scope main form > div.flex.justify-end > button,
+  .admin-route-scope main > section > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-route-scope table {
+    min-width: 46rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-route-scope :is(input, select, textarea, button, a) {
+    transition: none;
+  }
+}

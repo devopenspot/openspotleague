@@ -1,0 +1,622 @@
+{
+  "version": "scooter-2",
+  "discipline": "scooter",
+  "tricks": [
+    {
+      "id": "bunny-hop",
+      "name": "Bunny Hop",
+      "description": "Pull up the bars and jump the deck over the obstacle in one clean motion.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "stair"]
+    },
+    {
+      "id": "ollie",
+      "name": "Ollie",
+      "description": "Compress, hop, and pull the bars to lift both wheels and clear the obstacle.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "stair"]
+    },
+    {
+      "id": "kickout",
+      "name": "Kickout",
+      "description": "Kick the deck out to one side mid-air and snap it back before landing.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "bowl"]
+    },
+    {
+      "id": "x-up",
+      "name": "X-Up",
+      "description": "Rotate the bars across each other into the X position and pull them back on landing.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "bowl"]
+    },
+    {
+      "id": "barspin",
+      "name": "Barspin",
+      "description": "Spin the bars a full 360 and catch them cleanly before the landing.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "no-footer",
+      "name": "No Footer",
+      "description": "Release both feet off the deck mid-air and bring them back for the landing.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "one-footer",
+      "name": "One Footer",
+      "description": "Kick one foot off the deck mid-air and step back on without losing the line.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "manual",
+      "name": "Manual",
+      "description": "Balance on the rear wheel and ride the manual as long as possible without touching down.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "ledges"]
+    },
+    {
+      "id": "nose-manual",
+      "name": "Nose Manual",
+      "description": "Balance on the front wheel with the deck tilted up and ride it out clean.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "nose-pivot",
+      "name": "Nose Pivot",
+      "description": "Spin the back end around the front wheel in a tight, controlled pivot.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "180",
+      "name": "180",
+      "description": "Hop and rotate a half turn, landing square and rolling away forward.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "stair"]
+    },
+    {
+      "id": "fakie-180",
+      "name": "Fakie 180",
+      "description": "Spin 180 out of fakie and roll away forward in one smooth motion.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "footplant",
+      "name": "Footplant",
+      "description": "Plant one foot on the obstacle mid-hop and push off back onto the deck.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "bowl"]
+    },
+    {
+      "id": "bar-hop",
+      "name": "Bar Hop",
+      "description": "Hop the scooter over the bar or curb and land with both wheels square.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "50-50-grind",
+      "name": "50-50 Grind",
+      "description": "Hop onto the obstacle, lock both pegs, and ride the grind to the end.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges", "box"]
+    },
+    {
+      "id": "double-peg-grind",
+      "name": "Double Peg Grind",
+      "description": "Lock both pegs on the rail and slide the full length with the deck level.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges", "box"]
+    },
+    {
+      "id": "boardslide",
+      "name": "Boardslide",
+      "description": "Slide the deck flat across the obstacle with the pegs on either side of the edge.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    },
+    {
+      "id": "noseslide",
+      "name": "Noseslide",
+      "description": "Lock the front peg and slide the front of the deck down the full ledge.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["ledges", "box", "plaza"]
+    },
+    {
+      "id": "tailslide",
+      "name": "Tailslide",
+      "description": "Lock the back peg and slide the tail of the deck cleanly to the exit.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["ledges", "box", "plaza"]
+    },
+    {
+      "id": "feeble-grind",
+      "name": "Feeble Grind",
+      "description": "Lock the front peg with the deck angled over the far side of the rail.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    },
+    {
+      "id": "smith-grind",
+      "name": "Smith Grind",
+      "description": "Lock the back peg with the front peg tucked behind the far side of the obstacle.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    },
+    {
+      "id": "drop-in",
+      "name": "Drop In",
+      "description": "Stomp the front wheel over the coping and ride straight down the ramp with commitment.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "kickturn",
+      "name": "Kickturn",
+      "description": "Lift the front wheel and pivot on the back wheel to turn around in the transition.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "rock-to-fakie",
+      "name": "Rock to Fakie",
+      "description": "Roll up the wall, rock the deck over the coping, and roll back in fakie.",
+      "level": 1,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "tailwhip",
+      "name": "Tailwhip",
+      "description": "Kick the deck into a full 360 spin and stomp it back down under the feet.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "stair"]
+    },
+    {
+      "id": "360",
+      "name": "360",
+      "description": "Rotate a full 360 mid-air and land rolling in the same direction.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "stair"]
+    },
+    {
+      "id": "fakie-tailwhip",
+      "name": "Fakie Tailwhip",
+      "description": "Tailwhip while riding fakie and land the deck catch rolling forward.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "half-cab",
+      "name": "Half Cab",
+      "description": "Fakie 180 backside into your natural stance and keep rolling without stopping.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "180-tailwhip",
+      "name": "180 Tailwhip",
+      "description": "Rotate a half turn while whipping the deck and land the catch at 180.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "frontside-180",
+      "name": "Frontside 180",
+      "description": "Spin a half turn frontside and land looking over the shoulder.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark", "stair"]
+    },
+    {
+      "id": "backside-180",
+      "name": "Backside 180",
+      "description": "Spin a half turn backside and ride away with the rotation tucked.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "nollie",
+      "name": "Nollie",
+      "description": "Pop off the front wheel and lift the deck into the air with the bars pulled tight.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "5-0-grind",
+      "name": "Five-Oh Grind",
+      "description": "Lock the back peg on the edge and hold the front wheel up through the grind.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["ledges", "rails", "box"]
+    },
+    {
+      "id": "nosegrind",
+      "name": "Nosegrind",
+      "description": "Lock the front peg on the obstacle and lift the back wheel to hold the line.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["ledges", "box", "rails"]
+    },
+    {
+      "id": "crooked-grind",
+      "name": "Crooked Grind",
+      "description": "Lock the front peg and cross the deck over the obstacle at an angle for the full line.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["ledges", "box", "rails"]
+    },
+    {
+      "id": "lipslide",
+      "name": "Lipslide",
+      "description": "Approach backside and slide the tail-side edge of the deck across the obstacle.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    },
+    {
+      "id": "suski-grind",
+      "name": "Suski Grind",
+      "description": "Lock the front peg with the deck held over the rail and ride it clean to the exit.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    },
+    {
+      "id": "overcrook",
+      "name": "Overcrook",
+      "description": "Lock the front peg over the obstacle with the deck crossed through the rail line.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["ledges", "box", "rails"]
+    },
+    {
+      "id": "air-out",
+      "name": "Air Out",
+      "description": "Launch above the coping and carve back in without touching down.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "tabletop",
+      "name": "Tabletop",
+      "description": "Lay the deck flat and level in the air, then pull it back under the feet for the landing.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "tuck-no-hander",
+      "name": "Tuck No Hander",
+      "description": "Release both hands from the bars and tuck them tight until the landing.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "stalefish-grab",
+      "name": "Stalefish Grab",
+      "description": "Reach behind the back leg and grab the tail of the deck mid-air.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert"]
+    },
+    {
+      "id": "melon-grab",
+      "name": "Melon Grab",
+      "description": "Grab the front of the deck and hold the air controlled from launch to landing.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert"]
+    },
+    {
+      "id": "indy-grab",
+      "name": "Indy Grab",
+      "description": "Reach down and grab the middle of the deck between the feet while airborne.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "mute-grab",
+      "name": "Mute Grab",
+      "description": "Reach across the bars and grab the front edge of the deck mid-air.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert"]
+    },
+    {
+      "id": "japan-air",
+      "name": "Japan Air",
+      "description": "Grab the front of the deck and lift it high over the back in the japan position.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl"]
+    },
+    {
+      "id": "180-air",
+      "name": "180 Air",
+      "description": "Spin a half turn above the coping and land back in the ramp rolling.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "invert",
+      "name": "Invert",
+      "description": "Plant a hand on the coping and hold the deck inverted above the wall before dropping in.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl"]
+    },
+    {
+      "id": "disaster",
+      "name": "Disaster",
+      "description": "Hop into a double-peg stall on the coping and pivot back in without touching down.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "rock-n-roll",
+      "name": "Rock n Roll",
+      "description": "Rock over the coping and turn back in frontside instead of rolling to fakie.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "fakie-disaster",
+      "name": "Fakie Disaster",
+      "description": "Hit the coping in fakie, stall both pegs, and pivot back into the ramp.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "alley-oop",
+      "name": "Alley Oop",
+      "description": "Spin backside against your momentum above the coping and carve back in.",
+      "level": 2,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "double-tailwhip",
+      "name": "Double Tailwhip",
+      "description": "Whip the deck twice around before stomping the catch on the landing.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "360-tailwhip",
+      "name": "360 Tailwhip",
+      "description": "Rotate a full 360 while the deck completes a full whip in the same jump.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "barspin-tailwhip",
+      "name": "Barspin Tailwhip",
+      "description": "Spin the bars and whip the deck in the same jump, catching both before the landing.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "double-barspin",
+      "name": "Double Barspin",
+      "description": "Spin the bars twice around and catch them square at the top of the arc.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "540",
+      "name": "540",
+      "description": "Rotate one and a half turns off the launch and absorb the landing clean.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "skatepark", "bowl"]
+    },
+    {
+      "id": "720",
+      "name": "720",
+      "description": "Rotate two full spins above the lip and land clean in the ramp.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "skatepark", "bowl"]
+    },
+    {
+      "id": "full-cab",
+      "name": "Full Cab",
+      "description": "Fakie 360 backside and land rolling forward in your natural stance.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "360-barspin",
+      "name": "360 Barspin",
+      "description": "Spin a full 360 while barspinning and catch the bars mid-rotation.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "360-no-hander",
+      "name": "360 No Hander",
+      "description": "Complete a 360 rotation with both hands off the bars the entire time.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "truck-driver",
+      "name": "Truck Driver",
+      "description": "Spin the bars while rotating the body a full 360, catching both on the way down.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "frontside-360",
+      "name": "Frontside 360",
+      "description": "Rotate a full 360 frontside and roll away looking back over the shoulder.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "backside-360",
+      "name": "Backside 360",
+      "description": "Rotate a full 360 backside and land rolling with the rotation tucked.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["plaza", "diy", "skatepark"]
+    },
+    {
+      "id": "backflip",
+      "name": "Backflip",
+      "description": "Rotate fully backward with a controlled takeoff and a clean, stable landing.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "frontflip",
+      "name": "Frontflip",
+      "description": "Flip forward off the launch and land back on the transition in control.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "flair",
+      "name": "Flair",
+      "description": "Combine a backflip with a 180 rotation and stomp the landing facing forward.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "mc-twist",
+      "name": "McTwist",
+      "description": "Launch a 540 with a late-flip twist and stomp the landing on the transition.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "superman",
+      "name": "Superman",
+      "description": "Extend the body off the deck in a superman stretch and pull it back in before landing.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert", "skatepark"]
+    },
+    {
+      "id": "superman-seat-grab",
+      "name": "Superman Seat Grab",
+      "description": "Grab the seat in the superman position and hold the full extension through the air.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["bowl", "vert"]
+    },
+    {
+      "id": "can-can",
+      "name": "Can Can",
+      "description": "Swing one leg over the bars mid-air and bring it back before the landing.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "360-air",
+      "name": "360 Air",
+      "description": "Rotate a full 360 above the coping and land back in the ramp clean.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "540-air",
+      "name": "540 Air",
+      "description": "Rotate one and a half turns above the lip and stomp the landing on the transition.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl", "skatepark"]
+    },
+    {
+      "id": "alley-oop-360",
+      "name": "Alley Oop 360",
+      "description": "Spin a full 360 backside against the momentum and carve back in over the coping.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["vert", "bowl"]
+    },
+    {
+      "id": "icepick-grind",
+      "name": "Icepick Grind",
+      "description": "Lock one peg on the rail with the deck over the obstacle and ride the icepick to the end.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    },
+    {
+      "id": "primo-grind",
+      "name": "Primo Grind",
+      "description": "Flip the deck vertical and grind on its side down the full obstacle.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges", "box"]
+    },
+    {
+      "id": "50-50-barspin",
+      "name": "50-50 Barspin",
+      "description": "Lock the 50-50 and spin the bars mid-grind without breaking the slide.",
+      "level": 3,
+      "discipline": "scooter",
+      "compatibleSpotTypes": ["rails", "ledges"]
+    }
+  ]
+}

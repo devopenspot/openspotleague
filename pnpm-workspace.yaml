@@ -1,0 +1,6 @@
+verifyDepsBeforeRun: false
+minimumReleaseAge: 0
+allowBuilds:
+  esbuild: true
+  sharp: false
+  unrs-resolver: false

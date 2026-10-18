@@ -1,0 +1,524 @@
+{
+  "version": "roller",
+  "discipline": "roller",
+  "tricks": [
+    {
+      "id": "sole",
+      "name": "Sole Grind (Soul)",
+      "description": "A fundamental grind where the dominant skate rests flat on its outer soleplate while the other skate slides on its frame channel.",
+      "level": 1,
+      "discipline": "roller",
+      "categories": ["sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "acid",
+      "name": "Acid Grind",
+      "description": "A sole grind variation where the front foot turns outward in an acid stance while the back foot grinds on the soleplate.",
+      "level": 1,
+      "discipline": "roller",
+      "categories": ["sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "mizu",
+      "name": "Mizu Grind (Mizou)",
+      "description": "A classic grind where the front foot slides on the soleplate turned inward and the back foot slides on the frame channel.",
+      "level": 1,
+      "discipline": "roller",
+      "categories": ["sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "makio",
+      "name": "Makio Grind (W/ Grab)",
+      "description": "A stylish one-footed grind performed solely on the soleplate of one skate while grabbing or holding the free skate.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["sole", "grab"],
+      "compatibleSpotTypes": [
+        "rails",
+        "ledges",
+        "box",
+        "skatepark",
+        "plaza",
+        "bowl"
+      ]
+    },
+    {
+      "id": "frontside",
+      "name": "Frontside Grind",
+      "description": "The foundation of frame slides where both skates grind on their h-blocks facing forward toward the obstacle.",
+      "level": 1,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": [
+        "rails",
+        "ledges",
+        "box",
+        "skatepark",
+        "plaza",
+        "bowl"
+      ]
+    },
+    {
+      "id": "backside",
+      "name": "Backside Grind",
+      "description": "A frame slide where both skates grind on the h-blocks with the skater's back turned toward the obstacle.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "unity",
+      "name": "Front Unity",
+      "description": "A frame slide where the skater crosses their legs, placing the front foot behind the back foot on the h-block facing forward.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "back-unity",
+      "name": "Backside Unity",
+      "description": "A crossed-leg frame slide performed with the skater's back facing toward the ledge or rails.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "savannah",
+      "name": "Savannah",
+      "description": "An advanced Unity grind entered by spinning 180 degrees into the crossed-leg slide position.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["slide", "spin"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "royale",
+      "name": "Royale",
+      "description": "A groove slide where both skates angle heavily into the h-blocks, sliding on the frame sides.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "backslide",
+      "name": "Backslide",
+      "description": "A one-footed groove slide performed on the back foot h-block with deep knee bend, popular on freestyle frames.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "fastslide",
+      "name": "Front Fastslide",
+      "description": "A one-footed groove slide performed on the front foot h-block pushing forward along the obstacle.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "negative-sole",
+      "name": "Negative Sole Grind",
+      "description": "A sole grind variant using the inside negative plate of the skate rather than the outer soleplate.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["negative", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "negative-acid",
+      "name": "Negative Acid Grind",
+      "description": "An Acid grind variant executed using the inside negative grinding area of the boot.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["negative", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "negative-makio",
+      "name": "Negative Makio Grind",
+      "description": "A single-foot grind balancing on the inside negative plate of the skate boot.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["negative", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "top-sole",
+      "name": "Top Sole (Top Soul)",
+      "description": "A sole grind executed over the top of the rails or ledge, locking the boot on top of the surface coping.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "topside-acid",
+      "name": "Topside Acid (Top Acid)",
+      "description": "An Acid grind where the sole boot locks over the top edge of the rails or obstacle.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "sweatstance",
+      "name": "Sweatstance (Topside Mizu)",
+      "description": "A topside Mizu grind where the front sole foot locks over the top of the obstacle rails.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "fishbrain",
+      "name": "Fishbrain",
+      "description": "A single-foot topside grind balancing over the top of the ledge or rails on the soleplate while grabbing the free skate.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["topside", "sole", "grab"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "alley-oop-sole",
+      "name": "Alley-Oop Sole (AO Soul)",
+      "description": "A sole grind where the skater spins 180 degrees forward into the obstacle, grinding backward.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["alleyoop", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "kind-grind",
+      "name": "Kind Grind",
+      "description": "An Alley-Oop Topside Mizu grind, combining a forward 180 spin with a topside Mizu lock.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["alleyoop", "topside"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "true-spin-sole",
+      "name": "True Spin Sole (Soul)",
+      "description": "A sole grind entered by spinning 180 degrees blind turning back toward the obstacle.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["truespin", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "zero-spin-sole",
+      "name": "Zero Spin Sole (Soul)",
+      "description": "Approaching the obstacle rolling backward and locking directly into a backward grind without spinning.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "inspin-frontside",
+      "name": "In-Spin 270 Frontside",
+      "description": "Spinning 270 degrees with chest turning toward the rails into a frontside h-block grind.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["spin", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "outspin-frontside",
+      "name": "Out-Spin 270 Frontside",
+      "description": "Spinning 270 degrees with back turning toward the rails into a frontside h-block grind.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["spin", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "illusion-inspin",
+      "name": "Illusion In-Spin Grind",
+      "description": "A rotational entry where the head and shoulders turn opposite to the rotation direction.",
+      "level": 5,
+      "discipline": "roller",
+      "categories": ["spin"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "hurricane-topsole",
+      "name": "Hurricane Top Sole",
+      "description": "A full 360-degree in-spin rotation going forward directly into a topside sole grind position.",
+      "level": 5,
+      "discipline": "roller",
+      "categories": ["spin", "topside"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-frontside",
+      "name": "Switch Front Side",
+      "description": "Executing a Frontside h-block grind in switch stance with the non-dominant foot leading.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["switch", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "front-ufo",
+      "name": "Front UFO",
+      "description": "A groove grind where both feet are angled outward in a wide duck stance on the h-blocks facing forward.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "switch-front-ufo",
+      "name": "Switch Front UFO",
+      "description": "Executing a Front UFO groove grind in opposite non-dominant stance.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["switch", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "switch-sole",
+      "name": "Switch Sole (Soul)",
+      "description": "A Soul grind performed in switch stance with the opposite skate resting on the soleplate.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["switch", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "switch-acid",
+      "name": "Switch Acid",
+      "description": "An Acid grind performed in switch stance with opposite foot positioning.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["switch", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "switch-makio",
+      "name": "Switch Makio (W/ Grab)",
+      "description": "A one-footed Makio grind executed on the non-dominant soleplate while grabbing the free skate.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["switch", "sole", "grab"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "ao-unity",
+      "name": "AO (Alley Oop) Unity",
+      "description": "Spinning 180 degrees forward into a crossed-leg Unity frame slide.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["alleyoop", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-backside",
+      "name": "Switch Back Side",
+      "description": "A Backside h-block grind executed in switch stance with back facing the obstacle.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["switch", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "x-grind",
+      "name": "X Grind",
+      "description": "A grind where both skates form an X shape, with one foot on the soleplate and the other on the inner frame.",
+      "level": 2,
+      "discipline": "roller",
+      "categories": ["sole", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark", "plaza"]
+    },
+    {
+      "id": "topside-x-grind",
+      "name": "Topside X Grind",
+      "description": "An X Grind executed over the top edge of the ledge or rails coping.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["topside", "sole", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "backside-backslide",
+      "name": "Back Side Back Slide",
+      "description": "A Backslide performed facing away from the obstacle on the rear h-block.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-ao-soul",
+      "name": "Switch AO Soul",
+      "description": "An Alley-Oop Soul grind executed in non-dominant switch stance.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["switch", "alleyoop", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "ao-pornstar",
+      "name": "AO Pornstar",
+      "description": "An Alley-Oop entry into a pornstar stance grind with feet angled outwards.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["alleyoop", "star"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-ao-pornstar",
+      "name": "Switch AO Pornstar",
+      "description": "An Alley-Oop pornstar grind executed in switch stance.",
+      "level": 5,
+      "discipline": "roller",
+      "categories": ["switch", "alleyoop", "star"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-top-soul",
+      "name": "Switch Top Soul",
+      "description": "A Topside Soul grind executed in switch stance over the top coping.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["switch", "topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-top-acid",
+      "name": "Switch Top Acid",
+      "description": "A Topside Acid grind executed in switch stance over the obstacle.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["switch", "topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-fastslide",
+      "name": "Switch Front Fast Slide",
+      "description": "A Fastslide performed on the non-dominant front foot h-block.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["switch", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "270-back-farv",
+      "name": "270 Back Farv",
+      "description": "Spinning 270 degrees into a Backside Farvarnagen groove slide.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["spin", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "270-back-royale",
+      "name": "270 Back Royal",
+      "description": "Spinning 270 degrees into a Backside Royale groove slide.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["spin", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "ao-acid",
+      "name": "AO Acid",
+      "description": "An Alley-Oop rotation entering directly into an Acid grind stance.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["alleyoop", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "ao-x-grind",
+      "name": "AO X-Grind",
+      "description": "An Alley-Oop 180 spin entering directly into an X Grind position.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["alleyoop", "sole", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "misfit",
+      "name": "Misfit",
+      "description": "A variation combining a topside sole foot with a back foot acid stance across the ledge.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "ao-makio",
+      "name": "AO Makio",
+      "description": "An Alley-Oop 180 spin into a single-footed Makio sole grind while holding a grab.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["alleyoop", "sole", "grab"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "true-spin-makio",
+      "name": "True Spin Makio",
+      "description": "An true spin 180 into a single-footed Makio sole grind while holding a grab.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["truespin", "sole", "grab"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "front-torque",
+      "name": "Front Torque (Freestyle)",
+      "description": "A frontside torque groove slide leaning heavily on the back skate h-block.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["torque", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "back-torque",
+      "name": "Back Torque (Freestyle)",
+      "description": "A backside torque groove slide with back to the obstacle leaning into the frame notch.",
+      "level": 3,
+      "discipline": "roller",
+      "categories": ["torque", "slide"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "topside-pornstar",
+      "name": "Top Side Pornstar",
+      "description": "A Star Pornstar grind positioning locked over the top coping of a rails or ledge.",
+      "level": 4,
+      "discipline": "roller",
+      "categories": ["topside", "pornstar"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "switch-topside-pornstar",
+      "name": "Switch Top Side Pornstar",
+      "description": "A Topside Pornstar grind executed in switch stance.",
+      "level": 5,
+      "discipline": "roller",
+      "categories": ["switch", "topside", "pornstar"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    },
+    {
+      "id": "truespin-topside-soul",
+      "name": "True Spin Top Side Soul",
+      "description": "A blind 180 spin turning back toward the rails directly locking into a Topside Soul grind.",
+      "level": 5,
+      "discipline": "roller",
+      "categories": ["truespin", "topside", "sole"],
+      "compatibleSpotTypes": ["rails", "ledges", "box", "skatepark"]
+    }
+  ]
+}
