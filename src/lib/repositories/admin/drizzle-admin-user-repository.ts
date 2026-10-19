@@ -17,7 +17,7 @@ import {
   roles,
   userRoles,
 } from "@/db/schema"
-import { ROLE_SLUGS } from "@/lib/services/profile/authorization"
+import { ROLE_SLUGS } from "@/lib/auth/roles"
 import type {
   AdminRoleOption,
   AdminUserListOptions,

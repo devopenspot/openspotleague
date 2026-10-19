@@ -50,8 +50,8 @@ async function main() {
     creator,
     {
       mode: "training",
-      disciplineSlug: "bmx",
-      spotType: "bmx-dirt",
+      disciplineSlug: "skateboard",
+      spotType: "flatground",
       level: 1,
       expectedVersion: 0,
       idempotencyKey: crypto.randomUUID(),
