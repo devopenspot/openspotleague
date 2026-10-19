@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr"
 import { log } from "@/lib/utils/log"
 import { clientIp, isRateLimited, rateLimitedResponse, rateLimitKey } from "@/lib/api/rate-limit"
 import { securityHeaders, cspValue } from "@/lib/security/headers"
+import { getCachedJwks } from "@/lib/supabase/jwks"
 
 export function isTvEmbedPath(pathname: string): boolean {
   return pathname === "/tv" || pathname.startsWith("/tv/")
@@ -182,7 +183,9 @@ export async function proxy(request: NextRequest) {
   // Refresh the session if needed. getClaims validates the cookie JWT
   // locally (asymmetric signing) or via the auth server (symmetric) — no
   // network round trip to fetch the full user record on every request.
-  const { error } = await supabase.auth.getClaims()
+  // Cached JWKS avoids one /.well-known/jwks.json fetch (and gateway log line) per request.
+  const jwks = await getCachedJwks()
+  const { error } = await supabase.auth.getClaims(undefined, jwks ? { jwks } : undefined)
   if (error) {
     log.warn("proxy: supabase.auth.getClaims failed", {
       requestId,

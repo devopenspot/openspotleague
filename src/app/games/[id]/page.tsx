@@ -149,12 +149,16 @@ export async function generateMetadata({
 }
 
 export default async function GamePage({
+  params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ share?: string }>;
 }) {
-  const { share } = await searchParams;
-  const user = await getSessionUser();
-  return <GameBoard userId={user?.id ?? null} shareCode={share} />;
+  const [{ id }, { share }, user] = await Promise.all([
+    params,
+    searchParams,
+    getSessionUser(),
+  ]);
+  return <GameBoard gameId={id} userId={user?.id ?? null} shareCode={share} />;
 }

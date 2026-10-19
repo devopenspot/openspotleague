@@ -1031,7 +1031,10 @@ export function GameCreateForm({
                 weatherForecastIcon: forecastWeather.icon,
                 weatherForecastDescription:
                   forecastWeather.description ?? forecastWeather.icon,
-                weatherForecastTemp: forecastWeather.current,
+                weatherForecastTemp:
+                  typeof forecastWeather.current === "number"
+                    ? Math.round(forecastWeather.current)
+                    : null,
                 weatherConfirmed: weatherConfirmed === true,
                 weatherObservedIcon:
                   weatherConfirmed === false && weatherObservedIcon
@@ -1063,7 +1066,10 @@ export function GameCreateForm({
                 weatherForecastIcon: forecastWeather.icon,
                 weatherForecastDescription:
                   forecastWeather.description ?? forecastWeather.icon,
-                weatherForecastTemp: forecastWeather.current,
+                weatherForecastTemp:
+                  typeof forecastWeather.current === "number"
+                    ? Math.round(forecastWeather.current)
+                    : null,
                 weatherConfirmed: weatherConfirmed === true,
                 weatherObservedIcon:
                   weatherConfirmed === false && weatherObservedIcon

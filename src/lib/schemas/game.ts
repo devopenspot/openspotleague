@@ -334,7 +334,7 @@ const weatherFields = {
   weatherObservedIcon: weatherIconSchema.optional(),
   weatherConfirmed: z.boolean().optional(),
   weatherForecastDescription: z.string().max(200).optional(),
-  weatherForecastTemp: z.number().int().min(-100).max(100).optional(),
+  weatherForecastTemp: z.number().int().min(-100).max(100).nullable().optional(),
 }
 
 function validateWeather(

@@ -14,6 +14,7 @@ import {
 } from "@/lib/services/profile/authorization"
 import { ensurePreferenceProfile } from "@/lib/services/profile/preferences"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
+import { getCachedJwks } from "@/lib/supabase/jwks"
 
 function getAdminClient() {
   try {
@@ -84,7 +85,8 @@ export async function getServerUserFromCookies(): Promise<User | null> {
     // make a network round trip to fetch the full user record on every
     // request, unlike getUser(). The user_metadata we need for display
     // (name, initials, avatar) is embedded in the JWT payload.
-    const { data, error } = await supabase.auth.getClaims()
+    const jwks = await getCachedJwks()
+    const { data, error } = await supabase.auth.getClaims(undefined, jwks ? { jwks } : undefined)
     if (error || !data?.claims) return null
     const fromClaims = userFromClaims(data.claims as AuthClaims)
     if (!fromClaims) return null

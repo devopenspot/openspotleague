@@ -87,7 +87,7 @@ export function ChallengeGameBoard({
               {stages.length === 0 ? (
                 <EmptyStageRow />
               ) : (
-                stages
+                [...stages]
                   .reverse()
                   .map((view) => (
                     <ChallengeStageRow
