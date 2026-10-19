@@ -1592,7 +1592,7 @@ export function GameCreateForm({
                   </legend>
                   {optionsLoading ? (
                     <div
-                      className="mt-3 h-11 animate-pulse rounded-[16px] border border-outline-variant bg-surface-container"
+                      className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
                       aria-label="Loading spot types"
                     />
                   ) : activeOptionsError ? (
@@ -1917,7 +1917,7 @@ export function GameCreateForm({
                 </legend>
                 {optionsLoading ? (
                   <div
-                    className="mt-3 h-11 animate-pulse rounded-[16px] border border-outline-variant bg-surface-container"
+                    className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
                     aria-label="Loading spot types"
                   />
                 ) : activeOptionsError ? (

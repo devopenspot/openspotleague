@@ -36,9 +36,7 @@ const SpotStaticMap = dynamic(
   () => import("./SpotStaticMap").then((m) => m.SpotStaticMap),
   {
     ssr: false,
-    loading: () => (
-      <div className="absolute inset-0 bg-map-surface animate-pulse" />
-    ),
+    loading: () => <div className="absolute inset-0 bg-map-surface " />,
   },
 );
 

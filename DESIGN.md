@@ -254,8 +254,8 @@ components:
     rule: "Scrim pills live on photos only — never on flat surfaces (use badges there)."
   skeleton:
     note: "Loading mirrors of Hero + wire rail (HomeSkeleton). Pulse blocks only, no spinners; keep layout dimensions identical to the loaded component."
-    on-light: "animate-pulse rounded bg-surface-container-high (blocks) / bg-surface-container-lowest (inner cards)"
-    on-gradient-or-wire: "animate-pulse bg-white/10-25 (never surface tokens — invisible on dark)"
+    on-light: " rounded bg-surface-container-high (blocks) / bg-surface-container-lowest (inner cards)"
+    on-gradient-or-wire: " bg-white/10-25 (never surface tokens — invisible on dark)"
   empty-state:
     note: "Dashed-border centered block for zero results (search no-results). radius-lg border-dashed border-outline-variant bg-surface-container-low, secondary label copy."
   gate-alert:

@@ -20,7 +20,7 @@ interface EventCardProps {
 }
 
 const STATUS_DOT_STYLES: Record<SportEventStatus, string> = {
-  live: "bg-error animate-pulse-dot",
+  live: "bg-error -dot",
   upcoming: "bg-on-surface",
   completed: "bg-outline",
 };
@@ -150,7 +150,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-[8px] bg-surface/95 px-2 py-1 font-display text-xs font-bold tracking-widest text-error uppercase">
             <span
               aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-error animate-pulse-dot"
+              className="h-1.5 w-1.5 rounded-full bg-error -dot"
             />
             Live
           </div>

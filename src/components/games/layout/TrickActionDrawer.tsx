@@ -48,12 +48,19 @@ export function TrickActionDrawer({
   const trickName = current?.trickName ?? "Setting Up Your Line";
   const trickDescription = current?.trickDescription ?? null;
   const spotType = current?.spotType ?? game?.nextSpotType ?? "—";
-  const roundSeq = current?.sequence ?? (game?.stageLedger?.length ? game.stageLedger.length + 1 : 1);
+  const roundSeq =
+    current?.sequence ??
+    (game?.stageLedger?.length ? game.stageLedger.length + 1 : 1);
   const isChallengePending = current?.status === "challenge_open";
   const stateLabel = isWaitingForOthers
     ? `Waiting · ${pendingCount} rider${pendingCount === 1 ? "" : "s"}`
-    : resultAction?.label ?? (isChallengePending ? "Challenger — Set the line" : "Trick delivered");
-  const stateTone = isWaitingForOthers ? "pending" : resultAction ? "live" : "idle";
+    : (resultAction?.label ??
+      (isChallengePending ? "Challenger — Set the line" : "Trick delivered"));
+  const stateTone = isWaitingForOthers
+    ? "pending"
+    : resultAction
+      ? "live"
+      : "idle";
 
   return (
     <SideDrawer
@@ -73,7 +80,9 @@ export function TrickActionDrawer({
                 className={`h-1.5 w-1.5 rounded-full ${stateTone === "live" ? "bg-permission-granted shadow-[0_0_6px_rgba(22,163,74,0.7)]" : stateTone === "pending" ? "bg-permission-pending" : "bg-surface/40"}`}
                 aria-hidden
               />
-              Round {roundSeq} · {disciplineSlug ?? "—"} {effectiveLevel ? `· Level ${effectiveLevel}` : ""} {spotType !== "—" ? `· ${spotType}` : ""}
+              Round {roundSeq} · {disciplineSlug ?? "—"}{" "}
+              {effectiveLevel ? `· Level ${effectiveLevel}` : ""}{" "}
+              {spotType !== "—" ? `· ${spotType}` : ""}
             </p>
             <h2
               id={TRICK_DRAWER_TITLE_ID}
@@ -82,7 +91,10 @@ export function TrickActionDrawer({
               {trickName}
             </h2>
             <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-surface/10 px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-surface/80">
-              <span className={`h-1.5 w-1.5 rounded-full ${stateTone === "live" ? "bg-primary" : stateTone === "pending" ? "bg-permission-pending animate-pulse-dot" : "bg-surface/40"}`} aria-hidden />
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${stateTone === "live" ? "bg-primary" : stateTone === "pending" ? "bg-permission-pending -dot" : "bg-surface/40"}`}
+                aria-hidden
+              />
               {stateLabel}
             </p>
           </div>
@@ -120,8 +132,13 @@ export function TrickActionDrawer({
                 </div>
 
                 <div className="mt-3">
-                  <p id="trick-drawer-meta" className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
-                    {isChallengePending ? "Challenger — Set the line" : "Respond — Match it"}
+                  <p
+                    id="trick-drawer-meta"
+                    className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-secondary"
+                  >
+                    {isChallengePending
+                      ? "Challenger — Set the line"
+                      : "Respond — Match it"}
                   </p>
                   <h3 className="mt-1 font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-on-surface">
                     {trickName}
@@ -132,7 +149,8 @@ export function TrickActionDrawer({
                     </p>
                   ) : (
                     <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      New trick is live — check the description and drop when ready.
+                      New trick is live — check the description and drop when
+                      ready.
                     </p>
                   )}
                 </div>
@@ -152,13 +170,29 @@ export function TrickActionDrawer({
                   <button
                     type="button"
                     onClick={onNextTrick}
-                    disabled={busy || !canAdvanceToNextTrick || alternativeTricksRemaining === 0}
-                    aria-label={alternativeTricksRemaining > 0 ? `Get next trick, ${alternativeTricksRemaining} left` : "No more next tricks"}
-                    title={alternativeTricksRemaining > 0 ? `Next trick — ${alternativeTricksRemaining} left` : "No more next tricks this round"}
+                    disabled={
+                      busy ||
+                      !canAdvanceToNextTrick ||
+                      alternativeTricksRemaining === 0
+                    }
+                    aria-label={
+                      alternativeTricksRemaining > 0
+                        ? `Get next trick, ${alternativeTricksRemaining} left`
+                        : "No more next tricks"
+                    }
+                    title={
+                      alternativeTricksRemaining > 0
+                        ? `Next trick — ${alternativeTricksRemaining} left`
+                        : "No more next tricks this round"
+                    }
                     className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-primary bg-primary px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
                   >
                     <RotateCcw size={14} aria-hidden />
-                    {busy ? "Finding…" : alternativeTricksRemaining > 0 ? `Next · ${alternativeTricksRemaining}` : "No more"}
+                    {busy
+                      ? "Finding…"
+                      : alternativeTricksRemaining > 0
+                        ? `Next · ${alternativeTricksRemaining}`
+                        : "No more"}
                   </button>
                 </div>
               </div>
@@ -174,10 +208,16 @@ export function TrickActionDrawer({
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-permission-pending/15 text-permission-pending">
                     <Clock3 size={14} aria-hidden />
                   </span>
-                  <h3 id="trick-waiting-title" className="font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface">
+                  <h3
+                    id="trick-waiting-title"
+                    className="font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface"
+                  >
                     Waiting for other riders
                   </h3>
-                  <span className="ml-auto h-1.5 w-1.5 animate-pulse-dot rounded-full bg-permission-pending" aria-hidden />
+                  <span
+                    className="ml-auto h-1.5 w-1.5 -dot rounded-full bg-permission-pending"
+                    aria-hidden
+                  />
                 </div>
                 <p className="mt-2 text-[13px] leading-5 text-on-surface-variant">
                   {pendingCount > 0
@@ -203,12 +243,20 @@ export function TrickActionDrawer({
                 ) : null}
               </section>
             ) : resultAction ? (
-              <section aria-labelledby="trick-action-title" className="rounded-[14px] border border-outline-variant bg-surface-container-lowest p-3.5 sm:p-4">
+              <section
+                aria-labelledby="trick-action-title"
+                className="rounded-[14px] border border-outline-variant bg-surface-container-lowest p-3.5 sm:p-4"
+              >
                 <div className="flex items-center justify-between gap-2">
-                  <p id="trick-action-title" className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
+                  <p
+                    id="trick-action-title"
+                    className="font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-secondary"
+                  >
                     {resultAction.label}
                   </p>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-secondary">Choose one</span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-secondary">
+                    Choose one
+                  </span>
                 </div>
                 <div className="mt-2.5 grid grid-cols-2 gap-2">
                   <button
@@ -238,7 +286,9 @@ export function TrickActionDrawer({
                 <p className="font-display text-[13px] font-semibold text-on-surface-variant">
                   No action needed — watching the feed.
                 </p>
-                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-secondary">Close via header ×</p>
+                <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-secondary">
+                  Close via header ×
+                </p>
               </div>
             )}
           </div>

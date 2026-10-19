@@ -80,7 +80,10 @@ export function JoinWithInvite({ code }: { code: string }) {
   if (loading) {
     return (
       <main className="mx-auto w-full max-w-md px-5 py-16">
-        <div className="h-32 animate-pulse rounded-lg bg-surface-container" aria-hidden="true" />
+        <div
+          className="h-32  rounded-lg bg-surface-container"
+          aria-hidden="true"
+        />
       </main>
     );
   }
@@ -126,7 +129,10 @@ export function JoinWithInvite({ code }: { code: string }) {
                 {error}
               </div>
             ) : joinState === "done" ? (
-              <p className="mt-5 rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface" role="status">
+              <p
+                className="mt-5 rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface"
+                role="status"
+              >
                 You&apos;re in — taking you to the event…
               </p>
             ) : user ? (

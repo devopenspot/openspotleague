@@ -80,7 +80,7 @@ export function EventPanel({
                 aria-hidden="true"
                 className={
                   isLive
-                    ? "h-1.5 w-1.5 bg-surface animate-pulse-dot"
+                    ? "h-1.5 w-1.5 bg-surface -dot"
                     : isCompleted
                       ? "relative h-1.5 w-1.5 border border-surface after:absolute after:left-1/2 after:top-1/2 after:h-0.5 after:w-0.5 after:-translate-x-1/2 after:-translate-y-1/2 after:bg-surface after:content-['']"
                       : "h-1.5 w-1.5 border border-surface"
@@ -107,10 +107,18 @@ export function EventPanel({
           </div>
           {event.status === "upcoming" ? (
             <div className="flex items-center gap-2 text-on-surface">
-              <Trophy size={12} className="shrink-0 text-secondary" aria-hidden="true" />
+              <Trophy
+                size={12}
+                className="shrink-0 text-secondary"
+                aria-hidden="true"
+              />
               <dt className="sr-only">Starts in</dt>
               <dd className="font-display text-[10px] font-semibold tracking-wider uppercase">
-                Starts in <Countdown target={event.startDate} label={`${event.name} starts in`} />
+                Starts in{" "}
+                <Countdown
+                  target={event.startDate}
+                  label={`${event.name} starts in`}
+                />
               </dd>
             </div>
           ) : null}

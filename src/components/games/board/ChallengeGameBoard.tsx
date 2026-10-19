@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Check, CircleDot, CircleHelp, LockKeyhole, RotateCcw, X } from "lucide-react";
+import {
+  Check,
+  CircleDot,
+  CircleHelp,
+  LockKeyhole,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { Overlay } from "@/components/feedback/Overlay";
 import type { GameState } from "@/lib/schemas/game";
 import type {
@@ -210,7 +217,7 @@ function ChallengeStageRow({
             </p>
             <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold uppercase tracking-[0.06em] text-secondary">
               <span
-                className={`h-1.5 w-1.5 rounded-full ${view.visualState === "complete" ? "bg-on-surface" : isCurrent ? "bg-primary animate-pulse-dot" : "bg-outline-variant"}`}
+                className={`h-1.5 w-1.5 rounded-full ${view.visualState === "complete" ? "bg-on-surface" : isCurrent ? "bg-primary -dot" : "bg-outline-variant"}`}
                 aria-hidden
               />
             </span>

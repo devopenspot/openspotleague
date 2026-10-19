@@ -79,14 +79,11 @@ export function AdminLeaguePaymentsTable() {
     setBusyId(paymentId);
     setActionError(null);
     try {
-      const response = await fetch(
-        `/api/admin/league/payments/${paymentId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status }),
-        },
-      );
+      const response = await fetch(`/api/admin/league/payments/${paymentId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
       const raw = await response.json().catch(() => null);
       if (!response.ok) {
         setActionError(raw?.message ?? raw?.error ?? "Action failed.");
@@ -108,24 +105,29 @@ export function AdminLeaguePaymentsTable() {
 
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2" aria-label="Payment status filter">
-        {["pending", "paid", "comped", "refunded", "failed", "all"].map((value) => (
-          <button
-            key={value}
-            data-nav-tab
-            type="button"
-            aria-pressed={statusFilter === value}
-            onClick={() => setStatusFilter(value)}
-            className={cn(
-              "min-h-9 rounded-full border px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] transition-colors",
-              statusFilter === value
-                ? "border-primary bg-primary text-on-primary"
-                : "border-outline-variant bg-surface-container-high text-secondary hover:border-outline hover:text-on-surface",
-            )}
-          >
-            {value}
-          </button>
-        ))}
+      <div
+        className="flex flex-wrap items-center gap-2"
+        aria-label="Payment status filter"
+      >
+        {["pending", "paid", "comped", "refunded", "failed", "all"].map(
+          (value) => (
+            <button
+              key={value}
+              data-nav-tab
+              type="button"
+              aria-pressed={statusFilter === value}
+              onClick={() => setStatusFilter(value)}
+              className={cn(
+                "min-h-9 rounded-full border px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] transition-colors",
+                statusFilter === value
+                  ? "border-primary bg-primary text-on-primary"
+                  : "border-outline-variant bg-surface-container-high text-secondary hover:border-outline hover:text-on-surface",
+              )}
+            >
+              {value}
+            </button>
+          ),
+        )}
       </div>
 
       {actionError ? (
@@ -150,13 +152,17 @@ export function AdminLeaguePaymentsTable() {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-16 animate-pulse rounded-lg bg-surface-container"
+              className="h-16  rounded-lg bg-surface-container"
             />
           ))}
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-6 py-12 text-center">
-          <BadgeDollarSign size={24} aria-hidden="true" className="text-secondary" />
+          <BadgeDollarSign
+            size={24}
+            aria-hidden="true"
+            className="text-secondary"
+          />
           <p className="font-display text-sm font-semibold">
             No {statusFilter === "all" ? "" : `${statusFilter} `}payments
           </p>
@@ -179,8 +185,9 @@ export function AdminLeaguePaymentsTable() {
                   {item.eventName}
                 </Link>
                 <p className="mt-0.5 text-xs text-secondary">
-                  {item.payerName} · {item.planSlug} · {money(item.amountCents, item.currency)} ·
-                  registered {formatDate(item.createdAt)}
+                  {item.payerName} · {item.planSlug} ·{" "}
+                  {money(item.amountCents, item.currency)} · registered{" "}
+                  {formatDate(item.createdAt)}
                   {item.provider ? ` · ${item.provider}` : ""}
                 </p>
               </div>

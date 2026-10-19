@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { ArrowRight, BellOff, CheckCheck, Mail } from "lucide-react";
 import { notificationHref } from "@/lib/notifications/definitions";
-import { useEmailDigests, useNotificationList } from "@/hooks/data/useNotifications";
+import {
+  useEmailDigests,
+  useNotificationList,
+} from "@/hooks/data/useNotifications";
 import { useUser } from "@/lib/contexts/user-context";
 import { relativeTime } from "@/lib/league/ui-state";
 import { cn } from "@/lib/utils/cn";
@@ -77,14 +80,16 @@ export default function NotificationsTab() {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-20 animate-pulse rounded-[16px] bg-surface-container"
+              className="h-20  rounded-[16px] bg-surface-container"
             />
           ))}
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-[16px] border border-outline-variant bg-surface-container-low px-6 py-12 text-center">
           <BellOff size={24} aria-hidden="true" className="text-secondary" />
-          <p className="font-display text-sm font-semibold">You&apos;re all caught up</p>
+          <p className="font-display text-sm font-semibold">
+            You&apos;re all caught up
+          </p>
           <p className="text-sm text-secondary">
             League invitations, schedules and results will show up here.
           </p>
@@ -119,7 +124,9 @@ export default function NotificationsTab() {
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-sm font-semibold">
                       {item.title}
-                      {unread ? <span className="sr-only"> (unread)</span> : null}
+                      {unread ? (
+                        <span className="sr-only"> (unread)</span>
+                      ) : null}
                     </p>
                     <p className="mt-0.5 text-sm leading-relaxed text-secondary">
                       {item.body}

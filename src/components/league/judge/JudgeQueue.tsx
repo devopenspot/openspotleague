@@ -27,12 +27,21 @@ import type { LeagueEventState } from "@/lib/services/league";
 type RunState = LeagueEventState["runs"][number];
 type ScoreSummary = RunState["scores"][number];
 
-function myScoreForRun(run: RunState, myId: string | null): ScoreSummary | null {
+function myScoreForRun(
+  run: RunState,
+  myId: string | null,
+): ScoreSummary | null {
   if (!myId) return null;
   return run.scores.find((score) => score.judgeUserId === myId) ?? null;
 }
 
-export function JudgeQueue({ eventId, slug }: { eventId: string; slug: string }) {
+export function JudgeQueue({
+  eventId,
+  slug,
+}: {
+  eventId: string;
+  slug: string;
+}) {
   const router = useRouter();
   const user = useUser();
   const myId = user?.id ?? null;
@@ -141,7 +150,7 @@ export function JudgeQueue({ eventId, slug }: { eventId: string; slug: string })
             {[0, 1, 2, 3].map((index) => (
               <div
                 key={index}
-                className="h-20 animate-pulse rounded-lg bg-surface-container"
+                className="h-20  rounded-lg bg-surface-container"
               />
             ))}
           </div>
@@ -161,8 +170,9 @@ export function JudgeQueue({ eventId, slug }: { eventId: string; slug: string })
   const mySubmissions = myId
     ? state.runs
         .map((entry) => ({ run: entry, score: myScoreForRun(entry, myId) }))
-        .filter((entry): entry is { run: RunState; score: ScoreSummary } =>
-          entry.score !== null,
+        .filter(
+          (entry): entry is { run: RunState; score: ScoreSummary } =>
+            entry.score !== null,
         )
     : [];
 
@@ -300,7 +310,9 @@ export function JudgeQueue({ eventId, slug }: { eventId: string; slug: string })
                   initialScores={openRunMyScore?.criteria}
                   submitLabel={openRunMyScore ? "Revise score" : "Submit score"}
                   disabled={busy}
-                  onSubmit={(scores) => submit(openRun.id, scores, openRun.riderName)}
+                  onSubmit={(scores) =>
+                    submit(openRun.id, scores, openRun.riderName)
+                  }
                 />
                 <p
                   className="font-display text-[10px] font-bold uppercase tracking-[0.08em] text-secondary"
@@ -364,7 +376,9 @@ export function JudgeQueue({ eventId, slug }: { eventId: string; slug: string })
           <Gavel size={14} aria-hidden="true" className="text-secondary" />
         </div>
         {mySubmissions.length === 0 ? (
-          <p className="text-sm text-secondary">Scores you submit appear here.</p>
+          <p className="text-sm text-secondary">
+            Scores you submit appear here.
+          </p>
         ) : (
           <ul className="flex flex-col gap-2">
             {mySubmissions.map((entry) => (

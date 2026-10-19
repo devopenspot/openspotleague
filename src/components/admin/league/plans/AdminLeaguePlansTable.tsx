@@ -98,7 +98,11 @@ export function AdminLeaguePlansTable() {
     };
   }, []);
 
-  async function save(slug: string, patch: Record<string, unknown>, isNew: boolean) {
+  async function save(
+    slug: string,
+    patch: Record<string, unknown>,
+    isNew: boolean,
+  ) {
     setBusy(true);
     setActionError(null);
     try {
@@ -107,9 +111,7 @@ export function AdminLeaguePlansTable() {
         {
           method: isNew ? "POST" : "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(
-            isNew ? { slug, ...patch } : patch,
-          ),
+          body: JSON.stringify(isNew ? { slug, ...patch } : patch),
         },
       );
       const raw = await response.json().catch(() => null);
@@ -177,7 +179,11 @@ export function AdminLeaguePlansTable() {
           onClick={() => setCreating((current) => !current)}
           className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:border-outline"
         >
-          {creating ? <X size={12} aria-hidden="true" /> : <Plus size={12} aria-hidden="true" />}
+          {creating ? (
+            <X size={12} aria-hidden="true" />
+          ) : (
+            <Plus size={12} aria-hidden="true" />
+          )}
           {creating ? "Cancel" : "New plan"}
         </button>
       </div>
@@ -233,11 +239,14 @@ export function AdminLeaguePlansTable() {
             />
           </label>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {numberField("Price (cents)", createDraft.patch.priceCents, (value) =>
-              setCreateDraft((current) => ({
-                ...current,
-                patch: { ...current.patch, priceCents: value },
-              })),
+            {numberField(
+              "Price (cents)",
+              createDraft.patch.priceCents,
+              (value) =>
+                setCreateDraft((current) => ({
+                  ...current,
+                  patch: { ...current.patch, priceCents: value },
+                })),
             )}
             {numberField("Max riders", createDraft.patch.maxRiders, (value) =>
               setCreateDraft((current) => ({
@@ -251,11 +260,14 @@ export function AdminLeaguePlansTable() {
                 patch: { ...current.patch, maxJudges: value },
               })),
             )}
-            {numberField("Max organizers", createDraft.patch.maxOrganizers, (value) =>
-              setCreateDraft((current) => ({
-                ...current,
-                patch: { ...current.patch, maxOrganizers: value },
-              })),
+            {numberField(
+              "Max organizers",
+              createDraft.patch.maxOrganizers,
+              (value) =>
+                setCreateDraft((current) => ({
+                  ...current,
+                  patch: { ...current.patch, maxOrganizers: value },
+                })),
             )}
             {numberField(
               "Monthly events",
@@ -275,7 +287,10 @@ export function AdminLeaguePlansTable() {
                 onChange={(event) =>
                   setCreateDraft((current) => ({
                     ...current,
-                    patch: { ...current.patch, isDefault: event.target.checked },
+                    patch: {
+                      ...current.patch,
+                      isDefault: event.target.checked,
+                    },
                   }))
                 }
               />
@@ -307,7 +322,8 @@ export function AdminLeaguePlansTable() {
                   maxRiders: Number(createDraft.patch.maxRiders) || 0,
                   maxJudges: Number(createDraft.patch.maxJudges) || 0,
                   maxOrganizers: Number(createDraft.patch.maxOrganizers) || 0,
-                  monthlyEventLimit: Number(createDraft.patch.monthlyEventLimit) || 1,
+                  monthlyEventLimit:
+                    Number(createDraft.patch.monthlyEventLimit) || 1,
                   isDefault: createDraft.patch.isDefault,
                   active: createDraft.patch.active,
                 },
@@ -326,7 +342,7 @@ export function AdminLeaguePlansTable() {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-16 animate-pulse rounded-lg bg-surface-container"
+              className="h-16  rounded-lg bg-surface-container"
             />
           ))}
         </div>
@@ -346,9 +362,9 @@ export function AdminLeaguePlansTable() {
                     </span>
                   </p>
                   <p className="mt-0.5 text-xs text-secondary">
-                    {money(plan.priceCents, plan.currency)} · {plan.maxRiders} riders ·{" "}
-                    {plan.maxJudges} judges · {plan.maxOrganizers} organizers ·{" "}
-                    {plan.monthlyEventLimit} events/mo
+                    {money(plan.priceCents, plan.currency)} · {plan.maxRiders}{" "}
+                    riders · {plan.maxJudges} judges · {plan.maxOrganizers}{" "}
+                    organizers · {plan.monthlyEventLimit} events/mo
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
@@ -371,8 +387,12 @@ export function AdminLeaguePlansTable() {
                     type="button"
                     aria-label={`Edit ${plan.name}`}
                     onClick={() => {
-                      setEditingSlug(editingSlug === plan.slug ? null : plan.slug);
-                      setDraft(editingSlug === plan.slug ? null : toEditable(plan));
+                      setEditingSlug(
+                        editingSlug === plan.slug ? null : plan.slug,
+                      );
+                      setDraft(
+                        editingSlug === plan.slug ? null : toEditable(plan),
+                      );
                     }}
                     className="inline-flex min-h-9 items-center rounded-full border border-outline-variant px-3 text-secondary hover:border-outline hover:text-on-surface"
                   >
@@ -391,7 +411,9 @@ export function AdminLeaguePlansTable() {
                       value={draft.name}
                       onChange={(event) =>
                         setDraft((current) =>
-                          current ? { ...current, name: event.target.value } : current,
+                          current
+                            ? { ...current, name: event.target.value }
+                            : current,
                         )
                       }
                       className={MANAGE_CONTROL_CLASSES}
@@ -413,15 +435,25 @@ export function AdminLeaguePlansTable() {
                         current ? { ...current, maxJudges: value } : current,
                       ),
                     )}
-                    {numberField("Max organizers", draft.maxOrganizers, (value) =>
-                      setDraft((current) =>
-                        current ? { ...current, maxOrganizers: value } : current,
-                      ),
+                    {numberField(
+                      "Max organizers",
+                      draft.maxOrganizers,
+                      (value) =>
+                        setDraft((current) =>
+                          current
+                            ? { ...current, maxOrganizers: value }
+                            : current,
+                        ),
                     )}
-                    {numberField("Monthly events", draft.monthlyEventLimit, (value) =>
-                      setDraft((current) =>
-                        current ? { ...current, monthlyEventLimit: value } : current,
-                      ),
+                    {numberField(
+                      "Monthly events",
+                      draft.monthlyEventLimit,
+                      (value) =>
+                        setDraft((current) =>
+                          current
+                            ? { ...current, monthlyEventLimit: value }
+                            : current,
+                        ),
                     )}
                   </div>
                   <div className="flex items-center gap-4">
@@ -431,7 +463,9 @@ export function AdminLeaguePlansTable() {
                         checked={draft.isDefault}
                         onChange={(event) =>
                           setDraft((current) =>
-                            current ? { ...current, isDefault: event.target.checked } : current,
+                            current
+                              ? { ...current, isDefault: event.target.checked }
+                              : current,
                           )
                         }
                       />
@@ -443,7 +477,9 @@ export function AdminLeaguePlansTable() {
                         checked={draft.active}
                         onChange={(event) =>
                           setDraft((current) =>
-                            current ? { ...current, active: event.target.checked } : current,
+                            current
+                              ? { ...current, active: event.target.checked }
+                              : current,
                           )
                         }
                       />
@@ -454,7 +490,9 @@ export function AdminLeaguePlansTable() {
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => void save(plan.slug, patchFromDraft(), false)}
+                      onClick={() =>
+                        void save(plan.slug, patchFromDraft(), false)
+                      }
                       className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary hover:opacity-90 disabled:opacity-50"
                     >
                       {busy ? "Saving…" : "Save"}

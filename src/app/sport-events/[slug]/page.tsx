@@ -159,7 +159,7 @@ export default async function SportEventPage({
                 <span className="inline-flex items-center gap-1.5 rounded-[8px] bg-surface px-2.5 py-1 font-display text-xs font-bold tracking-widest text-error uppercase">
                   <span
                     aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-full bg-error animate-pulse-dot"
+                    className="h-1.5 w-1.5 rounded-full bg-error -dot"
                   />
                   Live
                 </span>
@@ -247,7 +247,7 @@ export default async function SportEventPage({
             {isUpcoming ? (
               <div className="inline-flex items-center gap-2 rounded-[12px] border border-outline-variant bg-surface-container-high px-3 py-2 font-mono text-xs uppercase tracking-widest text-on-surface">
                 <span
-                  className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-dot"
+                  className="h-1.5 w-1.5 rounded-full bg-primary -dot"
                   aria-hidden="true"
                 />
                 Starts in{" "}
@@ -457,8 +457,8 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
               </span>
               <span aria-hidden="true">·</span>
               {history.result.totalScore.toFixed(2)} run
-              <span aria-hidden="true">·</span>
-              +{history.result.pointsAwarded} league pts
+              <span aria-hidden="true">·</span>+{history.result.pointsAwarded}{" "}
+              league pts
             </p>
           ) : null}
           {history.myRuns.length > 0 ? (
@@ -469,9 +469,7 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
                   className="rounded-[8px] border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-widest text-on-surface"
                 >
                   Run {run.sequence} · {run.status}
-                  {run.myTotal !== null
-                    ? ` · ${run.myTotal.toFixed(2)}`
-                    : ""}
+                  {run.myTotal !== null ? ` · ${run.myTotal.toFixed(2)}` : ""}
                 </li>
               ))}
             </ul>

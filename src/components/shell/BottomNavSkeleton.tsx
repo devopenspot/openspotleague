@@ -18,8 +18,8 @@ export function BottomNavSkeleton({ count = 4 }: { count?: number }) {
           key={i}
           className="flex min-h-14 flex-col items-center justify-center space-y-1 px-5"
         >
-          <div className="h-[18px] w-[18px] animate-pulse rounded bg-surface-container-high" />
-          <div className="h-2.5 w-9 animate-pulse rounded bg-surface-container-high" />
+          <div className="h-[18px] w-[18px]  rounded bg-surface-container-high" />
+          <div className="h-2.5 w-9  rounded bg-surface-container-high" />
         </div>
       ))}
     </nav>

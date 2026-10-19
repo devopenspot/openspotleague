@@ -53,7 +53,7 @@ const LeafletCanvas = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex-1 border border-outline-variant bg-surface-container-low animate-pulse" />
+      <div className="flex-1 border border-outline-variant bg-surface-container-low " />
     ),
   },
 );
@@ -599,7 +599,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
             role="status"
             aria-live="polite"
             aria-label="Loading saved map filter"
-            className="flex flex-1 flex-col items-center justify-center gap-4 bg-surface-container-low px-6 py-12 text-center animate-pulse"
+            className="flex flex-1 flex-col items-center justify-center gap-4 bg-surface-container-low px-6 py-12 text-center "
           >
             <div
               className="h-12 w-12 rounded-[8px] bg-surface-container-high"

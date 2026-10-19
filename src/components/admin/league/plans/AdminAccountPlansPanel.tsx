@@ -143,7 +143,7 @@ export function AdminAccountPlansPanel({ plans }: { plans: string[] }) {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-16 animate-pulse rounded-lg bg-surface-container"
+              className="h-16  rounded-lg bg-surface-container"
             />
           ))}
         </div>
@@ -185,7 +185,9 @@ export function AdminAccountPlansPanel({ plans }: { plans: string[] }) {
                 </span>
                 <button
                   type="button"
-                  disabled={busyId === item.userId || item.planSlug === grantSlug}
+                  disabled={
+                    busyId === item.userId || item.planSlug === grantSlug
+                  }
                   onClick={() => void act(item.userId, "grant")}
                   className="min-h-9 rounded-full bg-primary px-3 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-primary hover:opacity-90 disabled:opacity-50"
                 >

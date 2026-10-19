@@ -15,15 +15,15 @@ export function HomeSkeleton() {
           <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-center">
             <div className="my-auto w-full min-w-0 space-y-3">
               {/* Search pill */}
-              <div className="h-[54px] w-full animate-pulse rounded-full bg-white" />
+              <div className="h-[54px] w-full  rounded-full bg-white" />
               {/* Pill buttons — mirrors Hero buttons */}
               <div className="flex flex-wrap items-center gap-2">
-                <div className="h-9 w-28 animate-pulse rounded-full bg-white/20" />
-                <div className="h-9 w-56 animate-pulse rounded-full bg-white/20" />
-                <div className="h-9 w-32 animate-pulse rounded-full bg-white/20" />
-                <div className="h-9 w-16 animate-pulse rounded-full bg-white/20" />
-                <div className="h-9 w-18 animate-pulse rounded-full bg-white/20 md:hidden" />
-                <div className="h-9 w-36 animate-pulse rounded-full bg-white/20" />
+                <div className="h-9 w-28  rounded-full bg-white/20" />
+                <div className="h-9 w-56  rounded-full bg-white/20" />
+                <div className="h-9 w-32  rounded-full bg-white/20" />
+                <div className="h-9 w-16  rounded-full bg-white/20" />
+                <div className="h-9 w-18  rounded-full bg-white/20 md:hidden" />
+                <div className="h-9 w-36  rounded-full bg-white/20" />
               </div>
             </div>
           </div>
@@ -40,7 +40,7 @@ export function HomeSkeleton() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-[32vh] w-[208px] shrink-0 animate-pulse rounded-[14px] border border-wire-border bg-wire-border sm:w-[232px]"
+                className="h-[32vh] w-[208px] shrink-0  rounded-[14px] border border-wire-border bg-wire-border sm:w-[232px]"
               />
             ))}
           </div>

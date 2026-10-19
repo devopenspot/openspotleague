@@ -45,9 +45,16 @@ export function ProfileTabBar({ active, onChange }: ProfileTabBarProps) {
 
 export function ProfileTabBarSkeleton() {
   return (
-    <div aria-hidden="true" className="flex gap-1 overflow-hidden rounded-full border border-outline-variant bg-surface-container-lowest p-1">
+    <div
+      aria-hidden="true"
+      className="flex gap-1 overflow-hidden rounded-full border border-outline-variant bg-surface-container-lowest p-1"
+    >
       {TABS.map((t) => (
-        <div key={t.id} className="h-8 shrink-0 rounded-full bg-surface-container-high px-6 sm:px-8 animate-pulse" aria-hidden="true" />
+        <div
+          key={t.id}
+          className="h-8 shrink-0 rounded-full bg-surface-container-high px-6 sm:px-8 "
+          aria-hidden="true"
+        />
       ))}
     </div>
   );

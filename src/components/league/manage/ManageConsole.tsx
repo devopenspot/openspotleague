@@ -22,9 +22,7 @@ import {
   StateBadge,
   MANAGE_CONTROL_CLASSES,
 } from "./manage-parts";
-import {
-  isOrganizerRole,
-} from "@/lib/league/ui-state";
+import { isOrganizerRole } from "@/lib/league/ui-state";
 import type { LeagueDashboard, LeagueEventState } from "@/lib/services/league";
 
 type Tab = "config" | "roster" | "live" | "results" | "metrics";
@@ -44,9 +42,7 @@ function visibleTabs(
   if (organizer) return TABS;
   return TABS.filter(
     (entry) =>
-      entry.id !== "config" &&
-      entry.id !== "roster" &&
-      entry.id !== "metrics",
+      entry.id !== "config" && entry.id !== "roster" && entry.id !== "metrics",
   );
 }
 
@@ -54,7 +50,12 @@ export function ManageConsole({ eventId }: { eventId: string }) {
   const router = useRouter();
   const [state, setState] = useState<LeagueEventState | null>(null);
   const [members, setMembers] = useState<
-    { membershipId: string; userId: string; displayName: string; role: string }[]
+    {
+      membershipId: string;
+      userId: string;
+      displayName: string;
+      role: string;
+    }[]
   >([]);
   const [tab, setTab] = useState<Tab>("config");
   const [error, setError] = useState<string | null>(null);
@@ -196,7 +197,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
             {[0, 1, 2, 3].map((index) => (
               <div
                 key={index}
-                className="h-20 animate-pulse rounded-lg bg-surface-container"
+                className="h-20  rounded-lg bg-surface-container"
               />
             ))}
           </div>
@@ -337,7 +338,10 @@ export function ManageConsole({ eventId }: { eventId: string }) {
           onRegisterInvite={async (role, expiresInDays) => {
             await lifecycleAction("/invites", "POST", {
               role,
-              expiresInDays: role === "rider" && inviteExpiry === "0" ? undefined : expiresInDays,
+              expiresInDays:
+                role === "rider" && inviteExpiry === "0"
+                  ? undefined
+                  : expiresInDays,
             });
             await refreshMembers();
           }}
@@ -485,18 +489,23 @@ function ConfigPanel({
               onChange={(e) =>
                 setForm({
                   ...form,
-                  category: e.target.value as LeagueEventState["event"]["category"],
+                  category: e.target
+                    .value as LeagueEventState["event"]["category"],
                 })
               }
               className={MANAGE_CONTROL_CLASSES}
             >
-              {["local-event", "festival", "championship", "federation", "world-tour"].map(
-                (value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ),
-              )}
+              {[
+                "local-event",
+                "festival",
+                "championship",
+                "federation",
+                "world-tour",
+              ].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -569,7 +578,9 @@ function ConfigPanel({
             confirmBody="Creates one judging slot per active rider, ordered by join time, 10 minutes apart."
             disabled={disabled}
             variant="primary"
-            onConfirm={() => void lifecycleAction("/schedule", "POST", { slotMinutes: 10 })}
+            onConfirm={() =>
+              void lifecycleAction("/schedule", "POST", { slotMinutes: 10 })
+            }
           />
         ) : null}
         {event.status === "scheduled" ? (
@@ -619,7 +630,12 @@ function RosterPanel({
   disabled,
 }: {
   state: LeagueEventState;
-  members: { membershipId: string; userId: string; displayName: string; role: string }[];
+  members: {
+    membershipId: string;
+    userId: string;
+    displayName: string;
+    role: string;
+  }[];
   organizer: boolean;
   inviteRole: "organizer" | "judge" | "rider";
   setInviteRole: (role: "organizer" | "judge" | "rider") => void;
@@ -780,7 +796,10 @@ function LivePanel({
     method?: "POST" | "PATCH" | "DELETE",
     body?: unknown,
   ) => Promise<unknown>;
-  onSubmitScore: (runId: string, scores: Record<string, number>) => Promise<boolean>;
+  onSubmitScore: (
+    runId: string,
+    scores: Record<string, number>,
+  ) => Promise<boolean>;
 }) {
   return (
     <section
@@ -876,8 +895,8 @@ function ResultsPanel({
                 </p>
               </div>
               <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-                {result.totalScore.toFixed(2)} run · +
-                {result.pointsAwarded} league pts
+                {result.totalScore.toFixed(2)} run · +{result.pointsAwarded}{" "}
+                league pts
               </p>
             </li>
           ))}
@@ -957,10 +976,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
         aria-hidden="true"
       >
         {[0, 1, 2].map((index) => (
-          <div
-            key={index}
-            className="h-16 animate-pulse rounded-lg bg-surface-container"
-          />
+          <div key={index} className="h-16  rounded-lg bg-surface-container" />
         ))}
       </section>
     );
@@ -981,7 +997,10 @@ function MetricsPanel({ eventId }: { eventId: string }) {
           { label: "Runs", value: dashboard.runs.total },
           {
             label: "Judged",
-            value: dashboard.runs.total > 0 ? `${judged}/${dashboard.runs.total}` : "0",
+            value:
+              dashboard.runs.total > 0
+                ? `${judged}/${dashboard.runs.total}`
+                : "0",
           },
         ].map((stat) => (
           <div
@@ -1009,12 +1028,15 @@ function MetricsPanel({ eventId }: { eventId: string }) {
         ) : (
           <ul className="flex flex-col gap-3">
             {dashboard.criteria.map((criterion) => {
-              const percent = criterion.maxScore > 0
-                ? Math.min(
-                    100,
-                    Math.round((criterion.average / criterion.maxScore) * 100),
-                  )
-                : 0;
+              const percent =
+                criterion.maxScore > 0
+                  ? Math.min(
+                      100,
+                      Math.round(
+                        (criterion.average / criterion.maxScore) * 100,
+                      ),
+                    )
+                  : 0;
               return (
                 <li key={criterion.key} className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">

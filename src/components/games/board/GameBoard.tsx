@@ -217,7 +217,7 @@ export function GameBoard({
             <div className="flex items-center justify-between gap-2 px-1 py-3">
               <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
                 <span
-                  className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-primary"
+                  className="h-1.5 w-1.5 -dot rounded-full bg-primary"
                   aria-hidden
                 />
                 Control Deck — Syncing

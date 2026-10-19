@@ -108,7 +108,10 @@ export function RiderActivityBoard({
 
 export function RiderActivityBoardSkeleton() {
   return (
-    <div aria-hidden="true" className="min-w-0 rounded-[16px] bg-on-surface p-3.5 sm:p-4 animate-pulse">
+    <div
+      aria-hidden="true"
+      className="min-w-0 rounded-[16px] bg-on-surface p-3.5 sm:p-4 "
+    >
       <div className="flex flex-col gap-1 pb-2.5 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <div className="h-3 w-28 rounded bg-surface/20" />
@@ -118,14 +121,20 @@ export function RiderActivityBoardSkeleton() {
       </div>
       <div className="mt-3 grid min-h-24 auto-cols-fr grid-flow-col grid-rows-7 place-items-center gap-1">
         {Array.from({ length: 84 }).map((_, i) => (
-          <span key={i} className="aspect-square w-2.5 rounded-[2px] bg-surface/15 sm:w-3" />
+          <span
+            key={i}
+            className="aspect-square w-2.5 rounded-[2px] bg-surface/15 sm:w-3"
+          />
         ))}
       </div>
       <div className="mt-3 flex items-center justify-between">
         <div className="h-3 w-8 rounded bg-surface/15" />
         <div className="flex gap-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <i key={i} className="h-2.5 w-2.5 rounded-[2px] bg-surface/15 sm:h-3 sm:w-3" />
+            <i
+              key={i}
+              className="h-2.5 w-2.5 rounded-[2px] bg-surface/15 sm:h-3 sm:w-3"
+            />
           ))}
         </div>
         <div className="h-3 w-8 rounded bg-surface/15" />

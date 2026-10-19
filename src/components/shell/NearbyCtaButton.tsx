@@ -46,7 +46,7 @@ export function NearbyCtaButton() {
       <MapPin
         size={14}
         aria-hidden="true"
-        className={cn(isRequesting && "animate-pulse-dot")}
+        className={cn(isRequesting && "-dot")}
       />
       <span>{isRequesting ? "Locating…" : "Nearby"}</span>
       <span

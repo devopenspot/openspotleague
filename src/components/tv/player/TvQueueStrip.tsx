@@ -4,7 +4,10 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TvCard } from "@/types/tv";
 import { cn } from "@/lib/utils/cn";
-import { toTvMarqueeItems, type TvMarqueeItem } from "@/components/tv/marquee/tv-marquee-data";
+import {
+  toTvMarqueeItems,
+  type TvMarqueeItem,
+} from "@/components/tv/marquee/tv-marquee-data";
 
 interface TvQueueStripProps {
   queue: readonly TvCard[];
@@ -73,9 +76,7 @@ const TvQueueStripItem = memo(function TvQueueStripItem({
       style={{ contentVisibility: "auto", containIntrinsicSize: "112px 76px" }}
       className={cn(
         "group relative w-28 shrink-0 snap-start overflow-hidden rounded-[10px] border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:w-20",
-        active
-          ? "border-white"
-          : "border-white/15 hover:border-white/40",
+        active ? "border-white" : "border-white/15 hover:border-white/40",
       )}
     >
       <span className="relative block aspect-video w-full overflow-hidden bg-white/10">
@@ -142,7 +143,8 @@ export const TvQueueStrip = memo(function TvQueueStrip({
   useEffect(() => {
     const sentinel = sentinelRef.current;
     const scroller = scrollerRef.current;
-    if (!sentinel || !hasMore || !onLoadMore || isLoadingMore || disabled) return;
+    if (!sentinel || !hasMore || !onLoadMore || isLoadingMore || disabled)
+      return;
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -207,7 +209,7 @@ export const TvQueueStrip = memo(function TvQueueStrip({
           <div
             role="status"
             aria-label="Loading more videos…"
-            className="group relative w-28 shrink-0 snap-start overflow-hidden rounded-[10px] border border-white/10 bg-white/5 landscape:w-20 animate-pulse"
+            className="group relative w-28 shrink-0 snap-start overflow-hidden rounded-[10px] border border-white/10 bg-white/5 landscape:w-20 "
           >
             <span className="relative block aspect-video w-full bg-white/10" />
             <span className="block px-1.5 py-1 text-[10px] landscape:hidden">

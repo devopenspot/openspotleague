@@ -147,7 +147,7 @@ export default function LeagueHub() {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-24 animate-pulse rounded-lg bg-surface-container"
+              className="h-24  rounded-lg bg-surface-container"
             />
           ))}
         </div>
