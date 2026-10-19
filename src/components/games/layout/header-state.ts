@@ -55,9 +55,15 @@ export function deriveHeaderState(
   const leader = game?.players.find(
     (player) => player.id === game?.currentChallengerPlayerId,
   );
-  const effectiveLevel = (current?.trickLevel ?? game?.nextLevel ?? null) as number | null;
-  const levelLabel = effectiveLevel ? LEVEL_LABELS[effectiveLevel] ?? null : null;
-  const selectedCats = (game?.selectedCategories ?? null) as readonly string[] | null;
+  const effectiveLevel = (current?.trickLevel ?? game?.nextLevel ?? null) as
+    | number
+    | null;
+  const levelLabel = effectiveLevel
+    ? (LEVEL_LABELS[effectiveLevel] ?? null)
+    : null;
+  const selectedCats = (game?.selectedCategories ?? null) as
+    | readonly string[]
+    | null;
   const isCategoriesAll = !selectedCats || selectedCats.length === 0;
   const categoriesDisplay = isCategoriesAll ? "All" : selectedCats!.join(", ");
   const pendingProposal = game?.pendingCategoryProposal ?? null;
@@ -115,18 +121,21 @@ export function deriveHeaderState(
           : null;
 
   const isParticipant = Boolean(
-    currentPlayer && currentPlayer.status !== "left" && game?.players.some((p) => p.id === game?.viewerPlayerId),
+    currentPlayer &&
+    currentPlayer.status !== "left" &&
+    game?.players.some((p) => p.id === game?.viewerPlayerId),
   );
-  const canSubmitThisRound =
-    Boolean(capabilities.canSubmitChallenge || capabilities.canSubmitResponse);
+  const canSubmitThisRound = Boolean(
+    capabilities.canSubmitChallenge || capabilities.canSubmitResponse,
+  );
   const isWaitingForOthers = Boolean(
     game &&
-      game.status === "active" &&
-      isLiveChallenge &&
-      isParticipant &&
-      !canSubmitThisRound &&
-      game.trainingVariant !== "solo" &&
-      !isTerminal,
+    game.status === "active" &&
+    isLiveChallenge &&
+    isParticipant &&
+    !canSubmitThisRound &&
+    game.trainingVariant !== "solo" &&
+    !isTerminal,
   );
   const pendingResponseIds =
     current?.status === "collecting_results" &&
@@ -137,8 +146,10 @@ export function deriveHeaderState(
         )
       : [];
   const pendingChallenge =
-    current?.status === "challenge_open" && !canSubmitThisRound && current.challengerPlayerId
-      ? [current.challengerPlayerId].filter(Boolean) as string[]
+    current?.status === "challenge_open" &&
+    !canSubmitThisRound &&
+    current.challengerPlayerId
+      ? ([current.challengerPlayerId].filter(Boolean) as string[])
       : [];
   const pendingIds = isWaitingForOthers
     ? current?.status === "challenge_open"
@@ -146,10 +157,15 @@ export function deriveHeaderState(
       : pendingResponseIds
     : [];
   const pendingNames = pendingIds
-    .map((pid) => game?.players.find((p) => p.id === pid)?.displayName ?? "Rider")
+    .map(
+      (pid) => game?.players.find((p) => p.id === pid)?.displayName ?? "Rider",
+    )
     .slice(0, 4);
   const shouldPromptTrickDrawer = Boolean(
-    (canSubmitThisRound || isWaitingForOthers) && current && isLiveChallenge && !isTerminal,
+    (canSubmitThisRound || isWaitingForOthers) &&
+    current &&
+    isLiveChallenge &&
+    !isTerminal,
   );
 
   const winner = game?.players.find(
@@ -170,7 +186,7 @@ export function deriveHeaderState(
     game?.status === "cancelled"
       ? "This Session Was Closed."
       : winner
-        ? `${winner.displayName} Took The Win — Check The Final Scores Below.`
+        ? `${winner.displayName} Win — Check The Final Scores Below.`
         : "That's A Wrap — Check The Final Scores Below.";
 
   return {

@@ -98,7 +98,10 @@ describe("deriveHeaderState", () => {
   it("surfaces the blocked-round notice with its fallback copy", () => {
     const blocked = {
       ...activeChallengeGame,
-      currentRound: { ...activeChallengeGame.currentRound, status: "no_compatible_trick" },
+      currentRound: {
+        ...activeChallengeGame.currentRound,
+        status: "no_compatible_trick",
+      },
     } as unknown as GameState;
     const state = deriveHeaderState(blocked, capabilities);
     expect(state.roundNotice).toBe(
@@ -107,7 +110,10 @@ describe("deriveHeaderState", () => {
 
     const blockedWithReason = {
       ...blocked,
-      currentRound: { ...(blocked.currentRound as object), blockedReason: "Spot too mellow" },
+      currentRound: {
+        ...(blocked.currentRound as object),
+        blockedReason: "Spot too mellow",
+      },
     } as unknown as GameState;
     expect(deriveHeaderState(blockedWithReason, capabilities).roundNotice).toBe(
       "Spot too mellow",
@@ -127,7 +133,7 @@ describe("deriveHeaderState", () => {
     expect(won.terminalTone).toBe("success");
     expect(won.terminalTitle).toBe("You Won!");
     expect(won.terminalDescription).toBe(
-      "Rider Took The Win — Check The Final Scores Below.",
+      "Rider Win — Check The Final Scores Below.",
     );
 
     const lost = deriveHeaderState(

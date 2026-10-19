@@ -113,8 +113,7 @@ const readyChallengeCapabilities: GameCapabilities = {
   canStartNow: true,
 };
 
-const shareOnboardingStorageKey =
-  "openspot:game-share-onboarding:v1:game-1";
+const shareOnboardingStorageKey = "openspot:game-share-onboarding:v1:game-1";
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -133,20 +132,28 @@ describe("game Header", () => {
     expect(
       within(dialog).getByRole("heading", { name: "Bring Your Crew" }),
     ).toBeInTheDocument();
-    expect(within(dialog).getByText("Crew joins the lobby.")).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Copy code" })).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Copy link" })).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "QR code" })).toBeInTheDocument();
     expect(
-      window.localStorage.getItem(shareOnboardingStorageKey),
-    ).toBe("seen");
+      within(dialog).getByText("Crew joins the lobby."),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Copy code" }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Copy link" }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "QR code" }),
+    ).toBeInTheDocument();
+    expect(window.localStorage.getItem(shareOnboardingStorageKey)).toBe("seen");
 
     await user.click(
       within(dialog).getByRole("button", { name: "Continue To Session" }),
     );
 
     await waitFor(() =>
-      expect(screen.queryByRole("dialog", { name: "Invite Your Crew" })).not.toBeInTheDocument(),
+      expect(
+        screen.queryByRole("dialog", { name: "Invite Your Crew" }),
+      ).not.toBeInTheDocument(),
     );
   });
 
@@ -159,7 +166,9 @@ describe("game Header", () => {
       screen.queryByRole("dialog", { name: "Invite Your Crew" }),
     ).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Open game controls" }));
+    await user.click(
+      screen.getByRole("button", { name: "Open game controls" }),
+    );
 
     const dialog = screen.getByRole("dialog", { name: "Invite Your Crew" });
     expect(
@@ -189,10 +198,18 @@ describe("game Header", () => {
 
     const dialog = await screen.findByRole("dialog", { name: "Play a Bike" });
     expect(within(dialog).getByText("Dropping In")).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Copy code" })).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "Copy link" })).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: "QR code" })).toBeInTheDocument();
-    const startNow = within(dialog).getByRole("button", { name: "Drop In Now" });
+    expect(
+      within(dialog).getByRole("button", { name: "Copy code" }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Copy link" }),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "QR code" }),
+    ).toBeInTheDocument();
+    const startNow = within(dialog).getByRole("button", {
+      name: "Drop In Now",
+    });
     expect(startNow).toBeEnabled();
     await user.click(startNow);
 
@@ -220,13 +237,11 @@ describe("game Header", () => {
     expect(
       screen.getAllByRole("textbox", { name: "Pick A Rider Name" }),
     ).toHaveLength(2);
-    expect(
-      screen.getAllByRole("button", { name: "Join Crew" }),
-    ).toHaveLength(2);
-
-    await user.click(
-      within(dialog).getByRole("button", { name: "Join Crew" }),
+    expect(screen.getAllByRole("button", { name: "Join Crew" })).toHaveLength(
+      2,
     );
+
+    await user.click(within(dialog).getByRole("button", { name: "Join Crew" }));
 
     expect(onGuestJoin).toHaveBeenCalledOnce();
   });
@@ -236,16 +251,28 @@ describe("game Header", () => {
     copyTextMock.mockResolvedValue(true);
     render(<Header game={game} onBackToChallenges={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: "Open game controls" }));
+    await user.click(
+      screen.getByRole("button", { name: "Open game controls" }),
+    );
 
-    expect(screen.getByRole("dialog", { name: "Invite Your Crew" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Share" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Copy code" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Copy link" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("dialog", { name: "Invite Your Crew" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Share" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Copy code" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Copy link" }),
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "QR code" }));
 
-    expect(screen.getByLabelText("QR code for shared link")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("QR code for shared link"),
+    ).toBeInTheDocument();
     const expectedShareUrl = new URL(
       `/games/join/${encodeURIComponent(game.shareCode)}`,
       window.location.origin,
@@ -294,20 +321,17 @@ describe("game Header", () => {
       status: "complete",
       winnerPlayerId: "game-1-rider",
       viewerPlayerId: "game-1-rider",
-      players: [
-        { id: "game-1-rider", displayName: "Rider", status: "active" },
-      ],
+      players: [{ id: "game-1-rider", displayName: "Rider", status: "active" }],
       currentRound: null,
     } as unknown as GameState;
 
     render(
-      <Header
-        game={completedGame}
-        onBackToChallenges={onBackToChallenges}
-      />,
+      <Header game={completedGame} onBackToChallenges={onBackToChallenges} />,
     );
 
-    expect(screen.getByRole("heading", { name: "You Won!" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "You Won!" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Run It Again" })).toHaveAttribute(
       "href",
       "/games",
@@ -334,9 +358,11 @@ describe("game Header", () => {
       <Header game={otherWinnerGame} onBackToChallenges={vi.fn()} />,
     );
 
-    expect(screen.getByRole("heading", { name: "Session Complete" })).toBeInTheDocument();
     expect(
-      screen.getByText("Leader Took The Win — Check The Final Scores Below."),
+      screen.getByRole("heading", { name: "Session Complete" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Leader Win — Check The Final Scores Below."),
     ).toBeInTheDocument();
 
     const cancelledGame = {
@@ -347,15 +373,21 @@ describe("game Header", () => {
 
     rerender(<Header game={cancelledGame} onBackToChallenges={vi.fn()} />);
 
-    expect(screen.getByRole("heading", { name: "Session Closed" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Session Closed" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("This Session Was Closed.")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Run It Again" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Run It Again" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps game context in the sticky action bar", () => {
     render(<Header game={game} onBackToChallenges={vi.fn()} />);
 
-    expect(screen.getByRole("heading", { name: "Play a Bike" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Play a Bike" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("2 Riders")).toBeInTheDocument();
     expect(screen.getByText("Leader Leads")).toBeInTheDocument();
   });
@@ -386,7 +418,9 @@ describe("game Header", () => {
     expect(onCancelActive).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: "Finish Challenge" }));
-    await user.click(screen.getByRole("button", { name: "Yes, Finish Challenge" }));
+    await user.click(
+      screen.getByRole("button", { name: "Yes, Finish Challenge" }),
+    );
 
     expect(onCancelActive).toHaveBeenCalledOnce();
   });
@@ -412,7 +446,9 @@ describe("game Header", () => {
     const drawer = await screen.findByTestId("trick-action-drawer");
     expect(drawer).toBeInTheDocument();
     // drawer renders Landed/Failed arcade pads (aria-label Mark as landed)
-    expect(screen.getByRole("button", { name: "Mark as landed" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Mark as landed" }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Mark as landed" }));
 
     expect(onChallengeResult).toHaveBeenCalledWith("landed");
@@ -442,9 +478,13 @@ describe("game Header", () => {
     const drawer = await screen.findByTestId("trick-action-drawer");
     expect(within(drawer).getByText("Leader · landed")).toBeInTheDocument();
 
-    await user.click(within(drawer).getByRole("button", { name: "Close trick panel" }));
+    await user.click(
+      within(drawer).getByRole("button", { name: "Close trick panel" }),
+    );
     await waitFor(() =>
-      expect(screen.queryByTestId("trick-action-drawer")).not.toBeInTheDocument(),
+      expect(
+        screen.queryByTestId("trick-action-drawer"),
+      ).not.toBeInTheDocument(),
     );
 
     const responderTurnGame = {
@@ -464,7 +504,9 @@ describe("game Header", () => {
     );
 
     const reopened = await screen.findByTestId("trick-action-drawer");
-    expect(within(reopened).getByRole("button", { name: "Mark as landed" })).toBeInTheDocument();
+    expect(
+      within(reopened).getByRole("button", { name: "Mark as landed" }),
+    ).toBeInTheDocument();
   });
 
   it("offers a limited alternative-trick retrieval without changing the action gate", async () => {
@@ -474,13 +516,23 @@ describe("game Header", () => {
     const liveGame = {
       ...game,
       status: "active",
-      currentRound: { ...game.currentRound!, status: "collecting_results", challengerPlayerId: "rider", requiredResponsePlayerIds: [], attempts: [] },
+      currentRound: {
+        ...game.currentRound!,
+        status: "collecting_results",
+        challengerPlayerId: "rider",
+        requiredResponsePlayerIds: [],
+        attempts: [],
+      },
       trainingVariant: "multiplayer",
     } as unknown as GameState;
     const { rerender } = render(
       <Header
         game={liveGame}
-        capabilities={{ ...noCapabilities, canAdvanceToNextTrick: true, canSubmitResponse: true }}
+        capabilities={{
+          ...noCapabilities,
+          canAdvanceToNextTrick: true,
+          canSubmitResponse: true,
+        }}
         alternativeTricksRemaining={3}
         onNextTrick={onNextTrick}
         onBackToChallenges={vi.fn()}
@@ -488,15 +540,23 @@ describe("game Header", () => {
     );
 
     // open drawer via trigger
-    await user.click(screen.getByRole("button", { name: "Open your turn panel" }));
+    await user.click(
+      screen.getByRole("button", { name: "Open your turn panel" }),
+    );
     const dialog = await screen.findByTestId("trick-action-drawer");
-    await user.click(within(dialog).getByRole("button", { name: "Get next trick, 3 left" }));
+    await user.click(
+      within(dialog).getByRole("button", { name: "Get next trick, 3 left" }),
+    );
     expect(onNextTrick).toHaveBeenCalledOnce();
 
     rerender(
       <Header
         game={liveGame}
-        capabilities={{ ...noCapabilities, canAdvanceToNextTrick: true, canSubmitResponse: true }}
+        capabilities={{
+          ...noCapabilities,
+          canAdvanceToNextTrick: true,
+          canSubmitResponse: true,
+        }}
         alternativeTricksRemaining={0}
         onNextTrick={onNextTrick}
         onBackToChallenges={vi.fn()}
@@ -505,7 +565,9 @@ describe("game Header", () => {
 
     // drawer still shows disabled next
     const dialog2 = await screen.findByTestId("trick-action-drawer");
-    expect(within(dialog2).getByRole("button", { name: "No more next tricks" })).toBeDisabled();
+    expect(
+      within(dialog2).getByRole("button", { name: "No more next tricks" }),
+    ).toBeDisabled();
   });
 
   it("keeps location recovery and its notice together for a paused round", async () => {
@@ -590,7 +652,9 @@ describe("game Header", () => {
       name: "Invite Your Crew",
     });
     expect(
-      within(dialog).getByRole("heading", { name: "Ride Solo Or Bring The Crew" }),
+      within(dialog).getByRole("heading", {
+        name: "Ride Solo Or Bring The Crew",
+      }),
     ).toBeInTheDocument();
     expect(
       within(dialog).getByRole("button", { name: "Copy link" }),
@@ -601,5 +665,4 @@ describe("game Header", () => {
 
     expect(onTrainAlone).toHaveBeenCalledOnce();
   });
-
 });

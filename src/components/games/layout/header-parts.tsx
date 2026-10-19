@@ -5,7 +5,7 @@ import { AlertTriangle, X } from "lucide-react";
 
 import { Overlay } from "@/components/feedback/Overlay";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
-import { Badge, type BadgeTone } from "@/components/ui/Badge";
+import { type BadgeTone } from "@/components/ui/Badge";
 import { ShareActions } from "@/components/ui/ShareActions";
 import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
 import type { GameState } from "@/lib/schemas/game";
@@ -111,7 +111,6 @@ export function GameStatusStrip({
 /** Session-complete / cancelled banner rendered under the sticky bar. */
 export function TerminalResultBar({
   tone,
-  label,
   title,
   description,
   showResultsLink,
@@ -135,7 +134,7 @@ export function TerminalResultBar({
         ? "border-error/35 bg-error-container text-on-error-container"
         : "border-secondary/30 bg-secondary-container text-on-secondary-container";
   return (
-    <div className="border-t border-outline-variant px-5 py-3 sm:px-6 lg:px-10">
+    <div className="border-t border-outline-variant py-3 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <div
           role="status"
@@ -143,9 +142,6 @@ export function TerminalResultBar({
           className={`flex flex-col gap-3 rounded-[16px] border p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4 ${barClasses}`}
         >
           <div className="flex min-w-0 flex-col items-start gap-3 md:flex-row">
-            <Badge tone={tone} dot className="mt-0.5 shrink-0">
-              {label}
-            </Badge>
             <div className="min-w-0">
               <h2
                 id="terminal-result-title"
@@ -164,7 +160,7 @@ export function TerminalResultBar({
                 aria-label="View championship results"
                 className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
               >
-                View results
+                results
               </button>
             ) : null}
             <button
@@ -172,7 +168,7 @@ export function TerminalResultBar({
               onClick={onBackToChallenges}
               className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
             >
-              Back To Spot
+              Back
             </button>
             {showRunAgain ? (
               <Link
