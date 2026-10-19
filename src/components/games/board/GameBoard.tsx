@@ -20,13 +20,16 @@ import type { TrickLevel } from "@/lib/schemas/game";
 const MAX_ALTERNATIVE_TRICKS = 3;
 
 export function GameBoard({
+  gameId: propGameId,
   userId,
   shareCode,
 }: {
+  gameId?: string;
   userId: string | null;
   shareCode?: string;
 }) {
-  const params = useParams<{ id: string }>();
+  const routeParams = useParams<{ id: string }>();
+  const gameId = propGameId ?? routeParams?.id ?? "";
   const router = useRouter();
   const authenticated = userId !== null;
   const [guestName, setGuestName] = useState(() => {
@@ -38,9 +41,9 @@ export function GameBoard({
     if (!authenticated) loadOrCreateGuestToken();
   }, [authenticated]);
   const { game, connection, error, setError, latestGameRef, refreshGameState } =
-    useGameRealtime(params.id, shareCode, { authenticated });
+    useGameRealtime(gameId, shareCode, { authenticated });
   const { action, busy } = useGameAction({
-    gameId: params.id,
+    gameId,
     latestGameRef,
     refreshGameState,
     setError,
@@ -63,12 +66,38 @@ export function GameBoard({
   const [awardOpen, setAwardOpen] = useState(false);
   const awardKeyRef = useRef<string | null>(null);
 
+  const awardTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const currentRoundKey = game?.currentRound?.id ?? "none";
   const alternativeTrickIds =
     alternativeTrickState.roundKey === currentRoundKey
       ? alternativeTrickState.ids
       : [];
   const alternativeTrickCount = alternativeTrickIds.length;
+
+  // Declared before the main [game] effect on purpose: effects run in
+  // declaration order, so on mount/game change this reset runs first and
+  // never cancels the timer the main effect schedules afterwards.
+  useEffect(() => {
+    // reset award dialog when navigating to a different game
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAwardOpen(false);
+    awardKeyRef.current = null;
+    if (awardTimeoutRef.current) {
+      clearTimeout(awardTimeoutRef.current);
+      awardTimeoutRef.current = null;
+    }
+  }, [game?.id]);
+
+  useEffect(() => {
+    return () => {
+      awardKeyRef.current = null;
+      if (awardTimeoutRef.current) {
+        clearTimeout(awardTimeoutRef.current);
+        awardTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!game) return;
@@ -118,24 +147,20 @@ export function GameBoard({
       }
       if (!dismissed && awardKeyRef.current !== game.id) {
         awardKeyRef.current = game.id;
-        const t = setTimeout(() => setAwardOpen(true), 350);
-        // store timeout cleanup via ref not needed; effect cleanup below handles next run
-        // we capture t via closure; returning cleanup for this effect will clear on unmount/re-run
-        previousPlayerCount.current = game.players.length;
-        previousStatus.current = game.status;
-        return () => clearTimeout(t);
+        // The timer lives in a ref (not effect cleanup) so a realtime update
+        // arriving within the delay does not cancel it. It is cleared on
+        // unmount or when the game id changes (effects above).
+        if (awardTimeoutRef.current) clearTimeout(awardTimeoutRef.current);
+        awardTimeoutRef.current = setTimeout(() => {
+          setAwardOpen(true);
+          awardTimeoutRef.current = null;
+        }, 350);
       }
     }
 
     previousPlayerCount.current = game.players.length;
     previousStatus.current = game.status;
   }, [game]);
-
-  useEffect(() => {
-    // reset award dialog when navigating to a different game
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAwardOpen(false);
-  }, [game?.id]);
 
   if (!game) {
     if (error) {
@@ -305,7 +330,13 @@ export function GameBoard({
     sessionStorage.setItem("openspot-guest-name", name);
     setGuestName(name);
     setGuestJoinError(null);
-    void action("/join", { shareCode });
+    joinLobby();
+  }
+
+  function joinLobby() {
+    const effectiveShareCode = shareCode || game?.shareCode;
+    if (!effectiveShareCode) return;
+    void action("/join", { shareCode: effectiveShareCode });
   }
 
   const alternativeTricksRemaining = Math.max(
@@ -358,7 +389,7 @@ export function GameBoard({
           if (!current) return;
           void action(`/rounds/${current.id}/attempt`, { result });
         }}
-        onJoinLobby={() => void action("/join", { shareCode })}
+        onJoinLobby={joinLobby}
         onStartLobby={() => void action("/start")}
         onStartNow={() => void action("/start", { startNow: true })}
         onTrainAlone={() => void action("/train-alone")}

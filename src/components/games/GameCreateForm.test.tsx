@@ -9,13 +9,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 
-const { requestLocationMock, userLocationState, routerPushMock } = vi.hoisted(() => ({
+const { requestLocationMock, userLocationState, routerPushMock, spotWeatherState } = vi.hoisted(() => ({
   requestLocationMock: vi.fn(),
   userLocationState: {
     status: "idle",
     location: null as { lat: number; lon: number; accuracy: number } | null,
   },
   routerPushMock: vi.fn(),
+  spotWeatherState: { current: 22 as number | null },
 }));
 
 vi.mock("next/navigation", () => ({
@@ -43,7 +44,7 @@ vi.mock("@/hooks/data/useSpotWeather", () => ({
   useSpotWeather: () => ({
     weather: {
       icon: "sunny",
-      current: 22,
+      current: spotWeatherState.current,
       description: "clear sky",
       tempMin: 18,
       tempMax: 25,
@@ -60,6 +61,7 @@ vi.mock("@/components/spots/weather/WeatherIcon", () => ({
 }));
 
 import { GameCreateForm } from "./GameCreateForm";
+import { createGameInputSchema } from "@/lib/schemas/game";
 import { usePreferencesStore } from "@/stores/preferences-store";
 
 const spotFixture = {
@@ -101,6 +103,7 @@ async function openSetupDialog(
 beforeEach(() => {
   vi.clearAllMocks();
   sessionStorage.clear();
+  spotWeatherState.current = 22;
   vi.stubGlobal("fetch", vi.fn());
   (fetch as Mock).mockImplementation(async (input: RequestInfo | URL) => {
     const url = String(input);
@@ -536,6 +539,79 @@ describe("GameCreateForm", () => {
       accuracyMeters: 12,
     });
     expect(body.scheduledStartAt).toBeUndefined();
+  });
+
+  async function submitChallengeAndReadBody(
+    user: TestUser,
+    gameId: string,
+  ): Promise<Record<string, unknown>> {
+    userLocationState.status = "granted";
+    userLocationState.location = { lat: 40.4168, lon: -3.7038, accuracy: 12 };
+    const fetchMock = fetch as Mock;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/games/options")) {
+        return jsonResponse({
+          disciplineSlug: "skateboard",
+          spotTypes: [
+            { slug: "skate", name: "Skate", sortOrder: 1, levels: [1, 2, 3] },
+          ],
+        });
+      }
+      if (url.includes("/api/games/nearby-spot"))
+        return jsonResponse({ spot: spotFixture, distanceMeters: 12 });
+      if (url === "/api/games") return jsonResponse({ id: gameId, version: 0 }, 201);
+      return jsonResponse({ error: "Not found" }, 404);
+    });
+
+    render(<GameCreateForm signedIn />);
+
+    await user.click(screen.getByRole("radio", { name: /Challenge/ }));
+    const dialog = await openSetupDialog(user, "Create challenge");
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await within(dialog).findByRole("radio", { name: "Skate" });
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await user.click(
+      within(dialog).getByRole("radio", { name: /In 5 minutes/ }),
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await within(dialog).findByText(/Santa Cruz is the only compatible spot/);
+    await user.click(
+      within(dialog).getByRole("button", { name: "Yes, use this spot" }),
+    );
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await user.click(within(dialog).getByRole("radio", { name: "Yes, correct" }));
+    await user.click(within(dialog).getByTestId("mobile-create-game"));
+
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
+      ).toBe(true),
+    );
+    const createCall = fetchMock.mock.calls.find(
+      ([input]) => String(input) === "/api/games",
+    );
+    return JSON.parse(String(createCall?.[1]?.body)) as Record<string, unknown>;
+  }
+
+  it("rounds a decimal weather temperature and satisfies the input schema", async () => {
+    spotWeatherState.current = 21.8;
+    const body = await submitChallengeAndReadBody(
+      userEvent.setup(),
+      "weather-test-1",
+    );
+    expect(body.weatherForecastTemp).toBe(22);
+    expect(createGameInputSchema.safeParse(body).success).toBe(true);
+  });
+
+  it("sends null weatherForecastTemp when weather has no temperature and satisfies the input schema", async () => {
+    spotWeatherState.current = null;
+    const body = await submitChallengeAndReadBody(
+      userEvent.setup(),
+      "weather-test-2",
+    );
+    expect(body.weatherForecastTemp).toBeNull();
+    expect(createGameInputSchema.safeParse(body).success).toBe(true);
   });
 
   it("walks through the three challenge setup steps before creating", async () => {
