@@ -3,17 +3,11 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { getSessionUser } from "@/lib/auth/server";
 import { getPreferences } from "@/lib/services/profile/preferences";
-import {
-  findTvCardById,
-  listTvCategoryRows,
-} from "@/lib/services/tv/tv";
+import { findTvCardById, listTvCategoryRows } from "@/lib/services/tv/tv";
 import { listSports } from "@/lib/services/taxonomy/taxonomy";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { env } from "@/lib/config/env";
-import {
-  TV_OG_IMAGE_PATH,
-  buildTvShareDescription,
-} from "@/lib/tv/share";
+import { TV_OG_IMAGE_PATH, buildTvShareDescription } from "@/lib/tv/share";
 import { resolveDisciplineParam } from "@/components/tv/marquee/tv-marquee-data";
 import { TvGrid } from "@/components/tv/grid/TvGrid";
 import TvLoading from "./loading";
@@ -69,8 +63,7 @@ export async function generateMetadata({
   // running JS, so a relative path never resolves outside page context.
   const ogImage = new URL(TV_OG_IMAGE_PATH, env.APP_URL).toString();
   const resolved = await searchParams;
-  const playId =
-    firstParam(resolved.play) ?? firstParam(resolved.v) ?? null;
+  const playId = firstParam(resolved.play) ?? firstParam(resolved.v) ?? null;
   if (!playId) return tvBaseMetadata(ogImage);
 
   const video = await withSafeDefault(
@@ -186,7 +179,7 @@ export default async function TvPage({
 
   return (
     <div className="min-h-dvh bg-black">
-      <div className="mx-auto max-w-6xl px-0 py-6 md:py-8">
+      <div className="mx-auto max-w-6xl px-0 py-2 md:py-8">
         <Suspense fallback={<TvLoading />}>
           <TvGrid
             rows={rows}

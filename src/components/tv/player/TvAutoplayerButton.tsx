@@ -19,7 +19,9 @@ export function TvAutoplayerButton({
   fullWidth,
   onOpen,
 }: TvAutoplayerButtonProps) {
-  const isAll = disciplineLabel.toLowerCase() === "all sports" || disciplineLabel.toLowerCase() === "all";
+  const isAll =
+    disciplineLabel.toLowerCase() === "all sports" ||
+    disciplineLabel.toLowerCase() === "all";
   const isAllCategory = !categoryLabel || categoryLabel.toLowerCase() === "all";
   const queueLabel = isAllCategory
     ? isAll
@@ -41,7 +43,9 @@ export function TvAutoplayerButton({
       }
       title={disabledReason ?? `Play ${count} videos — ${queueLabel}`}
       className={`inline-flex shrink-0 items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-full px-3 sm:px-4 py-1.5 sm:py-2 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest shadow-sm transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${
-        fullWidth ? "w-full justify-center sm:w-auto" : "max-w-[52vw] sm:max-w-none"
+        fullWidth
+          ? "w-full justify-center sm:w-auto"
+          : "max-w-[52vw] sm:max-w-none"
       } ${
         count === 0
           ? "border border-white/15 bg-white/10 text-white/60"
@@ -56,9 +60,12 @@ export function TvAutoplayerButton({
       </span>
       <span className="hidden sm:inline shrink-0">Autoplay</span>
       <span className="sm:hidden shrink-0">Play</span>
-      <span aria-hidden="true" className="hidden h-3 w-px shrink-0 bg-black/15 sm:block" />
+      <span
+        aria-hidden="true"
+        className="hidden h-3 w-px shrink-0 bg-black/15 sm:block"
+      />
       <span className="min-w-0 max-w-[12ch] sm:max-w-[16ch] truncate">
-        {queueLabel} · {count}
+        {queueLabel}
       </span>
     </button>
   );

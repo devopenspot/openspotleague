@@ -78,16 +78,12 @@ export function TvGrid({
     playParam,
   });
 
-  const {
-    categoryRows,
-    videos,
-    videoById,
-    appendRowVideos,
-  } = useTvCatalogState({
-    rows,
-    discipline,
-    initialPlayVideo,
-  });
+  const { categoryRows, videos, videoById, appendRowVideos } =
+    useTvCatalogState({
+      rows,
+      discipline,
+      initialPlayVideo,
+    });
 
   // Stable syncUrl — updates history via replaceState to avoid Next.js App Router RSC refetches
   const syncUrl = useCallback(
@@ -288,14 +284,14 @@ export function TvGrid({
       >
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 lg:gap-8">
-          <div className="flex items-center gap-3 sm:gap-6">
+          <div className="flex items-center justify-between w-full gap-3 sm:gap-6">
             <div className="flex items-center gap-3">
               <Tv
                 size={36}
-                className="text-white/30 sm:h-12 sm:w-12"
+                className="sm:h-12 sm:w-12 text-pink-500"
                 aria-hidden="true"
               />
-              <h1 className="font-display text-4xl sm:text-5xl font-bold uppercase tracking-tight text-white">
+              <h1 className="font-display text-4xl sm:text-5xl font-bold uppercase tracking-tight text-pink-500">
                 TV
               </h1>
             </div>
@@ -332,7 +328,9 @@ export function TvGrid({
             } sessions…`}
           />
         ) : filtered.length === 0 ? (
-          <TvFilteredEmptyState onClearFilters={() => selectDiscipline("all")} />
+          <TvFilteredEmptyState
+            onClearFilters={() => selectDiscipline("all")}
+          />
         ) : (
           categoryRows.map((row) => (
             <TvCategoryMarquee
