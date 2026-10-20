@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest"
+import { NextRequest } from "next/server"
 import {
   hasSessionCookiesFromNames,
+  isPrefetchRequest,
   isProxyBypassPath,
   isTvEmbedPath,
+  isUnrecoverableAuthError,
   matchRateLimitTier,
   needsSeedForPath,
 } from "./proxy"
@@ -113,5 +116,56 @@ describe("needsSeedForPath", () => {
     expect(needsSeedForPath("/api/weather")).toBe(false)
     expect(needsSeedForPath("/tv")).toBe(false)
     expect(needsSeedForPath("/map")).toBe(false)
+  })
+})
+
+describe("isPrefetchRequest", () => {
+  it("detects Next.js router prefetch header", () => {
+    const req = new NextRequest("http://localhost/explore", {
+      headers: { "next-router-prefetch": "1" },
+    })
+    expect(isPrefetchRequest(req)).toBe(true)
+  })
+
+  it("detects Purpose: prefetch", () => {
+    const req = new NextRequest("http://localhost/explore", {
+      headers: { purpose: "prefetch" },
+    })
+    expect(isPrefetchRequest(req)).toBe(true)
+  })
+
+  it("detects Sec-Purpose: prefetch", () => {
+    const req = new NextRequest("http://localhost/explore")
+    req.headers.set("sec-purpose", "prefetch")
+    expect(isPrefetchRequest(req)).toBe(true)
+  })
+
+  it("detects X-Purpose: prefetch", () => {
+    const req = new NextRequest("http://localhost/explore", {
+      headers: { "x-purpose": "prefetch" },
+    })
+    expect(isPrefetchRequest(req)).toBe(true)
+  })
+
+  it("returns false for standard navigation", () => {
+    const req = new NextRequest("http://localhost/explore")
+    expect(isPrefetchRequest(req)).toBe(false)
+  })
+})
+
+describe("isUnrecoverableAuthError", () => {
+  it("identifies status 400 as unrecoverable", () => {
+    expect(isUnrecoverableAuthError({ status: 400 })).toBe(true)
+  })
+
+  it("identifies invalid_grant or invalid refresh token as unrecoverable", () => {
+    expect(isUnrecoverableAuthError({ message: "Invalid Refresh Token: Refresh Token Not Found" })).toBe(true)
+    expect(isUnrecoverableAuthError({ message: "invalid_grant" })).toBe(true)
+  })
+
+  it("identifies 5xx and network errors as recoverable", () => {
+    expect(isUnrecoverableAuthError({ status: 500, message: "Internal server error" })).toBe(false)
+    expect(isUnrecoverableAuthError({ status: 503, message: "Service unavailable" })).toBe(false)
+    expect(isUnrecoverableAuthError({ message: "fetch failed" })).toBe(false)
   })
 })

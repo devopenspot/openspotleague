@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { getCachedJwks } from '@/lib/supabase/jwks'
 import { ensureProfileRow, userFromClaims, type AuthClaims } from '@/lib/auth/auth'
 import { sanitizeNext } from '@/lib/auth/server'
 import { log } from '@/lib/utils/log'
@@ -35,7 +36,11 @@ export async function GET(request: NextRequest) {
   }
   // getClaims validates the freshly-set session cookie and returns the
   // user identity from the JWT payload. No network round trip to /user.
-  const { data: claimsResult, error: claimsError } = await supabase.auth.getClaims()
+  const jwks = await getCachedJwks()
+  const { data: claimsResult, error: claimsError } = await supabase.auth.getClaims(
+    undefined,
+    jwks ? { jwks } : undefined,
+  )
   if (claimsError) {
     log.error('auth/callback: getClaims failed after exchange', claimsError.message)
     return redirectToOAuthError()

@@ -27,6 +27,27 @@ export function hasSessionCookiesFromNames(names: readonly string[]): boolean {
   return names.some((n) => n.startsWith("sb-") && n.includes("-auth-token"))
 }
 
+/** True when request is speculative prefetch from Next.js router or browser. */
+export function isPrefetchRequest(request: NextRequest): boolean {
+  return (
+    request.headers.get("next-router-prefetch") === "1" ||
+    request.headers.get("purpose") === "prefetch" ||
+    request.headers.get("x-purpose") === "prefetch" ||
+    request.headers.get("sec-purpose") === "prefetch"
+  )
+}
+
+/** Distinguish genuine dead sessions (revoked/invalid) from transient 5xx/network errors. */
+export function isUnrecoverableAuthError(error: { status?: number; message?: string }): boolean {
+  if (error.status === 400) return true
+  const msg = (error.message ?? "").toLowerCase()
+  return (
+    msg.includes("invalid refresh token") ||
+    msg.includes("refresh token not found") ||
+    msg.includes("invalid_grant")
+  )
+}
+
 /** Only landing pages consume osp_seed for random pagination. */
 export function needsSeedForPath(pathname: string): boolean {
   return pathname === "/" || pathname === "/explore" || pathname.startsWith("/explore/")
@@ -153,6 +174,11 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
+  // Speculative prefetch requests must never trigger token refresh storms.
+  if (isPrefetchRequest(request)) {
+    return response
+  }
+
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {
@@ -191,6 +217,18 @@ export async function proxy(request: NextRequest) {
       requestId,
       message: error.message,
     })
+    if (isUnrecoverableAuthError(error)) {
+      for (const cookie of request.cookies.getAll()) {
+        if (cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token")) {
+          response.cookies.set(cookie.name, "", {
+            path: "/",
+            maxAge: 0,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+          })
+        }
+      }
+    }
   }
 
   return response

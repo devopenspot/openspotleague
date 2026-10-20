@@ -86,7 +86,24 @@ export async function getServerUserFromCookies(): Promise<User | null> {
     // request, unlike getUser(). The user_metadata we need for display
     // (name, initials, avatar) is embedded in the JWT payload.
     const jwks = await getCachedJwks()
-    const { data, error } = await supabase.auth.getClaims(undefined, jwks ? { jwks } : undefined)
+    // Extract accessToken directly from storage to prevent Server Components
+    // from triggering _callRefreshToken network calls that cannot persist cookies.
+    let accessToken: string | undefined
+    try {
+      const auth = supabase.auth as unknown as {
+        storage: { getItem: (k: string) => Promise<string | null> }
+        storageKey: string
+      }
+      const raw = await auth.storage.getItem(auth.storageKey)
+      if (raw) {
+        const session = (typeof raw === "string" ? JSON.parse(raw) : raw) as { access_token?: string }
+        accessToken = session?.access_token
+      }
+    } catch {
+      // Fall back if storage extraction fails
+    }
+    if (!accessToken) return null
+    const { data, error } = await supabase.auth.getClaims(accessToken, jwks ? { jwks } : undefined)
     if (error || !data?.claims) return null
     const fromClaims = userFromClaims(data.claims as AuthClaims)
     if (!fromClaims) return null

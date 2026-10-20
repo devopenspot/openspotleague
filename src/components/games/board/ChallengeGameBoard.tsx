@@ -210,7 +210,7 @@ function ChallengeStageRow({
         result={result}
       />
       <div className="min-w-0">
-        <div className="flex min-w-0 flex-col gap-1.5">
+        <div className="flex min-w-0 flex-col gap-1">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
             <p className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-secondary">
               Round {stage.sequence}
@@ -257,14 +257,14 @@ function ChallengeStageRow({
 
         {isCurrent && resultAction ? (
           <div
-            className="mt-3 flex flex-wrap items-center gap-2"
+            className="mt-3 flex flex-wrap items-center gap-1"
             aria-label={resultAction.label}
           >
             <button
               type="button"
               disabled={busy}
               onClick={() => resultAction.onSelect("landed")}
-              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-primary bg-primary px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_1px_0_rgba(0,0,0,0.1)] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-full border border-primary bg-primary px-2 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_1px_0_rgba(0,0,0,0.1)] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
               <Check size={15} aria-hidden="true" />
               Landed
@@ -273,7 +273,7 @@ function ChallengeStageRow({
               type="button"
               disabled={busy}
               onClick={() => resultAction.onSelect("failed")}
-              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
               <X size={15} aria-hidden="true" />
               Failed
@@ -283,7 +283,7 @@ function ChallengeStageRow({
                 type="button"
                 onClick={onNextTrick}
                 disabled={busy || alternativeTricksRemaining === 0}
-                className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3.5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <RotateCcw size={13} aria-hidden="true" />
                 {alternativeTricksRemaining > 0
@@ -333,7 +333,7 @@ function ChallengeStageRow({
               return (
                 <span
                   key={stageScore.playerId}
-                  className="rounded-[8px] border border-on-surface bg-surface-container-high px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em]"
+                  className="rounded-[8px] border border-on-surface bg-surface-container-high px-2 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.05em]"
                 >
                   {player?.displayName ?? "Rider"} / +{stageScore.points} pts
                 </span>
