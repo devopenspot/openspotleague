@@ -1,4 +1,4 @@
-import { inArray } from "drizzle-orm"
+import { inArray, sql } from "drizzle-orm"
 import type { getDbClient } from "@/lib/db/client"
 import {
   spotDisciplines,
@@ -32,6 +32,7 @@ function isPlaceholderUrl(url: string): boolean {
 export interface MigrateSpotsOptions {
   limit?: number
   chunkSize?: number
+  upsert?: boolean
   onProgress?: (progress: { phase: string; completed: number; total: number }) => void
 }
 
@@ -157,6 +158,9 @@ export async function migrateSpots(
   let insertedAssignmentsCount = 0
 
   await db.transaction(async (tx) => {
+    // Elevate statement_timeout for bulk data migration (default API timeout is 8s)
+    await tx.execute(sql`set local statement_timeout = '300s'`)
+
     // 1. Retire stale seed spots with legacy slug formats if they conflict
     const migratedPairs = new Set(
       spotsToMigrate.map((spot) => {
@@ -212,11 +216,36 @@ export async function migrateSpots(
       }),
       location: spot.location,
       createdBy: null,
+      ...(spot.createdAt ? { createdAt: spot.createdAt } : {}),
+      ...(spot.updatedAt ? { updatedAt: spot.updatedAt } : {}),
     }))
 
     for (let i = 0; i < spotRows.length; i += SPOT_CHUNK) {
       const chunk = spotRows.slice(i, i + SPOT_CHUNK)
-      await tx.insert(spots).values(chunk).onConflictDoNothing()
+      if (options.upsert) {
+        await tx
+          .insert(spots)
+          .values(chunk)
+          .onConflictDoUpdate({
+            target: spots.id,
+            set: {
+              slug: sql`excluded.slug`,
+              name: sql`excluded.name`,
+              city: sql`excluded.city`,
+              citySlug: sql`excluded.city_slug`,
+              address: sql`excluded.address`,
+              imageUrl: sql`excluded.image_url`,
+              countryCode: sql`excluded.country_code`,
+              instagram: sql`excluded.instagram`,
+              types: sql`excluded.types`,
+              sports: sql`excluded.sports`,
+              location: sql`excluded.location`,
+              updatedAt: sql`coalesce(excluded.updated_at, now())`,
+            },
+          })
+      } else {
+        await tx.insert(spots).values(chunk).onConflictDoNothing()
+      }
       options.onProgress?.({
         phase: "spots",
         completed: Math.min(i + SPOT_CHUNK, spotRows.length),
@@ -289,6 +318,9 @@ export async function migrateSpots(
       })
     }
   })
+
+  // Refresh query planner statistics after bulk insertion of ~177,000 rows
+  await db.execute(sql`analyze spots, spot_disciplines, spot_type_assignments, spot_images`).catch(() => undefined)
 
   return {
     spots: spotsToMigrate.length,

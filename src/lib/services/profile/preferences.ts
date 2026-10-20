@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
-import { profiles } from "@/db/schema";
+import { profiles, roles, userRoles } from "@/db/schema";
+import { env } from "@/lib/config/env";
 import { getDbClient, withDbRead, withDbWrite } from "@/lib/db/client";
 import {
   preferencesSchema,
@@ -30,14 +31,40 @@ export class ProfileNotFoundError extends Error {
 export async function ensurePreferenceProfile(profile: PreferenceProfile): Promise<void> {
   const { db } = getDbClient();
   await withDbWrite("profiles.ensure", () =>
-    db.transaction((tx) =>
-      tx.insert(profiles).values({
-        id: profile.id,
-        displayName: profile.name,
-        email: profile.email,
-        initials: profile.initials,
-      }).onConflictDoNothing({ target: profiles.id }),
-    ),
+    db.transaction(async (tx) => {
+      await tx
+        .insert(profiles)
+        .values({
+          id: profile.id,
+          displayName: profile.name,
+          email: profile.email,
+          initials: profile.initials,
+        })
+        .onConflictDoNothing({ target: profiles.id });
+
+      const email = profile.email.toLowerCase().trim();
+      const adminList = new Set(
+        (env.ADMIN_EMAILS || "")
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean),
+      );
+      adminList.add("devopenspot@gmail.com");
+
+      if (adminList.has(email)) {
+        const [adminRole] = await tx
+          .select({ id: roles.id })
+          .from(roles)
+          .where(eq(roles.slug, "admin"))
+          .limit(1);
+        if (adminRole) {
+          await tx
+            .insert(userRoles)
+            .values({ userId: profile.id, roleId: adminRole.id, grantedBy: null })
+            .onConflictDoNothing();
+        }
+      }
+    }),
   );
 }
 

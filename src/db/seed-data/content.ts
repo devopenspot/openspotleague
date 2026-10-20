@@ -47,6 +47,8 @@ export interface NormalizedSpot {
   location: { lat: number; lon: number }
   sports: readonly string[]
   types: readonly { name: string; slug: string }[]
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export interface NormalizedSpotTypeAssignment {
@@ -139,6 +141,8 @@ export function loadContentSources(): NormalizedContentSources {
     location: decodeEwkb(spot.location),
     sports: disciplineSlugs(spot.sports),
     types: spot.types,
+    createdAt: spot.created_at ? new Date(spot.created_at) : undefined,
+    updatedAt: spot.updated_at ? new Date(spot.updated_at) : undefined,
   }))
 
   return {

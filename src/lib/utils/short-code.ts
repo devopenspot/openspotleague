@@ -49,6 +49,7 @@ export function isValidShortCode(code: unknown): code is string {
   return typeof code === "string" && CODE_PATTERN.test(code);
 }
 
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHAR_REGEX = /[\u0000-\u001F\u007F]/;
 
 /**

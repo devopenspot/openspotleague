@@ -20,16 +20,20 @@ function parseCliArgs(): {
   isValidate: boolean
   limit?: number
   chunkSize?: number
+  upsert?: boolean
 } {
   const args = process.argv.slice(2)
   let isValidate = false
   let limit: number | undefined
   let chunkSize: number | undefined
+  let upsert = false
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i]
     if (arg === "validate" || arg === "--validate" || arg === "--dry-run") {
       isValidate = true
+    } else if (arg === "--upsert") {
+      upsert = true
     } else if (arg === "--limit" && args[i + 1]) {
       limit = parseInt(args[i + 1]!, 10)
       i += 1
@@ -39,11 +43,11 @@ function parseCliArgs(): {
     }
   }
 
-  return { isValidate, limit, chunkSize }
+  return { isValidate, limit, chunkSize, upsert }
 }
 
 async function main(): Promise<void> {
-  const { isValidate, limit, chunkSize } = parseCliArgs()
+  const { isValidate, limit, chunkSize, upsert } = parseCliArgs()
 
   if (isValidate) {
     console.log("Validating spots dataset offline from src/data/spots.json...")
@@ -82,6 +86,7 @@ async function main(): Promise<void> {
     const result = await migrateSpots(db, {
       limit,
       chunkSize,
+      upsert,
       onProgress: ({ phase, completed, total }) => {
         const pct = Math.round((completed / total) * 100)
         process.stdout.write(`\r[spots-migration] ${phase}: ${completed}/${total} (${pct}%)`)

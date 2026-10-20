@@ -4,6 +4,7 @@ import { getDirectDatabaseUrl } from "../lib/config/env"
 import { getPostgresOptions } from "../lib/db/postgres-options"
 
 const APPLICATION_TABLES = [
+  "short_links",
   "user_email_preferences",
   "user_notifications",
   "league_email_log",

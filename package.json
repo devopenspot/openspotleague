@@ -21,6 +21,8 @@
     "db:seed-tricks:scooter": "tsx src/db/seed-tricks.ts scooter",
     "db:seed-tricks:roller": "tsx src/db/seed-tricks.ts roller",
     "db:health": "tsx src/db/health-cli.ts",
+    "db:bootstrap-admin": "tsx scripts/bootstrap-admin.ts",
+    "db:verify-cdn": "tsx scripts/verify-cdn-assets.ts",
     "db:verify-game-lifecycle": "tsx scripts/verify-challenge-game-lifecycle.ts",
     "db:check-pool": "tsx src/db/pool-check-cli.ts",
     "db:apply": "tsx src/db/apply-sql.ts",
