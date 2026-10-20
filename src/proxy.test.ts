@@ -29,6 +29,8 @@ describe("matchRateLimitTier", () => {
     expect(matchRateLimitTier("/api/auth/signout")?.tag).toBe("auth")
     expect(matchRateLimitTier("/api/games/g1/next-trick")?.tag).toBe("games")
     expect(matchRateLimitTier("/api/weather")?.tag).toBe("weather")
+    expect(matchRateLimitTier("/api/short-links")?.tag).toBe("short-links")
+    expect(matchRateLimitTier("/api/short-links")?.limit).toBe(30)
     expect(matchRateLimitTier("/api/health")?.tag).toBe("health")
   })
 
@@ -73,7 +75,9 @@ describe("matchRateLimitTier", () => {
 })
 
 describe("isProxyBypassPath", () => {
-  it("bypasses health and static/infra paths", () => {
+  it("bypasses short-links, health, and static/infra paths", () => {
+    expect(isProxyBypassPath("/s")).toBe(true)
+    expect(isProxyBypassPath("/s/7xK9q2A")).toBe(true)
     expect(isProxyBypassPath("/api/health")).toBe(true)
     expect(isProxyBypassPath("/robots.txt")).toBe(true)
     expect(isProxyBypassPath("/sitemap.xml")).toBe(true)

@@ -11,6 +11,7 @@ export function isTvEmbedPath(pathname: string): boolean {
 
 /** Static/infra paths that need no auth refresh, rate-limit, or seed. */
 export function isProxyBypassPath(pathname: string): boolean {
+  if (pathname === "/s" || pathname.startsWith("/s/")) return true
   if (pathname === "/api/health" || pathname.startsWith("/api/health/")) return true
   return (
     pathname === "/robots.txt" ||
@@ -65,6 +66,7 @@ const RATE_LIMIT_TIERS: readonly RateLimitTier[] = [
   { match: (p) => p.startsWith("/api/league"), limit: 60, tag: "league" },
   { match: (p) => p.startsWith("/api/notifications"), limit: 60, tag: "notifications" },
   { match: (p) => p.startsWith("/api/weather"), limit: 20, tag: "weather" },
+  { match: (p) => p.startsWith("/api/short-links"), limit: 30, tag: "short-links" },
   { match: (p) => p.startsWith("/api/health"), limit: 10, tag: "health" },
   // Ordered tiers — more specific matches first (first match wins).
   // /api/tv/ids gets a stricter tier below: lazy queue affordance makes
