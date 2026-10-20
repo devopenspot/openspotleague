@@ -62,7 +62,7 @@ export function MobileDrawer() {
       contentId={DRAWER_ID}
       closeOnRouteChange={false}
       side="right"
-      panelClassName="w-90 max-w-[calc(100vw-1rem)] justify-between border-l border-wire-border bg-primary text-on-primary"
+      panelClassName="w-98 max-w-[calc(100vw-1rem)] justify-between border-l border-wire-border bg-primary text-on-primary"
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-wire-border bg-primary px-5 py-3.5">
