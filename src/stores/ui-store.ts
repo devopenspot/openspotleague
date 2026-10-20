@@ -12,6 +12,8 @@ interface UIState {
   preferenceDialogMode: PreferenceDialogMode
   pendingOnboardingAction: PendingAction | null
   pendingOnboardingNext: string | null
+  headerImage: string | null
+  setHeaderImage: (image: string | null) => void
   openSearch: () => void
   closeSearch: () => void
   toggleSearch: () => void
@@ -39,6 +41,8 @@ export const useUIStore = create<UIState>()(
       preferenceDialogMode: "onboarding",
       pendingOnboardingAction: null,
       pendingOnboardingNext: null,
+      headerImage: null,
+      setHeaderImage: (image) => set({ headerImage: image }),
       openSearch: () => set({ isSearchOpen: true }),
       closeSearch: () => set({ isSearchOpen: false }),
       toggleSearch: () => set((s) => ({ isSearchOpen: !s.isSearchOpen })),

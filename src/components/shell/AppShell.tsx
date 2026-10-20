@@ -16,7 +16,17 @@ import { ROUTES } from "@/lib/navigation/nav";
 import { setMapPreserveLocation } from "@/lib/map/preserve";
 import type { MapSpot } from "@/lib/types";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export interface AppShellProps {
+  children: React.ReactNode;
+  headerImage?: string;
+  headerImageAlt?: string;
+}
+
+export function AppShell({
+  children,
+  headerImage,
+  headerImageAlt,
+}: AppShellProps) {
   const router = useRouter();
   const tryOpenSearch = useUIStore((s) => s.tryOpenSearch);
   const closeSearch = useUIStore((s) => s.closeSearch);
@@ -91,7 +101,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       id="app-root"
       className="relative flex h-dvh flex-col bg-surface font-sans text-on-surface selection:bg-primary selection:text-surface"
     >
-      {showHeader ? <Header /> : null}
+      {showHeader ? (
+        <Header image={headerImage} imageAlt={headerImageAlt} />
+      ) : null}
 
       <main id={MAIN_CONTENT_ID} aria-label={mainAriaLabel} className={mainClassName}>
         {children}

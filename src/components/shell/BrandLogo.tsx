@@ -2,19 +2,33 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 
-interface BrandLogoProps {
+export const DEFAULT_BRAND_LOGO = "/logo.png";
+
+export interface BrandLogoProps {
   onClick?: () => void;
   size?: "sm" | "md";
   className?: string;
+  image?: string;
+  src?: string;
+  alt?: string;
 }
 
-export function BrandLogo({ onClick, size = "md", className }: BrandLogoProps) {
+export function BrandLogo({
+  onClick,
+  size = "md",
+  className,
+  image,
+  src,
+  alt = "",
+}: BrandLogoProps) {
   const isLink = !onClick;
   const imageSize = size === "sm" ? 32 : 40;
+  const logoSrc = image ?? src ?? DEFAULT_BRAND_LOGO;
+
   const content = (
     <Image
-      src="/logo.png"
-      alt=""
+      src={logoSrc}
+      alt={alt}
       width={imageSize}
       height={imageSize}
       className={"block shrink-0 object-contain h-16 w-16 -my-6"}

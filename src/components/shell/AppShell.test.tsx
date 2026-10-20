@@ -11,7 +11,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/components/shell/Header", () => ({
-  Header: () => <header data-testid="app-header">Header</header>,
+  Header: ({ image }: { image?: string }) => (
+    <header data-testid="app-header" data-image={image ?? "default"}>
+      Header
+    </header>
+  ),
 }));
 
 vi.mock("@/components/shell/BottomNav", () => ({
@@ -114,5 +118,18 @@ describe("AppShell", () => {
     expect(screen.getByTestId("admin-content")).toBeInTheDocument();
     expect(screen.queryByTestId("app-header")).not.toBeInTheDocument();
     expect(container.querySelector("#app-root")).not.toBeInTheDocument();
+  });
+
+  it("forwards headerImage to Header component", () => {
+    render(
+      <AppShell headerImage="/custom-shell-logo.png">
+        <div>Custom Logo Content</div>
+      </AppShell>,
+    );
+
+    expect(screen.getByTestId("app-header")).toHaveAttribute(
+      "data-image",
+      "/custom-shell-logo.png",
+    );
   });
 });

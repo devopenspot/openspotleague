@@ -12,11 +12,19 @@ import { useUIStore } from "@/stores/ui-store";
 import { MAIN_CONTENT_ID } from "@/lib/config/constants";
 import { BrandLogo } from "@/components/shell/BrandLogo";
 
-export function Header() {
+export interface HeaderProps {
+  image?: string;
+  imageAlt?: string;
+}
+
+export function Header({ image, imageAlt }: HeaderProps = {}) {
   const router = useRouter();
   const user = useUser();
   const { count: savedCount } = useSavedSpots(user?.id ?? null);
   const tryOpenSearch = useUIStore((s) => s.tryOpenSearch);
+  const storeHeaderImage = useUIStore((s) => s.headerImage);
+
+  const resolvedImage = image ?? storeHeaderImage ?? undefined;
 
   const handleSelect = (path: string) => {
     router.push(path);
@@ -28,7 +36,11 @@ export function Header() {
       className="sticky top-0 z-40 w-full border-b border-wire-border bg-primary px-5 md:px-10 py-3.5 [&_[data-nav-tab]]:rounded-[16px] [&_[data-nav-tab]]:text-xs [&_[data-nav-tab]]:font-semibold [&_[data-nav-tab]]:text-wire-muted hover:[&_[data-nav-tab]]:text-on-wire hover:[&_[data-nav-tab]]:bg-wire-border focus-visible:[&_[data-nav-tab]]:ring-white focus-visible:[&_[data-nav-tab]]:ring-offset-wire [&_[data-nav-tab][aria-selected=true]]:border-b-2 [&_[data-nav-tab][aria-selected=true]]:border-b-on-wire [&_[data-nav-tab][aria-selected=true]]:text-on-wire [&_[data-nav-tab][aria-selected=true]]:bg-wire-border/50 [&_a[href='/notifications']]:border-wire-border [&_a[href='/notifications']]:bg-wire-border [&_a[href='/notifications']]:text-on-wire hover:[&_a[href='/notifications']]:border-wire-border-strong hover:[&_a[href='/notifications']]:bg-wire-border-strong hover:[&_a[href='/notifications']]:text-on-wire focus-visible:[&_a[href='/notifications']]:ring-white focus-visible:[&_a[href='/notifications']]:ring-offset-wire [&_[data-notification-badge]]:bg-on-wire [&_[data-notification-badge]]:text-primary [&_#mobile-hamburger-btn]:border-wire-border [&_#mobile-hamburger-btn]:bg-wire-border [&_#mobile-hamburger-btn]:text-on-wire hover:[&_#mobile-hamburger-btn]:border-wire-border-strong hover:[&_#mobile-hamburger-btn]:bg-wire-border-strong hover:[&_#mobile-hamburger-btn]:text-on-wire focus-visible:[&_#mobile-hamburger-btn]:ring-white focus-visible:[&_#mobile-hamburger-btn]:ring-offset-wire"
     >
       <div className="flex items-center justify-between gap-4">
-        <BrandLogo className="rounded-[16px] transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire" />
+        <BrandLogo
+          image={resolvedImage}
+          alt={imageAlt}
+          className="rounded-[16px] transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+        />
 
         {/* Primary discovery + play — 4 items max (Explore, Map, Events, League).
             Hidden on mobile (<md) where BottomNav takes over. */}
