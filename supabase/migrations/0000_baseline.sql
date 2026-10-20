@@ -1009,6 +1009,17 @@ CREATE TABLE "verified_spots" (
 	CONSTRAINT "verified_spots_user_id_spot_id_pk" PRIMARY KEY("user_id","spot_id")
 );
 --> statement-breakpoint
+CREATE TABLE "short_links" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"code" text NOT NULL,
+	"target_url" text NOT NULL,
+	"title" text,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "short_links_code_check" CHECK (length("short_links"."code") >= 4 and length("short_links"."code") <= 32),
+	CONSTRAINT "short_links_target_url_check" CHECK (length("short_links"."target_url") > 0 and length("short_links"."target_url") <= 2048)
+);
+--> statement-breakpoint
 ALTER TABLE "admin_audit_log" ADD CONSTRAINT "admin_audit_log_actor_id_users_id_fk" FOREIGN KEY ("actor_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
 --> statement-breakpoint
 ALTER TABLE "admin_audit_log" ADD CONSTRAINT "admin_audit_log_target_user_id_users_id_fk" FOREIGN KEY ("target_user_id") REFERENCES "auth"."users"("id") ON DELETE no action ON UPDATE no action;
@@ -1502,6 +1513,10 @@ CREATE INDEX "verified_spots_user_created_idx" ON "verified_spots" USING btree (
 --> statement-breakpoint
 CREATE INDEX "verified_spots_spot_idx" ON "verified_spots" USING btree ("spot_id");
 --> statement-breakpoint
+CREATE UNIQUE INDEX "short_links_code_idx" ON "short_links" USING btree ("code");
+--> statement-breakpoint
+CREATE UNIQUE INDEX "short_links_target_url_idx" ON "short_links" USING btree ("target_url");
+--> statement-breakpoint
 CREATE OR REPLACE FUNCTION public.bump_verification_count()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -1573,41 +1588,47 @@ RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  v_elimination_word text;
+  word text;
 BEGIN
-  SELECT cc.elimination_word INTO v_elimination_word
-  FROM public.game_sessions gs
-  JOIN public.challenge_catalogs cc ON cc.id = gs.catalog_id
-  WHERE gs.id = NEW.game_id;
-
-  IF v_elimination_word IS NOT NULL AND length(NEW.letters) >= length(v_elimination_word) THEN
-    NEW.is_eliminated := true;
-    IF NEW.eliminated_at IS NULL THEN
-      NEW.eliminated_at := now();
-    END IF;
-  END IF;
+  SELECT elimination_word INTO word FROM public.game_sessions WHERE id = NEW.game_id;
+  IF word IS NULL THEN RAISE EXCEPTION 'game_sessions row not found for game_players row'; END IF;
+  IF NOT starts_with(word, NEW.letters) THEN RAISE EXCEPTION 'letters must be a prefix of the elimination word'; END IF;
+  IF NEW.letters <> '' AND upper(NEW.letters) <> NEW.letters THEN RAISE EXCEPTION 'letters must be uppercase'; END IF;
+  IF NEW.failed_attempts <> char_length(NEW.letters) THEN RAISE EXCEPTION 'failed_attempts must equal the letter length'; END IF;
   RETURN NEW;
 END;
 $$;
 --> statement-breakpoint
 CREATE TRIGGER "game_players_letters_trigger"
-BEFORE INSERT OR UPDATE OF "letters" ON "game_players"
+BEFORE INSERT OR UPDATE ON "game_players"
 FOR EACH ROW
 EXECUTE FUNCTION public.enforce_game_player_letters();
 --> statement-breakpoint
 CREATE OR REPLACE FUNCTION public.emit_game_realtime_signal()
 RETURNS trigger
 LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
 AS $$
 BEGIN
-  INSERT INTO public.game_realtime_signals (game_id, signal_type, payload)
-  VALUES (NEW.id, 'session_updated', jsonb_build_object('status', NEW.status, 'current_round', NEW.current_round));
+  IF NEW.version IS NOT DISTINCT FROM OLD.version THEN RETURN NEW; END IF;
+  INSERT INTO public.game_realtime_signals (game_id, version, signal_type)
+  VALUES (
+    NEW.id,
+    NEW.version,
+    CASE NEW.status
+      WHEN 'complete' THEN 'game_completed'
+      WHEN 'cancelled' THEN 'game_cancelled'
+      ELSE 'game_state_changed'
+    END
+  )
+  ON CONFLICT (game_id, version) DO NOTHING;
   RETURN NEW;
 END;
 $$;
 --> statement-breakpoint
 CREATE TRIGGER "game_sessions_realtime_signal_trigger"
-AFTER UPDATE ON "game_sessions"
+AFTER UPDATE OF version ON "game_sessions"
 FOR EACH ROW
 EXECUTE FUNCTION public.emit_game_realtime_signal();
 --> statement-breakpoint

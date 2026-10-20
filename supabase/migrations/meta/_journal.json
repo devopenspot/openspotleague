@@ -8,20 +8,6 @@
       "when": 1724200000000,
       "tag": "0000_baseline",
       "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1729375000000,
-      "tag": "0001_fix_game_realtime_signal",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1729379000000,
-      "tag": "0002_short_links",
-      "breakpoints": true
     }
   ]
 }

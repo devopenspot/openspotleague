@@ -2,10 +2,12 @@ import fs from "node:fs"
 import path from "node:path"
 
 function build() {
-  const generatedPath = path.join(process.cwd(), "supabase", "migrations", "0001_spotty_scrambler.sql")
-  if (!fs.existsSync(generatedPath)) {
-    throw new Error("Missing 0001_spotty_scrambler.sql - run drizzle-kit generate first")
+  const migrationsDir = path.join(process.cwd(), "supabase", "migrations")
+  const generatedFile = fs.readdirSync(migrationsDir).find((f) => f.startsWith("0001_") && f.endsWith(".sql"))
+  if (!generatedFile) {
+    throw new Error("Missing temporary generated migration (0001_*.sql) - run drizzle-kit generate first")
   }
+  const generatedPath = path.join(migrationsDir, generatedFile)
 
   const generatedContent = fs.readFileSync(generatedPath, "utf-8")
   const generatedStatements = generatedContent
