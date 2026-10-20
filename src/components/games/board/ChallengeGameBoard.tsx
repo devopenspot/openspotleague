@@ -137,14 +137,14 @@ export function ChallengeGameBoard({
 
 function EmptyStageRow() {
   return (
-    <li className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 bg-surface-container-low px-3 py-4 sm:grid-cols-[2.5rem_minmax(0,1fr)] sm:px-4 sm:py-4">
+    <li className="grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-2.5 bg-surface-container-low px-3 py-2.5 sm:grid-cols-[2.25rem_minmax(0,1fr)] sm:gap-3 sm:px-4 sm:py-3">
       <StageNode state="future" />
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <p className="shrink-0 rounded-full bg-surface-container-high px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-secondary">
             Get Ready
           </p>
-          <h3 className="min-w-0 flex-1 font-display text-[17px] font-bold leading-[1.3] text-on-surface sm:text-xl">
+          <h3 className="min-w-0 flex-1 font-display text-[16px] font-bold leading-[1.3] text-on-surface sm:text-[18px] md:text-xl">
             Your First Trick Drops When You Start
           </h3>
         </div>
@@ -197,43 +197,24 @@ function ChallengeStageRow({
   return (
     <li
       aria-current={isCurrent ? "step" : undefined}
-      className={`grid items-start gap-3 px-3 py-4 sm:px-4 sm:py-4 ${isCurrent ? "bg-primary-container/25 ring-1 ring-primary/15" : view.visualState === "complete" ? "bg-surface-container-low/50" : "bg-surface-container-lowest"} grid-cols-[2.5rem_minmax(0,1fr)] sm:grid-cols-[2.75rem_minmax(0,1fr)]`}
+      className={`flex px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3 ${isCurrent ? "bg-primary-container/25 ring-1 ring-primary/15" : view.visualState === "complete" ? "bg-surface-container-low/50" : "bg-surface-container-lowest"} `}
     >
-      <StageNode
-        state={
-          isCurrent
-            ? "current"
-            : view.visualState === "complete"
-              ? "complete"
-              : "future"
-        }
-        result={result}
-      />
       <div className="min-w-0">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
             <p className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-secondary">
               Round {stage.sequence}
             </p>
-            <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold uppercase tracking-[0.06em] text-secondary">
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${view.visualState === "complete" ? "bg-on-surface" : isCurrent ? "bg-primary -dot" : "bg-outline-variant"}`}
-                aria-hidden
-              />
-            </span>
-            {game.mode === "challenge" && score > 0 ? (
-              <span className="inline-flex items-center rounded-full bg-on-surface px-2 py-0.5 font-display text-[11px] font-bold text-surface">
-                +{score} pts
-              </span>
-            ) : null}
-          </div>
-          <div className="flex min-w-0 items-start justify-between gap-2">
-            <h3
-              title={stageTitle}
-              className={`font-display text-[17px] font-bold leading-[1.25] sm:text-xl sm:leading-[1.3] ${isCurrent ? "text-primary" : "text-on-surface"}`}
-            >
-              {stageTitle}
-            </h3>
+            <StageNode
+              state={
+                isCurrent
+                  ? "current"
+                  : view.visualState === "complete"
+                    ? "complete"
+                    : "future"
+              }
+              result={result}
+            />
             {currentDescription ? (
               <button
                 type="button"
@@ -242,11 +223,28 @@ function ChallengeStageRow({
                 aria-expanded={instructionsOpen}
                 aria-controls={instructionsContentId}
                 aria-haspopup="dialog"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary transition-[background-color,border-color,color,transform] hover:border-outline hover:bg-surface-container hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
+                className="flex h-6 w-6  shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary transition-[background-color,border-color,color,transform] hover:border-outline hover:bg-surface-container hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
               >
-                <CircleHelp size={18} aria-hidden="true" />
+                <CircleHelp
+                  size={14}
+                  className="sm:h-4 sm:w-4"
+                  aria-hidden="true"
+                />
               </button>
             ) : null}
+            {game.mode === "challenge" && score > 0 ? (
+              <span className="inline-flex items-center rounded-full bg-on-surface px-2 py-0.5 font-display text-[11px] font-bold text-surface">
+                +{score} pts
+              </span>
+            ) : null}
+          </div>
+          <div className="flex min-w-0 items-center justify-between gap-2">
+            <h3
+              title={stageTitle}
+              className={`font-display text-[16px] font-bold leading-[1.25] sm:text-[18px] sm:leading-[1.3] md:text-xl ${isCurrent ? "text-primary" : "text-on-surface"}`}
+            >
+              {stageTitle}
+            </h3>
           </div>
           {result ? (
             <p className="sr-only">
@@ -257,25 +255,25 @@ function ChallengeStageRow({
 
         {isCurrent && resultAction ? (
           <div
-            className="mt-3 flex flex-wrap items-center gap-1"
+            className="mt-2 flex items-stretch gap-1.5 sm:mt-2.5 sm:flex-initial sm:items-center"
             aria-label={resultAction.label}
           >
             <button
               type="button"
               disabled={busy}
               onClick={() => resultAction.onSelect("landed")}
-              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-full border border-primary bg-primary px-2 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_1px_0_rgba(0,0,0,0.1)] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex sm:flex-initial min-h-8 items-center justify-center gap-1 rounded-full border border-primary bg-primary px-2 sm:px-2.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_1px_0_rgba(0,0,0,0.1)] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
-              <Check size={15} aria-hidden="true" />
+              <Check size={12} strokeWidth={2.25} aria-hidden="true" />
               Landed
             </button>
             <button
               type="button"
               disabled={busy}
               onClick={() => resultAction.onSelect("failed")}
-              className="inline-flex min-h-8 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex sm:flex-initial min-h-8 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
-              <X size={15} aria-hidden="true" />
+              <X size={12} strokeWidth={2.25} aria-hidden="true" />
               Failed
             </button>
             {canAdvanceToNextTrick && onNextTrick ? (
@@ -283,9 +281,9 @@ function ChallengeStageRow({
                 type="button"
                 onClick={onNextTrick}
                 disabled={busy || alternativeTricksRemaining === 0}
-                className="inline-flex min-h-8 items-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                className="truncate inline-flex sm:flex-initial min-h-8 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 sm:px-2.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <RotateCcw size={13} aria-hidden="true" />
+                <RotateCcw size={12} strokeWidth={2.25} aria-hidden="true" />
                 {alternativeTricksRemaining > 0
                   ? `Next · ${alternativeTricksRemaining}`
                   : "No more"}
@@ -296,10 +294,10 @@ function ChallengeStageRow({
 
         {isCurrent && stage.attempts.length > 0 ? (
           <div
-            className="mt-2 flex flex-wrap items-center gap-1.5"
+            className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-1.5"
             aria-label={`Stage ${stage.sequence} rider results`}
           >
-            <span className="mr-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+            <span className="mr-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
               {game.trainingVariant === "solo" ? "Result" : "Responses"}
             </span>
             {stage.attempts.map((attempt) => {
@@ -309,7 +307,7 @@ function ChallengeStageRow({
               return (
                 <span
                   key={attempt.playerId}
-                  className={`rounded-[8px] border px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] ${attempt.result === "landed" ? "border-on-surface bg-on-surface text-surface" : "border-outline-variant bg-surface-container-high text-on-surface-variant"}`}
+                  className={`rounded-[6px] border px-1.5 py-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em] ${attempt.result === "landed" ? "border-on-surface bg-on-surface text-surface" : "border-outline-variant bg-surface-container-high text-on-surface-variant"}`}
                 >
                   {player?.displayName ?? "Rider"} / {attempt.result}
                 </span>
@@ -320,10 +318,10 @@ function ChallengeStageRow({
 
         {isCurrent && game.mode === "challenge" && stage.scores.length > 0 ? (
           <div
-            className="mt-2 flex flex-wrap items-center gap-1.5"
+            className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-1.5"
             aria-label={`Stage ${stage.sequence} points posted`}
           >
-            <span className="mr-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+            <span className="mr-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
               Points
             </span>
             {stage.scores.map((stageScore) => {
@@ -333,7 +331,7 @@ function ChallengeStageRow({
               return (
                 <span
                   key={stageScore.playerId}
-                  className="rounded-[8px] border border-on-surface bg-surface-container-high px-2 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.05em]"
+                  className="rounded-[6px] border border-on-surface bg-surface-container-high px-1.5 py-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em]"
                 >
                   {player?.displayName ?? "Rider"} / +{stageScore.points} pts
                 </span>
@@ -404,16 +402,20 @@ function StageNode({
             : "border-outline-variant bg-surface-container-high text-secondary";
   return (
     <div
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] border-2 sm:h-10 sm:w-10 sm:rounded-[10px] ${toneClass}`}
+      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-[8px] border-2 ${toneClass}`}
       aria-hidden="true"
     >
       {result === "failed" ? (
-        <X size={16} strokeWidth={3} />
+        <X size={14} strokeWidth={2.5} className="sm:h-4 sm:w-4" />
       ) : state === "complete" ? (
-        <Check size={16} strokeWidth={3} />
+        <Check size={14} strokeWidth={2.5} className="sm:h-4 sm:w-4" />
       ) : null}
-      {state === "current" ? <CircleDot size={18} strokeWidth={2.5} /> : null}
-      {state === "future" ? <LockKeyhole size={15} /> : null}
+      {state === "current" ? (
+        <CircleDot size={15} strokeWidth={2.5} className="sm:h-4 sm:w-4" />
+      ) : null}
+      {state === "future" ? (
+        <LockKeyhole size={13} strokeWidth={2} className="sm:h-3.5 sm:w-3.5" />
+      ) : null}
     </div>
   );
 }
