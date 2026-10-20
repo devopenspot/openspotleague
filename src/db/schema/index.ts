@@ -2575,3 +2575,30 @@ export type SpotDisciplineRow = typeof spotDisciplines.$inferSelect;
 export type NewSpotDisciplineRow = typeof spotDisciplines.$inferInsert;
 export type EventDisciplineRow = typeof eventDisciplines.$inferSelect;
 export type NewEventDisciplineRow = typeof eventDisciplines.$inferInsert;
+
+export const shortLinks = pgTable(
+  "short_links",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    code: text("code").notNull(),
+    targetUrl: text("target_url").notNull(),
+    title: text("title"),
+    createdAt: timestamp("created_at", { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, precision: 3 })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("short_links_code_idx").on(t.code),
+    uniqueIndex("short_links_target_url_idx").on(t.targetUrl),
+    check("short_links_code_check", sql`length(${t.code}) >= 4 and length(${t.code}) <= 32`),
+    check("short_links_target_url_check", sql`length(${t.targetUrl}) > 0 and length(${t.targetUrl}) <= 2048`),
+  ],
+);
+
+export type ShortLink = typeof shortLinks.$inferSelect;
+export type NewShortLink = typeof shortLinks.$inferInsert;
+export type ShortLinkRow = typeof shortLinks.$inferSelect;
+export type NewShortLinkRow = typeof shortLinks.$inferInsert;

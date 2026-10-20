@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { isShortLinksEnabled } from "./feature-flags";
 
 describe("isShortLinksEnabled", () => {
