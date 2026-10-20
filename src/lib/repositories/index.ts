@@ -8,6 +8,7 @@ import { DrizzleTaxonomyRepository } from "./taxonomy/drizzle-taxonomy-repositor
 import { DrizzleTvRepository } from "./tv/drizzle-tv-repository"
 import { DrizzleAdminUserRepository } from "./admin/drizzle-admin-user-repository"
 import { DrizzleAdminRegionRepository } from "./admin/drizzle-admin-region-repository"
+import { DrizzleShortLinkRepository } from "./short-link/drizzle-short-link-repository"
 import type { SpotRepository } from "./spot/spot-repository"
 import type { EventRepository } from "./event/event-repository"
 import type { SavedSpotsRepository } from "./spot/saved-spots-repository"
@@ -17,6 +18,7 @@ import type { TaxonomyRepository } from "./taxonomy/taxonomy-repository"
 import type { TvRepository } from "./tv/tv-repository"
 import type { AdminUserRepository } from "./admin/admin-user-repository"
 import type { AdminRegionRepository } from "./admin/admin-region-repository"
+import type { ShortLinkRepository } from "./short-link/short-link-repository"
 
 let spotRepository: SpotRepository | null = null
 let eventRepository: EventRepository | null = null
@@ -27,6 +29,7 @@ let taxonomyRepository: TaxonomyRepository | null = null
 let tvRepository: TvRepository | null = null
 let adminUserRepository: AdminUserRepository | null = null
 let adminRegionRepository: AdminRegionRepository | null = null
+let shortLinkRepository: ShortLinkRepository | null = null
 
 // A connection failure can happen after a write has committed. Reads can be
 // retried safely; writes require an explicit idempotency strategy at the
@@ -127,6 +130,7 @@ function getDrizzleRepos() {
       db,
     ),
     tv: withRetryAll(new DrizzleTvRepository(db), "tv_videos", db),
+    shortLink: withRetryAll(new DrizzleShortLinkRepository(db), "short_links", db),
   }
 }
 
@@ -204,6 +208,13 @@ export async function getAdminRegionRepositoryAsync(): Promise<AdminRegionReposi
   return adminRegionRepository
 }
 
+export async function getShortLinkRepositoryAsync(): Promise<ShortLinkRepository> {
+  if (!shortLinkRepository) {
+    shortLinkRepository = getDrizzleRepos().shortLink
+  }
+  return shortLinkRepository
+}
+
 export { DrizzleSpotRepository } from "./spot/drizzle-spot-repository"
 export { DrizzleEventRepository } from "./event/drizzle-event-repository"
 export { DrizzleSavedSpotsRepository } from "./spot/drizzle-saved-spots-repository"
@@ -213,6 +224,8 @@ export { DrizzleTaxonomyRepository } from "./taxonomy/drizzle-taxonomy-repositor
 export { DrizzleTvRepository } from "./tv/drizzle-tv-repository"
 export { DrizzleAdminUserRepository } from "./admin/drizzle-admin-user-repository"
 export { DrizzleAdminRegionRepository } from "./admin/drizzle-admin-region-repository"
+export { DrizzleShortLinkRepository } from "./short-link/drizzle-short-link-repository"
+export type { ShortLinkRepository, CreateShortLinkInput } from "./short-link/short-link-repository"
 export type { SpotRepository } from "./spot/spot-repository"
 export type { EventRepository } from "./event/event-repository"
 export type { SavedSpotsRepository } from "./spot/saved-spots-repository"
