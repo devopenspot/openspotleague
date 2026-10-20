@@ -11,15 +11,15 @@ export function BottomNavSkeleton({ count = 4 }: { count?: number }) {
     <nav
       aria-hidden="true"
       inert
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-outline-variant bg-surface px-2 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] md:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-wire-border bg-primary px-2 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] md:hidden"
     >
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
           className="flex min-h-14 flex-col items-center justify-center space-y-1 px-5"
         >
-          <div className="h-[18px] w-[18px]  rounded bg-surface-container-high" />
-          <div className="h-2.5 w-9  rounded bg-surface-container-high" />
+          <div className="h-[18px] w-[18px] animate-pulse rounded bg-wire-border" />
+          <div className="h-2.5 w-9 animate-pulse rounded bg-wire-border" />
         </div>
       ))}
     </nav>

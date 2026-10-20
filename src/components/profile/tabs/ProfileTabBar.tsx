@@ -47,7 +47,7 @@ export function ProfileTabBarSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex gap-1 overflow-hidden rounded-full border border-outline-variant bg-surface-container-lowest p-1"
+      className="flex gap-1 overflow-hidden rounded-full border border-outline-variant bg-surface-container-lowest p-1 animate-pulse"
     >
       {TABS.map((t) => (
         <div

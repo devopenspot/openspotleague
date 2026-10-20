@@ -5,7 +5,7 @@ import { ProfileTricksSkeleton } from "../settings/ProfileTricksPanel";
 
 export function ProfileOverviewSkeleton() {
   return (
-    <div aria-hidden="true" className="space-y-4 ">
+    <div aria-hidden="true" className="space-y-4 animate-pulse">
       {/* At a glance skeleton */}
       <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
         <div className="h-4 w-24 rounded bg-surface-container-high" />

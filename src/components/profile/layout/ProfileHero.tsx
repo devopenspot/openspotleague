@@ -80,7 +80,7 @@ export function ProfileHero({ summary }: { summary: ProfileSummary }) {
 
 export function ProfileHeroSkeleton() {
   return (
-    <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 ">
+    <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 animate-pulse">
       <div className="flex gap-3">
         <div className="h-12 w-12 rounded-full bg-surface-container-high sm:h-14 sm:w-14" />
         <div className="flex-1 space-y-2.5">
