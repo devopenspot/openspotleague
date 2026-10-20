@@ -1,5 +1,3 @@
-import { HeaderSkeleton } from "@/components/shell/HeaderSkeleton";
-
 export default function Loading() {
   return (
     <div
@@ -8,8 +6,6 @@ export default function Loading() {
       aria-busy="true"
       className="flex min-h-0 flex-1 flex-col bg-surface font-sans text-on-surface"
     >
-      <HeaderSkeleton />
-
       {/* Main — vertical cyan-to-teal gradient matching GameLanding */}
       <div className="flex flex-1 flex-col bg-gradient-to-b from-cyan-400 via-teal-400 to-teal-600 px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">

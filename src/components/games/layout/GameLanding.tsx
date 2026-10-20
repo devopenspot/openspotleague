@@ -18,7 +18,6 @@ import {
   useRiderActivity,
   type RiderActivityData,
 } from "@/components/games/board/RiderActivityBoard";
-import { Header as ExploreHeader } from "@/components/shell/Header";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 
 type Ranking = {
@@ -121,7 +120,6 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <ExploreHeader />
       <div className="flex flex-1 flex-col bg-gradient-to-b from-cyan-400 via-teal-400 to-teal-600 px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
           <div className={`z-30 py-2`}>

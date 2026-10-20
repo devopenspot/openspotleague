@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { GameShell } from "@/components/games/layout/GameShell";
 
 export const metadata: Metadata = {
   title: "Training & challenges",
@@ -31,5 +30,5 @@ export default function GamesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <GameShell>{children}</GameShell>;
+  return <>{children}</>;
 }

@@ -9,9 +9,11 @@ import { SearchOverlay } from "@/components/shell/SearchOverlay";
 import { OnboardingDialog } from "@/components/shell/OnboardingDialog";
 import { ToastViewport } from "@/components/shell/Toast";
 import { useUIStore } from "@/stores/ui-store";
+import { useSpotsStore } from "@/stores/spots-store";
 import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
 import { MAIN_CONTENT_ID } from "@/lib/config/constants";
 import { ROUTES } from "@/lib/navigation/nav";
+import { setMapPreserveLocation } from "@/lib/map/preserve";
 import type { MapSpot } from "@/lib/types";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -19,13 +21,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const tryOpenSearch = useUIStore((s) => s.tryOpenSearch);
   const closeSearch = useUIStore((s) => s.closeSearch);
   const isSearchOpen = useUIStore((s) => s.isSearchOpen);
+  const spots = useSpotsStore((s) => s.spots);
   const pathname = usePathname();
 
-  // The admin, map, and games segments render their own shells. Bail out
-  // early so public chrome is not double-rendered in those sections.
+  // Admin section maintains its own dedicated AdminShell and auth gate.
   const isAdminRoute = pathname?.startsWith("/admin") ?? false;
   const isMapRoute = pathname === "/map";
   const isGameRoute = pathname?.startsWith("/games") ?? false;
+  const isGameLanding = pathname === "/games";
+  const isGameSession =
+    isGameRoute && !isGameLanding && !pathname?.startsWith("/games/join");
   const isLandingRoute = pathname === "/";
 
   // Close the search overlay on route change
@@ -34,9 +39,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  // Only bind the global Cmd/Ctrl+K search shortcut on public routes.
+  // Global Cmd/Ctrl+K search shortcut across all public routes.
   useKeyboardShortcuts(
-    isAdminRoute || isMapRoute || isGameRoute
+    isAdminRoute
       ? []
       : [
           {
@@ -50,43 +55,57 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ],
   );
 
-  if (isAdminRoute || isMapRoute || isGameRoute) {
+  if (isAdminRoute) {
     return <>{children}</>;
   }
 
   const handleSelectSpot = (spot: MapSpot) => {
+    if (isMapRoute) setMapPreserveLocation();
     router.push(ROUTES.spot(spot.id));
   };
+
+  let mainClassName =
+    "min-h-0 w-full flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0";
+  let mainAriaLabel = "Open Spot content";
+
+  if (isMapRoute) {
+    mainClassName = "relative min-h-0 flex-1 overflow-hidden pb-14 md:pb-0";
+    mainAriaLabel = "Spot map";
+  } else if (isGameSession) {
+    mainClassName =
+      "relative flex min-h-0 flex-1 flex-col overflow-hidden pb-0";
+    mainAriaLabel = "Open Spot challenges";
+  } else if (isGameLanding) {
+    mainClassName =
+      "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0";
+    mainAriaLabel = "Open Spot challenges";
+  } else if (isLandingRoute) {
+    mainClassName = "min-h-0 w-full flex-1 pb-0";
+  }
+
+  const showHeader = !isGameSession;
+  const showBottomNav = !isLandingRoute && !isGameSession;
 
   return (
     <div
       id="app-root"
-      className="flex h-dvh flex-col bg-surface font-sans text-on-surface selection:bg-primary selection:text-surface"
+      className="relative flex h-dvh flex-col bg-surface font-sans text-on-surface selection:bg-primary selection:text-surface"
     >
-      <Header />
+      {showHeader ? <Header /> : null}
 
-      <main
-        id={MAIN_CONTENT_ID}
-        aria-label="Open Spot content"
-        className={
-          isLandingRoute
-            ? "min-h-0 w-full flex-1 pb-0"
-            : "min-h-0 w-full flex-1 pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0"
-        }
-      >
+      <main id={MAIN_CONTENT_ID} aria-label={mainAriaLabel} className={mainClassName}>
         {children}
       </main>
 
-      {isLandingRoute ? null : <BottomNav />}
+      {showBottomNav ? <BottomNav /> : null}
       <MobileDrawer />
-      {/* Server-backed text search (see SearchOverlay) — no local spot
-          directory exists on public pages anymore. */}
       <SearchOverlay
         isOpen={isSearchOpen}
         onClose={closeSearch}
+        spots={isMapRoute ? spots : undefined}
         onSelectSpot={handleSelectSpot}
       />
-       <OnboardingDialog />
+      <OnboardingDialog />
       <ToastViewport />
     </div>
   );

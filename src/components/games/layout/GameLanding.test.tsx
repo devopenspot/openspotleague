@@ -10,10 +10,6 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
-vi.mock("@/components/shell/Header", () => ({
-  Header: () => <header>Open Spot</header>,
-}))
-
 vi.mock("@/components/games/create/GameCreateForm", () => ({
   GameCreateForm: () => (
     <section aria-label="Game setup">

@@ -8,7 +8,7 @@ import {
 } from "@/lib/utils/safe-fetch";
 import type { Region, SpotTypeEntity } from "@/lib/types";
 import { MapProvider } from "@/components/map/panels/MapProvider";
-import { MapShell } from "@/components/map/layout/MapShell";
+import { MapViewportProvider } from "@/components/map/panels/MapViewportContext";
 import { MapSkeleton } from "./MapSkeleton";
 
 const EMPTY_EVENTS_FOR_MAP: readonly never[] = [];
@@ -62,7 +62,7 @@ async function MapDataProviders({ children }: { children: React.ReactNode }) {
         events: initialEvents.degraded ? "degraded" : "ready",
       }}
     >
-      <MapShell>{children}</MapShell>
+      <MapViewportProvider>{children}</MapViewportProvider>
     </MapProvider>
   );
 }
