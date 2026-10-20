@@ -15,8 +15,9 @@ import { Overlay } from "@/components/feedback/Overlay";
 import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
 import { showToast } from "@/hooks/ui/useToast";
 import { toAutoplayEmbedUrl } from "@/lib/tv/embed";
-import { buildTvShareUrl } from "@/lib/tv/share";
+import { buildTvSharePath } from "@/lib/tv/share";
 import { shareOrCopyUrl } from "@/lib/utils/share";
+import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import type { TvCard, TvCategory } from "@/types/tv";
 import { TvQueueStrip } from "./TvQueueStrip";
 import { TvCategoryPills, type TheaterCategory } from "./TvCategoryPills";
@@ -194,7 +195,7 @@ export function TvPlayerModal({
   // window.location.origin.
   const handleShare = useCallback(async () => {
     if (!video) return;
-    const url = buildTvShareUrl(video.id, window.location.origin);
+    const url = await getOrFetchShortUrl(buildTvSharePath(video.id), video.title);
     const result = await shareOrCopyUrl(url, video.title);
     if (result === "shared") showToast("Share sheet opened.", "success");
     else if (result === "copied") showToast("Link copied.", "success");

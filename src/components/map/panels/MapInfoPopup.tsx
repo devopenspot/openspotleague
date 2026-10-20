@@ -23,6 +23,7 @@ import {
 } from "react";
 import { showToast } from "@/hooks/ui/useToast";
 import { shareOrCopyUrl } from "@/lib/utils/share";
+import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import { useSpotsStore } from "@/stores/spots-store";
 import { useMapStore } from "@/stores/map-store";
 import { unionById } from "@/components/map/shared/map-derived";
@@ -160,10 +161,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
 
   const handleShare = useCallback(async () => {
     if (!spot) return;
-    const url =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/spots/${spot.id}`
-        : `/spots/${spot.id}`;
+    const url = await getOrFetchShortUrl(`/spots/${spot.id}`, spot.name);
     const result = await shareOrCopyUrl(url, spot.name);
     if (result === "shared") showToast("Share sheet opened.", "success");
     else if (result === "copied") showToast("Link copied.", "success");

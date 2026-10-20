@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ShortLink } from "@/db/schema";
-import type { CreateShortLinkInput, ShortLinkRepository } from "@/lib/repositories/short-link/short-link-repository";
+import type { ShortLinkRepository } from "@/lib/repositories/short-link/short-link-repository";
 import { createShortLink, runResolveShortLink } from "./short-links";
 import { ShortLinkValidationError } from "@/lib/utils/short-code";
 

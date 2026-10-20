@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, Link as LinkIcon, QrCode, Share2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { showToast } from "@/hooks/ui/useToast";
 import { copyText, shareOrCopyUrl } from "@/lib/utils/share";
+import { getOrFetchShortUrl, resolveCanonicalShareUrl } from "@/lib/utils/short-url";
 import { cn } from "@/lib/utils/cn";
 
 export function ShareActions({
@@ -23,7 +24,21 @@ export function ShareActions({
   compact?: boolean;
 }) {
   const [showQr, setShowQr] = useState(false);
-  const resolvedUrl = resolveShareUrl(url);
+  const [shortUrl, setShortUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void getOrFetchShortUrl(url, title).then((resolved) => {
+      if (active) {
+        setShortUrl(resolved);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [url, title]);
+
+  const activeUrl = shortUrl ?? resolveCanonicalShareUrl(url);
 
   async function handleCopy(value: string, message: string) {
     if (await copyText(value)) showToast(message, "success");
@@ -31,7 +46,7 @@ export function ShareActions({
   }
 
   async function handleShare() {
-    const result = await shareOrCopyUrl(resolvedUrl, title);
+    const result = await shareOrCopyUrl(activeUrl, title);
     if (result === "shared") showToast("Share sheet opened.", "success");
     else if (result === "copied") showToast("Link copied.", "success");
     else showToast("Could not share this link.", "error");
@@ -69,7 +84,7 @@ export function ShareActions({
       ) : null}
       <button
         type="button"
-        onClick={() => void handleCopy(resolvedUrl, "Link copied.")}
+        onClick={() => void handleCopy(activeUrl, "Link copied.")}
         className={buttonClass}
       >
         <LinkIcon size={14} aria-hidden="true" /> Copy link
@@ -91,7 +106,7 @@ export function ShareActions({
           aria-label="QR code for shared link"
         >
           <QRCodeSVG
-            value={resolvedUrl}
+            value={activeUrl}
             size={compact ? 128 : 160}
             bgColor="var(--color-surface-container-lowest)"
             fgColor="var(--color-on-surface)"
@@ -101,9 +116,4 @@ export function ShareActions({
       ) : null}
     </div>
   );
-}
-
-function resolveShareUrl(url: string) {
-  if (typeof window === "undefined") return url;
-  return new URL(url, window.location.origin).toString();
 }

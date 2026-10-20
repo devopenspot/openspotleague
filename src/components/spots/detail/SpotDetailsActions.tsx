@@ -3,6 +3,8 @@
 import { Heart, ShieldCheck, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { showToast } from "@/hooks/ui/useToast";
+import { shareOrCopyUrl } from "@/lib/utils/share";
+import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import type { Spot } from "@/lib/types";
 
@@ -29,13 +31,12 @@ export function SpotDetailsActions({
 }: SpotDetailsActionsProps) {
   const handleShare = async () => {
     try {
-      const url = typeof window !== "undefined" ? window.location.href : "";
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        showToast("Link copied to clipboard", "success");
-      } else {
-        showToast("Sharing not supported in this browser", "error");
-      }
+      const target = spot?.id ? `/spots/${spot.id}` : (typeof window !== "undefined" ? window.location.pathname : "");
+      const urlToShare = await getOrFetchShortUrl(target, spot.name);
+      const result = await shareOrCopyUrl(urlToShare, spot.name);
+      if (result === "shared") showToast("Share sheet opened.", "success");
+      else if (result === "copied") showToast("Link copied to clipboard", "success");
+      else showToast("Sharing not supported in this browser", "error");
     } catch {
       showToast("Could not copy link", "error");
     }
