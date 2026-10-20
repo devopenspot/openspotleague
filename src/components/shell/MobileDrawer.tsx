@@ -12,7 +12,7 @@ import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
 import { BrandLogo } from "@/components/shell/BrandLogo";
 import { isActivePath, type NavGroup } from "@/lib/navigation/nav";
-import { navLabelFor, renderNavBadge, useNavList } from "@/hooks/ui/useNavList";
+import { navLabelFor, useNavList } from "@/hooks/ui/useNavList";
 import { NavLink } from "@/components/shell/NavLink";
 
 const DRAWER_ID = "mobile-hamburger-portal";
@@ -62,23 +62,23 @@ export function MobileDrawer() {
       contentId={DRAWER_ID}
       closeOnRouteChange={false}
       side="right"
-      panelClassName="w-90 max-w-[calc(100vw-1rem)] justify-between border-r border-outline-variant bg-surface-container-lowest text-on-surface"
+      panelClassName="w-90 max-w-[calc(100vw-1rem)] justify-between border-l border-wire-border bg-primary text-on-primary"
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-5 py-3.5">
-          <BrandLogo className="rounded-[16px] transition-colors hover:bg-surface-container" />
+        <div className="flex items-center justify-between border-b border-wire-border bg-primary px-5 py-3.5">
+          <BrandLogo className="rounded-[16px] transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire" />
           <button
             id="close-hamburger-btn"
             type="button"
             onClick={closeDrawer}
             aria-label="Close menu"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-on-surface text-on-surface transition-colors hover:bg-surface-container hover:text-on-surface"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-wire-border bg-wire-border text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
           >
             <X size={16} aria-hidden="true" />
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto [&_[data-nav-tab]]:border-on-surface [&_[data-nav-tab]]:bg-surface-container-lowest [&_[data-nav-tab]]:text-on-surface [&_[data-nav-tab][aria-current=page]]:border-primary [&_[data-nav-tab][aria-current=page]]:bg-primary [&_[data-nav-tab][aria-current=page]]:text-on-primary">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-primary">
           <h3 id={DRAWER_TITLE_ID} className="visually-hidden">
             Primary navigation
           </h3>
@@ -107,14 +107,20 @@ export function MobileDrawer() {
                           active={isActive}
                           variant="mobile-drawer"
                           onClick={handleClick}
+                          className={
+                            isActive
+                              ? "!border-b !border-wire-border-strong !border-l-2 !border-l-on-wire !bg-wire-border-strong !text-on-primary focus-visible:!ring-white focus-visible:!ring-offset-wire"
+                              : "!border-b !border-wire-border !bg-primary !text-wire-muted hover:!border-wire-border-strong hover:!bg-wire-border hover:!text-on-wire focus-visible:!ring-white focus-visible:!ring-offset-wire"
+                          }
                           badge={
-                            showBadge
-                              ? renderNavBadge({
-                                  variant: "mobile-drawer",
-                                  id: item.id,
-                                  savedCount,
-                                })
-                              : undefined
+                            showBadge ? (
+                              <span
+                                aria-label={`${savedCount} spots saved`}
+                                className="rounded-md bg-on-wire px-2 py-1 text-[9px] font-mono font-bold text-primary"
+                              >
+                                {savedCount}
+                              </span>
+                            ) : undefined
                           }
                         />
                       );
@@ -125,7 +131,7 @@ export function MobileDrawer() {
             })}
           </nav>
 
-          <p className="p-4 font-display text-[10px] leading-relaxed tracking-wide text-on-surface">
+          <p className="p-4 font-display text-[10px] leading-relaxed tracking-wide text-wire-muted">
             “I've missed more than 9000 shots in my career. I've lost almost 300
             games. 26 times, I've been trusted to take the game winning shot and
             missed. I've failed over and over and over again in my life. And
@@ -134,12 +140,12 @@ export function MobileDrawer() {
         </div>
       </div>
 
-      <div className="space-y-3 border-t border-outline-variant bg-surface-container-low px-5 py-5">
+      <div className="space-y-3 border-t border-wire-border bg-primary px-5 py-5">
         <button
           id="preferences-btn"
           type="button"
           onClick={handleOpenPreferences}
-          className="flex min-h-11 w-full items-center justify-between rounded-xl border border-outline-variant bg-surface-container-high px-4 text-left text-xs font-sans font-semibold tracking-[0.05em] uppercase text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest"
+          className="flex min-h-11 w-full items-center justify-between rounded-xl border border-wire-border bg-wire-border px-4 text-left text-xs font-sans font-semibold tracking-[0.05em] uppercase text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
         >
           <span className="flex items-center gap-2">
             <Settings size={14} aria-hidden="true" />
@@ -151,27 +157,27 @@ export function MobileDrawer() {
             <Link
               href="/profile"
               onClick={closeDrawer}
-              className="flex items-center gap-3 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-3 transition-colors hover:border-outline hover:bg-surface-container"
+              className="flex items-center gap-3 rounded-[16px] border border-wire-border bg-wire-border p-3 transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
             >
               <UserAvatar user={user} size="md" />
               <div className="min-w-0 flex-1">
-                <span className="block text-xs font-sans font-semibold uppercase text-secondary">
+                <span className="block text-xs font-sans font-semibold uppercase text-wire-muted">
                   Signed in — View profile
                 </span>
-                <span className="block truncate text-xs font-semibold text-on-surface">
+                <span className="block truncate text-xs font-semibold text-on-wire">
                   {user.email}
                 </span>
               </div>
             </Link>
             <SignOutButton
               variant="drawer"
-              className="!rounded-[9999px] !border-outline-variant !bg-surface-container-high !text-on-surface hover:!border-outline hover:!bg-surface-container-highest"
+              className="!rounded-[9999px] !border-wire-border !bg-wire-border !text-on-wire hover:!border-wire-border-strong hover:!bg-wire-border-strong focus-visible:!ring-white focus-visible:!ring-offset-wire"
             />
           </>
         ) : (
           <SignInLink
             variant="drawer"
-            className="!mt-0 !rounded-[9999px] !border-primary !bg-primary !px-6 !py-3 !text-on-primary transition-opacity hover:!bg-primary hover:!opacity-90"
+            className="!mt-0 !rounded-[9999px] !border-on-primary !bg-on-primary !px-6 !py-3 !text-primary font-bold transition-opacity hover:!bg-on-primary hover:!opacity-90 focus-visible:!ring-white focus-visible:!ring-offset-wire"
             onClick={closeDrawer}
           />
         )}

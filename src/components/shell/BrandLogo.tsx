@@ -13,7 +13,7 @@ export function BrandLogo({ onClick, size = "md", className }: BrandLogoProps) {
   const imageSize = size === "sm" ? 32 : 40;
   const content = (
     <Image
-      src="/favicon.png"
+      src="/logo.png"
       alt=""
       width={imageSize}
       height={imageSize}

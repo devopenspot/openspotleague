@@ -25,10 +25,10 @@ export function Header() {
   return (
     <header
       id="app-header"
-      className="sticky top-0 z-40 w-full border-b border-outline-variant bg-surface-container-lowest px-5 md:px-10 py-3.5 [&_[data-nav-tab]]:rounded-[16px] [&_[data-nav-tab]]:text-xs [&_[data-nav-tab]]:font-semibold [&_[data-nav-tab][aria-selected=true]]:border-b-primary [&_[data-nav-tab][aria-selected=true]]:text-primary"
+      className="sticky top-0 z-40 w-full border-b border-wire-border bg-primary px-5 md:px-10 py-3.5 [&_[data-nav-tab]]:rounded-[16px] [&_[data-nav-tab]]:text-xs [&_[data-nav-tab]]:font-semibold [&_[data-nav-tab]]:text-wire-muted hover:[&_[data-nav-tab]]:text-on-wire hover:[&_[data-nav-tab]]:bg-wire-border focus-visible:[&_[data-nav-tab]]:ring-white focus-visible:[&_[data-nav-tab]]:ring-offset-wire [&_[data-nav-tab][aria-selected=true]]:border-b-2 [&_[data-nav-tab][aria-selected=true]]:border-b-on-wire [&_[data-nav-tab][aria-selected=true]]:text-on-wire [&_[data-nav-tab][aria-selected=true]]:bg-wire-border/50 [&_a[href='/notifications']]:border-wire-border [&_a[href='/notifications']]:bg-wire-border [&_a[href='/notifications']]:text-on-wire hover:[&_a[href='/notifications']]:border-wire-border-strong hover:[&_a[href='/notifications']]:bg-wire-border-strong hover:[&_a[href='/notifications']]:text-on-wire focus-visible:[&_a[href='/notifications']]:ring-white focus-visible:[&_a[href='/notifications']]:ring-offset-wire [&_[data-notification-badge]]:bg-on-wire [&_[data-notification-badge]]:text-primary [&_#mobile-hamburger-btn]:border-wire-border [&_#mobile-hamburger-btn]:bg-wire-border [&_#mobile-hamburger-btn]:text-on-wire hover:[&_#mobile-hamburger-btn]:border-wire-border-strong hover:[&_#mobile-hamburger-btn]:bg-wire-border-strong hover:[&_#mobile-hamburger-btn]:text-on-wire focus-visible:[&_#mobile-hamburger-btn]:ring-white focus-visible:[&_#mobile-hamburger-btn]:ring-offset-wire"
     >
       <div className="flex items-center justify-between gap-4">
-        <BrandLogo className="rounded-[16px] transition-colors hover:bg-surface-container" />
+        <BrandLogo className="rounded-[16px] transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire" />
 
         {/* Primary discovery + play — 4 items max (Explore, Map, Events, League).
             Hidden on mobile (<md) where BottomNav takes over. */}
@@ -47,7 +47,7 @@ export function Header() {
             type="button"
             aria-label="Search spots"
             onClick={tryOpenSearch}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant bg-surface-container-high text-secondary transition-colors hover:border-outline hover:bg-surface-container-highest hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-wire-border bg-wire-border text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
           >
             <Search size={16} aria-hidden="true" />
           </button>
@@ -67,7 +67,7 @@ export function Header() {
           ) : (
             <SignInLink
               variant="header"
-              className="hidden md:inline-flex !rounded-full !border-primary !bg-primary !px-5 !py-2.5 !text-xs !normal-case !tracking-widest !text-on-primary hover:!bg-primary/90"
+              className="hidden md:inline-flex !rounded-full !border-on-primary !bg-on-primary !px-5 !py-2.5 !text-xs !normal-case !tracking-widest !text-primary font-bold hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire"
             />
           )}
 
