@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, type ReadonlyURLSearchParams } from "next/navigation";
 import { useSpotsStore } from "@/stores/spots-store";
@@ -141,7 +141,6 @@ export default function MapTab({ searchParams }: MapTabProps) {
   const clearActivePins = useMapStore((s) => s.clearActivePins);
   const activePinId = useMapStore((s) => s.activePinId);
   const activeEventId = useMapStore((s) => s.activeEventId);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Focus target from "View on map" deep link: /map?country=...&spot=<id>
   // Must centre on that spot and reveal its pin. Kept in URL so refresh
@@ -478,14 +477,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
           with Enter or Space. Leaflet controls support standard keyboard
           navigation.
         </p>
-        {!baseNeeds && (
-          <MapControls
-            isSidebarOpen={isSidebarOpen}
-            onSidebarOpenChange={setIsSidebarOpen}
-            spotCount={spotView.spots.length}
-            eventCount={filteredEvents.length}
-          />
-        )}
+        {!baseNeeds && <MapControls />}
 
         {/* Stacked status banners: gate (status), nearby (status), degraded (alert) */}
         <div className="pointer-events-none absolute left-3 right-3 top-28 z-[1120] flex flex-col gap-2 sm:right-auto sm:max-w-lg">
