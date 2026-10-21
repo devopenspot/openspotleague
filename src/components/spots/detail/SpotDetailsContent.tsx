@@ -80,7 +80,7 @@ export function SpotDetailsContent({
   }, [isRequestingLocation, request]);
 
   return (
-    <div className="flex w-full flex-col overflow-hidden border-y border-outline-variant bg-surface-bright md:flex-row md:rounded-[16px] md:border">
+    <div className="flex w-full flex-col overflow-hidden border-y border-outline-variant bg-surface-bright md:flex-row md:rounded-lg md:border">
       <SpotDetailsHero
         spot={spot}
         distanceInfo={distanceInfo}

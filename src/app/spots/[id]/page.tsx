@@ -150,7 +150,7 @@ function SpotUnavailableFallback() {
       role="alert"
       className="min-h-[60vh] flex items-center justify-center p-6"
     >
-      <div className="mx-auto my-12 max-w-md rounded-[8px] border border-outline-variant bg-surface-bright p-6 text-center sm:p-8">
+      <div className="mx-auto my-12 max-w-md rounded-lg border border-outline-variant bg-surface-bright p-6 text-center sm:p-8">
         <span className="font-mono text-[10px] font-bold tracking-widest text-secondary uppercase block mb-3">
           503 · Off the grid
         </span>
@@ -162,7 +162,7 @@ function SpotUnavailableFallback() {
         </p>
         <Link
           href="/"
-          className="mt-6 inline-flex min-h-11 items-center space-x-2 rounded-[8px] bg-on-surface px-5 text-xs font-bold tracking-widest text-surface uppercase transition-colors hover:bg-on-surface/90"
+          className="mt-6 inline-flex min-h-11 items-center space-x-2 rounded-full border border-primary bg-primary px-5 text-xs font-bold uppercase tracking-widest text-on-primary transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
         >
           <Compass size={14} aria-hidden="true" />
           <span>Back to directory</span>

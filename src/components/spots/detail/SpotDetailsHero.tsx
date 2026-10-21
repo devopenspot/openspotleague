@@ -8,7 +8,6 @@ import {
   Radar,
   ShieldCheck,
   Instagram,
-  CloudSun,
   CheckCheck,
 } from "lucide-react";
 import { TypeBadges } from "@/components/spots/shared/TypeBadges";
@@ -73,32 +72,28 @@ export function SpotDetailsHero({
       {weatherSummary?.active &&
       weatherSummary.leader &&
       isWeatherIconName(weatherSummary.leader) ? (
-        <div className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full border border-primary bg-primary px-2.5 py-1 shadow-sm md:left-6 md:top-6">
-          <span className="relative inline-flex">
-            <WeatherIcon
-              name={weatherSummary.leader}
-              size={14}
-              className="shrink-0 text-on-primary"
-            />
-            <span className="absolute -right-8 -top-3 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface">
-              {weatherSummary.count}
-            </span>
-          </span>
-          <CloudSun
-            size={10}
-            aria-hidden="true"
-            className="shrink-0 text-on-primary"
+        <div className="absolute left-4 top-4 flex min-h-11 items-center gap-2 rounded-full border border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm md:left-6 md:top-6">
+          <WeatherIcon
+            name={weatherSummary.leader}
+            size={14}
+            className="shrink-0 text-surface"
           />
+          <span className="font-display text-xs font-semibold uppercase tracking-wider text-surface">
+            Weather verified
+          </span>
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface">
+            {weatherSummary.count}
+          </span>
         </div>
       ) : onVerifyClick ? (
         <button
           type="button"
           onClick={onVerifyClick}
           aria-label="Verify weather"
-          className="absolute capitalize left-4 top-5 flex h-6 w-auto px-2 items-center justify-center rounded-full border border-surface/30 bg-on-surface/40 text-surface backdrop-blur-md hover:bg-on-surface/60 md:left-6 md:top-6 text-center text-xs leading-4 text-on-surface mx-1"
+          className="absolute left-4 top-4 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold uppercase tracking-wider text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/60 md:left-6 md:top-6"
         >
-          <CheckCheck size={14} aria-hidden="true" className="mr-1" />
-          Verify Weather
+          <CheckCheck size={14} aria-hidden="true" className="shrink-0" />
+          <span>Verify Weather</span>
         </button>
       ) : null}
 

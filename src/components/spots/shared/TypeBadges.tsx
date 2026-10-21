@@ -18,9 +18,9 @@ interface TypeBadgesProps {
 }
 
 const OVERLAY_CLASSES =
-  "inline-block rounded-[8px] bg-on-surface/60 px-2 py-0.5 text-[9px] font-display tracking-widest uppercase text-surface";
+  "inline-block rounded-md bg-on-surface/60 px-2 py-0.5 text-[9px] font-display tracking-widest uppercase text-surface";
 const SURFACE_CLASSES =
-  "inline-block rounded-[8px] bg-primary/10 px-1.5 py-0.5 text-[8px] font-display font-bold uppercase tracking-wider text-primary";
+  "inline-block rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-display font-bold uppercase tracking-wider text-primary";
 const GHOST_CLASSES =
   "font-display text-[9px] font-semibold text-secondary uppercase";
 

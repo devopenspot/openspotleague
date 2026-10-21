@@ -47,31 +47,33 @@ export function SpotDetailsLocation({
             setMapPreserveLocation();
           }}
           aria-label={`View ${spot.name} on the map`}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-on-surface px-3 text-xs font-bold uppercase tracking-widest text-surface transition-colors hover:bg-on-surface/90"
+          className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-5 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
         >
           <span>View on map</span>
           <Map size={12} aria-hidden="true" />
         </Link>
-        <a
-          href={directionsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Open ${spot.name} in Google Maps (opens in a new tab)`}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline px-3 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container"
-        >
-          <span>Google Maps</span>
-          <MapPin size={12} aria-hidden="true" />
-        </a>
-        <a
-          href={wazeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Open directions to ${spot.name} in Waze (opens in a new tab)`}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline px-3 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container"
-        >
-          <span>Waze</span>
-          <Navigation size={12} aria-hidden="true" />
-        </a>
+        <div className="grid grid-cols-2 gap-2">
+          <a
+            href={directionsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${spot.name} in Google Maps (opens in a new tab)`}
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          >
+            <span>Google Maps</span>
+            <MapPin size={12} aria-hidden="true" />
+          </a>
+          <a
+            href={wazeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open directions to ${spot.name} in Waze (opens in a new tab)`}
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          >
+            <span>Waze</span>
+            <Navigation size={12} aria-hidden="true" />
+          </a>
+        </div>
       </div>
     </>
   );

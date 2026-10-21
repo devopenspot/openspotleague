@@ -51,7 +51,7 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
     <section
       id="suggested-spots"
       aria-labelledby="suggested-heading"
-      className="mt-12 rounded-[16px] border border-outline-variant bg-surface-container-low p-4 md:mt-16 md:p-6"
+      className="mt-8 mx-4 sm:mx-0 rounded-lg border border-outline-variant bg-surface-container-low p-4 sm:p-5 md:mt-16 md:p-6"
     >
       <SectionHeader
         eyebrow="More to ride"
@@ -63,12 +63,12 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
       <div
         role="region"
         aria-label={result.scopeLabel}
-        className="hidden snap-x gap-4 overflow-x-auto pb-2 no-scrollbar scroll-smooth md:flex"
+        className="flex snap-x gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth sm:gap-4"
       >
         {result.spots.map((s) => (
           <div
             key={s.id}
-            className="md:min-w-[300px] lg:min-w-[320px] md:flex-shrink-0 md:snap-start"
+            className="w-[82vw] max-w-[280px] shrink-0 snap-start sm:w-auto sm:min-w-[300px] lg:min-w-[320px]"
           >
             <ExploreSpotCard
               spot={s}
@@ -79,19 +79,6 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
               onToggleVerify={toggleVerified}
             />
           </div>
-        ))}
-      </div>
-      <div className="flex flex-col gap-4 md:hidden">
-        {result.spots.map((s) => (
-          <ExploreSpotCard
-            key={s.id}
-            spot={s}
-            isSaved={isSaved(s.id)}
-            isVerified={isVerified(s.id)}
-            onOpen={open}
-            onToggleSave={toggle}
-            onToggleVerify={toggleVerified}
-          />
         ))}
       </div>
     </section>

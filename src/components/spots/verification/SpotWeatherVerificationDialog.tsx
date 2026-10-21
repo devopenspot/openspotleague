@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CloudSun } from "lucide-react"
+import { CloudSun, X } from "lucide-react"
 import Link from "next/link"
 import { Overlay } from "@/components/feedback/Overlay"
 import { useUser } from "@/lib/contexts/user-context"
@@ -101,15 +101,15 @@ export function SpotWeatherVerificationDialog({ isOpen, onClose, spot, container
           type="button"
           onClick={handleClose}
           aria-label="Close verification dialog"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface text-on-surface hover:bg-surface-container"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface text-on-surface transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
         >
-          ×
+          <X size={16} aria-hidden="true" />
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6 space-y-4 no-scrollbar">
         {!signedIn ? (
-          <p className="rounded-[8px] border border-outline-variant bg-surface-container px-3 py-3 text-sm">
+          <p className="rounded-md border border-outline-variant bg-surface-container px-3 py-3 text-sm">
             <Link href={`/login?next=/spots/${spot.id}`} className="font-bold underline">Sign in</Link> to verify weather.
           </p>
         ) : (

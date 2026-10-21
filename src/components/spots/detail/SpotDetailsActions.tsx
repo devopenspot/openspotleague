@@ -62,15 +62,15 @@ export function SpotDetailsActions({
             "flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold uppercase tracking-wider transition-colors sm:px-4",
             isVerified
               ? "border-primary bg-primary text-on-primary hover:bg-primary/95"
-              : "border-outline text-on-surface hover:bg-surface-container",
+              : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
           )}
         >
           <ShieldCheck
             size={14}
             aria-hidden="true"
-            className={cn(isVerified ? "fill-surface" : "")}
+            className={cn(isVerified ? "fill-on-primary" : "")}
           />
-          <span className="text-[10px]">{isVerified ? "Verified" : "Verify"}</span>
+          <span>{isVerified ? "Verified" : "Verify"}</span>
         </button>
         <button
           type="button"
@@ -81,26 +81,26 @@ export function SpotDetailsActions({
             "flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold uppercase tracking-wider transition-colors sm:px-4",
             isSaved
               ? "border-primary bg-primary text-on-primary hover:bg-primary/95"
-              : "border-outline text-on-surface hover:bg-surface-container",
+              : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
           )}
         >
           <span key={burstKey} aria-hidden="true" className="inline-flex">
             <Heart
               size={14}
               aria-hidden="true"
-              className={cn(isSaved ? "fill-surface" : "", "animate-heart-burst")}
+              className={cn(isSaved ? "fill-on-primary" : "", "animate-heart-burst")}
             />
           </span>
-          <span className="text-[10px]">{isSaved ? "Saved" : "Save"}</span>
+          <span>{isSaved ? "Saved" : "Save"}</span>
         </button>
         <button
           type="button"
           onClick={handleShare}
           aria-label={`Share ${spot.name}`}
-          className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline px-3 text-xs font-semibold uppercase tracking-wider text-on-surface transition-colors hover:bg-surface-container sm:px-4"
+          className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 text-xs font-semibold uppercase tracking-wider text-on-surface transition-colors hover:bg-surface-container sm:px-4"
         >
           <Share2 size={14} aria-hidden="true" />
-          <span className="text-[10px]">Share</span>
+          <span>Share</span>
         </button>
       </div>
 
