@@ -70,7 +70,7 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-40 group-hover/card:opacity-20 transition-opacity"
         />
-        <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded border border-white/15 bg-black/60 px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
+        <span className="absolute right-0 top-0 inline-flex items-center gap-1 rounded-bl rounded-tr border border-white/15 bg-black/60 px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
           <span
             className="h-1.5 w-1.5 shrink-0 rounded-full bg-white"
             aria-hidden="true"
