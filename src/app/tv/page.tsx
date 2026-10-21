@@ -7,7 +7,7 @@ import { findTvCardById, listTvCategoryRows } from "@/lib/services/tv/tv";
 import { listSports } from "@/lib/services/taxonomy/taxonomy";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { env } from "@/lib/config/env";
-import { TV_OG_IMAGE_PATH, buildTvShareDescription } from "@/lib/tv/share";
+import { TV_OG_IMAGE_PATH, buildTvShareDescription, resolveTvOgImage } from "@/lib/tv/share";
 import { resolveDisciplineParam } from "@/components/tv/marquee/tv-marquee-data";
 import { TvGrid } from "@/components/tv/grid/TvGrid";
 import TvLoading from "./loading";
@@ -75,6 +75,7 @@ export async function generateMetadata({
   if (!video) return tvBaseMetadata(ogImage);
 
   const description = buildTvShareDescription(video);
+  const ogMedia = resolveTvOgImage(video, ogImage);
   return {
     title: video.title,
     description,
@@ -84,10 +85,10 @@ export async function generateMetadata({
       type: "website",
       images: [
         {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: video.title,
+          url: ogMedia.url,
+          width: ogMedia.width,
+          height: ogMedia.height,
+          alt: ogMedia.alt,
         },
       ],
     },
@@ -95,7 +96,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: video.title,
       description,
-      images: [ogImage],
+      images: [ogMedia.url],
     },
   };
 }

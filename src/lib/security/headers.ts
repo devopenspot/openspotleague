@@ -16,7 +16,7 @@ export function cspValue(nonce?: string): string {
     `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline'`,
     `connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com`,
-    `img-src 'self' data: blob: https://lh3.googleusercontent.com https://spots.cdn.openspotleague.com https://events.cdn.openspotleague.com`,
+    `img-src 'self' data: blob: https://lh3.googleusercontent.com https://i.ytimg.com https://spots.cdn.openspotleague.com https://events.cdn.openspotleague.com`,
     `font-src 'self' data:`,
     `frame-ancestors 'none'`,
     `form-action 'self'`,

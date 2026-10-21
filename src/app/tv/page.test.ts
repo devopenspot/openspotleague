@@ -58,8 +58,39 @@ describe("tv metadata", () => {
     expect(findTvCardByIdMock).not.toHaveBeenCalled();
   });
 
-  it("uses the video name, date, and static TV image for a shared video", async () => {
+  it("uses the video name, date, and YouTube thumbnail for a shared video", async () => {
     findTvCardByIdMock.mockResolvedValue(CARD);
+
+    const result = await generateMetadata({
+      searchParams: Promise.resolve({ play: "vid-1" }),
+    });
+
+    expect(result.title).toBe("Night Session");
+    expect(result.openGraph).toMatchObject({
+      title: "Night Session",
+      images: [
+        {
+          url: "https://i.ytimg.com/vi/abc123/hqdefault.jpg",
+          width: 480,
+          height: 360,
+          alt: "Night Session",
+        },
+      ],
+    });
+    expect(result.openGraph?.description).toContain("Music");
+    expect(result.openGraph?.description).toContain("skateboard");
+    expect(result.openGraph?.description).toContain("Jan 5, 2026");
+    expect(result.twitter).toMatchObject({
+      images: ["https://i.ytimg.com/vi/abc123/hqdefault.jpg"],
+    });
+    expect(findTvCardByIdMock).toHaveBeenCalledWith("vid-1");
+  });
+
+  it("falls back to the static banner when video has a non-YouTube URL", async () => {
+    findTvCardByIdMock.mockResolvedValue({
+      ...CARD,
+      youtubeUrl: "https://example.com/not-youtube",
+    });
     const expected = new URL("/opengrapgh-tv.png", env.APP_URL).toString();
 
     const result = await generateMetadata({
@@ -69,13 +100,9 @@ describe("tv metadata", () => {
     expect(result.title).toBe("Night Session");
     expect(result.openGraph).toMatchObject({
       title: "Night Session",
-      images: [{ url: expected, alt: "Night Session" }],
+      images: [{ url: expected, width: 1200, height: 630, alt: "Night Session" }],
     });
-    expect(result.openGraph?.description).toContain("Music");
-    expect(result.openGraph?.description).toContain("skateboard");
-    expect(result.openGraph?.description).toContain("Jan 5, 2026");
     expect(result.twitter).toMatchObject({ images: [expected] });
-    expect(findTvCardByIdMock).toHaveBeenCalledWith("vid-1");
   });
 
   it("supports the v alias for the play param", async () => {

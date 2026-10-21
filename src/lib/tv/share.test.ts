@@ -5,6 +5,7 @@ import {
   buildTvSharePath,
   buildTvShareUrl,
   formatTvPostDate,
+  resolveTvOgImage,
 } from "./share";
 import type { TvCard } from "@/types/tv";
 
@@ -44,5 +45,43 @@ describe("tv share", () => {
 
   it("points at the static TV OG asset", () => {
     expect(TV_OG_IMAGE_PATH).toBe("/opengrapgh-tv.png");
+  });
+
+  describe("resolveTvOgImage", () => {
+    const fallbackUrl = "https://example.com/opengrapgh-tv.png";
+
+    it("returns the fallback static banner when video is null", () => {
+      const result = resolveTvOgImage(null, fallbackUrl);
+      expect(result).toEqual({
+        url: fallbackUrl,
+        width: 1200,
+        height: 630,
+        alt: "OpenSpot TV",
+      });
+    });
+
+    it("resolves the YouTube thumbnail (480x360) when the video has a valid YouTube URL", () => {
+      const result = resolveTvOgImage(CARD, fallbackUrl);
+      expect(result).toEqual({
+        url: "https://i.ytimg.com/vi/abc123/hqdefault.jpg",
+        width: 480,
+        height: 360,
+        alt: "Night Session",
+      });
+    });
+
+    it("falls back to the static banner with video title when YouTube URL is invalid", () => {
+      const invalidCard: TvCard = {
+        ...CARD,
+        youtubeUrl: "https://example.com/not-youtube",
+      };
+      const result = resolveTvOgImage(invalidCard, fallbackUrl);
+      expect(result).toEqual({
+        url: fallbackUrl,
+        width: 1200,
+        height: 630,
+        alt: "Night Session",
+      });
+    });
   });
 });

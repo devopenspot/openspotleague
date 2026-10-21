@@ -1,7 +1,51 @@
 import type { TvCard } from "@/types/tv";
+import { youtubeThumbUrl } from "@/lib/tv/urls";
 
 /** Static OG asset for TV shares (exact public/ filename, typo included). */
 export const TV_OG_IMAGE_PATH = "/opengrapgh-tv.png";
+
+export interface TvOgImageResult {
+  url: string;
+  width: number;
+  height: number;
+  alt: string;
+}
+
+/**
+ * Resolves the OpenGraph image metadata for a TV share.
+ * Returns the video's YouTube thumbnail (480x360) when available,
+ * falling back to the generic static TV banner (1200x630).
+ */
+export function resolveTvOgImage(
+  video: TvCard | null,
+  fallbackOgUrl: string,
+): TvOgImageResult {
+  if (!video) {
+    return {
+      url: fallbackOgUrl,
+      width: 1200,
+      height: 630,
+      alt: "OpenSpot TV",
+    };
+  }
+
+  const thumb = youtubeThumbUrl(video.youtubeUrl);
+  if (!thumb) {
+    return {
+      url: fallbackOgUrl,
+      width: 1200,
+      height: 630,
+      alt: video.title,
+    };
+  }
+
+  return {
+    url: thumb,
+    width: 480,
+    height: 360,
+    alt: video.title,
+  };
+}
 
 /**
  * Canonical share path for a video — minimal (`/tv?play=<id>`) so every
