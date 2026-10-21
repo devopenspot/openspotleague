@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Tv, Plus, MapPinned, Search } from "lucide-react";
+import { Trophy, Tv, Plus, Search } from "lucide-react";
 import { NearbyCtaButton } from "@/components/shell/NearbyCtaButton";
 import { JoinWithCode } from "@/components/shell/JoinWithCode";
 import { ROUTES } from "@/lib/navigation/nav";
