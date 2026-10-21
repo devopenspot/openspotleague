@@ -14,7 +14,7 @@ export interface TvOgImageResult {
 /**
  * Resolves the OpenGraph image metadata for a TV share.
  * Returns the video's YouTube thumbnail (480x360) when available,
- * falling back to the generic static TV banner (1280x720).
+ * falling back to the generic static TV banner (1920x1080).
  */
 export function resolveTvOgImage(
   video: TvCard | null,
@@ -23,8 +23,8 @@ export function resolveTvOgImage(
   if (!video) {
     return {
       url: fallbackOgUrl,
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       alt: "OpenSpot TV",
     };
   }
@@ -33,8 +33,8 @@ export function resolveTvOgImage(
   if (!thumb) {
     return {
       url: fallbackOgUrl,
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       alt: video.title,
     };
   }
