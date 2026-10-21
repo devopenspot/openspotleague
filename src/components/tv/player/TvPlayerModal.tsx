@@ -9,7 +9,15 @@ import {
   useState,
 } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Pause, Share2, VolumeX, X, Zap } from "lucide-react";
+import {
+  //   ChevronLeft,
+  //   ChevronRight,
+  Pause,
+  Share2,
+  VolumeX,
+  X,
+  Zap,
+} from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { Overlay } from "@/components/feedback/Overlay";
 import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
@@ -274,12 +282,14 @@ export function TvPlayerModal({
     };
   }, []);
 
-
   // Canonical share link (/tv?play=<id>) shortened with fallback, directly copied to clipboard.
   const handleShare = useCallback(async () => {
     if (!video) return;
     try {
-      const url = await getOrFetchShortUrl(buildTvSharePath(video.id), video.title);
+      const url = await getOrFetchShortUrl(
+        buildTvSharePath(video.id),
+        video.title,
+      );
       await navigator.clipboard.writeText(url);
       showToast("Link copied.", "success");
     } catch {
@@ -413,28 +423,8 @@ export function TvPlayerModal({
         className="relative z-10 flex h-dvh w-full flex-col bg-black"
       >
         {/* Top bar — compact in landscape so the stage keeps max height */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
-          <span
-            className="hidden h-2 w-2 shrink-0 rounded-full bg-white sm:inline-flex"
-            aria-hidden="true"
-          />
-          <div className="min-w-0 flex-1">
-            <p
-              id={titleId}
-              className="truncate font-display text-[10px] font-bold uppercase tracking-widest text-white/90 sm:text-[11px]"
-            >
-              Now Playing — {disciplineLabel}
-              {categoryLabel ? ` · ${categoryLabel}` : ""}
-            </p>
-            <p
-              id={descId}
-              className="truncate text-[11px] font-semibold leading-tight text-white sm:text-xs landscape:hidden"
-            >
-              {renderVideo.title}
-            </p>
-          </div>
-
-          <button
+        <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
+          {/* <button
             type="button"
             onClick={handlePrev}
             disabled={!hasPrev || isClosing}
@@ -443,9 +433,9 @@ export function TvPlayerModal({
             className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <ChevronLeft size={16} aria-hidden="true" />
-          </button>
+          </button> */}
 
-          <button
+          {/* <button
             type="button"
             onClick={handleNext}
             disabled={!hasNext || isClosing}
@@ -454,7 +444,7 @@ export function TvPlayerModal({
             className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <ChevronRight size={16} aria-hidden="true" />
-          </button>
+          </button> */}
 
           <button
             type="button"
@@ -572,7 +562,10 @@ export function TvPlayerModal({
         <div className="sm:hidden px-3.5 py-2.5 flex flex-col gap-1 border-b border-white/10 bg-black shrink-0 landscape:hidden">
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded border border-white/20 bg-white/10 px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-white"
+                aria-hidden="true"
+              />
               {disciplineLabel}
             </span>
             {categoryLabel ? (

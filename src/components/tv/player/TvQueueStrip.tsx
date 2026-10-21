@@ -71,7 +71,7 @@ const TvQueueStripItem = memo(function TvQueueStripItem({
       onClick={() => onSelect(item.video.id)}
       style={{ contentVisibility: "auto", containIntrinsicSize: "112px 76px" }}
       className={cn(
-        "group relative w-72 shrink-0 snap-start overflow-hidden rounded-[10px] border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:w-20",
+        "group relative w-auto max-w-60 min-w-52 shrink-0 snap-start overflow-hidden rounded-[10px] border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:w-20",
         active ? "border-white" : "border-white/15 hover:border-white/40",
       )}
     >
@@ -201,7 +201,7 @@ export const TvQueueStrip = memo(function TvQueueStrip({
           <div
             role="status"
             aria-label="Loading more videos…"
-            className="group relative w-72 shrink-0 snap-start overflow-hidden rounded-[10px] border border-white/10 bg-white/5 landscape:w-20 "
+            className="group relative w-auto max-w-60 min-w-52 shrink-0 snap-start overflow-hidden rounded-[10px] border border-white/10 bg-white/5 landscape:w-20 "
           >
             <span className="relative block aspect-video w-full bg-white/10" />
             <span className="block px-1.5 py-1 text-[10px] landscape:hidden">
