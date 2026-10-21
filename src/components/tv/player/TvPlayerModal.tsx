@@ -10,8 +10,8 @@ import {
 } from "react";
 import Image from "next/image";
 import {
-  //   ChevronLeft,
-  //   ChevronRight,
+  ChevronLeft,
+  ChevronRight,
   Pause,
   Share2,
   VolumeX,
@@ -23,7 +23,7 @@ import { Overlay } from "@/components/feedback/Overlay";
 import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
 import { showToast } from "@/hooks/ui/useToast";
 import { toAutoplayEmbedUrl } from "@/lib/tv/embed";
-import { buildTvSharePath } from "@/lib/tv/share";
+import { buildTvSharePath, formatTvPostDate } from "@/lib/tv/share";
 import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import type { TvCard, TvCategory } from "@/types/tv";
 import { TvQueueStrip } from "./TvQueueStrip";
@@ -376,6 +376,10 @@ export function TvPlayerModal({
     ? `${video.title} — ${disciplineLabel}${categoryLabel ? ` · ${categoryLabel}` : ""}`
     : "";
 
+  const videoFormattedDate = video?.postDate
+    ? formatTvPostDate(video.postDate)
+    : "";
+
   // Queue strip data — defaults to the single video when the grid passes nothing
   const stripQueue = useMemo<readonly TvCard[]>(
     () => queue ?? (video ? [video] : []),
@@ -424,7 +428,10 @@ export function TvPlayerModal({
       >
         {/* Top bar — compact in landscape so the stage keeps max height */}
         <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
-          {/* <button
+          <h2 className="font-display text-[10px] font-bold uppercase tracking-wider text-white/70">
+            {videoFormattedDate}
+          </h2>
+          <button
             type="button"
             onClick={handlePrev}
             disabled={!hasPrev || isClosing}
@@ -433,9 +440,9 @@ export function TvPlayerModal({
             className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <ChevronLeft size={16} aria-hidden="true" />
-          </button> */}
+          </button>
 
-          {/* <button
+          <button
             type="button"
             onClick={handleNext}
             disabled={!hasNext || isClosing}
@@ -444,7 +451,7 @@ export function TvPlayerModal({
             className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <ChevronRight size={16} aria-hidden="true" />
-          </button> */}
+          </button>
 
           <button
             type="button"
@@ -591,7 +598,7 @@ export function TvPlayerModal({
         {onSelectTheaterCategory &&
         theaterCategories &&
         theaterCategories.length > 1 ? (
-          <div className="shrink-0 border-t border-white/10 bg-black landscape:hidden sm:landscape:block">
+          <div className="shrink-0 max-h-48 border-t border-white/10 bg-black landscape:hidden sm:landscape:block">
             <TvCategoryPills
               options={theaterCategories}
               selected={theaterCategory ?? "all"}
