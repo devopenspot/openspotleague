@@ -170,8 +170,8 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
     const el = scrollerRef.current;
     if (!el) return;
     const card = el.querySelector<HTMLElement>("[data-marquee-card]");
-    const gap = 8; // gap-2
-    const amount = card ? card.offsetWidth + gap : 240;
+    const gap = 12; // gap-3
+    const amount = card ? card.offsetWidth + gap : 280;
     el.scrollBy({ left: dir * amount, behavior: "smooth" });
   }, []);
 
@@ -210,7 +210,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
         </span>
       </div>
 
-      <div className="group/wire relative bg-wire h-[36vh]">
+      <div className="group/wire relative bg-wire py-2 sm:py-3">
         <div
           aria-hidden="true"
           className={cn(
@@ -232,7 +232,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
           onClick={() => scrollBy(-1)}
           disabled={!canScrollLeft}
           className={cn(
-            "absolute left-1 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
+            "absolute left-1 top-[84px] sm:top-[92px] z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
             canScrollLeft
               ? "border-white/15 opacity-100 hover:bg-white/15 hover:border-white/25 active:bg-white/20 active:scale-[0.98]"
               : "pointer-events-none border-white/10 opacity-30",
@@ -246,7 +246,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
           onClick={() => scrollBy(1)}
           disabled={!canScrollRight}
           className={cn(
-            "absolute right-1 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
+            "absolute right-1 top-[84px] sm:top-[92px] z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
             canScrollRight
               ? "border-white/15 opacity-100 hover:bg-white/15 hover:border-white/25 active:bg-white/20 active:scale-[0.98]"
               : "pointer-events-none border-white/10 opacity-30",
@@ -263,7 +263,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
           aria-busy={loadingMore}
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          className="h-full flex items-center snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth overscroll-x-contain scroll-px-3 px-0 py-[clamp(6px,1.2dvh,12px)] no-scrollbar bg-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire focus-visible:rounded-none sm:scroll-px-10 "
+          className="flex items-start snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth overscroll-x-contain scroll-px-3 px-0 py-1 no-scrollbar bg-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire focus-visible:rounded-none sm:scroll-px-10"
         >
           {displayItems.map((item) => (
             <div

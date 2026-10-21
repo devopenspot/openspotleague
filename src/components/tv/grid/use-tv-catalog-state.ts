@@ -2,10 +2,6 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import type { TvCard, TvCategory } from "@/types/tv";
 import type { TvCategoryRow } from "@/lib/services/tv/tv";
 
-export interface TvCategoryRowState extends TvCategoryRow {
-  nextCursor: string | null;
-}
-
 export function useTvCatalogState({
   rows,
   discipline,

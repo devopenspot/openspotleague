@@ -1,24 +1,16 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, beforeEach } from "vitest";
-import { useUIStore } from "@/stores/ui-store";
+import { describe, it, expect } from "vitest";
 import TvLayout from "./layout";
 
 describe("TvLayout", () => {
-  beforeEach(() => {
-    useUIStore.getState().setHeaderImage(null);
-  });
-
-  it("sets the TV header image parameter to /osl-tv.png while mounted and resets on unmount", () => {
-    const { unmount } = render(
+  it("renders children in a full-height dark container", () => {
+    const { container } = render(
       <TvLayout>
         <div data-testid="tv-child">TV Content</div>
       </TvLayout>,
     );
 
     expect(screen.getByTestId("tv-child")).toBeInTheDocument();
-    expect(useUIStore.getState().headerImage).toBe("/osl-tv.png");
-
-    unmount();
-    expect(useUIStore.getState().headerImage).toBeNull();
+    expect(container.firstChild).toHaveClass("min-h-dvh", "bg-black", "text-white");
   });
 });

@@ -3,7 +3,6 @@
 import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { usePreferencesStore } from "@/stores/preferences-store";
-import { useUIStore } from "@/stores/ui-store";
 import type { TvCategoryRow } from "@/lib/services/tv/tv";
 import {
   resolveDisciplineParam,
@@ -23,7 +22,7 @@ export function useTvDisciplineState({
   disciplines,
   initialDiscipline = null,
   onDisciplineChange,
-  playParam,
+  playParam: _playParam,
 }: UseTvDisciplineStateProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -31,11 +30,8 @@ export function useTvDisciplineState({
 
   const preferredSport = usePreferencesStore((s) => s.preferredSport);
   const hydrationStatus = usePreferencesStore((s) => s.hydrationStatus);
-  const openOnboarding = useUIStore((s) => s.openOnboarding);
 
   const disciplineListRef = useRef<HTMLDivElement>(null);
-  const onboardingPromptedRef = useRef(false);
-  const deferredOnboardingRef = useRef(false);
   const manualSlugRef = useRef<string | null>(null);
   const pendingManualRef = useRef<string | null | undefined>(undefined);
   const prevUrlParamRef = useRef<string | null | undefined>(undefined);
@@ -201,55 +197,7 @@ export function useTvDisciplineState({
     });
   }, [discipline]);
 
-  // Onboarding prompt on first visit
-  useEffect(() => {
-    if (onboardingPromptedRef.current) return;
-    if (hydrationStatus !== "ready" && hydrationStatus !== "error") return;
-    if (preferredSport) {
-      onboardingPromptedRef.current = true;
-      return;
-    }
-    if (typeof window === "undefined") return;
-    if (playParam) {
-      deferredOnboardingRef.current = true;
-      return;
-    }
-    if (useUIStore.getState().isOnboardingOpen) {
-      onboardingPromptedRef.current = true;
-      return;
-    }
-    onboardingPromptedRef.current = true;
-    awaitingSaveRef.current = true;
-    openOnboarding("onboarding");
-  }, [hydrationStatus, preferredSport, playParam, openOnboarding]);
-
-  const checkDeferredOnboarding = useCallback(() => {
-    if (deferredOnboardingRef.current) {
-      const prefs = usePreferencesStore.getState();
-      if (
-        prefs.hydrationStatus !== "ready" &&
-        prefs.hydrationStatus !== "error"
-      ) {
-        return;
-      }
-      deferredOnboardingRef.current = false;
-      onboardingPromptedRef.current = true;
-      if (!prefs.preferredSport && !useUIStore.getState().isOnboardingOpen) {
-        awaitingSaveRef.current = true;
-        useUIStore.getState().openOnboarding("onboarding");
-      }
-    }
-  }, []);
-
-  const sortedDisciplines = useMemo(() => {
-    const copy = [...disciplines];
-    const rollerIdx = copy.findIndex((d) => d.slug === "roller");
-    if (rollerIdx > 0) {
-      const [roller] = copy.splice(rollerIdx, 1);
-      if (roller) copy.unshift(roller);
-    }
-    return copy;
-  }, [disciplines]);
+  const sortedDisciplines = useMemo(() => [...disciplines], [disciplines]);
 
   const disciplineLabel = useMemo(() => {
     if (discipline === "all") return "All sports";
@@ -264,6 +212,5 @@ export function useTvDisciplineState({
     disciplineListRef,
     sortedDisciplines,
     disciplineLabel,
-    checkDeferredOnboarding,
   };
 }

@@ -17,7 +17,6 @@ interface TvQueueStripProps {
   hasMore?: boolean;
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
-  total?: number;
 }
 
 function QueueThumb({ thumb }: { thumb: string | null }) {
@@ -49,7 +48,6 @@ function QueueThumb({ thumb }: { thumb: string | null }) {
 interface TvQueueStripItemProps {
   item: TvMarqueeItem;
   index: number;
-  totalCount: number;
   active: boolean;
   disabled: boolean;
   onSelect: (id: string) => void;
@@ -57,8 +55,6 @@ interface TvQueueStripItemProps {
 
 const TvQueueStripItem = memo(function TvQueueStripItem({
   item,
-  index,
-  totalCount,
   active,
   disabled,
   onSelect,
@@ -70,7 +66,7 @@ const TvQueueStripItem = memo(function TvQueueStripItem({
       role="group"
       aria-roledescription="slide"
       aria-current={active ? "true" : undefined}
-      aria-label={`${index + 1} of ${totalCount}: ${item.title}`}
+      aria-label={item.title}
       disabled={disabled}
       onClick={() => onSelect(item.video.id)}
       style={{ contentVisibility: "auto", containIntrinsicSize: "112px 76px" }}
@@ -113,7 +109,6 @@ export const TvQueueStrip = memo(function TvQueueStrip({
   hasMore = false,
   isLoadingMore = false,
   onLoadMore,
-  total,
 }: TvQueueStripProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -179,8 +174,6 @@ export const TvQueueStrip = memo(function TvQueueStrip({
 
   if (items.length === 0) return null;
 
-  const totalCount = total && total >= items.length ? total : items.length;
-
   return (
     <div className="shrink-0 border-t border-white/10 bg-black px-2 py-2 sm:px-4 landscape:py-1">
       <div
@@ -197,7 +190,6 @@ export const TvQueueStrip = memo(function TvQueueStrip({
             key={item.video.id}
             item={item}
             index={i}
-            totalCount={totalCount}
             active={item.video.id === activeId}
             disabled={disabled}
             onSelect={onSelect}

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { memo, useState } from "react";
 import { Tv } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import type { TvCard } from "@/types/tv";
 import type { TvMarqueeItem } from "./tv-marquee-data";
 
@@ -36,7 +37,7 @@ function CardImage({ item }: { item: TvMarqueeItem }) {
       src={item.thumb!}
       alt=""
       fill
-      sizes="232px"
+      sizes="(min-width: 640px) 270px, 240px"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
       className="object-cover transition-transform duration-300 motion-safe:group-hover/card:scale-[1.02]"
@@ -58,31 +59,33 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
       type="button"
       onClick={() => onSelect(item.video)}
       aria-label={`${item.title} — ${item.disciplineSlug} · ${item.meta}`}
-      className={`group/card flex w-[208px] shrink-0 flex-col overflow-hidden rounded-[14px] border bg-wire-border text-left transition-colors duration-150 ease-out hover:border-wire-border-strong hover:bg-wire-border-strong hover:shadow-md hover:-translate-y-px active:translate-y-0 active:bg-wire-border-strong active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:w-[232px] ${
-        active ? "border-on-wire" : "border-wire-border"
-      }`}
+      className={cn(
+        "group/card flex w-[240px] sm:w-[270px] shrink-0 flex-col overflow-hidden rounded-[14px] border text-left transition-all duration-150 ease-out hover:border-wire-border-strong hover:bg-wire-border-strong hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire",
+        active ? "border-on-wire bg-wire-border" : "border-wire-border bg-wire",
+      )}
     >
-      <div className="relative h-[32vh] w-full overflow-hidden bg-wire-border flex items-center justify-center">
+      <div className="relative aspect-video w-full overflow-hidden bg-wire-border flex items-center justify-center">
         <CardImage item={item} />
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-on-surface/45 via-transparent to-transparent opacity-60"
+          className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-40 group-hover/card:opacity-20 transition-opacity"
         />
-        <span className="absolute left-0 top-0 inline-flex items-center gap-1 rounded-br rounded-tl border border-white/15 bg-on-surface/55 px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-surface shadow-sm backdrop-blur-md">
+        <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded border border-white/15 bg-black/60 px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
           <span
             className="h-1.5 w-1.5 shrink-0 rounded-full bg-white"
             aria-hidden="true"
           />
           <span className="truncate max-w-[12ch]">{item.disciplineSlug}</span>
         </span>
+      </div>
 
-        <span className="absolute right-0 top-0 inline-flex max-w-full items-center justify-start truncate rounded-bl rounded-tr border border-white/15 bg-on-surface/55 px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-surface shadow-sm backdrop-blur-md sm:max-w-[150px]">
-          {item.meta}
-        </span>
-
-        <p className="absolute bottom-0 left-0 max-w-[calc(100%-12px)] truncate rounded-tr rounded-bl border border-white/15 bg-on-surface/55 px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-surface shadow-sm backdrop-blur-md">
+      <div className="flex flex-col gap-1 p-2.5 sm:p-3 min-w-0">
+        <p className="line-clamp-2 text-xs sm:text-sm font-semibold leading-snug text-white transition-colors group-hover/card:text-white/90">
           {item.title}
         </p>
+        <span className="text-[11px] font-medium text-wire-muted truncate">
+          {item.meta}
+        </span>
       </div>
     </button>
   );

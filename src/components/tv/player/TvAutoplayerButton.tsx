@@ -39,9 +39,9 @@ export function TvAutoplayerButton({
       aria-label={
         count === 0
           ? `Autoplay unavailable — ${disabledReason}`
-          : `Autoplay ${queueLabel} — ${count} videos`
+          : `Autoplay ${queueLabel}`
       }
-      title={disabledReason ?? `Play ${count} videos — ${queueLabel}`}
+      title={disabledReason ?? `Play ${queueLabel}`}
       className={`inline-flex shrink-0 items-center gap-1.5 sm:gap-2 whitespace-nowrap rounded-full px-3 sm:px-4 py-1.5 sm:py-2 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest shadow-sm transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 ${
         fullWidth
           ? "w-full justify-center sm:w-auto"

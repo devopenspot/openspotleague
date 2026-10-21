@@ -42,14 +42,18 @@ export function parseYouTubeVideoUrl(
   }
 }
 
-export function youtubeThumbUrl(url: string): string | null {
+export function youtubeThumbUrl(
+  url: string,
+  variant: "mq" | "hq" = "mq",
+): string | null {
   const parsed = parseYouTubeVideoUrl(url)
   if (!parsed) return null
   try {
     const u = new URL(parsed.canonicalUrl)
     const id = u.searchParams.get("v")
     if (!id) return null
-    return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+    const filename = variant === "hq" ? "hqdefault.jpg" : "mqdefault.jpg"
+    return `https://i.ytimg.com/vi/${id}/${filename}`
   } catch {
     return null
   }

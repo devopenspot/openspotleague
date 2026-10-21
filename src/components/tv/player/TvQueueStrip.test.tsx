@@ -22,18 +22,17 @@ describe("TvQueueStrip", () => {
     mockCard("v2", "Second Video"),
   ];
 
-  it("renders queue items with honest total count in aria-label", () => {
+  it("renders queue items with title in aria-label", () => {
     render(
       <TvQueueStrip
         queue={queue}
         activeId="v1"
         onSelect={vi.fn()}
-        total={50}
       />,
     );
 
-    expect(screen.getByRole("group", { name: "1 of 50: First Video" })).toBeDefined();
-    expect(screen.getByRole("group", { name: "2 of 50: Second Video" })).toBeDefined();
+    expect(screen.getByRole("group", { name: "First Video" })).toBeDefined();
+    expect(screen.getByRole("group", { name: "Second Video" })).toBeDefined();
   });
 
   it("highlights the active item", () => {
@@ -45,10 +44,10 @@ describe("TvQueueStrip", () => {
       />,
     );
 
-    const activeItem = screen.getByRole("group", { name: "2 of 2: Second Video" });
+    const activeItem = screen.getByRole("group", { name: "Second Video" });
     expect(activeItem.getAttribute("aria-current")).toBe("true");
 
-    const inactiveItem = screen.getByRole("group", { name: "1 of 2: First Video" });
+    const inactiveItem = screen.getByRole("group", { name: "First Video" });
     expect(inactiveItem.getAttribute("aria-current")).toBeNull();
   });
 
@@ -62,7 +61,7 @@ describe("TvQueueStrip", () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole("group", { name: "2 of 2: Second Video" }));
+    await userEvent.click(screen.getByRole("group", { name: "Second Video" }));
     expect(onSelect).toHaveBeenCalledWith("v2");
   });
 

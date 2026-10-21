@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { TvAutoplayerButton } from "./TvAutoplayerButton";
 
 describe("TvAutoplayerButton", () => {
-  it("renders honest video count and discipline label", () => {
+  it("renders honest discipline label", () => {
     render(
       <TvAutoplayerButton
         count={24}
@@ -14,11 +14,11 @@ describe("TvAutoplayerButton", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: /Autoplay All sports — 24 videos/i,
+      name: /Autoplay All sports/i,
     });
     expect(button).toBeDefined();
     expect(button.getAttribute("disabled")).toBeNull();
-    expect(screen.getByText(/All sports · 24/)).toBeDefined();
+    expect(screen.getByText("All sports")).toBeDefined();
   });
 
   it("includes category label when provided", () => {
@@ -33,10 +33,10 @@ describe("TvAutoplayerButton", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /Autoplay BMX · Music — 8 videos/i,
+        name: /Autoplay BMX · Music/i,
       }),
     ).toBeDefined();
-    expect(screen.getByText(/BMX · Music · 8/)).toBeDefined();
+    expect(screen.getByText("BMX · Music")).toBeDefined();
   });
 
   it("treats category label 'All' as all categories without redundancy", () => {
@@ -51,10 +51,10 @@ describe("TvAutoplayerButton", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /Autoplay All sports — 8 videos/i,
+        name: /Autoplay All sports/i,
       }),
     ).toBeDefined();
-    expect(screen.getByText(/All sports · 8/)).toBeDefined();
+    expect(screen.getByText("All sports")).toBeDefined();
   });
 
   it("calls onOpen when clicked by user", async () => {
@@ -68,7 +68,7 @@ describe("TvAutoplayerButton", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: /Autoplay Skateboard — 10 videos/i,
+      name: /Autoplay Skateboard/i,
     });
     await userEvent.click(button);
     expect(onOpen).toHaveBeenCalledTimes(1);

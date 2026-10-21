@@ -24,8 +24,9 @@ export function TvDisciplinePills({
         role="tab"
         data-slug="all"
         aria-selected={selected === "all"}
+        tabIndex={selected === "all" ? 0 : -1}
         onClick={() => onSelect("all")}
-        className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest transition-colors ${
+        className={`shrink-0 whitespace-nowrap rounded-full border px-3 sm:px-3.5 py-1.5 sm:py-2 min-h-[34px] sm:min-h-[36px] flex items-center justify-center font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest transition-colors touch-manipulation ${
           selected === "all"
             ? "border-white bg-white text-black"
             : "border-white/15 bg-white/10 text-white/80 hover:bg-white/15 hover:text-white"
@@ -40,8 +41,9 @@ export function TvDisciplinePills({
           role="tab"
           data-slug={d.slug}
           aria-selected={selected === d.slug}
+          tabIndex={selected === d.slug ? 0 : -1}
           onClick={() => onSelect(d.slug)}
-          className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 sm:px-3.5 py-1 sm:py-1.5 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest transition-colors ${
+          className={`shrink-0 whitespace-nowrap rounded-full border px-3 sm:px-3.5 py-1.5 sm:py-2 min-h-[34px] sm:min-h-[36px] flex items-center justify-center font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest transition-colors touch-manipulation ${
             selected === d.slug
               ? "border-white bg-white text-black"
               : "border-white/15 bg-white/10 text-white/80 hover:bg-white/15 hover:text-white"

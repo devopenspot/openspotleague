@@ -29,7 +29,7 @@ export function resolveTvOgImage(
     };
   }
 
-  const thumb = youtubeThumbUrl(video.youtubeUrl);
+  const thumb = youtubeThumbUrl(video.youtubeUrl, "hq");
   if (!thumb) {
     return {
       url: fallbackOgUrl,
@@ -41,8 +41,8 @@ export function resolveTvOgImage(
 
   return {
     url: thumb,
-    width: 1200,
-    height: 630,
+    width: 480,
+    height: 360,
     alt: video.title,
   };
 }

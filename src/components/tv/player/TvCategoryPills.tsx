@@ -8,8 +8,8 @@ import { formatTvCategory } from "@/components/tv/marquee/tv-marquee-data";
 export type TheaterCategory = TvCategory | "all";
 
 interface TvCategoryPillsProps {
-  options: readonly { category: TvCategory; count: number }[];
-  total: number;
+  options: readonly { category: TvCategory; count?: number }[];
+  total?: number;
   selected: TheaterCategory;
   onSelect: (category: TheaterCategory) => void;
   disabled?: boolean;
@@ -17,7 +17,7 @@ interface TvCategoryPillsProps {
 
 function pillClassName(active: boolean): string {
   return cn(
-    "inline-flex h-7 shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-2.5 font-display text-[10px] font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:h-6 landscape:px-2 landscape:text-[9px]",
+    "inline-flex h-8 sm:h-7.5 shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 sm:px-2.5 font-display text-[11px] sm:text-[10px] font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 touch-manipulation landscape:h-6.5 landscape:px-2.5 landscape:text-[9.5px]",
     active
       ? "border-white bg-white text-black"
       : "border-white/15 bg-white/10 text-white/80 hover:bg-white/15 hover:text-white",
@@ -26,7 +26,6 @@ function pillClassName(active: boolean): string {
 
 export const TvCategoryPills = memo(function TvCategoryPills({
   options,
-  total,
   selected,
   onSelect,
   disabled = false,
@@ -40,14 +39,14 @@ export const TvCategoryPills = memo(function TvCategoryPills({
       <button
         type="button"
         aria-pressed={selected === "all"}
-        aria-label={`All categories — ${total} videos`}
+        aria-label="All categories"
         disabled={disabled}
         onClick={() => onSelect("all")}
         className={pillClassName(selected === "all")}
       >
         All
       </button>
-      {options.map(({ category, count }) => {
+      {options.map(({ category }) => {
         const active = selected === category;
         const label = formatTvCategory(category);
         return (
@@ -55,7 +54,7 @@ export const TvCategoryPills = memo(function TvCategoryPills({
             key={category}
             type="button"
             aria-pressed={active}
-            aria-label={count ? `${label} — ${count} videos` : label}
+            aria-label={label}
             disabled={disabled}
             onClick={() => onSelect(category)}
             className={pillClassName(active)}

@@ -63,11 +63,11 @@ describe("toTvMarqueeItem", () => {
     expect(item.meta).toBe("Jan 15, 2026");
   });
 
-  it("maps a YouTube watch URL to a hqdefault thumb", () => {
+  it("maps a YouTube watch URL to a widescreen mqdefault thumb", () => {
     const item = toTvMarqueeItem(
       makeVideo({ id: "v1", categories: ["music"], youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" }),
     );
-    expect(item.thumb).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(item.thumb).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg");
   });
 
   it("returns a null thumb for a non-video URL", () => {
@@ -85,7 +85,7 @@ describe("toTvMarqueeItem", () => {
 describe("youtubeThumbUrl", () => {
   it("accepts a canonical watch URL", () => {
     expect(youtubeThumbUrl("https://www.youtube.com/watch?v=abc12345678")).toBe(
-      "https://i.ytimg.com/vi/abc12345678/hqdefault.jpg",
+      "https://i.ytimg.com/vi/abc12345678/mqdefault.jpg",
     );
   });
 

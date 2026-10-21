@@ -9,26 +9,25 @@ describe("TvCategoryPills", () => {
     { category: "profile" as const, count: 12 },
   ];
 
-  it("renders All and category options with counts in aria-label", () => {
+  it("renders All and category options without counts in aria-label", () => {
     const onSelect = vi.fn();
     render(
       <TvCategoryPills
         options={options}
-        total={37}
         selected="all"
         onSelect={onSelect}
       />,
     );
 
-    const allBtn = screen.getByRole("button", { name: "All categories — 37 videos" });
+    const allBtn = screen.getByRole("button", { name: "All categories" });
     expect(allBtn).toBeDefined();
     expect(allBtn.getAttribute("aria-pressed")).toBe("true");
 
-    const musicBtn = screen.getByRole("button", { name: "Music — 25 videos" });
+    const musicBtn = screen.getByRole("button", { name: "Music" });
     expect(musicBtn).toBeDefined();
     expect(musicBtn.getAttribute("aria-pressed")).toBe("false");
 
-    const profileBtn = screen.getByRole("button", { name: "Profile — 12 videos" });
+    const profileBtn = screen.getByRole("button", { name: "Profile" });
     expect(profileBtn).toBeDefined();
     expect(profileBtn.getAttribute("aria-pressed")).toBe("false");
   });
@@ -38,13 +37,12 @@ describe("TvCategoryPills", () => {
     render(
       <TvCategoryPills
         options={options}
-        total={37}
         selected="all"
         onSelect={onSelect}
       />,
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "Music — 25 videos" }));
+    await userEvent.click(screen.getByRole("button", { name: "Music" }));
     expect(onSelect).toHaveBeenCalledWith("music");
   });
 
@@ -53,13 +51,12 @@ describe("TvCategoryPills", () => {
     render(
       <TvCategoryPills
         options={options}
-        total={37}
         selected="music"
         onSelect={onSelect}
       />,
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "All categories — 37 videos" }));
+    await userEvent.click(screen.getByRole("button", { name: "All categories" }));
     expect(onSelect).toHaveBeenCalledWith("all");
   });
 
@@ -67,15 +64,14 @@ describe("TvCategoryPills", () => {
     render(
       <TvCategoryPills
         options={options}
-        total={37}
         selected="all"
         onSelect={vi.fn()}
         disabled
       />,
     );
 
-    expect(screen.getByRole("button", { name: "All categories — 37 videos" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Music — 25 videos" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Profile — 12 videos" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "All categories" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Music" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Profile" })).toBeDisabled();
   });
 });

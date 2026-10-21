@@ -125,27 +125,10 @@ describe("TvGrid discipline preference", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("forces onboarding when unset and adopts the just-set discipline", async () => {
+  it("does not force onboarding when preferred sport is unset", async () => {
     renderGrid([row([card("v1", "BMX Night", "bmx")])]);
 
-    await waitFor(() =>
-      expect(useUIStore.getState().isOnboardingOpen).toBe(true),
-    );
-
-    // Simulates completing the dialog (save path)
-    await act(async () => {
-      usePreferencesStore.getState().setPreferredSport("BMX");
-    });
-
-    await waitFor(() =>
-      expect(
-        screen.getByRole("tab", { name: "BMX" }).getAttribute("aria-selected"),
-      ).toBe("true"),
-    );
-    expect(nav.replace).toHaveBeenCalledWith(
-      "/tv?discipline=bmx",
-      expect.objectContaining({ scroll: false }),
-    );
+    expect(useUIStore.getState().isOnboardingOpen).toBe(false);
   });
 
   it("keeps a manual pill choice when the preference changes elsewhere", async () => {
@@ -288,24 +271,15 @@ describe("TvGrid discipline preference", () => {
     }
   });
 
-  it("a TV-prompted save wins over an explicit ?discipline= link", async () => {
+  it("lets an explicit ?discipline= link control view without forcing onboarding", async () => {
     nav.params = new URLSearchParams("discipline=skateboard");
     renderGrid([row([card("v2", "Skate Night", "skateboard")])]);
 
-    // No preference yet → TV forces the dialog even with ?discipline=
+    expect(useUIStore.getState().isOnboardingOpen).toBe(false);
     await waitFor(() =>
-      expect(useUIStore.getState().isOnboardingOpen).toBe(true),
-    );
-
-    await act(async () => {
-      usePreferencesStore.getState().setPreferredSport("BMX");
-    });
-
-    await waitFor(() =>
-      expect(nav.replace).toHaveBeenCalledWith(
-        "/tv?discipline=bmx",
-        expect.objectContaining({ scroll: false }),
-      ),
+      expect(
+        screen.getByRole("tab", { name: "Skateboard" }).getAttribute("aria-selected"),
+      ).toBe("true"),
     );
   });
 });
@@ -434,7 +408,7 @@ describe("TvAutoplayerButton continuous playback", () => {
 
     // 1. Locate and click the Autoplayer button
     const autoplayBtn = screen.getByRole("button", {
-      name: /Autoplay All sports — 2 videos/i,
+      name: /Autoplay All sports/i,
     });
     expect(autoplayBtn).toBeDefined();
     await userEvent.click(autoplayBtn);
@@ -594,10 +568,10 @@ describe("TvGrid multi-category compatibility", () => {
       screen.getAllByRole("group", { name: "Dual Session" }),
     ).toHaveLength(2);
 
-    // Autoplay button reflects 2 unique videos (v1 + v2), not 3 (sum of row totals)
+    // Autoplay button reflects All sports without count suffix
     expect(
       screen.getByRole("button", {
-        name: /Autoplay All sports — 2 videos/i,
+        name: /Autoplay All sports/i,
       }),
     ).toBeDefined();
   });

@@ -19,7 +19,6 @@ import {
 } from "./tv-grid-parts";
 
 const AUTO_ADVANCE_KEY = "tv:autoAdvance";
-const MUTED_KEY = "tv:muted";
 
 export function TvGrid({
   rows,
@@ -53,15 +52,6 @@ export function TvGrid({
       return true;
     }
   });
-  const [muted] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      const stored = window.localStorage.getItem(MUTED_KEY);
-      return stored === null ? false : stored === "1";
-    } catch {
-      return false;
-    }
-  });
 
   const {
     discipline,
@@ -70,7 +60,6 @@ export function TvGrid({
     disciplineListRef,
     sortedDisciplines,
     disciplineLabel,
-    checkDeferredOnboarding,
   } = useTvDisciplineState({
     rows,
     disciplines,
@@ -256,8 +245,7 @@ export function TvGrid({
     setIsAutoplaying(false);
     resetTheaterCategory();
     syncUrl(null);
-    checkDeferredOnboarding();
-  }, [syncUrl, resetTheaterCategory, checkDeferredOnboarding]);
+  }, [syncUrl, resetTheaterCategory]);
 
   const handleEnded = useCallback(() => {
     if (!autoAdvance) return;
@@ -285,13 +273,13 @@ export function TvGrid({
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 lg:gap-8">
           <div className="flex items-center justify-between w-full gap-3 sm:gap-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <Tv
-                size={36}
-                className="sm:h-12 sm:w-12 text-pink-500"
+                size={32}
+                className="h-8 w-8 sm:h-10 sm:w-10 text-white"
                 aria-hidden="true"
               />
-              <h1 className="font-display text-4xl sm:text-5xl font-bold uppercase tracking-tight text-pink-500">
+              <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-white">
                 TV
               </h1>
             </div>
@@ -351,7 +339,6 @@ export function TvGrid({
       <TvPlayerModal
         isOpen={isModalOpen}
         video={activeVideo}
-        total={totalForTheaterFilter}
         disciplineLabel={disciplineLabel}
         categoryLabel={categoryLabel}
         hasPrev={queuePos !== -1 ? queuePos > 0 : activeIndex > 0}
@@ -366,7 +353,6 @@ export function TvGrid({
         autoplay={isAutoplaying}
         autoAdvance={autoAdvance}
         onToggleAutoAdvance={() => setAutoAdvance((v) => !v)}
-        muted={muted}
         onClose={handleClose}
         onPrev={goPrev}
         onNext={goNext}

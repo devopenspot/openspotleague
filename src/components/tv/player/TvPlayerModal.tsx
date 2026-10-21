@@ -16,7 +16,6 @@ import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
 import { showToast } from "@/hooks/ui/useToast";
 import { toAutoplayEmbedUrl } from "@/lib/tv/embed";
 import { buildTvSharePath } from "@/lib/tv/share";
-import { shareOrCopyUrl } from "@/lib/utils/share";
 import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import type { TvCard, TvCategory } from "@/types/tv";
 import { TvQueueStrip } from "./TvQueueStrip";
@@ -25,7 +24,6 @@ import { TvCategoryPills, type TheaterCategory } from "./TvCategoryPills";
 interface TvPlayerModalProps {
   isOpen: boolean;
   video: TvCard | null;
-  total: number;
   disciplineLabel: string;
   categoryLabel: string | null;
   hasPrev: boolean;
@@ -33,8 +31,6 @@ interface TvPlayerModalProps {
   autoplay: boolean;
   autoAdvance: boolean;
   onToggleAutoAdvance: () => void;
-  /** Sound on by default — persisted in TvGrid */
-  muted: boolean;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -46,7 +42,7 @@ interface TvPlayerModalProps {
   activeId?: string | null;
   onSelectVideo?: (id: string) => void;
   /** In-dialog category filter options (non-empty categories of the queue) */
-  theaterCategories?: readonly { category: TvCategory; count: number }[];
+  theaterCategories?: readonly { category: TvCategory; count?: number }[];
   theaterCategory?: TheaterCategory;
   onSelectTheaterCategory?: (category: TheaterCategory) => void;
   /** Lazy loading support for the queue strip */
@@ -66,7 +62,6 @@ const ENDED_DEBOUNCE_MS = 1000;
 export function TvPlayerModal({
   isOpen,
   video,
-  total,
   disciplineLabel,
   categoryLabel,
   hasPrev,
@@ -74,7 +69,6 @@ export function TvPlayerModal({
   autoplay,
   autoAdvance,
   onToggleAutoAdvance,
-  muted,
   onClose,
   onPrev,
   onNext,
@@ -190,16 +184,16 @@ export function TvPlayerModal({
   }, []);
 
 
-  // Canonical share link (/tv?play=<id>) — native sheet on mobile,
-  // clipboard copy on desktop. Built at click time so SSR never needs
-  // window.location.origin.
+  // Canonical share link (/tv?play=<id>) shortened with fallback, directly copied to clipboard.
   const handleShare = useCallback(async () => {
     if (!video) return;
-    const url = await getOrFetchShortUrl(buildTvSharePath(video.id), video.title);
-    const result = await shareOrCopyUrl(url, video.title);
-    if (result === "shared") showToast("Share sheet opened.", "success");
-    else if (result === "copied") showToast("Link copied.", "success");
-    else showToast("Could not share this link.", "error");
+    try {
+      const url = await getOrFetchShortUrl(buildTvSharePath(video.id), video.title);
+      await navigator.clipboard.writeText(url);
+      showToast("Link copied.", "success");
+    } catch {
+      showToast("Could not share this link.", "error");
+    }
   }, [video]);
 
   // Mobile swipe: horizontal swipe on the stage navigates prev/next.
@@ -231,20 +225,19 @@ export function TvPlayerModal({
     [handleNext, handlePrev, isClosing],
   );
 
-  // Stable theater src: always enablejsapi for ended detection + mute commands
-  // (avoids reload when toggling autoAdvance). Rebuilds only on video/autoplay/mute change.
+  // Stable theater src: always enablejsapi for ended detection
+  // Rebuilds only on video/autoplay change.
   // Must be before early return to keep hooks order stable.
   const src = useMemo(
     () =>
       video
         ? toAutoplayEmbedUrl(video.embedUrl, {
             autoplay,
-            muted,
             enableJsApi: true,
           })
         : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps -- video object identity changes; we only care about embedUrl
-    [video?.embedUrl, autoplay, muted],
+    [video?.embedUrl, autoplay],
   );
 
   // Send listening handshake so YouTube iframe API dispatches player events
@@ -320,7 +313,7 @@ export function TvPlayerModal({
         className="relative z-10 flex h-dvh w-full flex-col bg-black"
       >
         {/* Top bar — compact in landscape so the stage keeps max height */}
-        <div className="flex shrink-0 items-center gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
           <span
             className="hidden h-2 w-2 shrink-0 rounded-full bg-white sm:inline-flex"
             aria-hidden="true"
@@ -347,7 +340,7 @@ export function TvPlayerModal({
             disabled={!hasPrev || isClosing}
             aria-label="Previous video"
             title="Previous video"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <ChevronLeft size={16} aria-hidden="true" />
           </button>
@@ -358,7 +351,7 @@ export function TvPlayerModal({
             disabled={!hasNext || isClosing}
             aria-label="Next video"
             title="Next video"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <ChevronRight size={16} aria-hidden="true" />
           </button>
@@ -373,7 +366,7 @@ export function TvPlayerModal({
                 ? "Auto-advance: on — next video plays automatically"
                 : "Auto-advance: off"
             }
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+            className={`inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation ${
               autoAdvance
                 ? "border-white bg-white text-black"
                 : "border-white/15 bg-white/10 text-white hover:bg-white/15"
@@ -395,7 +388,7 @@ export function TvPlayerModal({
             onClick={() => void handleShare()}
             aria-label="Share video"
             title="Share video"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <Share2 size={12} aria-hidden="true" />
             <span className="hidden sm:inline">Share</span>
@@ -405,7 +398,7 @@ export function TvPlayerModal({
             type="button"
             onClick={handleRequestClose}
             aria-label="Close player"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            className="inline-flex h-9 w-9 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <X size={16} aria-hidden="true" />
           </button>
@@ -468,7 +461,6 @@ export function TvPlayerModal({
           <div className="shrink-0 border-t border-white/10 bg-black">
             <TvCategoryPills
               options={theaterCategories}
-              total={total}
               selected={theaterCategory ?? "all"}
               onSelect={onSelectTheaterCategory}
               disabled={isClosing}
@@ -486,7 +478,6 @@ export function TvPlayerModal({
             hasMore={hasMoreQueue}
             isLoadingMore={isLoadingQueue}
             onLoadMore={onLoadMoreQueue}
-            total={total}
           />
         ) : null}
 
