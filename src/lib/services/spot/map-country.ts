@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { getSpotRepositoryAsync } from "@/lib/repositories";
 import { LIST_CACHE_LIFE } from "@/lib/cache/lifetimes";
 import { SPOT_LIST_HARD_CAP } from "@/lib/config/constants";
+import { log } from "@/lib/utils/log";
 import type { MapSpot } from "@/lib/types";
 
 /**
@@ -19,6 +20,8 @@ import type { MapSpot } from "@/lib/types";
 // Safety valve: never loop unbounded if a cursor misbehaves.
 // 20 pages × 500 = 10k spots — far above the largest country (US ~4.2k).
 const MAP_COUNTRY_MAX_PAGES = 20;
+// Maximum time budget (ms) for paginating sequential pages during server execution
+const MAX_PAGINATION_DURATION_MS = 6000;
 
 export async function runListSpotsForMapScope(
   country: string,
@@ -30,7 +33,17 @@ export async function runListSpotsForMapScope(
     : repo.list.bind(repo);
   const items: MapSpot[] = [];
   let cursor: string | null = null;
+  const startTime = Date.now();
   for (let page = 0; page < MAP_COUNTRY_MAX_PAGES; page++) {
+    if (page > 0 && Date.now() - startTime > MAX_PAGINATION_DURATION_MS) {
+      log.warn("runListSpotsForMapScope: pagination exceeded time budget, returning partial list", {
+        country,
+        citySlug,
+        page,
+        loadedSpots: items.length,
+      });
+      return items;
+    }
     const result = await listPage({
       country,
       city: citySlug ?? undefined,

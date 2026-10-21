@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { listRegions } from "@/lib/services/spot/regions";
 import { listSpotsForMapScope } from "@/lib/services/spot/map-country";
+import { findSpotById } from "@/lib/services/spot/spots";
 import {
   normalizeMapModeParams,
   requestedMapMode,
@@ -49,7 +50,6 @@ async function loadCountryScope(
   params: URLSearchParams,
 ): Promise<CountryScope> {
   const mode = requestedMapMode(normalizeMapModeParams(params));
-  if (params.get("spot")) return EMPTY_SCOPE;
   if (mode !== "filtered") return EMPTY_SCOPE;
 
   const regions = await withSafeDefault(
@@ -61,24 +61,58 @@ async function loadCountryScope(
   const { country } = resolveUrlRegionCountry(params, regions);
   if (!country) return EMPTY_SCOPE;
   const citySlug = params.get("city")?.toLowerCase() ?? null;
+  const spotId = params.get("spot");
 
-  const [countrySpots, citySpots] = await Promise.all([
-    withSafeDefault(
-      () => listSpotsForMapScope(country),
-      EMPTY_SCOPE.countrySpots,
-      "map-page.listSpotsForMapScope",
-    ),
-    citySlug
-      ? withSafeDefault(
-          () => listSpotsForMapScope(country, citySlug),
-          EMPTY_SCOPE.citySpots,
-          "map-page.listSpotsForMapScope.city",
-        )
-      : Promise.resolve(EMPTY_SCOPE.citySpots),
-  ]);
+  // When a city is specified, fetch ONLY the city's spots:
+  // fast single-page read (<200ms) that prevents edge timeouts.
+  if (citySlug) {
+    const citySpots = await withSafeDefault(
+      () => listSpotsForMapScope(country, citySlug),
+      EMPTY_SCOPE.citySpots,
+      "map-page.listSpotsForMapScope.city",
+    );
+    if (spotId && !citySpots.some((s) => s.id === spotId)) {
+      const spot = await withSafeDefault(
+        () => findSpotById(spotId),
+        null,
+        "map-page.findSpotById",
+      );
+      if (spot) {
+        return {
+          countrySpots: EMPTY_SCOPE.countrySpots,
+          citySpots: [spot, ...citySpots],
+        };
+      }
+    }
+    return {
+      countrySpots: EMPTY_SCOPE.countrySpots,
+      citySpots,
+    };
+  }
+
+  // If a spot is focused without a city, fetch only that spot for fast loading
+  if (spotId) {
+    const spot = await withSafeDefault(
+      () => findSpotById(spotId),
+      null,
+      "map-page.findSpotById",
+    );
+    if (spot) {
+      return {
+        countrySpots: [spot],
+        citySpots: EMPTY_SCOPE.citySpots,
+      };
+    }
+  }
+
+  const countrySpots = await withSafeDefault(
+    () => listSpotsForMapScope(country),
+    EMPTY_SCOPE.countrySpots,
+    "map-page.listSpotsForMapScope",
+  );
   return {
     countrySpots,
-    citySpots: countrySpots.length > 0 ? EMPTY_SCOPE.citySpots : citySpots,
+    citySpots: EMPTY_SCOPE.citySpots,
   };
 }
 

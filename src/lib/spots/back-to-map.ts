@@ -27,6 +27,7 @@ export function buildBackToMapUrl(
     const region = findRegionForCountry(spot.country, regions);
     if (region) next.set("region", slugify(region.name));
   }
+  next.set("spot", spot.id);
   const query = next.toString();
   return query ? `${ROUTES.map}?${query}` : ROUTES.map;
 }
