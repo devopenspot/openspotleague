@@ -352,6 +352,11 @@
     border-radius: var(--radius-lg) !important;
     box-shadow: none !important;
   }
+  @media (max-width: 639px) {
+    .leaflet-control-zoom {
+      display: none !important;
+    }
+  }
   .leaflet-control-zoom a,
   .leaflet-bar a,
   .leaflet-bar a:hover {

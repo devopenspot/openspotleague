@@ -10,6 +10,8 @@ import { useMapFilter } from "@/hooks/map/useMapFilter";
 import { useMapActions } from "@/components/map/hooks/use-map-actions";
 import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
+import { cn } from "@/lib/utils/cn";
+import { SignInLink } from "@/components/shell/SignInLink";
 
 import {
   deriveMapScopeLabel,
@@ -551,6 +553,60 @@ export default function MapTab({ searchParams }: MapTabProps) {
             </>
           )}
 
+          {!baseNeeds && requestedMode === "saved" && (
+            user === null ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface/95 px-3 py-3 text-xs text-on-surface"
+              >
+                <div className="flex min-w-0 items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-display text-xs font-bold uppercase tracking-wide">
+                      Sign in to view saved spots
+                    </p>
+                    <p className="mt-1 leading-5 text-secondary">
+                      Your saved skate spots sync across devices when you're signed in.
+                    </p>
+                  </div>
+                </div>
+                <SignInLink variant="header" />
+              </div>
+            ) : spotView.spots.length === 0 ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface/95 px-3 py-3 text-xs text-on-surface"
+              >
+                <div className="flex min-w-0 items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-display text-xs font-bold uppercase tracking-wide">
+                      No saved spots yet
+                    </p>
+                    <p className="mt-1 leading-5 text-secondary">
+                      Save spots while browsing the map or exploring spots to quickly access them here.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={dismissSaved}
+                  className="min-h-11 shrink-0 rounded-full border border-primary bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-widest text-on-primary transition-opacity hover:opacity-90"
+                >
+                  Explore map
+                </button>
+              </div>
+            ) : null
+          )}
+
           {(spotsDegraded || eventsDegraded) && (
             <div
               role="alert"
@@ -656,7 +712,12 @@ export default function MapTab({ searchParams }: MapTabProps) {
             />
             <MapInfoPopup events={filteredEvents} />
             {scopeLabel && (
-              <div className="pointer-events-none absolute left-3 bottom-8 z-[1120] max-w-[calc(100%-24px)] truncate rounded-[8px] border border-outline-variant bg-surface/95 px-3 py-2 font-display text-[10px] font-bold uppercase tracking-widest text-secondary">
+              <div
+                className={cn(
+                  "pointer-events-none absolute left-3 bottom-8 z-[1120] max-w-[calc(100%-24px)] truncate rounded-[8px] border border-outline-variant bg-surface/95 px-3 py-2 font-display text-[10px] font-bold uppercase tracking-widest text-secondary",
+                  (activePinId !== null || activeEventId !== null) && "hidden md:block",
+                )}
+              >
                 {scopeLabel}
               </div>
             )}

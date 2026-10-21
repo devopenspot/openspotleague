@@ -271,7 +271,8 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
             <button
               type="button"
               onClick={() => setVerifyOpen(true)}
-              aria-label="Verify weather"
+              aria-label="Confirm on-site weather condition"
+              title="Confirm on-site weather (requires GPS proximity within 250m)"
               className="absolute left-3 top-14 flex items-center gap-1 rounded-full border border-primary bg-primary px-2 py-1 shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-3.5 md:top-12"
             >
               <span className="relative inline-flex">
@@ -294,7 +295,8 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
             <button
               type="button"
               onClick={() => setVerifyOpen(true)}
-              aria-label="Verify weather"
+              aria-label="Confirm on-site weather condition"
+              title="Confirm on-site weather (requires GPS proximity within 250m)"
               className="absolute right-12 top-5 flex h-8 w-8 items-center justify-center rounded-full border border-surface/30 bg-on-surface/40 text-surface backdrop-blur-md hover:bg-on-surface/60 md:left-3.5 md:top-12"
             >
               <CloudSun size={14} aria-hidden="true" />

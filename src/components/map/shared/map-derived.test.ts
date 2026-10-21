@@ -94,6 +94,24 @@ describe("buildRenderedMapItems", () => {
 
     expect(items.every((item) => item.kind === "spot")).toBe(true);
   });
+
+  it("slightly displaces co-located spots when unclustered to prevent click hijacking", () => {
+    const items = buildRenderedMapItems(
+      [
+        spot("1", "brooklyn", 40.713, -74.001),
+        spot("2", "brooklyn", 40.713, -74.001),
+      ],
+      12,
+      6,
+    );
+
+    expect(items).toHaveLength(2);
+    expect(items[0]?.kind).toBe("spot");
+    expect(items[1]?.kind).toBe("spot");
+    if (items[0]?.kind === "spot" && items[1]?.kind === "spot") {
+      expect(items[0].spot.location).not.toEqual(items[1].spot.location);
+    }
+  });
 });
 
 describe("deriveMapSpotView", () => {

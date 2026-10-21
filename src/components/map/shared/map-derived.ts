@@ -291,7 +291,39 @@ export function buildRenderedMapItems(
     return items;
   }
 
-  return spots.map((spot) => ({ kind: "spot", spot, key: `spot:${spot.id}` }));
+  // At high zoom, check for overlapping co-located spots and micro-displace
+  // so adjacent pins do not steal/hijack pointer events from each other.
+  const coordBuckets = new Map<string, MapSpot[]>();
+  for (const s of spots) {
+    const key = `${s.location.lat.toFixed(4)}:${s.location.lon.toFixed(4)}`;
+    const group = coordBuckets.get(key);
+    if (group) group.push(s);
+    else coordBuckets.set(key, [s]);
+  }
+
+  const items: RenderedMapItem[] = [];
+  for (const [, group] of coordBuckets) {
+    if (group.length === 1) {
+      const s = group[0]!;
+      items.push({ kind: "spot", spot: s, key: `spot:${s.id}` });
+    } else {
+      const count = group.length;
+      const radius = 0.00015; // ~15m
+      group.forEach((s, idx) => {
+        const angle = (2 * Math.PI * idx) / count;
+        const displacedSpot: MapSpot = {
+          ...s,
+          location: {
+            lat: s.location.lat + radius * Math.cos(angle),
+            lon: s.location.lon + radius * Math.sin(angle),
+          },
+        };
+        items.push({ kind: "spot", spot: displacedSpot, key: `spot:${s.id}` });
+      });
+    }
+  }
+
+  return items;
 }
 
 function clusterCellSize(zoom: number): number {
