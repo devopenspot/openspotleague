@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Tv, Globe, Plus, MapPinned } from "lucide-react";
+import { Trophy, Tv, Plus, MapPinned, Search } from "lucide-react";
 import { NearbyCtaButton } from "@/components/shell/NearbyCtaButton";
 import { JoinWithCode } from "@/components/shell/JoinWithCode";
 import { ROUTES } from "@/lib/navigation/nav";
@@ -13,28 +13,59 @@ export function Hero() {
   return (
     <section
       aria-labelledby="landing-hero-title"
-      className="relative flex h-full min-h-[320px] flex-col justify-center overflow-hidden bg-gradient-to-r from-orange-600 via-red-600 to-red-700 text-on-primary px-5 md:px-8 lg:px-16 xl:px-20 py-auto"
+      className="relative flex h-full min-h-[340px] flex-col justify-center overflow-hidden bg-gradient-primary text-on-primary px-4 sm:px-6 md:px-8 lg:px-16 py-6"
     >
-      <div className="mx-auto flex w-full max-w-7xl h-full items-center justify-center">
-        <div className="min-w-0 space-y-3 my-auto">
-          <div className="flex gap-6 w-full">
+      <div className="mx-auto flex w-full max-w-4xl h-full items-center justify-center">
+        <div className="w-full min-w-0 space-y-4 my-auto text-center">
+          {/* Discipline Badges */}
+          <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-white backdrop-blur-md">
+            <span>Skateboarding</span>
+            <span className="opacity-40">•</span>
+            <span>BMX</span>
+            <span className="opacity-40">•</span>
+            <span>Inline</span>
+            <span className="opacity-40">•</span>
+            <span>Scooter</span>
+          </div>
+
+          {/* Accessible Semantic H1 */}
+          <div className="space-y-1 sm:space-y-2">
+            <h1
+              id="landing-hero-title"
+              className="font-display text-2xl sm:text-4xl md:text-5xl font-extrabold uppercase tracking-tight text-white leading-tight"
+            >
+              Discover Spots. Track Training.
+            </h1>
+            <p className="mx-auto max-w-xl text-xs sm:text-sm md:text-base font-normal text-white/90 leading-relaxed">
+              The open action sports network to explore 26,000+ street spots and skateparks, battle in live trick challenges, and watch community clips.
+            </p>
+          </div>
+
+          {/* Interactive Search Bar Button */}
+          <div className="w-full max-w-xl mx-auto pt-1">
             <button
               type="button"
               onClick={tryOpenSearch}
-              aria-label="Open search"
-              className="inline-flex w-full text-center min-h-9 items-center gap-1.5 rounded-full border border-on-primary bg-on-primary px-5 py-3 font-display text-lg font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              aria-label="Search spots, skateparks, and cities"
+              className="group flex w-full min-h-[48px] sm:min-h-[52px] items-center justify-between gap-3 rounded-full border border-on-primary bg-on-primary px-4 sm:px-5 py-2.5 shadow-lg transition-all duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim hover:shadow-xl active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent cursor-pointer"
             >
-              <div className="flex items-center justify-center gap-4 flex-1">
-                openspotleague.com
-                <Globe size={32} aria-hidden="true" />
+              <div className="flex min-w-0 items-center gap-2.5 sm:gap-3 text-on-primary-container">
+                <Search size={18} className="shrink-0 text-secondary transition-colors group-hover:text-on-surface" aria-hidden="true" />
+                <span className="truncate text-left text-xs sm:text-sm font-medium text-secondary group-hover:text-on-surface">
+                  Search spots, skateparks, or cities...
+                </span>
               </div>
+              <kbd className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-md border border-outline-variant/60 bg-surface-container-high px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-secondary">
+                ⌘K
+              </kbd>
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Action Pills Row */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
             <Link
               href={ROUTES.map}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             >
               <MapPinned size={14} aria-hidden="true" />
               Spots Map
@@ -42,16 +73,17 @@ export function Hero() {
 
             <Link
               href={ROUTES.games}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-on-primary bg-on-primary px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-on-primary bg-on-primary px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             >
-              Training - challenges - League
               <Trophy size={14} aria-hidden="true" />
+              Training - Challenges - League
             </Link>
 
             <NearbyCtaButton />
+
             <Link
               href={ROUTES.tv}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-primary-container bg-on-primary px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-primary-container bg-on-primary px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             >
               <Tv size={14} aria-hidden="true" />
               TV
@@ -61,28 +93,15 @@ export function Hero() {
               href={ROUTES.spotsNew}
               data-testid="create-spot-hero"
               aria-label="Create new spot"
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:hidden"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent md:hidden"
             >
               <Plus size={14} aria-hidden="true" />
               Spot
             </Link>
+
             <JoinWithCode variant="landing" />
           </div>
         </div>
-
-        {/* <div className="hidden min-w-0 flex-col gap-3 lg:flex my-auto">
-          <div className="rounded-[16px] border border-outline-variant bg-on-primary md:p-6">
-            <p className="font-display text-[10px] font-semibold uppercase tracking-[0.12em] leading-none text-on-surface/60">
-              Autoplay
-            </p>
-            <Link
-              href={ROUTES.games}
-              className="mt-4 flex items-center justify-between gap-3 rounded-[14px] border border-primary bg-primary px-3 py-2.5 transition-colors duration-150 ease-out hover:bg-primary/90 hover:shadow-sm active:bg-primary/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-            >
-              TV Screen
-            </Link>
-          </div>
-        </div> */}
       </div>
     </section>
   );
