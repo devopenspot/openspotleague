@@ -34,7 +34,7 @@ export const TvCategoryPills = memo(function TvCategoryPills({
     <div
       role="group"
       aria-label="Filter queue by category"
-      className="flex snap-x gap-1.5 overflow-x-auto overscroll-x-contain px-3 py-1.5 no-scrollbar touch-pan-x sm:px-4 landscape:py-0.5"
+      className="flex flex-wrap snap-x gap-1.5 overflow-x-auto overscroll-x-contain px-3 py-1.5 no-scrollbar touch-pan-x sm:px-4 landscape:py-0.5"
     >
       <button
         type="button"

@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Pause, Share2, X, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, Share2, VolumeX, X, Zap } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { Overlay } from "@/components/feedback/Overlay";
 import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
@@ -89,6 +89,8 @@ export function TvPlayerModal({
   const descId = useId();
   const reduced = useReducedMotion();
   const [isClosing, setIsClosing] = useState(false);
+  const [isMuted, setIsMuted] = useState(() => autoplay);
+  const isPlayingRef = useRef(autoplay);
 
   const theaterRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -106,22 +108,100 @@ export function TvPlayerModal({
 
   const displayOpen = isOpen || isClosing;
 
+  const sendPostMessage = useCallback((func: string, args: unknown[] = []) => {
+    try {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func, args }),
+        "*",
+      );
+    } catch {
+      // cross-origin security guard
+    }
+  }, []);
+
+  const handleUnmute = useCallback(() => {
+    sendPostMessage("unMute");
+    sendPostMessage("setVolume", [100]);
+    setIsMuted(false);
+  }, [sendPostMessage]);
+
+  const handleToggleMute = useCallback(() => {
+    if (isMuted) {
+      handleUnmute();
+    } else {
+      sendPostMessage("mute");
+      setIsMuted(true);
+    }
+  }, [isMuted, handleUnmute, sendPostMessage]);
+
+  const handleTogglePlay = useCallback(() => {
+    const nextFunc = isPlayingRef.current ? "pauseVideo" : "playVideo";
+    sendPostMessage(nextFunc);
+    isPlayingRef.current = !isPlayingRef.current;
+  }, [sendPostMessage]);
+
   const shortcuts = useMemo(
     () =>
       displayOpen && !isClosing
         ? [
             { key: "ArrowLeft", handler: handlePrev },
             { key: "ArrowRight", handler: handleNext },
+            {
+              key: " ",
+              handler: (e: KeyboardEvent) => {
+                if (
+                  e.target instanceof HTMLInputElement ||
+                  e.target instanceof HTMLTextAreaElement
+                ) {
+                  return;
+                }
+                e.preventDefault();
+                handleTogglePlay();
+              },
+            },
+            {
+              key: "k",
+              handler: (e: KeyboardEvent) => {
+                if (
+                  e.target instanceof HTMLInputElement ||
+                  e.target instanceof HTMLTextAreaElement
+                ) {
+                  return;
+                }
+                e.preventDefault();
+                handleTogglePlay();
+              },
+            },
+            {
+              key: "m",
+              handler: (e: KeyboardEvent) => {
+                if (
+                  e.target instanceof HTMLInputElement ||
+                  e.target instanceof HTMLTextAreaElement
+                ) {
+                  return;
+                }
+                e.preventDefault();
+                handleToggleMute();
+              },
+            },
           ]
         : [],
-    [displayOpen, isClosing, handlePrev, handleNext],
+    [
+      displayOpen,
+      isClosing,
+      handlePrev,
+      handleNext,
+      handleTogglePlay,
+      handleToggleMute,
+    ],
   );
   useKeyboardShortcuts(shortcuts);
 
-  // YouTube iframe API postMessage ended detection (state 0 = ended)
-  // Performance: only listens when autoAdvance is ON; filters by origin + JSON shape.
+  // YouTube iframe API postMessage event detection (ended, play/pause, volume)
+  // Filters by origin + JSON shape for performance.
   useEffect(() => {
-    if (!displayOpen || !video || !onEnded || !autoAdvance || isClosing) return;
+    if (!displayOpen || !video || isClosing) return;
     const handler = (event: MessageEvent) => {
       // Restrict to YouTube origins to avoid processing every postMessage in the app
       if (
@@ -131,27 +211,38 @@ export function TvPlayerModal({
       )
         return;
       if (typeof event.data !== "string") return;
-      // Pre-filter: YouTube ended states contain either playerState":0 or onStateChange with 0 or info":0
-      const mightBeEnded =
-        event.data.includes('"playerState":0') ||
-        (event.data.includes('"onStateChange"') && event.data.includes("0")) ||
-        event.data.includes('"info":0');
-      if (!mightBeEnded) return;
+      const mightBeRelevant =
+        event.data.includes('"playerState"') ||
+        event.data.includes('"onStateChange"') ||
+        event.data.includes('"info"');
+      if (!mightBeRelevant) return;
       try {
         const data = JSON.parse(event.data);
-        // YT player emits onStateChange with info=0 or infoDelivery with playerState=0 when ended
-        const isEnded =
-          (data.event === "onStateChange" &&
-            (data.info === 0 || data.info?.playerState === 0)) ||
-          (data.event === "infoDelivery" &&
-            data.info &&
-            (data.info.playerState === 0 || data.info === 0));
+        if (data.event === "onStateChange") {
+          if (data.info === 1) isPlayingRef.current = true;
+          else if (data.info === 2) isPlayingRef.current = false;
+        } else if (data.event === "infoDelivery" && data.info) {
+          if (data.info.playerState === 1) isPlayingRef.current = true;
+          else if (data.info.playerState === 2) isPlayingRef.current = false;
+          if (data.info.muted === false) setIsMuted(false);
+          else if (data.info.muted === true) setIsMuted(true);
+        }
 
-        if (isEnded) {
-          const now = Date.now();
-          if (now - lastEndedAtRef.current < ENDED_DEBOUNCE_MS) return;
-          lastEndedAtRef.current = now;
-          onEnded();
+        // Auto-advance ended detection (state 0 = ended)
+        if (autoAdvance && onEnded) {
+          const isEnded =
+            (data.event === "onStateChange" &&
+              (data.info === 0 || data.info?.playerState === 0)) ||
+            (data.event === "infoDelivery" &&
+              data.info &&
+              (data.info.playerState === 0 || data.info === 0));
+
+          if (isEnded) {
+            const now = Date.now();
+            if (now - lastEndedAtRef.current < ENDED_DEBOUNCE_MS) return;
+            lastEndedAtRef.current = now;
+            onEnded();
+          }
         }
       } catch {
         // ignore non-JSON messages
@@ -265,7 +356,9 @@ export function TvPlayerModal({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset loading veil when src changes for opacity fade
     setIframeLoaded(false);
-  }, [src]);
+    setIsMuted(autoplay);
+    isPlayingRef.current = autoplay;
+  }, [src, autoplay]);
 
   // Build accessible label — honest when out-of-queue (index -1)
 
@@ -274,8 +367,15 @@ export function TvPlayerModal({
     : "";
 
   // Queue strip data — defaults to the single video when the grid passes nothing
-  const stripQueue: readonly TvCard[] = queue ?? (video ? [video] : []);
+  const stripQueue = useMemo<readonly TvCard[]>(
+    () => queue ?? (video ? [video] : []),
+    [queue, video],
+  );
   const stripActiveId = activeId ?? video?.id ?? null;
+  const activeIndex = useMemo(() => {
+    if (!stripActiveId) return -1;
+    return stripQueue.findIndex((v) => v.id === stripActiveId);
+  }, [stripQueue, stripActiveId]);
 
   // Keep mounted during closing animation even though video still present; only unmount when both closed
   if ((!video || !src) && !isClosing) return null;
@@ -405,9 +505,9 @@ export function TvPlayerModal({
         </div>
 
         {/* Stage — own compositor layer; only opacity fades (no filter/scale on the video box).
-            Portrait: width-driven. Landscape: height-driven so the box never overflows. */}
+            Portrait: width-driven, anchored top on mobile. Landscape: cinema mode without chrome squeeze. */}
         <div
-          className="flex min-h-0 flex-1 touch-pan-y items-center justify-center bg-black sm:p-4 lg:p-6 landscape:p-2"
+          className="flex min-h-0 max-sm:shrink-0 sm:flex-1 touch-pan-y items-center justify-center bg-black sm:p-4 lg:p-6 landscape:flex-1 landscape:p-1"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -438,7 +538,8 @@ export function TvPlayerModal({
               ref={iframeRef}
               src={src}
               title={renderVideo.title}
-              allow="autoplay; encrypted-media; picture-in-picture; web-share"
+              allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen"
+              allowFullScreen
               referrerPolicy="strict-origin-when-cross-origin"
               onLoad={() => {
                 setIframeLoaded(true);
@@ -451,14 +552,53 @@ export function TvPlayerModal({
             {!iframeLoaded && !isClosing ? (
               <div className="pointer-events-none absolute inset-0 bg-black/20" />
             ) : null}
+
+            {/* Floating Unmute Cue — prominent and tap-friendly when starting muted */}
+            {isMuted && iframeLoaded && !isClosing ? (
+              <button
+                type="button"
+                onClick={handleUnmute}
+                aria-label="Unmute video"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-black/85 px-3.5 py-1.5 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:bg-black active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white touch-manipulation"
+              >
+                <VolumeX size={14} className="text-white" aria-hidden="true" />
+                <span>Tap to unmute</span>
+              </button>
+            ) : null}
           </motion.div>
         </div>
 
-        {/* In-dialog category filter — only when the queue spans categories */}
+        {/* Mobile portrait info strip — fills the letterbox void with relevant metadata */}
+        <div className="sm:hidden px-3.5 py-2.5 flex flex-col gap-1 border-b border-white/10 bg-black shrink-0 landscape:hidden">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded border border-white/20 bg-white/10 px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
+              {disciplineLabel}
+            </span>
+            {categoryLabel ? (
+              <span className="font-display text-[10px] font-bold uppercase tracking-wider text-white/70">
+                {categoryLabel}
+              </span>
+            ) : null}
+            {stripQueue.length > 0 && activeIndex !== -1 ? (
+              <span className="text-[11px] font-medium text-white/40 ml-auto">
+                {activeIndex + 1} of {stripQueue.length}
+              </span>
+            ) : null}
+          </div>
+          <h2 className="text-xs font-semibold text-white line-clamp-2 leading-snug">
+            {renderVideo.title}
+          </h2>
+        </div>
+
+        {/* Mobile portrait flexible spacer so queue and pills sit anchored cleanly */}
+        <div className="sm:hidden flex-1 min-h-0 landscape:hidden" />
+
+        {/* In-dialog category filter — hidden on phone landscape to maximize screen height for video */}
         {onSelectTheaterCategory &&
         theaterCategories &&
         theaterCategories.length > 1 ? (
-          <div className="shrink-0 border-t border-white/10 bg-black">
+          <div className="shrink-0 border-t border-white/10 bg-black landscape:hidden sm:landscape:block">
             <TvCategoryPills
               options={theaterCategories}
               selected={theaterCategory ?? "all"}
@@ -468,17 +608,19 @@ export function TvPlayerModal({
           </div>
         ) : null}
 
-        {/* Bottom queue marquee — tap to jump straight to a video */}
+        {/* Bottom queue marquee — hidden on phone landscape to prevent cramped vertical squishing */}
         {onSelectVideo ? (
-          <TvQueueStrip
-            queue={stripQueue}
-            activeId={stripActiveId}
-            onSelect={onSelectVideo}
-            disabled={isClosing}
-            hasMore={hasMoreQueue}
-            isLoadingMore={isLoadingQueue}
-            onLoadMore={onLoadMoreQueue}
-          />
+          <div className="shrink-0 border-t border-white/10 bg-black landscape:hidden sm:landscape:block">
+            <TvQueueStrip
+              queue={stripQueue}
+              activeId={stripActiveId}
+              onSelect={onSelectVideo}
+              disabled={isClosing}
+              hasMore={hasMoreQueue}
+              isLoadingMore={isLoadingQueue}
+              onLoadMore={onLoadMoreQueue}
+            />
+          </div>
         ) : null}
 
         {/* Hidden live region for screen readers */}

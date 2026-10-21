@@ -17,7 +17,7 @@ interface TvCategoryMarqueeProps {
   /** Active discipline filter (server-side, "all" = unfiltered). */
   discipline: string;
   activeId: string | null;
-  onSelect: (video: TvCard) => void;
+  onSelect: (video: TvCard, category?: TvCategory) => void;
   /** Merges appended pages into the grid theater queue/modal lookup. */
   onAppend: (
     videos: readonly TvCard[],
@@ -195,6 +195,13 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
     [scrollBy],
   );
 
+  const handleCardSelect = useCallback(
+    (video: TvCard) => {
+      onSelect(video, category);
+    },
+    [onSelect, category],
+  );
+
   const displayItems = useMemo(() => toTvMarqueeItems(videos), [videos]);
 
   if (displayItems.length === 0) return null;
@@ -277,7 +284,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
               <TvMarqueeCard
                 item={item}
                 active={item.video.id === activeId}
-                onSelect={onSelect}
+                onSelect={handleCardSelect}
               />
             </div>
           ))}

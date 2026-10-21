@@ -123,6 +123,7 @@ export function TvGrid({
 
   const {
     theaterCategory,
+    setTheaterCategory,
     resetTheaterCategory,
     theaterQueue,
     filtered,
@@ -227,10 +228,13 @@ export function TvGrid({
   }, [theaterQueue, filtered, openWithId]);
 
   const handleSelect = useCallback(
-    (video: TvCard) => {
+    (video: TvCard, category?: string) => {
+      if (category) {
+        setTheaterCategory(category);
+      }
       openWithId(video.id, autoAdvance);
     },
-    [openWithId, autoAdvance],
+    [openWithId, autoAdvance, setTheaterCategory],
   );
 
   const selectFromQueue = useCallback(
