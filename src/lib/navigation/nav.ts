@@ -115,6 +115,8 @@ export const NAV_ITEMS: readonly {
 export type NavItem = (typeof NAV_ITEMS)[number];
 
 export const ROUTES = {
+  home: "/",
+  login: "/login",
   explore: "/explore",
   map: "/map",
   events: "/sport-events",

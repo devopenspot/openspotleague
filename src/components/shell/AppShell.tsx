@@ -90,7 +90,8 @@ export function AppShell({
       "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0";
     mainAriaLabel = "Open Spot challenges";
   } else if (isLandingRoute) {
-    mainClassName = "min-h-0 w-full flex-1 pb-0";
+    mainClassName =
+      "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain pb-0";
   }
 
   const showHeader = !isGameSession;

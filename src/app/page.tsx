@@ -7,7 +7,10 @@ import { listEvents } from "@/lib/services/event/events";
 import { listTvCards } from "@/lib/services/tv/tv";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { Hero } from "@/components/landing/Hero";
+import { LandingMetrics } from "@/components/landing/LandingMetrics";
 import { LandingMarquee } from "@/components/landing/LandingMarquee";
+import { LandingFeatures } from "@/components/landing/LandingFeatures";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 import { HomeSkeleton } from "@/components/landing/HomeSkeleton";
 import { toMarqueeEvent, toMarqueeVideo } from "@/components/landing/marquee-data";
 
@@ -59,10 +62,9 @@ async function HomeContent() {
   ]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-surface">
-      <div className="min-h-0 h-3/5 overflow-y-auto overscroll-contain no-scrollbar">
-        <Hero />
-      </div>
+    <div className="flex min-h-full flex-col bg-surface">
+      <Hero />
+      <LandingMetrics />
       <LandingMarquee
         spots={marqueeSpotsPage.items}
         events={eventsPage.items.map(toMarqueeEvent)}
@@ -71,6 +73,8 @@ async function HomeContent() {
         initialSpotsCursor={marqueeSpotsPage.nextCursor}
         initialEventsCursor={eventsPage.nextCursor}
       />
+      <LandingFeatures />
+      <LandingFooter />
     </div>
   );
 }

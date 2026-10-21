@@ -219,9 +219,19 @@ export function LandingMarquee({
   return (
     <section
       aria-label="Open Spot wire"
-      className="shrink-0 border-t border-wire-border bg-wire h-2/5"
+      className="shrink-0 border-t border-wire-border bg-wire"
     >
-      {/* <WireRail count={displayItems.length} onPersonalize={openPreferences} /> */}
+      <div className="flex items-center justify-between px-4 sm:px-10 pt-3.5 pb-2 border-b border-wire-border">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+          <h2 className="font-display text-[10px] sm:text-xs font-bold uppercase tracking-[0.12em] text-on-wire">
+            Live Highlights · Spots, Videos & Events
+          </h2>
+        </div>
+        <span className="text-[10px] font-mono text-wire-muted uppercase tracking-wider hidden sm:inline">
+          {displayItems.length} highlights
+        </span>
+      </div>
 
       <div className="group/wire relative bg-wire h-[36vh]">
         {/* Edge fades — state-driven like EventCarousel, not always-on */}
