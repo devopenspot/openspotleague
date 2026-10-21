@@ -26,7 +26,7 @@ const FEATURES: readonly FeatureCardProps[] = [
   {
     icon: MapPin,
     title: "Global Spot Directory",
-    badge: "26k+ Spots",
+    badge: "15k+ Spots",
     description:
       "Interactive map with coordinates, obstacles, surface ratings, security bust index, and live weather at every spot.",
     bullets: [
@@ -100,7 +100,8 @@ export function LandingFeatures() {
             Built for Riders Worldwide
           </h2>
           <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
-            Everything you need to discover terrain, train tricks with friends, and stay plugged into global action sports.
+            Everything you need to discover terrain, train tricks with friends,
+            and stay plugged into global action sports.
           </p>
         </div>
 
@@ -170,7 +171,8 @@ export function LandingFeatures() {
               Know a local spot that isn&apos;t on the map?
             </h3>
             <p className="text-xs sm:text-sm text-on-surface-variant">
-              Help map your city. Submit photos, coordinates, and obstacles to earn curator status.
+              Help map your city. Submit photos, coordinates, and obstacles to
+              earn curator status.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">

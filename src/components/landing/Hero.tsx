@@ -37,7 +37,9 @@ export function Hero() {
               Discover Spots. Track Training.
             </h1>
             <p className="mx-auto max-w-xl text-xs sm:text-sm md:text-base font-normal text-white/90 leading-relaxed">
-              The open action sports network to explore 26,000+ street spots and skateparks, battle in live trick challenges, and watch community clips.
+              The open action sports network to explore 15,000+ street spots and
+              skateparks, battle in live trick challenges, and watch community
+              clips.
             </p>
           </div>
 
@@ -50,7 +52,11 @@ export function Hero() {
               className="group flex w-full min-h-[48px] sm:min-h-[52px] items-center justify-between gap-3 rounded-full border border-on-primary bg-on-primary px-4 sm:px-5 py-2.5 shadow-lg transition-all duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim hover:shadow-xl active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent cursor-pointer"
             >
               <div className="flex min-w-0 items-center gap-2.5 sm:gap-3 text-on-primary-container">
-                <Search size={18} className="shrink-0 text-secondary transition-colors group-hover:text-on-surface" aria-hidden="true" />
+                <Search
+                  size={18}
+                  className="shrink-0 text-secondary transition-colors group-hover:text-on-surface"
+                  aria-hidden="true"
+                />
                 <span className="truncate text-left text-xs sm:text-sm font-medium text-secondary group-hover:text-on-surface">
                   Search spots, skateparks, or cities...
                 </span>
@@ -63,30 +69,21 @@ export function Hero() {
 
           {/* Action Pills Row */}
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 pt-2 sm:pt-3">
-            <Link
-              href={ROUTES.map}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            >
-              <MapPinned size={14} aria-hidden="true" />
-              Spots Map
-            </Link>
-
-            <Link
-              href={ROUTES.games}
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-on-primary bg-on-primary px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
-            >
-              <Trophy size={14} aria-hidden="true" />
-              Training - Challenges - League
-            </Link>
-
             <NearbyCtaButton />
-
             <Link
               href={ROUTES.tv}
               className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-primary-container bg-on-primary px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
             >
               <Tv size={14} aria-hidden="true" />
               TV
+            </Link>
+
+            <Link
+              href={ROUTES.games}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out  hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
+            >
+              <Trophy size={14} aria-hidden="true" />
+              Training - Challenges - League
             </Link>
 
             <Link

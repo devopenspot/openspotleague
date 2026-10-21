@@ -12,7 +12,7 @@ interface MetricItem {
 const METRICS: readonly MetricItem[] = [
   {
     icon: MapPinned,
-    value: "26,000+",
+    value: "15,000+",
     label: "Spots & Parks",
     description: "Curated street ledges, stairs, DIYs & parks worldwide",
   },
