@@ -21,7 +21,7 @@ export default async function Image({
     null,
     "findEventBySlug(og-image)",
   );
-  const leagueDataUrl = loadPublicImageAsDataUrl("/opengrapgh.png");
+  const leagueDataUrl = loadPublicImageAsDataUrl("/opengraph.png");
 
   if (!event) {
     return new ImageResponse(

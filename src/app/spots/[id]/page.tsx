@@ -27,7 +27,7 @@ export async function generateMetadata({
   );
   if (!spot) {
     // WhatsApp-style crawlers need an absolute https URL — a relative
-    // "/opengrapgh.png" never resolves outside the page context.
+    // "/opengraph.png" never resolves outside the page context.
     const fallback = new URL(DEFAULT_OG_IMAGE_PATH, env.APP_URL).toString();
     return {
       title: "Spot unavailable",

@@ -23,7 +23,7 @@ export default async function Image({
     "getGameOgPreviewByShareCode(og-image)",
   );
 
-  const leagueDataUrl = loadPublicImageAsDataUrl("/opengrapgh.png");
+  const leagueDataUrl = loadPublicImageAsDataUrl("/opengraph.png");
 
   if (!preview) {
     return new ImageResponse(

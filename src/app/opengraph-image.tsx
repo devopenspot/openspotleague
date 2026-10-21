@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-static";
 
 export default function Image() {
-  const leagueDataUrl = loadPublicImageAsDataUrl("/opengrapgh.png");
+  const leagueDataUrl = loadPublicImageAsDataUrl("/opengraph.png");
 
   return new ImageResponse(
     <div

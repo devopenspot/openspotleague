@@ -65,7 +65,7 @@ export const metadata: Metadata = {
       "Is a directory and activity board for riders to maintain a consistent training routine and discover new spots to ride.",
     images: [
       {
-        url: "/opengrapgh.png",
+        url: "/opengraph.png",
         width: 1200,
         height: 630,
         alt: "OpenSpot League",
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Open Spot League",
     description: "Discover Spots & Track your Training.",
-    images: ["/opengrapgh.png"],
+    images: ["/opengraph.png"],
   },
   robots: {
     index: true,

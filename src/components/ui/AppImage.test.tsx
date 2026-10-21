@@ -12,7 +12,7 @@ vi.mock("next/image", () => ({
   ),
 }));
 
-const FALLBACK = "/opengrapgh.png";
+const FALLBACK = "/opengraph.png";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -40,9 +40,7 @@ describe("AppImage empty-src guard", () => {
   });
 
   it("falls back when src is null at runtime", async () => {
-    render(
-      <AppImage src={null as unknown as string} alt="Spot photo" />,
-    );
+    render(<AppImage src={null as unknown as string} alt="Spot photo" />);
 
     await waitFor(() => {
       expect(
@@ -54,18 +52,18 @@ describe("AppImage empty-src guard", () => {
   it("keeps a valid src", () => {
     render(<AppImage src="https://example.com/photo.webp" alt="Spot photo" />);
 
-    expect(
-      screen.getByTestId("next-image-mock").getAttribute("data-src"),
-    ).toBe("https://example.com/photo.webp");
+    expect(screen.getByTestId("next-image-mock").getAttribute("data-src")).toBe(
+      "https://example.com/photo.webp",
+    );
   });
 
   it("keeps applying the guard when the src prop changes to an empty value", async () => {
     const { rerender } = render(
       <AppImage src="https://example.com/photo.webp" alt="Spot photo" />,
     );
-    expect(
-      screen.getByTestId("next-image-mock").getAttribute("data-src"),
-    ).toBe("https://example.com/photo.webp");
+    expect(screen.getByTestId("next-image-mock").getAttribute("data-src")).toBe(
+      "https://example.com/photo.webp",
+    );
 
     rerender(<AppImage src="" alt="Spot photo" />);
 
