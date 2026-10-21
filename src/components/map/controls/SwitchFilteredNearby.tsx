@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, type KeyboardEvent } from "react";
 
-import { Heart, MapPin, FilterIcon } from "lucide-react";
+import { MapPin, FilterIcon } from "lucide-react";
 import { useMapActions } from "@/components/map/hooks/use-map-actions";
 import { useUserLocation } from "@/hooks/map/useUserLocation";
 import { showToast } from "@/hooks/ui/useToast";
@@ -136,31 +136,6 @@ export function SwitchFilteredNearby() {
             className="hidden shrink-0 sm:block"
           />
           <span>Nearby</span>
-        </button>
-        <button
-          ref={(element) => {
-            modeButtonRefs.current[2] = element;
-          }}
-          type="button"
-          role="radio"
-          aria-checked={mapMode === "saved"}
-          tabIndex={mapMode === "saved" ? 0 : -1}
-          onClick={() => handleModeChange("saved")}
-          onKeyDown={handleModeKeyDown}
-          className={cn(
-            "flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 border-l border-outline-variant px-2 text-[10px] font-semibold tracking-[0.05em] uppercase transition-colors sm:px-3 md:h-11",
-            "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
-            mapMode === "saved"
-              ? "bg-primary text-on-primary"
-              : "text-on-surface hover:text-secondary hover:bg-surface-container",
-          )}
-        >
-          <Heart
-            size={14}
-            aria-hidden="true"
-            className="hidden shrink-0 sm:block"
-          />
-          <span>Saved</span>
         </button>
       </div>
     </div>
