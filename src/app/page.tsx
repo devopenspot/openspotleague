@@ -52,7 +52,7 @@ async function HomeContent() {
       "marqueeEvents-landing",
     ),
     withSafeDefault(
-      () => listTvCards({ publishedOnly: true }),
+      () => listTvCards({ publishedOnly: true, limit: 12 }),
       EMPTY_TV_VIDEOS as unknown as Awaited<ReturnType<typeof listTvCards>>,
       "listTvCards-landing",
     ),

@@ -38,6 +38,7 @@ export async function runListTvCards(options: {
   disciplineSlug?: string;
   category?: string;
   publishedOnly?: boolean;
+  limit?: number;
 } = {}): Promise<readonly TvCard[]> {
   const repository = await getTvRepositoryAsync();
   return repository.listCards(options);
@@ -47,12 +48,14 @@ export async function listTvCards(options: {
   disciplineSlug?: string;
   category?: string;
   publishedOnly?: boolean;
+  limit?: number;
 } = {}): Promise<readonly TvCard[]> {
   "use cache";
   const normalized = {
     disciplineSlug: options.disciplineSlug?.trim().toLowerCase() || undefined,
     category: options.category?.trim().toLowerCase() || undefined,
     publishedOnly: options.publishedOnly !== false,
+    limit: options.limit,
   };
   cacheTag("tv:list");
   cacheLife(TV_CACHE_LIFE);
