@@ -14,7 +14,7 @@ export interface TvOgImageResult {
 /**
  * Resolves the OpenGraph image metadata for a TV share.
  * Returns the video's YouTube thumbnail (480x360) when available,
- * falling back to the generic static TV banner (1200x630).
+ * falling back to the generic static TV banner (1280x720).
  */
 export function resolveTvOgImage(
   video: TvCard | null,
@@ -23,8 +23,8 @@ export function resolveTvOgImage(
   if (!video) {
     return {
       url: fallbackOgUrl,
-      width: 1200,
-      height: 630,
+      width: 1280,
+      height: 720,
       alt: "OpenSpot TV",
     };
   }
@@ -33,8 +33,8 @@ export function resolveTvOgImage(
   if (!thumb) {
     return {
       url: fallbackOgUrl,
-      width: 1200,
-      height: 630,
+      width: 1280,
+      height: 720,
       alt: video.title,
     };
   }
@@ -92,9 +92,11 @@ export function buildTvShareDescription(video: TvCard): string {
     .filter(Boolean)
     .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
     .join(", ");
-  const parts = [categoriesLabel, video.disciplineSlug, formatTvPostDate(video.postDate)].filter(
-    Boolean,
-  );
+  const parts = [
+    categoriesLabel,
+    video.disciplineSlug,
+    formatTvPostDate(video.postDate),
+  ].filter(Boolean);
   const head = parts.join(" · ");
   return head ? `${head} — Watch on OpenSpot TV` : "Watch on OpenSpot TV";
 }
