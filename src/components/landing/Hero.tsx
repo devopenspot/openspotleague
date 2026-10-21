@@ -13,10 +13,10 @@ export function Hero() {
   return (
     <section
       aria-labelledby="landing-hero-title"
-      className="relative flex h-full min-h-[340px] flex-col justify-center overflow-hidden bg-gradient-primary text-on-primary px-4 sm:px-6 md:px-8 lg:px-16 py-6"
+      className="relative flex w-full shrink-0 flex-col justify-center bg-gradient-primary text-on-primary px-4 sm:px-6 md:px-8 lg:px-16 pt-8 pb-10 sm:py-14 md:py-16"
     >
-      <div className="mx-auto flex w-full max-w-4xl h-full items-center justify-center">
-        <div className="w-full min-w-0 space-y-4 my-auto text-center">
+      <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center">
+        <div className="w-full min-w-0 space-y-4 sm:space-y-5 text-center">
           {/* Discipline Badges */}
           <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-white backdrop-blur-md">
             <span>Skateboarding</span>
@@ -62,7 +62,7 @@ export function Hero() {
           </div>
 
           {/* Action Pills Row */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 pt-2 sm:pt-3">
             <Link
               href={ROUTES.map}
               className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-on-primary-container px-4 sm:px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"

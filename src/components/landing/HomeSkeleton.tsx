@@ -7,9 +7,9 @@ export function HomeSkeleton() {
       className="flex min-h-full flex-col bg-surface"
     >
       {/* Hero skeleton */}
-      <section className="relative flex shrink-0 min-h-[340px] flex-col justify-center overflow-hidden bg-gradient-primary px-4 sm:px-6 md:px-8 lg:px-16 py-6">
-        <div className="mx-auto flex h-full w-full max-w-4xl items-center justify-center">
-          <div className="my-auto w-full min-w-0 space-y-4 text-center">
+      <section className="relative flex w-full shrink-0 flex-col justify-center bg-gradient-primary px-4 sm:px-6 md:px-8 lg:px-16 pt-8 pb-10 sm:py-14 md:py-16">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center">
+          <div className="w-full min-w-0 space-y-4 sm:space-y-5 text-center">
             {/* Discipline pills placeholder */}
             <div className="mx-auto h-6 w-64 animate-pulse rounded-full bg-white/20" />
             {/* Heading + subheadline placeholder */}

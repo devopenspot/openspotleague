@@ -40,7 +40,7 @@ export function LandingMetrics() {
   return (
     <section
       aria-label="Global scene scale and statistics"
-      className="border-b border-outline-variant/60 bg-surface-container-lowest py-8 px-4 sm:px-6 md:px-10"
+      className="relative z-10 w-full shrink-0 border-b border-outline-variant/60 bg-surface-container-lowest py-8 sm:py-10 px-4 sm:px-6 md:px-10"
     >
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
