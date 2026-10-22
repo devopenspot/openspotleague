@@ -188,7 +188,7 @@ export const TERMS_SECTIONS: readonly LegalSection[] = [
       {
         title: "7.1 Skill-Based Recreational Training",
         content: [
-          "The challenge game formats offered on OpenSpot (Game of S.K.A.T.E., B.I.K.E., S.C.O.O.T., R.O.L.L., and racing laps) are pure games of athletic skill, balance, coordination, and physical practice.",
+          "The challenge game formats offered on OpenSpot (Game of S.K.A.T.E., B.I.K.E., S.C.O.O.T., B.L.A.D.E., and racing laps) are pure games of athletic skill, balance, coordination, and physical practice.",
           "OpenSpot is not a gambling platform. The Platform strictly prohibits the use of its challenge game systems, share codes, or scorekeeping tools for any form of real-money wagering, sports betting, staking, or illegal gambling.",
         ],
       },

@@ -42,7 +42,7 @@ const FEATURES: readonly FeatureCardProps[] = [
     title: "Live Challenge Engine",
     badge: "Battle Mode",
     description:
-      "Play Game of S.K.A.T.E., B.I.K.E., R.O.L.L.E.R. or S.C.O.O.T. Turn-based referee rules, custom letter words, and live session sync.",
+      "Play Game of S.K.A.T.E., B.I.K.E., B.L.A.D.E. or S.C.O.O.T. Turn-based referee rules, custom letter words, and live session sync.",
     bullets: [
       "Customizable elimination word & offensive calls",
       "Quick 6-character room codes to invite rivals",
