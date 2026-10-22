@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tv } from "lucide-react";
-import type { TvCard } from "@/types/tv";
+import { orderTvCategories, type TvCard } from "@/types/tv";
 import type { TvCategoryRow } from "@/lib/services/tv/tv";
+import type { TvCardPageResult } from "@/lib/repositories/tv/tv-repository";
 import { TvAutoplayerButton } from "@/components/tv/player/TvAutoplayerButton";
 import { TvPlayerModal } from "@/components/tv/player/TvPlayerModal";
 import { TvCategoryMarquee } from "@/components/tv/marquee/TvCategoryMarquee";
@@ -12,6 +13,9 @@ import { TvDisciplineSwitchingSkeleton } from "./TvDisciplineSwitchingSkeleton";
 import { useTvCatalogState } from "./use-tv-catalog-state";
 import { useTvDisciplineState } from "./use-tv-discipline-state";
 import { useTvTheaterQueue } from "./use-tv-theater-queue";
+import { useTvSearchState } from "./use-tv-search-state";
+import { TvFilterBar } from "./TvFilterBar";
+import { TvSearchResultsGrid } from "./TvSearchResultsGrid";
 import {
   TvDisciplinePills,
   TvGenericEmptyState,
@@ -23,14 +27,27 @@ const AUTO_ADVANCE_KEY = "tv:autoAdvance";
 export function TvGrid({
   rows,
   disciplines,
+  filterOptions = { years: [], categories: [] },
   initialDiscipline = null,
   initialPlayVideo = null,
+  initialQuery = null,
+  initialCategory = null,
+  initialYear = null,
+  initialSearchResults = null,
 }: {
   rows: readonly TvCategoryRow[];
   disciplineCounts?: Readonly<Record<string, number>>;
   disciplines: readonly { slug: string; name: string }[];
+  filterOptions?: {
+    years: readonly number[];
+    categories: readonly string[];
+  };
   initialDiscipline?: string | null;
   initialPlayVideo?: TvCard | null;
+  initialQuery?: string | null;
+  initialCategory?: string | null;
+  initialYear?: number | null;
+  initialSearchResults?: TvCardPageResult | null;
 }) {
   const searchParams = useSearchParams();
   const playParam = searchParams.get("play") ?? searchParams.get("v") ?? null;
@@ -73,6 +90,44 @@ export function TvGrid({
       discipline,
       initialPlayVideo,
     });
+
+  const {
+    query,
+    setQuery,
+    selectedCategory,
+    setSelectedCategory,
+    selectedYear,
+    setSelectedYear,
+    isSearchActive,
+    items: searchItems,
+    isLoading: isSearchLoading,
+    isLoadingMore: isSearchLoadingMore,
+    hasMore: hasMoreSearchResults,
+    loadMore: loadMoreSearchResults,
+    resetFilters: resetSearchFilters,
+    totalActiveFiltersCount,
+  } = useTvSearchState({
+    discipline,
+    initialQuery,
+    initialCategory,
+    initialYear,
+    initialSearchResults,
+  });
+
+  // Ensure any search items loaded from API are registered in videoById
+  useEffect(() => {
+    if (searchItems.length > 0) {
+      appendRowVideos(searchItems);
+    }
+  }, [searchItems, appendRowVideos]);
+
+  const allCategories = useMemo(() => {
+    const set = new Set<string>(filterOptions.categories);
+    for (const r of categoryRows) {
+      if (r.category) set.add(r.category);
+    }
+    return orderTvCategories(set);
+  }, [filterOptions.categories, categoryRows]);
 
   // Stable syncUrl — updates history via replaceState to avoid Next.js App Router RSC refetches
   const syncUrl = useCallback(
@@ -220,12 +275,54 @@ export function TvGrid({
     };
   }, [playParam, videoById, activeId, appendRowVideos]);
 
+  const searchIndex = useMemo(
+    () => (activeId ? searchItems.findIndex((v) => v.id === activeId) : -1),
+    [activeId, searchItems],
+  );
+
+  const goPrevSearch = useCallback(() => {
+    if (searchIndex > 0) {
+      const prevVideo = searchItems[searchIndex - 1];
+      if (prevVideo) openWithId(prevVideo.id, autoAdvance);
+    }
+  }, [searchIndex, searchItems, autoAdvance, openWithId]);
+
+  const goNextSearch = useCallback(() => {
+    if (searchIndex < searchItems.length - 1) {
+      const nextVideo = searchItems[searchIndex + 1];
+      if (nextVideo) openWithId(nextVideo.id, autoAdvance);
+    } else if (hasMoreSearchResults) {
+      void loadMoreSearchResults();
+    }
+  }, [
+    searchIndex,
+    searchItems,
+    hasMoreSearchResults,
+    loadMoreSearchResults,
+    autoAdvance,
+    openWithId,
+  ]);
+
   const handleAutoplay = useCallback(() => {
+    if (isSearchActive) {
+      const first = searchItems[0];
+      if (!first) return;
+      setAutoAdvance(true);
+      openWithId(first.id, true);
+      return;
+    }
     const first = theaterQueue[0] ?? filtered[0];
     if (!first) return;
     setAutoAdvance(true);
     openWithId(first.id, true);
-  }, [theaterQueue, filtered, openWithId]);
+  }, [isSearchActive, searchItems, theaterQueue, filtered, openWithId]);
+
+  const handleSelectSearchVideo = useCallback(
+    (video: TvCard) => {
+      openWithId(video.id, autoAdvance);
+    },
+    [openWithId, autoAdvance],
+  );
 
   const handleSelect = useCallback(
     (video: TvCard, category?: string) => {
@@ -253,13 +350,22 @@ export function TvGrid({
 
   const handleEnded = useCallback(() => {
     if (!autoAdvance) return;
-    goNext();
-  }, [autoAdvance, goNext]);
+    if (isSearchActive) {
+      goNextSearch();
+    } else {
+      goNext();
+    }
+  }, [autoAdvance, isSearchActive, goNextSearch, goNext]);
+
+  const searchVideoById = useMemo(
+    () => new Map(searchItems.map((v) => [v.id, v] as const)),
+    [searchItems],
+  );
 
   const activeVideo = useMemo(() => {
     if (!activeId) return null;
-    return videoById.get(activeId) ?? null;
-  }, [videoById, activeId]);
+    return searchVideoById.get(activeId) ?? videoById.get(activeId) ?? null;
+  }, [searchVideoById, videoById, activeId]);
 
   const isModalOpen = Boolean(activeVideo);
   const hasVideos = rows.length > 0;
@@ -288,11 +394,15 @@ export function TvGrid({
               </h1>
             </div>
             <TvAutoplayerButton
-              count={totalForTheaterFilter}
+              count={isSearchActive ? searchItems.length : totalForTheaterFilter}
               disciplineLabel={disciplineLabel}
-              categoryLabel={categoryLabel}
+              categoryLabel={isSearchActive ? undefined : categoryLabel}
               onOpen={handleAutoplay}
-              disabled={totalForTheaterFilter === 0}
+              disabled={
+                isSearchActive
+                  ? searchItems.length === 0
+                  : totalForTheaterFilter === 0
+              }
             />
           </div>
 
@@ -308,6 +418,20 @@ export function TvGrid({
           </div>
         </div>
 
+        {/* Search & Filter Bar */}
+        <TvFilterBar
+          query={query}
+          onQueryChange={setQuery}
+          categories={allCategories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+          years={filterOptions.years}
+          selectedYear={selectedYear}
+          onSelectYear={setSelectedYear}
+          totalActiveFiltersCount={totalActiveFiltersCount}
+          onReset={resetSearchFilters}
+        />
+
         {showGenericEmpty ? (
           <TvGenericEmptyState />
         ) : pendingDiscipline ? (
@@ -318,6 +442,26 @@ export function TvGrid({
                 : (disciplines.find((d) => d.slug === pendingDiscipline)
                     ?.name ?? pendingDiscipline)
             } sessions…`}
+          />
+        ) : isSearchActive ? (
+          <TvSearchResultsGrid
+            items={searchItems}
+            isLoading={isSearchLoading}
+            isLoadingMore={isSearchLoadingMore}
+            hasMore={hasMoreSearchResults}
+            onLoadMore={loadMoreSearchResults}
+            activeId={activeId}
+            onSelectVideo={handleSelectSearchVideo}
+            query={query}
+            onClearQuery={() => setQuery("")}
+            discipline={discipline}
+            disciplineLabel={disciplineLabel}
+            onClearDiscipline={() => selectDiscipline("all")}
+            category={selectedCategory}
+            onClearCategory={() => setSelectedCategory("all")}
+            year={selectedYear}
+            onClearYear={() => setSelectedYear(null)}
+            onResetAll={resetSearchFilters}
           />
         ) : filtered.length === 0 ? (
           <TvFilteredEmptyState
@@ -344,34 +488,50 @@ export function TvGrid({
         isOpen={isModalOpen}
         video={activeVideo}
         disciplineLabel={disciplineLabel}
-        categoryLabel={categoryLabel}
-        hasPrev={queuePos !== -1 ? queuePos > 0 : activeIndex > 0}
+        categoryLabel={isSearchActive ? null : categoryLabel}
+        hasPrev={
+          isSearchActive
+            ? searchIndex > 0
+            : queuePos !== -1
+              ? queuePos > 0
+              : activeIndex > 0
+        }
         hasNext={
-          queuePos !== -1
-            ? queuePos < (queueIds?.length ?? 0) - 1
-            : activeIndex === -1
-              ? theaterQueue.length > 0
-              : activeIndex < theaterQueue.length - 1 ||
-                theaterQueue.length < totalForTheaterFilter
+          isSearchActive
+            ? searchIndex < searchItems.length - 1 || hasMoreSearchResults
+            : queuePos !== -1
+              ? queuePos < (queueIds?.length ?? 0) - 1
+              : activeIndex === -1
+                ? theaterQueue.length > 0
+                : activeIndex < theaterQueue.length - 1 ||
+                  theaterQueue.length < totalForTheaterFilter
         }
         autoplay={isAutoplaying}
         autoAdvance={autoAdvance}
         onToggleAutoAdvance={() => setAutoAdvance((v) => !v)}
         onClose={handleClose}
-        onPrev={goPrev}
-        onNext={goNext}
+        onPrev={isSearchActive ? goPrevSearch : goPrev}
+        onNext={isSearchActive ? goNextSearch : goNext}
         onEnded={handleEnded}
         fallbackThumb={pendingThumb}
         fallbackTitle={pendingTitle}
-        queue={theaterQueue.length > 0 ? theaterQueue : videos}
+        queue={
+          isSearchActive && searchItems.length > 0
+            ? searchItems
+            : theaterQueue.length > 0
+              ? theaterQueue
+              : videos
+        }
         activeId={activeId}
         onSelectVideo={selectFromQueue}
-        theaterCategories={theaterCategories}
-        theaterCategory={theaterCategory}
+        theaterCategories={isSearchActive ? [] : theaterCategories}
+        theaterCategory={isSearchActive ? undefined : theaterCategory}
         onSelectTheaterCategory={selectTheaterCategory}
-        hasMoreQueue={hasMoreQueue}
-        isLoadingQueue={isLoadingQueue}
-        onLoadMoreQueue={handleLoadMoreQueue}
+        hasMoreQueue={isSearchActive ? hasMoreSearchResults : hasMoreQueue}
+        isLoadingQueue={isSearchActive ? isSearchLoadingMore : isLoadingQueue}
+        onLoadMoreQueue={
+          isSearchActive ? loadMoreSearchResults : handleLoadMoreQueue
+        }
       />
     </div>
   );

@@ -33,7 +33,7 @@ type Chain = {
 function makeDb(
   rows: TvVideoRow[],
   capture?: { limit?: number[] },
-  executeRows?: unknown[],
+  executeRows?: unknown[] | ((query: unknown) => unknown[]),
 ) {
   const chain: Chain = {
     where: () => chain,
@@ -49,7 +49,12 @@ function makeDb(
   }
   return {
     select: () => ({ from: () => chain }),
-    execute: () => Promise.resolve(executeRows ?? []),
+    execute: (query: unknown) =>
+      Promise.resolve(
+        typeof executeRows === "function"
+          ? executeRows(query)
+          : (executeRows ?? []),
+      ),
   } as unknown as ReturnType<typeof drizzle>
 }
 
@@ -215,6 +220,44 @@ describe("DrizzleTvRepository card paths", () => {
     await expect(byDiscipline.countByDiscipline()).resolves.toEqual([
       { disciplineSlug: "roller", count: 2 },
     ])
+  })
+
+  it("filters cards by search query, category, and year", async () => {
+    const rows = [makeRow({ title: "SLS Paris 2026", postDate: new Date("2026-05-01T00:00:00Z") })]
+    const repository = new DrizzleTvRepository(makeDb(rows))
+    const results = await repository.listCards({
+      query: "Paris",
+      category: "event",
+      year: 2026,
+    })
+    expect(results).toHaveLength(1)
+    expect(results[0]?.title).toBe("SLS Paris 2026")
+
+    const pageResults = await repository.listCardPage({
+      query: "Paris",
+      category: "event",
+      year: 2026,
+      limit: 10,
+    })
+    expect(pageResults.items).toHaveLength(1)
+    expect(pageResults.items[0]?.title).toBe("SLS Paris 2026")
+  })
+
+  it("returns distinct filter options for years and categories", async () => {
+    let callCount = 0
+    const repository = new DrizzleTvRepository(
+      makeDb([], undefined, () => {
+        callCount++
+        if (callCount === 1) {
+          return [{ year: 2026 }, { year: "2025" }]
+        }
+        return [{ category: "trick" }, { category: "profile" }, { category: "custom_cat" }]
+      }),
+    )
+    const options = await repository.getFilterOptions()
+    expect(options.years).toEqual([2026, 2025])
+    // canonical categories first (profile, trick), then custom (custom_cat)
+    expect(options.categories).toEqual(["profile", "trick", "custom_cat"])
   })
 })
 

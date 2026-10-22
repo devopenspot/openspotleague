@@ -1,7 +1,12 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { findTvCardById, listTvCategoryRows } from "@/lib/services/tv/tv";
+import {
+  findTvCardById,
+  listTvCategoryRows,
+  getTvFilterOptions,
+  listTvCardPage,
+} from "@/lib/services/tv/tv";
 import { listSports } from "@/lib/services/taxonomy/taxonomy";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { env } from "@/lib/config/env";
@@ -18,6 +23,9 @@ type TvSearchParams = {
   discipline?: string | string[];
   play?: string | string[];
   v?: string | string[];
+  q?: string | string[];
+  category?: string | string[];
+  year?: string | string[];
 };
 
 function firstParam(value: string | string[] | undefined): string | null {
@@ -99,22 +107,41 @@ export async function generateMetadata({
   };
 }
 
+const EMPTY_FILTER_OPTIONS = {
+  years: [] as readonly number[],
+  categories: [] as readonly string[],
+};
+
 export default async function TvPage({
   searchParams,
 }: {
   searchParams: Promise<TvSearchParams>;
 }) {
   await connection();
-  const [resolved, disciplines] = await Promise.all([
+  const [resolved, disciplines, filterOptions] = await Promise.all([
     searchParams,
     withSafeDefault(
       () => listSports(),
       [] as Awaited<ReturnType<typeof listSports>>,
       "listSports-tv",
     ),
+    withSafeDefault(
+      () => getTvFilterOptions(),
+      EMPTY_FILTER_OPTIONS,
+      "getTvFilterOptions-tv",
+    ),
   ]);
   const rawParam = firstParam(resolved.discipline);
   const playId = firstParam(resolved.play) ?? firstParam(resolved.v) ?? null;
+  const rawQuery = firstParam(resolved.q);
+  const rawCategory = firstParam(resolved.category);
+  const rawYear = firstParam(resolved.year);
+
+  const initialQuery = rawQuery?.trim() || null;
+  const initialCategory = rawCategory?.trim() || null;
+  const parsedYear = rawYear ? Number(rawYear) : null;
+  const initialYear =
+    parsedYear && !Number.isNaN(parsedYear) ? parsedYear : null;
 
   // disciplines may be objects with slug/name or just slugs — normalize
   const normalized = (
@@ -139,7 +166,13 @@ export default async function TvPage({
   const effectiveDiscipline =
     initialDiscipline === "all" ? undefined : (initialDiscipline ?? undefined);
 
-  const [rows, initialPlayVideo] = await Promise.all([
+  const isSearchActive = Boolean(
+    initialQuery ||
+      (initialCategory && initialCategory !== "all") ||
+      initialYear !== null,
+  );
+
+  const [rows, initialPlayVideo, initialSearchResults] = await Promise.all([
     withSafeDefault(
       () => listTvCategoryRows(effectiveDiscipline),
       [] as Awaited<ReturnType<typeof listTvCategoryRows>>,
@@ -152,6 +185,23 @@ export default async function TvPage({
           "findTvCardById-tv-initialPlay",
         )
       : Promise.resolve(null),
+    isSearchActive
+      ? withSafeDefault(
+          () =>
+            listTvCardPage({
+              disciplineSlug: effectiveDiscipline,
+              category:
+                initialCategory && initialCategory !== "all"
+                  ? initialCategory
+                  : undefined,
+              query: initialQuery || undefined,
+              year: initialYear ?? undefined,
+              limit: 24,
+            }),
+          null,
+          "listTvCardPage-tv-search",
+        )
+      : Promise.resolve(null),
   ]);
 
   return (
@@ -161,8 +211,13 @@ export default async function TvPage({
           <TvGrid
             rows={rows}
             disciplines={normalized}
+            filterOptions={filterOptions}
             initialDiscipline={initialDiscipline}
             initialPlayVideo={initialPlayVideo}
+            initialQuery={initialQuery}
+            initialCategory={initialCategory}
+            initialYear={initialYear}
+            initialSearchResults={initialSearchResults}
           />
         </Suspense>
       </div>

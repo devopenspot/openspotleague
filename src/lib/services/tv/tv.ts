@@ -6,6 +6,7 @@ import type {
   TvCardPageOptions,
   TvCardPageResult,
   TvCountOptions,
+  TvFilterOptionsResult,
   TvIdListOptions,
 } from "@/lib/repositories/tv/tv-repository";
 import { LIST_CACHE_LIFE as TV_CACHE_LIFE, ITEM_CACHE_LIFE as TV_ITEM_CACHE_LIFE } from "@/lib/cache/lifetimes";
@@ -128,6 +129,12 @@ export async function listTvCardPage(
   const normalized: TvCardPageOptions = {
     disciplineSlug: options.disciplineSlug?.trim().toLowerCase() || undefined,
     category: options.category?.trim().toLowerCase() || undefined,
+    categories: options.categories,
+    query: options.query?.trim() || undefined,
+    year:
+      typeof options.year === "number" && !Number.isNaN(options.year)
+        ? options.year
+        : undefined,
     cursor: options.cursor?.trim() || undefined,
     limit: options.limit,
     publishedOnly: options.publishedOnly !== false,
@@ -135,6 +142,18 @@ export async function listTvCardPage(
   cacheTag("tv:list");
   cacheLife(TV_CACHE_LIFE);
   return runListTvCardPage(normalized);
+}
+
+export async function runGetTvFilterOptions(): Promise<TvFilterOptionsResult> {
+  const repository = await getTvRepositoryAsync();
+  return repository.getFilterOptions();
+}
+
+export async function getTvFilterOptions(): Promise<TvFilterOptionsResult> {
+  "use cache";
+  cacheTag("tv:list");
+  cacheLife(TV_CACHE_LIFE);
+  return runGetTvFilterOptions();
 }
 
 export async function runListTvIdList(

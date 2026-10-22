@@ -4,6 +4,7 @@ import {
   findTvCardById,
   findTvCardsByIds,
   listTvCategoryRows,
+  getTvFilterOptions,
 } from "@/lib/services/tv/tv";
 import { TV_CARD_BATCH_MAX } from "@/types/tv";
 
@@ -21,8 +22,22 @@ export async function GET(request: Request) {
   const limitParam = searchParams.get("limit")?.trim() || undefined;
   const cursor = searchParams.get("cursor")?.trim() || undefined;
   const rowsParam = searchParams.get("rows");
+  const queryParam = searchParams.get("q")?.trim() || undefined;
+  const yearParam = searchParams.get("year")?.trim() || undefined;
+  const filterOptionsParam = searchParams.get("filterOptions");
 
   try {
+    // Filter options (years & categories) for search controls.
+    if (filterOptionsParam === "true") {
+      const filterOptions = await getTvFilterOptions();
+      const res = NextResponse.json(filterOptions);
+      res.headers.set(
+        "Cache-Control",
+        "public, s-maxage=300, stale-while-revalidate=600",
+      );
+      return res;
+    }
+
     // Category rows batch for client-side discipline switching without RSC refetch.
     if (rowsParam === "true") {
       const rows = await listTvCategoryRows(
@@ -68,15 +83,23 @@ export async function GET(request: Request) {
       res.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
       return res;
     }
-    // Deterministic card page (row scroll pagination). Cursor is
+    // Deterministic card page (row scroll pagination or search query). Cursor is
     // HMAC-signed; tampered/foreign cursors restart at the first page.
     // publishedOnly is always forced — the previous public toggle
     // (?publishedOnly=false) exposed unpublished rows.
-    if (limitParam !== undefined || cursor !== undefined) {
+    if (
+      limitParam !== undefined ||
+      cursor !== undefined ||
+      queryParam !== undefined ||
+      yearParam !== undefined
+    ) {
       const limit = Math.min(Math.max(Number(limitParam ?? 12) || 12, 1), TV_PAGE_LIMIT_MAX);
+      const parsedYear = yearParam ? Number(yearParam) : undefined;
       const page = await listTvCardPage({
         disciplineSlug: disciplineSlug ? disciplineSlug.toLowerCase() : undefined,
         category: category ? category.toLowerCase() : undefined,
+        query: queryParam,
+        year: parsedYear && !Number.isNaN(parsedYear) ? parsedYear : undefined,
         publishedOnly: true,
         limit,
         ...(cursor ? { cursor } : {}),
@@ -88,7 +111,7 @@ export async function GET(request: Request) {
     // Full-catalog branch removed — public worst-case transfer and
     // nothing in the UI called it (admin curates via /app/api/admin/tv).
     return NextResponse.json(
-      { error: "Missing query — use ?id= or ?limit=&cursor=" },
+      { error: "Missing query — use ?id= or ?limit=&cursor= or search params" },
       { status: 400 },
     );
   } catch (error) {

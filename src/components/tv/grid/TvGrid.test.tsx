@@ -53,13 +53,22 @@ function row(
   };
 }
 
-function renderGrid(rows: readonly TvCategoryRow[], initialDiscipline: string | null = null) {
+function renderGrid(
+  rows: readonly TvCategoryRow[],
+  initialDiscipline: string | null = null,
+  extraProps: Partial<Parameters<typeof TvGrid>[0]> = {},
+) {
   return render(
     <TvGrid
       rows={rows}
       disciplineCounts={{}}
       disciplines={disciplines}
       initialDiscipline={initialDiscipline}
+      filterOptions={{
+        years: [2026, 2025, 2024],
+        categories: ["profile", "event", "music"],
+      }}
+      {...extraProps}
     />,
   );
 }
@@ -576,6 +585,104 @@ describe("TvGrid multi-category compatibility", () => {
     ).toBeDefined();
   });
 });
+
+describe("TvGrid searching and filtering", () => {
+  it("renders search bar with search input, category select, and year select", () => {
+    renderGrid([row([card("v1", "Sample", "skateboard")])], "all");
+
+    expect(
+      screen.getByPlaceholderText("Search videos by name..."),
+    ).toBeDefined();
+    expect(
+      screen.getByRole("combobox", { name: /filter by category/i }),
+    ).toBeDefined();
+    expect(
+      screen.getByRole("combobox", { name: /filter by year/i }),
+    ).toBeDefined();
+  });
+
+  it("transitions to search results grid when search is active with initial results", () => {
+    const searchVideo = card("v-paris", "Paris Street League", "skateboard");
+    renderGrid(
+      [row([card("v1", "Regular Marquee Video", "skateboard")])],
+      "all",
+      {
+        initialQuery: "Paris",
+        initialSearchResults: {
+          items: [searchVideo],
+          nextCursor: null,
+        },
+      },
+    );
+
+    // Search results grid is shown
+    expect(screen.getByText(/1 video found/i)).toBeDefined();
+    expect(screen.getByText("Paris Street League")).toBeDefined();
+    // Default marquee row is hidden
+    expect(
+      screen.queryByRole("region", { name: /music sessions/i }),
+    ).toBeNull();
+  });
+
+  it("renders active filter badges and allows resetting filters", async () => {
+    const searchVideo = card("v-event", "X Games Final", "bmx", ["event"]);
+    renderGrid([row([card("v1", "Regular Video", "bmx")])], "all", {
+      initialQuery: "Games",
+      initialCategory: "event",
+      initialYear: 2026,
+      initialSearchResults: {
+        items: [searchVideo],
+        nextCursor: null,
+      },
+    });
+
+    expect(screen.getByText(/1 video found/i)).toBeDefined();
+    expect(screen.getByText(/“Games”/)).toBeDefined();
+    expect(
+      screen.getByRole("button", { name: /remove category filter/i }),
+    ).toBeDefined();
+    expect(
+      screen.getByRole("button", { name: /remove year filter/i }),
+    ).toBeDefined();
+
+    // Reset button is present
+    const resetButton = screen.getByRole("button", {
+      name: /reset all search filters/i,
+    });
+    expect(resetButton).toBeDefined();
+
+    await userEvent.click(resetButton);
+
+    // After reset, search is inactive and default category marquee reappears
+    await waitFor(() => {
+      expect(
+        screen.getAllByRole("region", { name: /music sessions/i }).length,
+      ).toBeGreaterThan(0);
+    });
+  });
+
+  it("opens theater modal when clicking a video card from search results", async () => {
+    const searchVideo = card("v-sls", "SLS Super Crown", "skateboard");
+    renderGrid([row([card("v1", "Regular Video", "skateboard")])], "all", {
+      initialQuery: "Crown",
+      initialSearchResults: {
+        items: [searchVideo],
+        nextCursor: null,
+      },
+    });
+
+    const cardButton = screen.getByRole("button", {
+      name: /SLS Super Crown/i,
+    });
+    await userEvent.click(cardButton);
+
+    // Modal opens displaying video title
+    await waitFor(() => {
+      expect(screen.getByText(/Now Playing/i)).toBeDefined();
+    });
+  });
+});
+
 
 
 

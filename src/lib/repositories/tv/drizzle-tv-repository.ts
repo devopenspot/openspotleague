@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "drizzle-orm";
 import { type drizzle } from "drizzle-orm/postgres-js";
 import { tvVideos, sportDisciplines } from "@/db/schema";
 import type { TvVideoRow } from "@/db/schema";
@@ -10,6 +10,7 @@ import type {
   TvCategoryRowResult,
   TvCategoryRowsOptions,
   TvCountOptions,
+  TvFilterOptionsResult,
   TvIdListOptions,
   TvListOptions,
   TvRepository,
@@ -113,6 +114,26 @@ export class DrizzleTvRepository implements TvRepository {
         conditions.push(sql`${tvVideos.categories} @> ARRAY[${normalized}]::text[]`);
       }
     }
+    if (options.categories && options.categories.length > 0) {
+      const normalized = options.categories
+        .map((c) => c.trim().toLowerCase())
+        .filter(Boolean);
+      if (normalized.length > 0) {
+        conditions.push(sql`${tvVideos.categories} && ARRAY[${normalized}]::text[]`);
+      }
+    }
+    if (options.query) {
+      const sanitized = options.query.trim().replace(/[%_\\]/g, "\\$&");
+      if (sanitized) {
+        conditions.push(ilike(tvVideos.title, `%${sanitized}%`));
+      }
+    }
+    if (typeof options.year === "number" && !Number.isNaN(options.year)) {
+      const start = new Date(Date.UTC(options.year, 0, 1));
+      const end = new Date(Date.UTC(options.year + 1, 0, 1));
+      conditions.push(gte(tvVideos.postDate, start));
+      conditions.push(lt(tvVideos.postDate, end));
+    }
 
     const whereClause = conditions.length ? and(...conditions) : undefined;
     const limit = Math.min(Math.max(options.limit ?? 500, 1), 500);
@@ -151,6 +172,26 @@ export class DrizzleTvRepository implements TvRepository {
       if (normalized) {
         conditions.push(sql`${tvVideos.categories} @> ARRAY[${normalized}]::text[]`);
       }
+    }
+    if (options.categories && options.categories.length > 0) {
+      const normalized = options.categories
+        .map((c) => c.trim().toLowerCase())
+        .filter(Boolean);
+      if (normalized.length > 0) {
+        conditions.push(sql`${tvVideos.categories} && ARRAY[${normalized}]::text[]`);
+      }
+    }
+    if (options.query) {
+      const sanitized = options.query.trim().replace(/[%_\\]/g, "\\$&");
+      if (sanitized) {
+        conditions.push(ilike(tvVideos.title, `%${sanitized}%`));
+      }
+    }
+    if (typeof options.year === "number" && !Number.isNaN(options.year)) {
+      const start = new Date(Date.UTC(options.year, 0, 1));
+      const end = new Date(Date.UTC(options.year + 1, 0, 1));
+      conditions.push(gte(tvVideos.postDate, start));
+      conditions.push(lt(tvVideos.postDate, end));
     }
 
     const whereClause = conditions.length ? and(...conditions) : undefined;
@@ -345,6 +386,26 @@ export class DrizzleTvRepository implements TvRepository {
         conditions.push(sql`${tvVideos.categories} @> ARRAY[${normalized}]::text[]`);
       }
     }
+    if ("categories" in options && options.categories && options.categories.length > 0) {
+      const normalized = options.categories
+        .map((c) => c.trim().toLowerCase())
+        .filter(Boolean);
+      if (normalized.length > 0) {
+        conditions.push(sql`${tvVideos.categories} && ARRAY[${normalized}]::text[]`);
+      }
+    }
+    if ("query" in options && options.query) {
+      const sanitized = options.query.trim().replace(/[%_\\]/g, "\\$&");
+      if (sanitized) {
+        conditions.push(ilike(tvVideos.title, `%${sanitized}%`));
+      }
+    }
+    if ("year" in options && typeof options.year === "number" && !Number.isNaN(options.year)) {
+      const start = new Date(Date.UTC(options.year, 0, 1));
+      const end = new Date(Date.UTC(options.year + 1, 0, 1));
+      conditions.push(gte(tvVideos.postDate, start));
+      conditions.push(lt(tvVideos.postDate, end));
+    }
     return conditions;
   }
 
@@ -451,6 +512,32 @@ export class DrizzleTvRepository implements TvRepository {
         .$dynamic();
     const rows = await (whereClause ? base().where(whereClause) : base());
     return rows.map((r) => ({ disciplineSlug: r.disciplineSlug, count: Number(r.count) }));
+  }
+
+  async getFilterOptions(): Promise<TvFilterOptionsResult> {
+    const [yearsRows, categoriesRows] = await Promise.all([
+      this.db.execute<{ year: number | string }>(sql`
+        select distinct extract(year from ${tvVideos.postDate})::int as year
+        from ${tvVideos}
+        where ${tvVideos.published} = true
+        order by year desc
+      `),
+      this.db.execute<{ category: string }>(sql`
+        select distinct unnest(${tvVideos.categories}) as category
+        from ${tvVideos}
+        where ${tvVideos.published} = true
+        order by category asc
+      `),
+    ]);
+
+    const years = (yearsRows ?? [])
+      .map((r) => Number(r.year))
+      .filter((y) => Number.isFinite(y));
+    const categories = orderTvCategories(
+      (categoriesRows ?? []).map((r) => r.category).filter(Boolean),
+    );
+
+    return { years, categories };
   }
 
   async findById(id: string): Promise<TvVideo | null> {

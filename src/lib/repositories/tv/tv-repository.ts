@@ -4,9 +4,17 @@ export interface TvListOptions {
   disciplineSlug?: string;
   disciplineSlugs?: readonly string[];
   category?: string;
+  categories?: readonly string[];
+  query?: string;
+  year?: number;
   publishedOnly?: boolean;
   /** Hard cap on rows returned (default 500) — tv_videos is curated and small. */
   limit?: number;
+}
+
+export interface TvFilterOptionsResult {
+  years: readonly number[];
+  categories: readonly string[];
 }
 
 export interface TvCategoryRowsOptions {
@@ -75,6 +83,8 @@ export interface TvRepository {
   countByCategory(options?: TvCountOptions): Promise<readonly { category: string; count: number }[]>;
   /** Published counts per discipline (pill totals). */
   countByDiscipline(options?: TvCountOptions): Promise<readonly { disciplineSlug: string; count: number }[]>;
+  /** Distinct available years and categories across published TV videos. */
+  getFilterOptions(): Promise<TvFilterOptionsResult>;
   findById(id: string): Promise<TvVideo | null>;
   /**
    * Single public card (theater deep-links, cross-page queue
