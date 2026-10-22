@@ -372,7 +372,7 @@ export function TvGrid({
   const showGenericEmpty = !hasVideos && discipline === "all";
 
   return (
-    <div className="min-w-0 space-y-2 sm:space-y-4 overflow-x-hidden px-3">
+    <div className="min-w-0 space-y-2 sm:space-y-4 overflow-x-hidden px-3 mt-6 mb-30">
       {/* Background container — suspended and hidden from compositor when modal is active */}
       <div
         aria-hidden={isModalOpen ? true : undefined}
@@ -394,7 +394,9 @@ export function TvGrid({
               </h1>
             </div>
             <TvAutoplayerButton
-              count={isSearchActive ? searchItems.length : totalForTheaterFilter}
+              count={
+                isSearchActive ? searchItems.length : totalForTheaterFilter
+              }
               disciplineLabel={disciplineLabel}
               categoryLabel={isSearchActive ? undefined : categoryLabel}
               onOpen={handleAutoplay}

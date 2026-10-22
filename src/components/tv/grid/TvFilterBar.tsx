@@ -91,7 +91,11 @@ export function TvFilterBar({
                 All Categories
               </option>
               {categories.map((cat) => (
-                <option key={cat} value={cat} className="bg-[#121212] text-white">
+                <option
+                  key={cat}
+                  value={cat}
+                  className="bg-[#121212] text-white"
+                >
                   {formatTvCategory(cat)}
                 </option>
               ))}
@@ -121,7 +125,11 @@ export function TvFilterBar({
                 All Years
               </option>
               {years.map((y) => (
-                <option key={y} value={String(y)} className="bg-[#121212] text-white">
+                <option
+                  key={y}
+                  value={String(y)}
+                  className="bg-[#121212] text-white"
+                >
                   {y}
                 </option>
               ))}
