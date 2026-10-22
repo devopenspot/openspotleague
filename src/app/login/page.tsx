@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { showToast } from "@/hooks/ui/useToast";
@@ -95,7 +96,25 @@ export default function LoginPage() {
         <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
       </button>
 
-      <p className="mt-4 text-center font-sans text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
+      <p className="mt-4 text-center text-xs leading-relaxed text-on-surface-variant">
+        By continuing, you agree to our{" "}
+        <Link
+          href="/terms"
+          className="font-semibold text-on-surface underline decoration-outline hover:text-primary focus-visible:outline-offset-2"
+        >
+          Terms of Use
+        </Link>{" "}
+        and acknowledge our{" "}
+        <Link
+          href="/privacy"
+          className="font-semibold text-on-surface underline decoration-outline hover:text-primary focus-visible:outline-offset-2"
+        >
+          Privacy Policy
+        </Link>
+        .
+      </p>
+
+      <p className="mt-3 text-center font-sans text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
         One account. One click. You're in.
       </p>
 

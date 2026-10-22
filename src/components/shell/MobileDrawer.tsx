@@ -181,6 +181,23 @@ export function MobileDrawer() {
             onClick={closeDrawer}
           />
         )}
+        <div className="flex items-center justify-center gap-3 pt-2 text-[11px] text-wire-muted">
+          <Link
+            href="/terms"
+            onClick={closeDrawer}
+            className="hover:text-on-wire underline decoration-wire-border"
+          >
+            Terms of Use
+          </Link>
+          <span aria-hidden="true">•</span>
+          <Link
+            href="/privacy"
+            onClick={closeDrawer}
+            className="hover:text-on-wire underline decoration-wire-border"
+          >
+            Privacy Policy
+          </Link>
+        </div>
       </div>
     </SideDrawer>
   );

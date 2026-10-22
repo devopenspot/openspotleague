@@ -164,12 +164,67 @@ export function LandingFooter() {
               </li>
             </ul>
           </div>
+
+          {/* Legal Column */}
+          <div className="space-y-3">
+            <h4 className="font-display text-xs font-bold uppercase tracking-[0.12em] text-on-wire">
+              Legal
+            </h4>
+            <ul className="space-y-2 text-xs text-wire-muted">
+              <li>
+                <Link
+                  href={ROUTES.terms}
+                  className="transition-colors hover:text-on-wire"
+                >
+                  Terms of Use
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.privacy}
+                  className="transition-colors hover:text-on-wire"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`${ROUTES.terms}#risk-waiver`}
+                  className="transition-colors hover:text-on-wire"
+                >
+                  Safety & Risk Waiver
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`${ROUTES.terms}#spots-property`}
+                  className="transition-colors hover:text-on-wire"
+                >
+                  Spot Takedown / DMCA
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-wire-border pt-6 text-[11px] text-wire-muted">
           <p>© {new Date().getFullYear()} Open Spot League. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-4">
+            <Link
+              href={ROUTES.terms}
+              className="transition-colors hover:text-on-wire underline decoration-wire-border"
+            >
+              Terms
+            </Link>
+            <span aria-hidden="true">•</span>
+            <Link
+              href={ROUTES.privacy}
+              className="transition-colors hover:text-on-wire underline decoration-wire-border"
+            >
+              Privacy
+            </Link>
+            <span aria-hidden="true">•</span>
             <span className="text-wire-muted">Ride at your own risk. Helmets save lives.</span>
           </div>
         </div>

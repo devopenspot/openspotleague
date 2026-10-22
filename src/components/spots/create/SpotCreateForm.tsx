@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Compass, ShieldCheck, Loader2 } from "lucide-react";
 import { useCurrentLocation } from "@/hooks/data/useCurrentLocation";
@@ -236,7 +237,13 @@ export default function SpotCreateForm() {
         {busy ? "Creating…" : "Create spot"}
       </button>
 
-      <p className="text-center text-xs text-on-surface-variant">By creating you agree the spot is personal until verified by the community. No public identity is shown.</p>
+      <p className="text-center text-xs text-on-surface-variant leading-relaxed">
+        By creating, you confirm you have permission to photograph this spot, respect private property, and agree to OpenSpot's{" "}
+        <Link href="/terms#ugc" target="_blank" className="font-semibold underline hover:text-on-surface">
+          UGC Terms
+        </Link>
+        . Personal until verified by the community.
+      </p>
     </form>
   );
 }

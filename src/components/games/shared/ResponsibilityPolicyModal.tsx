@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { X } from "lucide-react";
 import { Overlay } from "@/components/feedback/Overlay";
 
@@ -17,6 +18,17 @@ export function ResponsibilityPolicyModal({ isOpen, onClose }: { isOpen: boolean
         <p>OpenSpot Sets Up The Game — Not Supervision, Coaching, Or A Safety Guarantee For Any Spot.</p>
         <p>Scope The Surface, Traffic, Weather, Local Rules, And Your Own Limits Before You Send It. Rock Your Helmet And Pads, And Bail When It Doesn’t Feel Right.</p>
         <p>Every Rider Owns Their Calls — Respect The Spot, The Crew, And Everyone Around You.</p>
+        <p className="pt-2 text-xs text-secondary">
+          Review our full legal{" "}
+          <Link
+            href="/terms#risk-waiver"
+            onClick={onClose}
+            className="font-semibold underline hover:text-on-surface focus-visible:outline-offset-2"
+          >
+            Assumption of Risk & Release of Liability
+          </Link>
+          .
+        </p>
       </div>
       <div className="flex justify-end border-t border-outline-variant p-6"><button type="button" onClick={onClose} className="min-h-11 rounded-full border border-outline px-5 font-display text-xs font-bold uppercase tracking-[0.05em] transition-colors hover:bg-surface-container focus-visible:outline-offset-4">Got It, Let’s Ride</button></div>
     </Overlay>

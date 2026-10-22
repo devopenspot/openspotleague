@@ -127,6 +127,8 @@ export const ROUTES = {
   spot: (id: string) => `/spots/${id}`,
   spotsNew: "/spots/new",
   tv: "/tv",
+  terms: "/terms",
+  privacy: "/privacy",
 } as const;
 
 export function isActivePath(currentPath: string, itemPath: string): boolean {
