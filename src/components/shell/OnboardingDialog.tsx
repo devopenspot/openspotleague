@@ -11,12 +11,23 @@ import {
   type DistanceUnit,
   type TemperatureUnit,
 } from "@/stores/preferences-store";
-import { SPORT_DISCIPLINES, type SportDiscipline } from "@/types/sport-events";
+import {
+  SPORT_DISCIPLINES,
+  type SportPreference,
+} from "@/types/sport-events";
 import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/contexts/user-context";
 import { SignInLink } from "@/components/shell/SignInLink";
 
 const ONBOARDING_DIALOG_TITLE_ID = "onboarding-dialog-title";
+
+const SPORT_OPTIONS: ReadonlyArray<{ value: SportPreference; label: string }> = [
+  { value: "all", label: "All disciplines" },
+  { value: "Skateboard", label: "Skateboard" },
+  { value: "BMX", label: "BMX" },
+  { value: "Scooter", label: "Scooter" },
+  { value: "Roller", label: "Roller" },
+];
 
 type Mode = "onboarding" | "edit";
 
@@ -79,7 +90,12 @@ export function OnboardingDialog() {
                 body: JSON.stringify({
                   distanceUnit: d,
                   temperatureUnit: t,
-                  disciplineSlug: sport ? sport.toLowerCase() : null,
+                  disciplineSlug:
+                    sport === "all"
+                      ? "all"
+                      : sport
+                        ? sport.toLowerCase()
+                        : null,
                 }),
               });
               if (!response.ok) {
@@ -90,11 +106,13 @@ export function OnboardingDialog() {
                 temperatureUnit: TemperatureUnit;
                 disciplineSlug: string | null;
               };
-              const savedSport =
-                SPORT_DISCIPLINES.find(
-                  (candidate) =>
-                    candidate.toLowerCase() === saved.disciplineSlug,
-                ) ?? null;
+              const savedSport: SportPreference | null =
+                saved.disciplineSlug === "all"
+                  ? "all"
+                  : SPORT_DISCIPLINES.find(
+                      (candidate) =>
+                        candidate.toLowerCase() === saved.disciplineSlug,
+                    ) ?? null;
               setPreferences(
                 {
                   distanceUnit: saved.distanceUnit,
@@ -144,7 +162,7 @@ interface OnboardingFormProps {
   onSave: (
     distance: DistanceUnit,
     temperature: TemperatureUnit,
-    sport: SportDiscipline | null,
+    sport: SportPreference | null,
   ) => Promise<void>;
   onBack: (() => void) | undefined;
 }
@@ -169,7 +187,7 @@ function OnboardingForm({
   const [draftTemp, setDraftTemp] = useState<TemperatureUnit>(
     initial.temperatureUnit,
   );
-  const [draftSport, setDraftSport] = useState<SportDiscipline | null>(
+  const [draftSport, setDraftSport] = useState<SportPreference | null>(
     initial.preferredSport,
   );
 
@@ -178,7 +196,7 @@ function OnboardingForm({
 
   const handleSubmit = async () => {
     if (isOnboarding && !draftSport) {
-      setSaveError("Choose a sport to continue.");
+      setSaveError("Choose a sport or select all to continue.");
       return;
     }
 
@@ -276,13 +294,13 @@ function OnboardingForm({
           <ul
             id={`pref-sport-${mode}`}
             role="group"
-            aria-label="Pick one discipline you ride"
+            aria-label="Pick one discipline you ride or select all"
             className="flex flex-wrap gap-1.5"
           >
-            {SPORT_DISCIPLINES.map((sport) => {
-              const active = draftSport === sport;
+            {SPORT_OPTIONS.map((opt) => {
+              const active = draftSport === opt.value;
               return (
-                <li key={sport}>
+                <li key={opt.value}>
                   <label
                     className={cn(
                       "inline-flex cursor-pointer items-center rounded-full border px-3 py-2 text-[9px] font-bold tracking-widest uppercase transition-colors",
@@ -294,12 +312,12 @@ function OnboardingForm({
                     <input
                       type="radio"
                       checked={active}
-                      onChange={() => setDraftSport(sport)}
+                      onChange={() => setDraftSport(opt.value)}
                       name={`pref-sport-${mode}`}
                       className="sr-only"
-                      aria-label={sport}
+                      aria-label={opt.label}
                     />
-                    {sport}
+                    {opt.label}
                   </label>
                 </li>
               );
@@ -338,7 +356,7 @@ function OnboardingForm({
 
         {isOnboarding && (
           <p className="text-[10px] font-display text-secondary leading-snug">
-            Choose one discipline. Signed-in riders get these preferences across
+            Choose one discipline or select all. Signed-in riders get these preferences across
             devices.
           </p>
         )}

@@ -262,6 +262,16 @@ describe("TvGrid discipline preference", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
+  it("converges to 'All' tab when preferredSport is 'all'", async () => {
+    usePreferencesStore.getState().setPreferredSport("all");
+    renderGrid([row([card("v1", "All Night", "skateboard")])]);
+    await waitFor(() =>
+      expect(
+        screen.getByRole("tab", { name: "All" }).getAttribute("aria-selected"),
+      ).toBe("true"),
+    );
+  });
+
   it("the safety timeout resolves a switch whose rows never land", async () => {
     vi.useFakeTimers();
     try {

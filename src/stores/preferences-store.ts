@@ -3,8 +3,10 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import {
   SPORT_DISCIPLINES,
   type SportDiscipline,
+  type SportPreference,
 } from "@/types/sport-events";
 
+export type { SportPreference };
 export type DistanceUnit = "mi" | "km";
 export type TemperatureUnit = "C" | "F";
 export type PreferencesHydrationStatus = "idle" | "loading" | "ready" | "error";
@@ -18,17 +20,17 @@ const LEGACY_PREFERENCES_STORAGE_KEY = "openspot-preferences-v2";
 interface PreferencesState {
   distanceUnit: DistanceUnit;
   temperatureUnit: TemperatureUnit;
-  preferredSport: SportDiscipline | null;
+  preferredSport: SportPreference | null;
   hydrationStatus: PreferencesHydrationStatus;
   preferenceAccountId: string | null;
   hasLocalChanges: boolean;
   setDistanceUnit: (unit: DistanceUnit) => void;
   setTemperatureUnit: (unit: TemperatureUnit) => void;
-  setPreferredSport: (sport: SportDiscipline | null) => void;
+  setPreferredSport: (sport: SportPreference | null) => void;
   setPreferences: (preferences: {
     distanceUnit: DistanceUnit;
     temperatureUnit: TemperatureUnit;
-    preferredSport: SportDiscipline | null;
+    preferredSport: SportPreference | null;
   }, metadata?: {
     accountId?: string | null;
     hasLocalChanges?: boolean;
@@ -65,11 +67,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function migratePreferences(state: unknown): PersistedPreferences {
   const persisted = isRecord(state) ? state : {};
-  const preferredSport = SPORT_DISCIPLINES.includes(
-    persisted.preferredSport as SportDiscipline,
-  )
-    ? (persisted.preferredSport as SportDiscipline)
-    : null;
+  const rawSport = persisted.preferredSport;
+  const preferredSport: SportPreference | null =
+    rawSport === "all" || rawSport === "All"
+      ? "all"
+      : SPORT_DISCIPLINES.includes(rawSport as SportDiscipline)
+        ? (rawSport as SportDiscipline)
+        : null;
   const legacySource = persisted.preferenceSource;
   const accountId =
     typeof persisted.preferenceAccountId === "string" &&

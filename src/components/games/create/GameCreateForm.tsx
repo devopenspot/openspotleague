@@ -47,6 +47,7 @@ import type { Spot, WeatherIconName } from "@/lib/types";
 import {
   DISCIPLINE_TO_SPORT,
   resolveGameDiscipline,
+  type DisciplineSlug,
 } from "@/lib/games/discipline";
 import { loadOrCreateGuestToken, normalizeGuestName } from "@/lib/games/guest";
 import {
@@ -150,7 +151,16 @@ export function GameCreateForm({
   const [prefillLoading, setPrefillLoading] = useState(false);
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const preferredSport = usePreferencesStore((state) => state.preferredSport);
-  const discipline = resolveGameDiscipline(preferredSport);
+  const defaultDiscipline = resolveGameDiscipline(preferredSport);
+  const [selectedDiscipline, setSelectedDiscipline] = useState<DisciplineSlug | null>(defaultDiscipline);
+
+  useEffect(() => {
+    if (defaultDiscipline) {
+      setSelectedDiscipline(defaultDiscipline);
+    }
+  }, [defaultDiscipline]);
+
+  const discipline = selectedDiscipline ?? defaultDiscipline;
   const [mode, setMode] = useState<GameMode>("training");
   const [ruleMode, setRuleMode] = useState<RuleMode>("flexible");
   const [level, setLevel] = useState<TrickLevel>(1);
@@ -1146,6 +1156,51 @@ export function GameCreateForm({
             noValidate
             className="min-w-0 space-y-6"
           >
+            {preferredSport === "all" ? (
+              <div
+                role="group"
+                aria-labelledby="game-discipline-label"
+                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p
+                    id="game-discipline-label"
+                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                  >
+                    Sport
+                  </p>
+                  <span className="font-display text-[10px] uppercase tracking-wide text-secondary">
+                    {discipline
+                      ? DISCIPLINE_TO_SPORT[
+                          discipline as keyof typeof DISCIPLINE_TO_SPORT
+                        ]
+                      : "Select for match"}
+                  </span>
+                </div>
+                <div
+                  className="mt-3 flex flex-wrap gap-2"
+                  role="radiogroup"
+                  aria-labelledby="game-discipline-label"
+                >
+                  {(["skateboard", "bmx", "scooter", "roller"] as const).map((slug) => {
+                    const sportName = DISCIPLINE_TO_SPORT[slug];
+                    const active = discipline === slug;
+                    return (
+                      <OptionChip
+                        key={slug}
+                        id={`game-sport-${slug}`}
+                        active={active}
+                        label={sportName}
+                        role="radio"
+                        ariaChecked={active}
+                        tabIndex={active ? 0 : -1}
+                        onClick={() => setSelectedDiscipline(slug)}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
             <div
               role="group"
               aria-labelledby="game-mode-label"

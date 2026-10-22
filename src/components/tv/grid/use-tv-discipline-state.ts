@@ -149,7 +149,7 @@ export function useTvDisciplineState({
   // Authoritative discipline convergence
   useEffect(() => {
     if (hydrationStatus !== "ready" && hydrationStatus !== "error") return;
-    const clientSport = preferredSport ? preferredSport.toLowerCase() : null;
+    const clientSport = preferredSport === "all" ? "all" : preferredSport ? preferredSport.toLowerCase() : null;
     if (!sportInitRef.current) {
       sportInitRef.current = true;
       prevSportRef.current = clientSport;
@@ -171,7 +171,8 @@ export function useTvDisciplineState({
     if (urlDiscipline) return;
     const authoritative = validInitial ?? clientSport;
     if (!authoritative) return;
-    if (!disciplines.some((d) => d.slug.toLowerCase() === authoritative))
+    const isAll = authoritative === "all";
+    if (!isAll && !disciplines.some((d) => d.slug.toLowerCase() === authoritative))
       return;
     if (manualSlugRef.current !== null && manualSlugRef.current === discipline)
       return;

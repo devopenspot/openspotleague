@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const preferenceDistanceUnitSchema = z.enum(["mi", "km"]);
 export const preferenceTemperatureUnitSchema = z.enum(["C", "F"]);
-export const preferenceDisciplineSchema = z.enum(["roller", "skateboard", "bmx", "scooter"]).nullable();
+export const preferenceDisciplineSchema = z.enum(["roller", "skateboard", "bmx", "scooter", "all"]).nullable();
 
 export const preferencesSchema = z.object({
   distanceUnit: preferenceDistanceUnitSchema,

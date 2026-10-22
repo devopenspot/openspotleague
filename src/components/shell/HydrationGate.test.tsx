@@ -71,6 +71,40 @@ describe("HydrationGate", () => {
     });
   });
 
+  it("hydrates account preferences when disciplineSlug is 'all'", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          distanceUnit: "mi",
+          temperatureUnit: "C",
+          disciplineSlug: "all",
+        }),
+      }),
+    );
+
+    render(
+      <UserProvider user={user}>
+        <HydrationGate>
+          <span>content</span>
+        </HydrationGate>
+      </UserProvider>,
+    );
+
+    await waitFor(() =>
+      expect(usePreferencesStore.getState().hydrationStatus).toBe("ready"),
+    );
+
+    expect(usePreferencesStore.getState()).toMatchObject({
+      distanceUnit: "mi",
+      temperatureUnit: "C",
+      preferredSport: "all",
+      preferenceAccountId: "user-1",
+      hasLocalChanges: false,
+    });
+  });
+
   it("rehydrates guest preferences after a reload without calling the API", async () => {
     usePreferencesStore.getState().setPreferences(
       { distanceUnit: "km", temperatureUnit: "F", preferredSport: "BMX" },

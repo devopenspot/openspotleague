@@ -30,7 +30,9 @@ export function LandingFooter() {
               </span>
             </Link>
             <p className="max-w-sm text-xs leading-relaxed text-wire-muted">
-              The global action sports directory and challenge network. Discover spots, train with friends, and participate in community contests across 12 worldwide regions.
+              The global action sports directory and challenge network. Discover
+              spots, train with friends, and participate in community contests
+              across 12 worldwide regions.
             </p>
           </div>
 
@@ -209,7 +211,9 @@ export function LandingFooter() {
 
         {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-wire-border pt-6 text-[11px] text-wire-muted">
-          <p>© {new Date().getFullYear()} Open Spot League. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Open Spot League. All rights reserved.
+          </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href={ROUTES.terms}
@@ -225,7 +229,9 @@ export function LandingFooter() {
               Privacy
             </Link>
             <span aria-hidden="true">•</span>
-            <span className="text-wire-muted">Ride at your own risk. Helmets save lives.</span>
+            <span className="text-wire-muted">
+              Ride at your own risk. Helmets save lives.
+            </span>
           </div>
         </div>
       </div>

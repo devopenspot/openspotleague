@@ -10,4 +10,8 @@ describe("game discipline preference gate", () => {
   it("blocks an unset sport preference", () => {
     expect(resolveGameDiscipline(null)).toBeNull()
   })
+
+  it("returns null when preference is 'all'", () => {
+    expect(resolveGameDiscipline("all")).toBeNull()
+  })
 })

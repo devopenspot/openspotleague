@@ -171,4 +171,19 @@ describe("GameLanding", () => {
     )
     expect(screen.getByRole("heading", { name: /Set up your game/i })).toBeInTheDocument()
   })
+
+  it("does not pop open preferences when user has chosen 'all' disciplines as default", async () => {
+    usePreferencesStore.getState().setPreferences(
+      { distanceUnit: "mi", temperatureUnit: "C", preferredSport: "all" },
+      { accountId: "user-1", hasLocalChanges: false },
+    )
+    usePreferencesStore.getState().setHydrationStatus("ready")
+
+    render(<GameLanding signedIn={false} />)
+
+    expect(useUIStore.getState().isOnboardingOpen).toBe(false)
+    expect(
+      screen.getByText(/All disciplines selected/i),
+    ).toBeInTheDocument()
+  })
 })

@@ -55,7 +55,7 @@ export const useUIStore = create<UIState>()(
           })
           return
         }
-        if (preferredSport) {
+        if (preferredSport !== null) {
           action()
           return
         }
@@ -73,7 +73,7 @@ export const useUIStore = create<UIState>()(
         const { hydrationStatus, preferredSport } = usePreferencesStore.getState()
         if (hydrationStatus === "idle" || hydrationStatus === "loading") return
 
-        if (preferredSport) {
+        if (preferredSport !== null) {
           set({
             pendingOnboardingAction: null,
             pendingOnboardingNext: null,

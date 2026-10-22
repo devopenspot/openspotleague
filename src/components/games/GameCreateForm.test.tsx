@@ -875,4 +875,22 @@ describe("GameCreateForm", () => {
     // Racing is deprecated, so we verify trick validation still works
     expect(await screen.findByText(/Trick settings/)).toBeInTheDocument();
   });
+
+  it("renders sport picker and allows selecting a sport when preferredSport is 'all'", async () => {
+    const user = userEvent.setup();
+    usePreferencesStore.getState().setPreferences(
+      { distanceUnit: "mi", temperatureUnit: "C", preferredSport: "all" },
+      { accountId: "user-1", hasLocalChanges: false },
+    );
+
+    render(<GameCreateForm signedIn />);
+
+    const sportGroup = screen.getByRole("group", { name: "Sport" });
+    expect(sportGroup).toBeInTheDocument();
+    expect(within(sportGroup).getByRole("radio", { name: "Skateboard" })).toBeInTheDocument();
+    expect(within(sportGroup).getByRole("radio", { name: "BMX" })).toBeInTheDocument();
+
+    await user.click(within(sportGroup).getByRole("radio", { name: "BMX" }));
+    expect(within(sportGroup).getByRole("radio", { name: "BMX" })).toHaveAttribute("aria-checked", "true");
+  });
 });

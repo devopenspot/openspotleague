@@ -9,6 +9,7 @@ import { RulesModal } from "@/components/games/shared/RulesModal";
 import { MatchesDrawer } from "@/components/games/matches/MatchesDrawer";
 import { GAME_DEFINITIONS, type GameDefinition } from "@/lib/games/definitions";
 import { resolveGameDiscipline } from "@/lib/games/discipline";
+import type { SportPreference } from "@/types/sport-events";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
@@ -100,9 +101,13 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   const riderActivity = useRiderActivity(signedIn);
 
   useEffect(() => {
-    if ([`ready`, `error`].includes(preferencesHydrationStatus) && !discipline)
+    if (
+      [`ready`, `error`].includes(preferencesHydrationStatus) &&
+      preferredSport === null
+    ) {
       openPreferences();
-  }, [discipline, openPreferences, preferencesHydrationStatus]);
+    }
+  }, [openPreferences, preferencesHydrationStatus, preferredSport]);
 
   useEffect(() => {
     if (!signedIn) return;
@@ -152,6 +157,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
           </div>
           <LandingInfo
             discipline={discipline}
+            preferredSport={preferredSport}
             onOpenRules={() => setRulesOpen(true)}
             onOpenPolicy={() => setPolicyOpen(true)}
             onOpenPreferences={openPreferences}
@@ -265,11 +271,13 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
 
 function LandingInfo({
   discipline,
+  preferredSport,
   onOpenRules,
   onOpenPolicy,
   onOpenPreferences,
 }: {
   discipline: ReturnType<typeof resolveGameDiscipline>;
+  preferredSport: SportPreference | null;
   onOpenRules: () => void;
   onOpenPolicy: () => void;
   onOpenPreferences: () => void;
@@ -278,6 +286,7 @@ function LandingInfo({
     ? GAME_DEFINITIONS[discipline]
     : null;
   const eliminationWord = definition?.eliminationWord ?? null;
+  const isAllDisciplines = preferredSport === "all";
 
   return (
     <div className={`space-y-4 mt-4 sm:mt-8`}>
@@ -298,6 +307,8 @@ function LandingInfo({
                   </span>
                   {` ${UI_COPY.disciplineWordDescription.suffix}`}
                 </>
+              ) : isAllDisciplines ? (
+                <>All disciplines selected. Choose a sport below to start a training or challenge game.</>
               ) : (
                 <>{`${UI_COPY.disciplineWordDescription.fallback}`}</>
               )}
@@ -321,7 +332,7 @@ function LandingInfo({
               onClick={onOpenPreferences}
               className={`inline-flex min-h-9 shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
             >
-              {UI_COPY.setPreference}
+              {isAllDisciplines ? "Preferences" : UI_COPY.setPreference}
             </button>
           )}
         </div>

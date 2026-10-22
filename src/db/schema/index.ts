@@ -468,12 +468,13 @@ export const profiles = pgTable("profiles", {
     .defaultNow(),
   distanceUnit: text("distance_unit").notNull().default("mi"),
   temperatureUnit: text("temperature_unit").notNull().default("C"),
-  preferredDisciplineSlug: text("preferred_discipline_slug").references(
-    () => sportDisciplines.slug,
-    { onDelete: "set null" },
-  ),
+  preferredDisciplineSlug: text("preferred_discipline_slug"),
 }, (t) => [
   index("profiles_preferred_discipline_idx").on(t.preferredDisciplineSlug),
+  check(
+    "profiles_preferred_discipline_slug_check",
+    sql`${t.preferredDisciplineSlug} is null or ${t.preferredDisciplineSlug} in ('roller', 'skateboard', 'bmx', 'scooter', 'all')`,
+  ),
   check("profiles_display_name_check", sql`length(${t.displayName}) > 0`),
   check(
     "profiles_email_check",

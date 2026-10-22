@@ -26,6 +26,24 @@ describe("onboarding navigation state", () => {
     });
   });
 
+  it("runs protected actions immediately when preferredSport is 'all'", () => {
+    const action = vi.fn();
+    usePreferencesStore.getState().setPreferences({
+      distanceUnit: "mi",
+      temperatureUnit: "C",
+      preferredSport: "all",
+    });
+
+    useUIStore.getState().tryRun(action, "/saved");
+
+    expect(action).toHaveBeenCalledOnce();
+    expect(useUIStore.getState()).toMatchObject({
+      isOnboardingOpen: false,
+      pendingOnboardingAction: null,
+      pendingOnboardingNext: null,
+    });
+  });
+
   it("keeps the pending action destination until the dialog closes", () => {
     const action = vi.fn();
 

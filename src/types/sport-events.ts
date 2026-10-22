@@ -7,6 +7,13 @@ export const SPORT_DISCIPLINES: readonly SportDiscipline[] = [
   "Roller",
 ] as const;
 
+export type SportPreference = SportDiscipline | "all";
+
+export const SPORT_PREFERENCES: readonly SportPreference[] = [
+  "all",
+  ...SPORT_DISCIPLINES,
+] as const;
+
 export type SportEventStatus = "upcoming" | "live" | "completed";
 
 /**

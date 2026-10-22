@@ -10,6 +10,7 @@ import { useMapFilter } from "@/hooks/map/useMapFilter";
 import { useMapActions } from "@/components/map/hooks/use-map-actions";
 import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
+import type { SportDiscipline } from "@/types/sport-events";
 import { cn } from "@/lib/utils/cn";
 import { SignInLink } from "@/components/shell/SignInLink";
 
@@ -125,8 +126,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
   );
   const preferenceSpots = useMemo(
     () =>
-      preferredSport
-        ? scopedSpots.filter((spot) => spot.sports.includes(preferredSport))
+      preferredSport && preferredSport !== "all"
+        ? scopedSpots.filter((spot) => spot.sports.includes(preferredSport as SportDiscipline))
         : scopedSpots,
     [preferredSport, scopedSpots],
   );
@@ -267,8 +268,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
   // as the city-filtered directory (`preferenceSpots`).
   const cityRadiusScope = useMemo(() => {
     if (cityCentroid === null || cityRadiusSpots.length === 0) return NO_SPOTS;
-    return preferredSport
-      ? cityRadiusSpots.filter((s) => s.sports.includes(preferredSport))
+    return preferredSport && preferredSport !== "all"
+      ? cityRadiusSpots.filter((s) => s.sports.includes(preferredSport as SportDiscipline))
       : cityRadiusSpots;
   }, [cityCentroid, cityRadiusSpots, preferredSport]);
   const sourceSpots = useMemo(() => {

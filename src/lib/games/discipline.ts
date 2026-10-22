@@ -1,6 +1,6 @@
 import { GAME_DEFINITIONS, type GameDefinition } from "@/lib/games/definitions"
 import type { DisciplineSlug } from "@/lib/schemas/game"
-import type { SportDiscipline } from "@/types/sport-events"
+import type { SportDiscipline, SportPreference } from "@/types/sport-events"
 
 export const DISCIPLINE_META: Record<DisciplineSlug, { name: string; eliminationWord: string }> = {
   roller: { name: GAME_DEFINITIONS.roller.sportPreference, eliminationWord: GAME_DEFINITIONS.roller.eliminationWord },
@@ -25,9 +25,11 @@ export const SPORT_TO_DISCIPLINE: Record<SportDiscipline, DisciplineSlug> = {
 
 /**
  * Resolves the user's single selected sport into a game discipline.
+ * Returns null if the user has no preference or has selected "all disciplines".
  */
-export function resolveGameDiscipline(preferredSport: SportDiscipline | null): DisciplineSlug | null {
-  return preferredSport ? SPORT_TO_DISCIPLINE[preferredSport] : null
+export function resolveGameDiscipline(preferredSport: SportPreference | null): DisciplineSlug | null {
+  if (!preferredSport || preferredSport === "all") return null;
+  return SPORT_TO_DISCIPLINE[preferredSport];
 }
 
 export { GAME_DEFINITIONS, type GameDefinition, type DisciplineSlug }

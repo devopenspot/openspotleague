@@ -121,12 +121,31 @@ describe("OnboardingDialog", () => {
     expect(useUIStore.getState().isOnboardingOpen).toBe(false);
   });
 
+  it("saves guest preferences locally for 'All disciplines' and resumes the pending destination", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn();
+    useUIStore.getState().tryRun(action, "/saved");
+
+    render(<OnboardingDialog />);
+
+    await user.click(screen.getByRole("radio", { name: "All disciplines" }));
+    await user.click(screen.getByRole("button", { name: "Save & continue" }));
+
+    expect(usePreferencesStore.getState()).toMatchObject({
+      preferredSport: "all",
+      preferenceAccountId: null,
+      hasLocalChanges: true,
+    });
+    expect(action).toHaveBeenCalledOnce();
+    expect(useUIStore.getState().isOnboardingOpen).toBe(false);
+  });
+
   it("closes edit mode without changing the current route", async () => {
     const user = userEvent.setup();
     useUIStore.getState().openPreferences();
 
     render(<OnboardingDialog />);
-    await user.click(screen.getByRole("button", { name: "Back to current page" }));
+    await user.click(screen.getByRole("button", { name: "Close preferences" }));
 
     expect(useUIStore.getState().isOnboardingOpen).toBe(false);
   });

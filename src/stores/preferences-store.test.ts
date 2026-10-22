@@ -13,6 +13,9 @@ describe("user preferences", () => {
 
     usePreferencesStore.getState().setPreferredSport("Roller");
     expect(usePreferencesStore.getState().preferredSport).toBe("Roller");
+
+    usePreferencesStore.getState().setPreferredSport("all");
+    expect(usePreferencesStore.getState().preferredSport).toBe("all");
   });
 
   it("stores the selected temperature unit", () => {
@@ -59,5 +62,18 @@ describe("user preferences", () => {
       preferenceAccountId: "user-1",
       hasLocalChanges: false,
     });
+  });
+
+  it("persists and migrates 'all' as a valid preferred sport preference", () => {
+    usePreferencesStore.getState().setPreferences(
+      { distanceUnit: "mi", temperatureUnit: "C", preferredSport: "all" },
+      { accountId: "user-2", hasLocalChanges: false },
+    );
+
+    const persisted = JSON.parse(
+      localStorage.getItem("openspot-preferences") ?? "{}",
+    ) as { state?: Record<string, unknown> };
+
+    expect(persisted.state?.preferredSport).toBe("all");
   });
 });
