@@ -134,7 +134,11 @@ export function OptionChip({
       tabIndex={tabIndex}
       onKeyDown={onKeyDown}
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase ${active ? "bg-on-surface text-surface" : "border border-outline bg-surface"}`}
+      className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+        active
+          ? "border border-on-surface bg-on-surface text-surface"
+          : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
+      }`}
     >
       {label}
     </button>
@@ -383,7 +387,11 @@ export function CategoriesField({
                   });
                 }
               }}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase ${isAll ? "bg-on-surface text-surface" : "border border-outline bg-surface"}`}
+              className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+                isAll
+                  ? "border border-on-surface bg-on-surface text-surface"
+                  : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
+              }`}
             >
               All
             </button>
@@ -414,7 +422,13 @@ export function CategoriesField({
                         : undefined
                   }
                   onClick={() => onToggle(cat)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase ${active ? "bg-on-surface text-surface" : zero ? "border border-outline bg-surface-container-high text-on-surface-variant opacity-50" : "border border-outline bg-surface"}`}
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+                    active
+                      ? "border border-on-surface bg-on-surface text-surface"
+                      : zero
+                        ? "border border-outline-variant bg-surface-container-high text-on-surface-variant opacity-50 cursor-not-allowed"
+                        : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
+                  }`}
                 >
                   {cat} {hasData ? `(${count})` : ""}
                 </button>
@@ -428,7 +442,7 @@ export function CategoriesField({
               onClick={() =>
                 [...selectedCategories].forEach((c) => onToggle(c))
               }
-              className="rounded-full border border-outline-variant bg-surface-container-high px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] disabled:opacity-40"
+              className="rounded-full border border-outline-variant bg-surface-container-high px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest disabled:opacity-40"
             >
               Clear
             </button>
@@ -900,7 +914,7 @@ export function ConfigurationSummary({
   ] as const;
 
   return (
-    <aside className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 lg:top-24 mb-4">
+    <aside className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 lg:top-24 mb-4 text-on-surface">
       <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
         Your setup
       </p>
@@ -913,7 +927,7 @@ export function ConfigurationSummary({
             <dt className="text-xs leading-5 text-on-surface-variant">
               {label}
             </dt>
-            <dd className="max-w-[10rem] text-right font-display text-sm font-bold uppercase leading-5">
+            <dd className="max-w-[10rem] text-right font-display text-sm font-bold uppercase leading-5 text-on-surface">
               {value}
             </dd>
           </div>

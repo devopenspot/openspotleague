@@ -125,7 +125,7 @@ function ListBody({
               className="grid gap-2 transition-transform hover:translate-x-1 sm:contents"
             >
               <span>
-                <span className="block font-display text-2xl font-bold uppercase">
+                <span className="block font-display text-2xl font-bold uppercase text-on-surface">
                   {game.status}
                 </span>
                 <span className="font-display text-xs uppercase tracking-[0.08em] text-secondary">
@@ -150,7 +150,7 @@ function ListBody({
                     ? "No schedule"
                     : ""}
               </span>
-              <span className="font-display text-xl" aria-hidden>
+              <span className="font-display text-xl text-on-surface" aria-hidden>
                 ↗
               </span>
             </Link>

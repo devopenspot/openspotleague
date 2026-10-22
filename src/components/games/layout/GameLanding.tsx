@@ -121,7 +121,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <div className="flex flex-1 flex-col bg-gradient-primary text-on-primary px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
+      <div className="flex flex-1 flex-col bg-gradient-primary px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
           <div className={`z-30 py-2`}>
             <div className={`mx-auto flex justify-center max-w-6xl gap-2`}>
@@ -283,7 +283,7 @@ function LandingInfo({
     <div className={`space-y-4 mt-4 sm:mt-8`}>
       {/* Current discipline — single, preferred sport only */}
       <div
-        className={`rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5`}
+        className={`rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 text-on-surface`}
       >
         <div className={`flex flex-wrap items-start justify-between gap-3`}>
           <div className={`min-w-0`}>
@@ -306,7 +306,7 @@ function LandingInfo({
           {discipline && eliminationWord ? (
             <span
               aria-label={UI_TEMPLATES.eliminationWordAria(eliminationWord)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em]`}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-surface`}
             >
               <span className={`tracking-[0.18em]`}>{eliminationWord}</span>
               <span

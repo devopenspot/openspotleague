@@ -288,7 +288,7 @@ export function ChallengeSettingsFields({
                         type="button"
                         disabled={busy}
                         onClick={() => onCategoriesVote(false)}
-                        className="rounded-full border border-outline-variant bg-surface px-4 py-1.5 text-[11px] font-bold uppercase disabled:opacity-50 sm:text-xs"
+                        className="rounded-full border border-outline-variant bg-surface px-4 py-1.5 text-[11px] font-bold uppercase text-on-surface transition-colors hover:bg-surface-container disabled:opacity-50 sm:text-xs"
                       >
                         Reject
                       </button>
