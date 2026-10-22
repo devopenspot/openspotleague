@@ -427,13 +427,36 @@ export function TvPlayerModal({
         className="relative z-10 flex h-dvh w-full flex-col bg-black"
       >
         {/* Top bar — compact in landscape so the stage keeps max height */}
-        <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
-          <h2 className="font-display text-[10px] font-bold uppercase tracking-wider text-white/70">
-            {videoFormattedDate}
-          </h2>
-          <button
-            type="button"
-            onClick={handlePrev}
+        <div className="flex shrink-0 items-center justify-between gap-1.5 sm:gap-2 border-b border-white/10 bg-black px-3 py-2 sm:px-4 sm:py-3 landscape:py-1 landscape:sm:py-1">
+          <div className="hidden sm:flex min-w-0 flex-1 items-center gap-2">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full bg-white"
+              aria-hidden="true"
+            />
+            <div className="min-w-0 flex-1">
+              <p
+                id={titleId}
+                className="truncate font-display text-[10px] font-bold uppercase tracking-widest text-white/90 sm:text-[11px]"
+              >
+                Now Playing — {disciplineLabel}
+                {categoryLabel ? ` · ${categoryLabel}` : ""}
+              </p>
+              <p
+                id={descId}
+                className="truncate text-[11px] font-semibold leading-tight text-white sm:text-xs landscape:hidden"
+              >
+                {renderVideo.title}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+            <h2 className="font-display text-[10px] font-bold uppercase tracking-wider text-white/70">
+              {videoFormattedDate}
+            </h2>
+            <button
+              type="button"
+              onClick={handlePrev}
             disabled={!hasPrev || isClosing}
             aria-label="Previous video"
             title="Previous video"
@@ -500,6 +523,7 @@ export function TvPlayerModal({
             <X size={16} aria-hidden="true" />
           </button>
         </div>
+      </div>
 
         {/* Stage — own compositor layer; only opacity fades (no filter/scale on the video box).
             Portrait: width-driven, anchored top on mobile. Landscape: cinema mode without chrome squeeze. */}

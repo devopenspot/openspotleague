@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { getSessionUser } from "@/lib/auth/server";
-import { getPreferences } from "@/lib/services/profile/preferences";
 import { findTvCardById, listTvCategoryRows } from "@/lib/services/tv/tv";
 import { listSports } from "@/lib/services/taxonomy/taxonomy";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
@@ -107,15 +105,16 @@ export default async function TvPage({
   searchParams: Promise<TvSearchParams>;
 }) {
   await connection();
-  const resolved = await searchParams;
+  const [resolved, disciplines] = await Promise.all([
+    searchParams,
+    withSafeDefault(
+      () => listSports(),
+      [] as Awaited<ReturnType<typeof listSports>>,
+      "listSports-tv",
+    ),
+  ]);
   const rawParam = firstParam(resolved.discipline);
   const playId = firstParam(resolved.play) ?? firstParam(resolved.v) ?? null;
-
-  const disciplines = await withSafeDefault(
-    () => listSports(),
-    [] as Awaited<ReturnType<typeof listSports>>,
-    "listSports-tv",
-  );
 
   // disciplines may be objects with slug/name or just slugs — normalize
   const normalized = (
@@ -126,40 +125,17 @@ export default async function TvPage({
   }));
 
   // URL is the source of truth: a valid ?discipline= filters server-side
-  // (one shared cache entry per discipline). Otherwise fall back to the
-  // signed-in preference, else unfiltered. The effective discipline drives
-  // BOTH the rows query and initialDiscipline so the pill and grid agree
-  // on first paint.
+  // (one shared cache entry per discipline). Otherwise initial load renders
+  // all sports / default catalog, and client smoothly activates preference.
   const urlDiscipline = resolveDisciplineParam(
     rawParam,
     normalized.map((d) => d.slug),
   );
 
   const isExplicitAll = rawParam?.trim().toLowerCase() === "all";
-
-  let prefDiscipline: string | null = null;
-  if (!urlDiscipline && !isExplicitAll) {
-    const sessionUser = await withSafeDefault(
-      () => getSessionUser(),
-      null as Awaited<ReturnType<typeof getSessionUser>>,
-      "getSessionUser-tv",
-    );
-    if (sessionUser) {
-      const prefs = await withSafeDefault(
-        () => getPreferences(sessionUser.id),
-        null as Awaited<ReturnType<typeof getPreferences>> | null,
-        "getPreferences-tv",
-      );
-      const slug = prefs?.disciplineSlug?.toLowerCase() ?? null;
-      if (slug && normalized.some((d) => d.slug.toLowerCase() === slug)) {
-        prefDiscipline = slug;
-      }
-    }
-  }
-
   const initialDiscipline = isExplicitAll
     ? "all"
-    : (urlDiscipline ?? prefDiscipline ?? null);
+    : (urlDiscipline ?? null);
   const effectiveDiscipline =
     initialDiscipline === "all" ? undefined : (initialDiscipline ?? undefined);
 

@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { listTvCardPage, findTvCardById, findTvCardsByIds } from "@/lib/services/tv/tv";
+import {
+  listTvCardPage,
+  findTvCardById,
+  findTvCardsByIds,
+  listTvCategoryRows,
+} from "@/lib/services/tv/tv";
 import { TV_CARD_BATCH_MAX } from "@/types/tv";
 
 const TV_PAGE_LIMIT_MAX = 50;
@@ -15,8 +20,22 @@ export async function GET(request: Request) {
   const idsParam = searchParams.get("ids")?.trim() || undefined;
   const limitParam = searchParams.get("limit")?.trim() || undefined;
   const cursor = searchParams.get("cursor")?.trim() || undefined;
+  const rowsParam = searchParams.get("rows");
 
   try {
+    // Category rows batch for client-side discipline switching without RSC refetch.
+    if (rowsParam === "true") {
+      const rows = await listTvCategoryRows(
+        disciplineSlug ? disciplineSlug.toLowerCase() : undefined,
+      );
+      const res = NextResponse.json({ rows });
+      res.headers.set(
+        "Cache-Control",
+        "public, s-maxage=300, stale-while-revalidate=600",
+      );
+      return res;
+    }
+
     // Single public card (theater deep-links, cross-page queue nav).
     if (id) {
       if (!TV_ID_SHAPE.test(id)) {

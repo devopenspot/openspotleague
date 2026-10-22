@@ -4,11 +4,13 @@ import { NextRequest } from "next/server"
 const listTvCardPageMock = vi.fn()
 const findTvCardByIdMock = vi.fn()
 const findTvCardsByIdsMock = vi.fn()
+const listTvCategoryRowsMock = vi.fn()
 
 vi.mock("@/lib/services/tv/tv", () => ({
   listTvCardPage: (...args: unknown[]) => listTvCardPageMock(...args),
   findTvCardById: (...args: unknown[]) => findTvCardByIdMock(...args),
   findTvCardsByIds: (...args: unknown[]) => findTvCardsByIdsMock(...args),
+  listTvCategoryRows: (...args: unknown[]) => listTvCategoryRowsMock(...args),
 }))
 
 import { GET } from "./route"
@@ -105,6 +107,24 @@ describe("GET /api/tv", () => {
     it("rejects an empty window with 400", async () => {
       const res = await GET(makeRequest("?ids=,"))
       expect(res.status).toBe(400)
+    })
+  })
+
+  describe("?rows=true batch branch", () => {
+    it("returns category rows for client-side discipline hydration", async () => {
+      const rows = [
+        {
+          category: "street",
+          videos: [{ id: "v1" }],
+          nextCursor: null,
+          total: 1,
+        },
+      ]
+      listTvCategoryRowsMock.mockResolvedValue(rows)
+      const res = await GET(makeRequest("?rows=true&discipline=bmx"))
+      expect(res.status).toBe(200)
+      expect(await res.json()).toEqual({ rows })
+      expect(listTvCategoryRowsMock).toHaveBeenCalledWith("bmx")
     })
   })
 })

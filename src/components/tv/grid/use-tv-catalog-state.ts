@@ -26,6 +26,23 @@ export function useTvCatalogState({
     setExtraCards([]);
   }, []);
 
+  // In-memory cache of discipline rows to ensure 0ms instant tab switching
+  const [cachedRowsByDiscipline, setCachedRowsByDiscipline] = useState<
+    Record<string, readonly TvCategoryRow[]>
+  >(() => (rows && rows.length > 0 ? { [discipline]: rows } : {}));
+
+  // Adjust state during render when rows prop changes (React recommended pattern)
+  const [prevRows, setPrevRows] = useState(rows);
+  if (rows !== prevRows) {
+    setPrevRows(rows);
+    if (rows && rows.length > 0) {
+      setCachedRowsByDiscipline((prev) => ({
+        ...prev,
+        [discipline]: rows,
+      }));
+    }
+  }
+
   const prevDisciplineRef = useRef(discipline);
   useEffect(() => {
     if (prevDisciplineRef.current !== discipline) {
@@ -65,11 +82,12 @@ export function useTvCatalogState({
 
   // Rows with per-category appended pages merged.
   const categoryRows = useMemo(() => {
+    const activeRows = cachedRowsByDiscipline[discipline] ?? rows;
     const needle = discipline === "all" ? null : discipline.toLowerCase();
     const matches = (v: TvCard) =>
       !needle || v.disciplineSlug.toLowerCase() === needle;
 
-    return rows.map((row) => {
+    return activeRows.map((row) => {
       const base = row.videos.filter(matches);
       const appended = (appendedByCategory[row.category] ?? []).filter(matches);
       const effectiveCursor =
@@ -98,7 +116,7 @@ export function useTvCatalogState({
         nextCursor: effectiveCursor,
       };
     });
-  }, [rows, appendedByCategory, updatedCursors, discipline]);
+  }, [rows, appendedByCategory, updatedCursors, discipline, cachedRowsByDiscipline]);
 
   // Loaded videos for theater lookup & queue
   const videos = useMemo(() => {

@@ -62,11 +62,10 @@ export function useTvDisciplineState({
       manualSlugRef.current = slug;
       pendingManualRef.current = slug;
       if (typeof window !== "undefined") {
+        const next = withDisciplineParam(pathname, window.location.search, slug);
+        window.history.replaceState(null, "", next);
         startTransition(() => {
-          router.replace(
-            withDisciplineParam(pathname, window.location.search, slug),
-            { scroll: false },
-          );
+          router.replace(next, { scroll: false });
         });
       }
     },
@@ -80,10 +79,10 @@ export function useTvDisciplineState({
     setPendingDiscipline(null);
   }, [rows]);
 
-  // Safety net — an offline/failed refetch must never stick the loader.
+  // Safety net — an offline/slow refetch must never stick the loader.
   useEffect(() => {
     if (!pendingDiscipline) return;
-    const t = window.setTimeout(() => setPendingDiscipline(null), 8000);
+    const t = window.setTimeout(() => setPendingDiscipline(null), 3000);
     return () => window.clearTimeout(t);
   }, [pendingDiscipline]);
 
@@ -124,6 +123,28 @@ export function useTvDisciplineState({
     // eslint-disable-next-line react-hooks/set-state-in-effect -- back/forward sync is intentional
     setDiscipline(resolved);
   }, [urlDiscipline, disciplines, discipline]);
+
+  // Sync browser back/forward history events directly
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window === "undefined") return;
+      const search = window.location.search;
+      const params = new URLSearchParams(
+        search.startsWith("?") ? search.slice(1) : search,
+      );
+      const discParam = params.get("discipline");
+      const resolved =
+        resolveDisciplineParam(
+          discParam,
+          disciplines.map((d) => d.slug),
+        ) ?? "all";
+      if (resolved !== discipline) {
+        setDiscipline(resolved);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [disciplines, discipline]);
 
   // Authoritative discipline convergence
   useEffect(() => {
