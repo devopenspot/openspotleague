@@ -130,6 +130,22 @@ describe("GameLanding", () => {
     expect(matchesButton).toHaveAttribute("aria-controls", "matches-drawer")
   })
 
+  it("renders active and recent matches section when signed in", () => {
+    render(<GameLanding signedIn />)
+
+    expect(
+      screen.getByRole("heading", { name: "Active & Recent" }),
+    ).toBeInTheDocument()
+  })
+
+  it("does not render active and recent matches section when signed out", () => {
+    render(<GameLanding signedIn={false} />)
+
+    expect(
+      screen.queryByRole("heading", { name: "Active & Recent" }),
+    ).not.toBeInTheDocument()
+  })
+
   it("exposes game rules and rider policy modal triggers from LandingInfo", async () => {
     const user = userEvent.setup()
     render(<GameLanding signedIn={false} />)

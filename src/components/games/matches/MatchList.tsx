@@ -109,7 +109,7 @@ function ListBody({
     );
   }
   return (
-    <div className="divide-y divide-outline">
+    <div className="divide-y divide-outline-variant">
       {games.map((game) => {
         const meta = game.disciplineSlug
           ? DISCIPLINE_META[game.disciplineSlug as DisciplineSlug]

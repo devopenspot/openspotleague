@@ -13,6 +13,7 @@ import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
 import { ResponsibilityPolicyModal } from "@/components/games/shared/ResponsibilityPolicyModal";
+import { MatchList } from "@/components/games/matches/MatchList";
 import {
   RiderActivityBoard,
   useRiderActivity,
@@ -166,6 +167,34 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               <GameCreateForm signedIn={signedIn} initialPrefill={prefill} />
             </div>
           </section>
+          {signedIn ? (
+            <section
+              aria-labelledby="recent-matches-title"
+              className="mt-6 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-5 sm:p-6 text-on-surface shadow-[0_8px_24px_rgba(18,18,18,0.06)]"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
+                <div>
+                  <p className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+                    Your matches
+                  </p>
+                  <h2
+                    id="recent-matches-title"
+                    className="mt-1 font-display text-2xl font-bold uppercase leading-none"
+                  >
+                    Active & Recent
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMatchesOpen(true)}
+                  className="inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container px-3.5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                >
+                  View all
+                </button>
+              </div>
+              <MatchList bare limit={5} />
+            </section>
+          ) : null}
         </div>
       </div>
       <RulesModal isOpen={rulesOpen} onClose={() => setRulesOpen(false)} />
