@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { Search, X } from "lucide-react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, useRouter, usePathname, type ReadonlyURLSearchParams } from "next/navigation";
 import { Overlay } from "@/components/feedback/Overlay";
 import { SEARCH_FOCUS_DELAY_MS } from "@/lib/config/constants";
 import { ROUTES } from "@/lib/navigation/nav";
@@ -109,6 +109,12 @@ export function SearchOverlay({
     [userLocation, distanceUnit],
   );
 
+  const filterSearchParams = useMemo(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("spot");
+    return params as unknown as ReadonlyURLSearchParams;
+  }, [searchParams]);
+
   const {
     region,
     country,
@@ -123,7 +129,7 @@ export function SearchOverlay({
     commitCountryAll,
     commit,
     cancelPending,
-  } = useMapFilter(scopedSpots, searchParams, {
+  } = useMapFilter(scopedSpots, filterSearchParams, {
     targetPath: ROUTES.map,
     defer: true,
   });

@@ -403,18 +403,34 @@ export default function MapTab({ searchParams }: MapTabProps) {
   // Focus takes absolute precedence for the initial viewport — shared link
   // must centre on the tapped spot, not on viewportPoints[0] order.
   const FOCUS_ZOOM = 13;
+  const cityFocusCenter = useMemo<[number, number] | null>(() => {
+    if (!city) return null;
+    if (cityCentroid) return [cityCentroid.lat, cityCentroid.lon];
+    const firstCitySpot =
+      citySpots[0] ?? filteredSpots.find((s) => s.citySlug === city);
+    if (firstCitySpot) {
+      return [firstCitySpot.location.lat, firstCitySpot.location.lon];
+    }
+    if (viewportPoints[0]) return viewportPoints[0];
+    return null;
+  }, [city, cityCentroid, citySpots, filteredSpots, viewportPoints]);
+
   const initialCenter: [number, number] = hasFocus
     ? [focusedSpot!.location.lat, focusedSpot!.location.lon]
     : nearYou && userLatLon
       ? [userLatLon.lat, userLatLon.lon]
-      : viewportPoints[0]
-        ? viewportPoints[0]
-        : [20, 0];
+      : cityFocusCenter
+        ? cityFocusCenter
+        : viewportPoints[0]
+          ? viewportPoints[0]
+          : [20, 0];
   const initialZoom = hasFocus
     ? FOCUS_ZOOM
     : nearYou
       ? NEAR_YOU_INITIAL_ZOOM
-      : 2;
+      : city !== null
+        ? FOCUS_ZOOM
+        : 2;
 
   // When the map's viewport controller is ready, centre it on the focused
   // spot and reveal its popup. Separate from initialCenter so client-side
@@ -427,6 +443,30 @@ export default function MapTab({ searchParams }: MapTabProps) {
     setActivePin(focusedSpot.id);
     flyToSpot(focusedSpot);
   }, [focusedSpot, hasFocus, setActivePin, flyToSpot]);
+
+  // When a city is selected, ensure the map recenters according to the
+  // city filter once viewport points or city spots are ready.
+  const lastFittedCityScopeRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (hasFocus || nearYou || savedModeActive || !city) {
+      lastFittedCityScopeRef.current = null;
+      return;
+    }
+    if (viewportPoints.length === 0) return;
+    const currentScope = `${region ?? ""}::${country ?? ""}::${city}::${viewportPoints.length}`;
+    if (lastFittedCityScopeRef.current === currentScope) return;
+    lastFittedCityScopeRef.current = currentScope;
+    fitBoundsToVisibleItems();
+  }, [
+    city,
+    country,
+    fitBoundsToVisibleItems,
+    hasFocus,
+    nearYou,
+    region,
+    savedModeActive,
+    viewportPoints,
+  ]);
 
   // Minimalist feedback: when Events layer is on but the current region+country has zero events,
   // surface a single info toast per selection (deduped by region::country).
@@ -710,6 +750,10 @@ export default function MapTab({ searchParams }: MapTabProps) {
               initialCenter={initialCenter}
               initialZoom={initialZoom}
               disableInitialFit={hasFocus}
+              selectedCity={city}
+              cityCentroid={
+                cityCentroid ? [cityCentroid.lat, cityCentroid.lon] : null
+              }
             />
             <MapInfoPopup events={filteredEvents} />
             {scopeLabel && (

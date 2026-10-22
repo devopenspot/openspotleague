@@ -186,6 +186,91 @@ interface LeafletCanvasProps {
   initialCenter?: [number, number];
   initialZoom?: number;
   disableInitialFit?: boolean;
+  selectedCity?: string | null;
+  cityCentroid?: [number, number] | null;
+}
+
+function MapCityRecenterController({
+  selectedCity,
+  cityCentroid,
+  viewportPoints,
+}: {
+  selectedCity?: string | null;
+  cityCentroid?: [number, number] | null;
+  viewportPoints: readonly [number, number][];
+}) {
+  const map = useMap();
+  const lastRecenterKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedCity) {
+      lastRecenterKeyRef.current = null;
+      return;
+    }
+
+    const key = `${selectedCity}:${viewportPoints.length}:${cityCentroid ? cityCentroid.join(",") : ""}`;
+    if (lastRecenterKeyRef.current === key) return;
+
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const performRecenter = () => {
+      try {
+        const container = map.getContainer();
+        if (!container || !container.isConnected) return;
+        const size = map.getSize();
+        if (size.x === 0 || size.y === 0) return;
+
+        if (viewportPoints.length === 1 && viewportPoints[0]) {
+          lastRecenterKeyRef.current = key;
+          if (prefersReducedMotion) {
+            map.setView(viewportPoints[0], USER_FOCUS_ZOOM);
+          } else {
+            map.flyTo(viewportPoints[0], USER_FOCUS_ZOOM, { duration: 0.6 });
+          }
+          return;
+        }
+
+        if (viewportPoints.length > 1) {
+          lastRecenterKeyRef.current = key;
+          const bounds = L.latLngBounds([...viewportPoints]);
+          if (bounds.isValid()) {
+            if (prefersReducedMotion) {
+              map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            } else {
+              map.flyToBounds(bounds, {
+                padding: [40, 40],
+                maxZoom: 15,
+                duration: 0.6,
+              });
+            }
+          }
+          return;
+        }
+
+        if (cityCentroid) {
+          lastRecenterKeyRef.current = key;
+          if (prefersReducedMotion) {
+            map.setView(cityCentroid, USER_FOCUS_ZOOM);
+          } else {
+            map.flyTo(cityCentroid, USER_FOCUS_ZOOM, { duration: 0.6 });
+          }
+        }
+      } catch (error) {
+        if (process.env.NODE_ENV === "development") {
+          log.warn("[leaflet] city recenter failed:", error as unknown as never);
+        }
+      }
+    };
+
+    map.whenReady(() => {
+      if (typeof window === "undefined") return;
+      window.requestAnimationFrame(performRecenter);
+    });
+  }, [cityCentroid, map, selectedCity, viewportPoints]);
+
+  return null;
 }
 
 class LeafletErrorBoundary extends Component<
@@ -223,6 +308,8 @@ export function LeafletCanvas({
   initialCenter,
   initialZoom,
   disableInitialFit = false,
+  selectedCity,
+  cityCentroid,
 }: LeafletCanvasProps) {
   const activeId = useMapStore((s) => s.activePinId);
   const activeEventId = useMapStore((s) => s.activeEventId);
@@ -326,6 +413,11 @@ export function LeafletCanvas({
           viewportPoints={viewportPoints}
           userLocation={userLocation}
           disableInitialFit={disableInitialFit}
+        />
+        <MapCityRecenterController
+          selectedCity={selectedCity}
+          cityCentroid={cityCentroid}
+          viewportPoints={viewportPoints}
         />
         <ZoomListener onZoomChange={setZoom} />
         {items.map((item) =>
