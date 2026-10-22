@@ -177,11 +177,19 @@ export function GameFormatSettings({
   void _clearFieldError;
   const controlId = (id: string) => getControlId(idPrefix, id);
 
+  const trickSettingsLabelId = controlId("trick-settings-label");
   return (
-    <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-      <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+    <div
+      role="group"
+      aria-labelledby={trickSettingsLabelId}
+      className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+    >
+      <p
+        id={trickSettingsLabelId}
+        className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+      >
         Trick settings
-      </legend>
+      </p>
       <div className="mt-4 space-y-6">
         <div>
           <div className="flex items-baseline justify-between gap-3">
@@ -308,7 +316,7 @@ export function GameFormatSettings({
           </div>
         </div>
       </div>
-    </fieldset>
+    </div>
   );
 }
 
@@ -335,10 +343,17 @@ export function CategoriesField({
 }) {
   const isAll = selectedCategories.length === 0;
   return (
-    <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-      <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+    <div
+      role="group"
+      aria-labelledby="categories-field-label"
+      className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+    >
+      <p
+        id="categories-field-label"
+        className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+      >
         Categories
-      </legend>
+      </p>
       {categories.length === 0 ? (
         <p className="mt-2 text-xs leading-5 text-on-surface-variant">
           No categories configured for this discipline — tricks will be drawn
@@ -437,7 +452,7 @@ export function CategoriesField({
           </p>
         </>
       )}
-    </fieldset>
+    </div>
   );
 }
 
@@ -511,13 +526,17 @@ export function ChallengeTimeStep({
           every active rider is ready.
         </p>
       </div>
-      <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-        <legend
+      <div
+        role="group"
+        aria-labelledby={startLabelId}
+        className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+      >
+        <p
           id={startLabelId}
-          className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+          className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
         >
           Challenge start
-        </legend>
+        </p>
         <div
           className="mt-3 flex flex-wrap gap-2"
           role="radiogroup"
@@ -543,7 +562,7 @@ export function ChallengeTimeStep({
           {timezone ? ` (${timezone})` : ""}. The selected start is shared with
           every rider in the lobby.
         </p>
-      </fieldset>
+      </div>
       <p className="border-t border-outline-variant pt-4 text-sm leading-6 text-on-surface-variant">
         Every joined rider must be signed in and verified at the registered spot
         before the challenge can start. The start window includes a 15-minute
@@ -619,10 +638,17 @@ export function ChallengeSpotStep({
                 </span>
               )}
             </div>
-            <fieldset className="mt-4 border-t border-outline-variant pt-3">
-              <legend className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+            <div
+              role="group"
+              aria-labelledby="confirm-spot-label"
+              className="mt-4 border-t border-outline-variant pt-3"
+            >
+              <p
+                id="confirm-spot-label"
+                className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+              >
                 Is this the spot you want to use?
-              </legend>
+              </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -647,7 +673,7 @@ export function ChallengeSpotStep({
                   spot.
                 </p>
               ) : null}
-            </fieldset>
+            </div>
           </div>
         ) : (
           <div className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low px-3 py-4 text-sm leading-5 text-on-surface-variant">
@@ -748,15 +774,21 @@ export function WeatherConfirmSection({
           </p>
         </div>
 
-        <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-          <legend className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+        <div
+          role="group"
+          aria-labelledby={confirmedGroupId}
+          className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4"
+        >
+          <p
+            id={confirmedGroupId}
+            className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+          >
             Is the forecast correct right now?
-          </legend>
+          </p>
           <div
             className="mt-3 flex flex-wrap gap-2"
             role="radiogroup"
             aria-labelledby={confirmedGroupId}
-            id={confirmedGroupId}
           >
             <button
               type="button"
@@ -780,18 +812,24 @@ export function WeatherConfirmSection({
             </button>
           </div>
           {fieldError ? <FieldError>{fieldError}</FieldError> : null}
-        </fieldset>
+        </div>
 
         {weatherConfirmed === false ? (
-          <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-            <legend className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+          <div
+            role="group"
+            aria-labelledby={observedGroupId}
+            className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4"
+          >
+            <p
+              id={observedGroupId}
+              className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+            >
               Select the live weather you see
-            </legend>
+            </p>
             <div
               className="mt-3 flex flex-wrap gap-2"
               role="radiogroup"
               aria-labelledby={observedGroupId}
-              id={observedGroupId}
             >
               {WEATHER_LIVE_OPTIONS.map((option) => (
                 <button
@@ -815,7 +853,7 @@ export function WeatherConfirmSection({
             {observedFieldError ? (
               <FieldError>{observedFieldError}</FieldError>
             ) : null}
-          </fieldset>
+          </div>
         ) : null}
       </div>
     </Field>

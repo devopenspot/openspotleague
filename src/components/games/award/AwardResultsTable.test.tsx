@@ -96,6 +96,19 @@ describe("AwardResultsTable", () => {
     expect(screen.getByText("Championship results — ranked by points")).toBeInTheDocument();
   });
 
+  it("does not tie rank 1 when winner and eliminated player both have 0 points", () => {
+    const game = gameFixture({
+      winnerPlayerId: "p1",
+      players: [
+        makePlayer({ id: "p1", displayName: "Winner", status: "active", seatOrder: 0 }),
+        makePlayer({ id: "p2", displayName: "RunnerUp", status: "eliminated", letters: "BIKE", seatOrder: 1 }),
+      ],
+      stageLedger: [],
+    });
+    const result = buildAwardResult(game);
+    expect(result.ranking.map((r) => r.rank)).toEqual([1, 2]);
+  });
+
   it("solo renders single card, no rank column", () => {
     const solo = gameFixture({
       mode: "training",

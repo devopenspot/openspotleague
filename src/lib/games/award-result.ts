@@ -121,25 +121,31 @@ function buildRows(
   });
 
   // dense ranking: tied on points share rank, next rank = prevRank+1 (not index+1)
+  // An eliminated rider must not share rank 1 with an active winner even if both have 0 points.
   const ranked: AwardResultRow[] = [];
-  let prevPoints: number | null = null;
+  let prevRow: AwardResultRow | null = null;
   let prevRank = 1;
   for (let i = 0; i < rows.length; i += 1) {
     const row = rows[i];
     if (!row) continue;
     let rank: number;
+    const isTie =
+      prevRow !== null &&
+      row.points === prevRow.points &&
+      row.eliminated === prevRow.eliminated;
+
     if (i === 0) {
       rank = 1;
       prevRank = 1;
-      prevPoints = row.points;
-    } else if (row.points === prevPoints) {
+    } else if (isTie) {
       rank = prevRank;
     } else {
       rank = prevRank + 1;
       prevRank = rank;
-      prevPoints = row.points;
     }
-    ranked.push({ ...row, rank });
+    const rankedRow: AwardResultRow = { ...row, rank };
+    ranked.push(rankedRow);
+    prevRow = rankedRow;
   }
   return ranked;
 }

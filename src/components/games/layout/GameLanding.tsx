@@ -120,7 +120,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <div className="flex flex-1 flex-col bg-gradient-to-b from-cyan-400 via-teal-400 to-teal-600 px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
+      <div className="flex flex-1 flex-col bg-gradient-primary text-on-primary px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
           <div className={`z-30 py-2`}>
             <div className={`mx-auto flex justify-center max-w-6xl gap-2`}>

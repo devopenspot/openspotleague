@@ -336,7 +336,7 @@ describe("game Header", () => {
       "href",
       "/games",
     );
-    await user.click(screen.getByRole("button", { name: "Back To Spot" }));
+    await user.click(screen.getByRole("button", { name: "Back" }));
 
     expect(onBackToChallenges).toHaveBeenCalledOnce();
   });

@@ -1146,17 +1146,17 @@ export function GameCreateForm({
             noValidate
             className="min-w-0 space-y-6"
           >
-            <fieldset
+            <div
               role="group"
               aria-labelledby="game-mode-label"
               className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
             >
-              <legend
+              <p
                 id="game-mode-label"
-                className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
               >
                 Game mode
-              </legend>
+              </p>
               <div
                 className="mt-3 flex flex-wrap gap-2"
                 role="radiogroup"
@@ -1210,7 +1210,7 @@ export function GameCreateForm({
                   ? "Open play. No schedule or location check."
                   : "Scheduled play at a registered spot."}
               </p>
-            </fieldset>
+            </div>
 
             {!signedIn ? (
               <p className="-mt-3 text-sm leading-6 text-on-primary">
@@ -1514,10 +1514,17 @@ export function GameCreateForm({
                     onChange={handleGuestNicknameChange}
                   />
                 ) : null}
-                <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+                <div
+                  role="group"
+                  aria-labelledby="mobile-challenge-rule-mode-label"
+                  className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+                >
+                  <p
+                    id="mobile-challenge-rule-mode-label"
+                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                  >
                     Rule mode
-                  </legend>
+                  </p>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                     Flexible: leader can move on. Strict: challenge stays open.
                   </p>
@@ -1541,7 +1548,7 @@ export function GameCreateForm({
                       onClick={() => setRuleMode("strict")}
                     />
                   </div>
-                </fieldset>
+                </div>
               </div>
             ) : setupStep === "trick" ? (
               <div className="space-y-6">
@@ -1586,10 +1593,17 @@ export function GameCreateForm({
                     filtered to this spot.
                   </p>
                 ) : null}
-                <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+                <div
+                  role="group"
+                  aria-labelledby="mobile-challenge-spot-type-label"
+                  className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+                >
+                  <p
+                    id="mobile-challenge-spot-type-label"
+                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                  >
                     Spot type
-                  </legend>
+                  </p>
                   {optionsLoading ? (
                     <div
                       className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
@@ -1628,11 +1642,18 @@ export function GameCreateForm({
                   {fieldErrors.spotType ? (
                     <FieldError>{fieldErrors.spotType}</FieldError>
                   ) : null}
-                </fieldset>
-                <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+                </div>
+                <div
+                  role="group"
+                  aria-labelledby="mobile-challenge-level-label"
+                  className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+                >
+                  <p
+                    id="mobile-challenge-level-label"
+                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                  >
                     Level
-                  </legend>
+                  </p>
                   <div
                     className="mt-3 flex flex-wrap gap-2"
                     role="radiogroup"
@@ -1669,7 +1690,7 @@ export function GameCreateForm({
                   {fieldErrors.level ? (
                     <FieldError>{fieldErrors.level}</FieldError>
                   ) : null}
-                </fieldset>
+                </div>
                 <CategoriesField
                   categories={availableCategories}
                   selectedCategories={selectedCategories}
@@ -1839,10 +1860,17 @@ export function GameCreateForm({
             )
           ) : setupStep === "settings" ? (
             <div className="space-y-6">
-              <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+              <div
+                role="group"
+                aria-labelledby="mobile-training-rule-mode-label"
+                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+              >
+                <p
+                  id="mobile-training-rule-mode-label"
+                  className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                >
                   Rule mode
-                </legend>
+                </p>
                 <p className="mt-1 text-xs leading-5 text-on-surface-variant">
                   Flexible: leader can move on. Strict: challenge stays open.
                 </p>
@@ -1866,7 +1894,7 @@ export function GameCreateForm({
                     onClick={() => setRuleMode("strict")}
                   />
                 </div>
-              </fieldset>
+              </div>
             </div>
           ) : setupStep === "trick" ? (
             <div className="space-y-6">
@@ -1911,10 +1939,17 @@ export function GameCreateForm({
                   filtered to this spot.
                 </p>
               ) : null}
-              <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+              <div
+                role="group"
+                aria-labelledby="challenge-step-spot-type-label"
+                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+              >
+                <p
+                  id="challenge-step-spot-type-label"
+                  className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                >
                   Spot type
-                </legend>
+                </p>
                 {optionsLoading ? (
                   <div
                     className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
@@ -1953,11 +1988,18 @@ export function GameCreateForm({
                 {fieldErrors.spotType ? (
                   <FieldError>{fieldErrors.spotType}</FieldError>
                 ) : null}
-              </fieldset>
-              <fieldset className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                <legend className="px-1 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+              </div>
+              <div
+                role="group"
+                aria-labelledby="challenge-step-level-label"
+                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+              >
+                <p
+                  id="challenge-step-level-label"
+                  className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                >
                   Level
-                </legend>
+                </p>
                 <div
                   className="mt-3 flex flex-wrap gap-2"
                   role="radiogroup"
@@ -1993,7 +2035,7 @@ export function GameCreateForm({
                 {fieldErrors.level ? (
                   <FieldError>{fieldErrors.level}</FieldError>
                 ) : null}
-              </fieldset>
+              </div>
               <CategoriesField
                 categories={availableCategories}
                 selectedCategories={selectedCategories}
