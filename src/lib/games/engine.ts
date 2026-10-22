@@ -23,6 +23,7 @@ export type EngineOptions = {
   chooseRotation?: (playerIds: readonly string[]) => readonly string[]
   usedTrickIds?: readonly string[]
   catalog?: TrickCatalog
+  seed?: string | number
 }
 
 const defaultIdFactory = () => crypto.randomUUID()
@@ -154,7 +155,7 @@ function applyStoredChallengeSettings(state: GameState, round: Round, options: E
     ...round,
     spotType: state.nextSpotType,
     level: state.nextLevel,
-    trick: selectTrickForSpotType(options.catalog, state.nextSpotType, state.nextLevel, options.usedTrickIds, state.selectedCategories),
+    trick: selectTrickForSpotType(options.catalog, state.nextSpotType, state.nextLevel, options.usedTrickIds, state.selectedCategories, options.seed ?? state.id),
     status: round.status === "verifying_location" ? "verifying_location" : "challenge_open",
   }
 }
@@ -321,7 +322,7 @@ export function startSoloTraining(
   })
 }
 
-function immediateTrickUpdate(_state: GameState, round: Round, spotType: string, level: TrickLevel | null, categories: readonly string[] | null, catalog: TrickCatalog, usedTrickIds: readonly string[]): Round {
+function immediateTrickUpdate(state: GameState, round: Round, spotType: string, level: TrickLevel | null, categories: readonly string[] | null, catalog: TrickCatalog, usedTrickIds: readonly string[]): Round {
   if (level === null) return { ...round, spotType, level, trick: null, status: "selecting_level" as const, blockedReason: null }
   if (!hasCompatible(catalog, spotType, level, categories)) {
     return { ...round, spotType, level, trick: null, status: "no_compatible_trick" as const, blockedReason: `No tricks are available for level ${level} at ${spotType}` }
@@ -334,7 +335,7 @@ function immediateTrickUpdate(_state: GameState, round: Round, spotType: string,
       : `Exhausted level ${level} for ${spotType} — switch spot type or categories`
     return { ...round, spotType, level, trick: null, status: "no_compatible_trick" as const, blockedReason: message }
   }
-  const trick = selectTrickForSpotType(catalog, spotType, level, usedTrickIds, categories)
+  const trick = selectTrickForSpotType(catalog, spotType, level, usedTrickIds, categories, state.id)
   return { ...round, spotType, level, trick, status: "challenge_open" as const, blockedReason: null }
 }
 
@@ -446,7 +447,7 @@ export function selectLevel(
       },
     })
   }
-  const trick = selectTrickForSpotType(catalog, round.spotType, level, usedTrickIds, state.selectedCategories)
+  const trick = selectTrickForSpotType(catalog, round.spotType, level, usedTrickIds, state.selectedCategories, state.id)
   return bump(state, {
     nextLevel: level,
     currentRound: { ...round, level, trick, status: "challenge_open" },
@@ -530,7 +531,7 @@ export function selectChallengeSettings(
     })
   }
 
-  const trick = selectTrickForSpotType(catalog, spotType, level, usedTrickIds, state.selectedCategories)
+  const trick = selectTrickForSpotType(catalog, spotType, level, usedTrickIds, state.selectedCategories, state.id)
   return bump(state, {
     nextSpotType: spotType,
     nextLevel: level,

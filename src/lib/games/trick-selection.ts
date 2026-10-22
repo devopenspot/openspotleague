@@ -6,6 +6,36 @@ function fail(code: ConstructorParameters<typeof GameDomainError>[0], message: s
   throw new GameDomainError(code, message)
 }
 
+function mulberry32(seed: number): () => number {
+  return () => {
+    let t = (seed += 0x6d2b79f5)
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+export function hashSeed(seed: string | number): number {
+  if (typeof seed === "number") return seed >>> 0
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = (Math.imul(31, hash) + seed.charCodeAt(i)) | 0
+  }
+  return hash >>> 0
+}
+
+export function seededShuffle<T>(array: readonly T[], seed: string | number): T[] {
+  const result = [...array]
+  const random = mulberry32(hashSeed(seed))
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1))
+    const temp = result[i] as T
+    result[i] = result[j] as T
+    result[j] = temp
+  }
+  return result
+}
+
 export function eligiblePool(
   catalog: TrickCatalog,
   spotType: string,
@@ -62,9 +92,9 @@ function trickSnapshotFor(catalog: TrickCatalog, trickId: string): TrickSnapshot
 }
 
 /**
- * Deterministic trick selection: the lexicographically smallest unused
- * trick id from the eligible set for the given spot type and level,
- * filtered by selectedCategories when provided.
+ * Deterministic trick selection: when a seed is provided (e.g. game.id),
+ * the eligible set is fully shuffled deterministically for varied session gameplay.
+ * When unseeded, the lexicographically smallest unused trick is selected.
  */
 export function selectTrickForSpotType(
   catalog: TrickCatalog,
@@ -72,12 +102,15 @@ export function selectTrickForSpotType(
   level: TrickLevel,
   usedTrickIds: readonly string[],
   selectedCategories?: readonly string[] | null,
+  seed?: string | number,
 ): TrickSnapshot {
   const pool = eligiblePool(catalog, spotType, level, selectedCategories)
   if (pool.length === 0) fail("NO_COMPATIBLE_TRICK", "No trick matches the selected spot type, level, and categories")
   const used = new Set(usedTrickIds)
-  const eligible = pool.map((trick) => trick.id).sort()
-  const candidate = eligible.find((trickId) => !used.has(trickId)) ?? (eligible[0] as string)
+  const ordered = seed !== undefined
+    ? seededShuffle(pool, seed).map((trick) => trick.id)
+    : pool.map((trick) => trick.id).sort()
+  const candidate = ordered.find((trickId) => !used.has(trickId)) ?? (ordered[0] as string)
   return trickSnapshotFor(catalog, candidate)
 }
 
@@ -87,12 +120,14 @@ export function selectAlternativeTrickForSpotType(
   level: TrickLevel,
   excludedTrickIds: readonly string[],
   selectedCategories?: readonly string[] | null,
+  seed?: string | number,
 ): TrickSnapshot {
   const pool = eligiblePool(catalog, spotType, level, selectedCategories)
   const excluded = new Set(excludedTrickIds)
-  const candidate = pool
-    .sort((left, right) => left.id.localeCompare(right.id))
-    .find((trick) => !excluded.has(trick.id))
+  const ordered = seed !== undefined
+    ? seededShuffle(pool, seed)
+    : [...pool].sort((left, right) => left.id.localeCompare(right.id))
+  const candidate = ordered.find((trick) => !excluded.has(trick.id))
 
   if (!candidate) fail("NO_COMPATIBLE_TRICK", "No alternative trick is available for this spot type and level")
   return trickSnapshotFor(catalog, candidate.id)
@@ -104,8 +139,9 @@ export function selectTrickForCategories(
   level: TrickLevel,
   selectedCategories: readonly string[] | null,
   usedTrickIds: readonly string[],
+  seed?: string | number,
 ): TrickSnapshot {
-  return selectTrickForSpotType(catalog, spotType, level, usedTrickIds, selectedCategories)
+  return selectTrickForSpotType(catalog, spotType, level, usedTrickIds, selectedCategories, seed)
 }
 
 export function exhaustedReason(level: TrickLevel, spotType: string, nextLevel: TrickLevel | null): string {

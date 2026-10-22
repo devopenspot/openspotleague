@@ -21,6 +21,7 @@ vi.mock("@/components/games/hooks/useGameRealtime", () => ({
     error: null,
     setError: mockSetError,
     latestGameRef: { current: mockGameState },
+    applyGameState: vi.fn(),
     refreshGameState: mockRefreshGameState,
   }),
 }));

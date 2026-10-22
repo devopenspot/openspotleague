@@ -402,7 +402,17 @@ async function resolveCatalogId(tx: Tx, disciplineSlug: DisciplineSlug): Promise
   }
 }
 
+type CachedCatalog = {
+  catalog: TrickCatalog
+  idBySourceId: Map<string, string>
+}
+const catalogCache = new Map<string, CachedCatalog>()
+
 async function loadPersistedCatalog(tx: Tx, catalogId: string, discipline: DisciplineSlug): Promise<TrickCatalog> {
+  const cached = catalogCache.get(catalogId)
+  if (cached && cached.catalog.discipline === discipline) {
+    return cached.catalog
+  }
   const [catalog] = await tx.select().from(challengeCatalogs).where(eq(challengeCatalogs.id, catalogId))
   if (!catalog || catalog.disciplineSlug !== discipline) {
     throw new GameDomainError("INVALID_TRANSITION", "The game catalog does not match its discipline")
@@ -419,7 +429,11 @@ async function loadPersistedCatalog(tx: Tx, catalogId: string, discipline: Disci
     values.push(row.spotTypeSlug)
     compatibleByTrick.set(row.trickId, values)
   }
-  return {
+  const idBySourceId = new Map<string, string>()
+  for (const trick of tricks) {
+    idBySourceId.set(trick.sourceId, trick.id)
+  }
+  const trickCatalog: TrickCatalog = {
     discipline,
     tricks: tricks.map((trick) => ({
       id: trick.sourceId,
@@ -431,6 +445,8 @@ async function loadPersistedCatalog(tx: Tx, catalogId: string, discipline: Disci
       categories: (trick.categories as readonly string[] | null) ? [...((trick.categories as readonly string[]))].map((c) => String(c).trim().toLowerCase()).filter((c) => c.length>0).sort() : [],
     })),
   }
+  catalogCache.set(catalogId, { catalog: trickCatalog, idBySourceId })
+  return trickCatalog
 }
 
 export async function runGetGameCreationOptions(
@@ -515,11 +531,14 @@ export async function findNearbyChallengeSpot(input: {
 }
 
 async function catalogTrickIdForSource(tx: Tx, catalogId: string, sourceId: string): Promise<string> {
+  const cached = catalogCache.get(catalogId)?.idBySourceId.get(sourceId)
+  if (cached) return cached
   const [trick] = await tx
     .select({ id: challengeCatalogTricks.id })
     .from(challengeCatalogTricks)
     .where(and(eq(challengeCatalogTricks.catalogId, catalogId), eq(challengeCatalogTricks.sourceId, sourceId)))
   if (!trick) throw new GameDomainError("NO_COMPATIBLE_TRICK", "The selected trick is not in the game catalog")
+  catalogCache.get(catalogId)?.idBySourceId.set(sourceId, trick.id)
   return trick.id
 }
 
@@ -1941,6 +1960,7 @@ export async function retrieveAlternativeTrick(
       round.level,
       excludedTrickIds,
       aggregate.state.selectedCategories ?? null,
+      gameId,
     )
     const catalogTrickId = await catalogTrickIdForSource(tx, locked.catalogId, trick.sourceId)
     const updatedRound: Round = {

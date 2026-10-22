@@ -303,6 +303,7 @@ export function GameBoard({
 
   async function retrieveAlternativeTrick(): Promise<void> {
     if (!current || alternativeTrickCount >= MAX_ALTERNATIVE_TRICKS) return;
+    const rejectedTrickId = current.trickId;
     const excludedTrickIds = [current.trickId, ...alternativeTrickIds].filter(
       (trickId): trickId is string => Boolean(trickId),
     );
@@ -311,14 +312,17 @@ export function GameBoard({
     });
     const trick = result?.ok ? result.data?.trick : undefined;
     if (!trick) return;
-    // Persisted on server; keep local ids tracker per leader per round for limit
-    setAlternativeTrickState((state) => {
-      const ids = state.roundKey === currentRoundKey ? state.ids : [];
-      return {
-        roundKey: currentRoundKey,
-        ids: [...ids, trick.id],
-      };
-    });
+
+    // Persisted on server; track rejected trick ids per leader per round for limit
+    if (rejectedTrickId) {
+      setAlternativeTrickState((state) => {
+        const ids = state.roundKey === currentRoundKey ? state.ids : [];
+        return {
+          roundKey: currentRoundKey,
+          ids: [...ids, rejectedTrickId],
+        };
+      });
+    }
   }
 
   function submitGuestJoin() {
