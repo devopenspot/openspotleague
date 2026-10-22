@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, type ReadonlyURLSearchParams } from "next/navigation";
 import { useSpotsStore } from "@/stores/spots-store";
@@ -380,6 +380,14 @@ export default function MapTab({ searchParams }: MapTabProps) {
     () => Array.from(enabledLayers).join(","),
     [enabledLayers],
   );
+  // When a city is selected, city recentering is handled with a stable focus zoom
+  // by LeafletCanvas's city controller; suppress generic mode auto-fitting so
+  // background arrival of radius spots does not re-fit or change zoom.
+  const handleFitBoundsToVisibleItems = useCallback(() => {
+    if (city) return;
+    fitBoundsToVisibleItems();
+  }, [city, fitBoundsToVisibleItems]);
+
   // Deep-link focus must not be overridden by the generic mode auto-fit.
   useMapModeEffects({
     mode: requestedMode,
@@ -399,7 +407,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
     setActivePin,
     dismissSaved,
     fitRadius,
-    fitBoundsToVisibleItems,
+    fitBoundsToVisibleItems: handleFitBoundsToVisibleItems,
     hasFocus,
     citySpots,
   });
@@ -415,9 +423,13 @@ export default function MapTab({ searchParams }: MapTabProps) {
     if (firstCitySpot) {
       return [firstCitySpot.location.lat, firstCitySpot.location.lon];
     }
+    const firstCityEvent = filteredEvents.find((e) => e.citySlug === city);
+    if (firstCityEvent) {
+      return [firstCityEvent.lat, firstCityEvent.lon];
+    }
     if (viewportPoints[0]) return viewportPoints[0];
     return null;
-  }, [city, cityCentroid, citySpots, filteredSpots, viewportPoints]);
+  }, [city, cityCentroid, citySpots, filteredEvents, filteredSpots, viewportPoints]);
 
   const initialCenter: [number, number] = hasFocus
     ? [focusedSpot!.location.lat, focusedSpot!.location.lon]
@@ -447,30 +459,6 @@ export default function MapTab({ searchParams }: MapTabProps) {
     setActivePin(focusedSpot.id);
     flyToSpot(focusedSpot);
   }, [focusedSpot, hasFocus, setActivePin, flyToSpot]);
-
-  // When a city is selected, ensure the map recenters according to the
-  // city filter once viewport points or city spots are ready.
-  const lastFittedCityScopeRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (hasFocus || nearYou || savedModeActive || !city) {
-      lastFittedCityScopeRef.current = null;
-      return;
-    }
-    if (viewportPoints.length === 0) return;
-    const currentScope = `${region ?? ""}::${country ?? ""}::${city}::${viewportPoints.length}`;
-    if (lastFittedCityScopeRef.current === currentScope) return;
-    lastFittedCityScopeRef.current = currentScope;
-    fitBoundsToVisibleItems();
-  }, [
-    city,
-    country,
-    fitBoundsToVisibleItems,
-    hasFocus,
-    nearYou,
-    region,
-    savedModeActive,
-    viewportPoints,
-  ]);
 
   // Minimalist feedback: when Events layer is on but the current region+country has zero events,
   // surface a single info toast per selection (deduped by region::country).
@@ -755,11 +743,9 @@ export default function MapTab({ searchParams }: MapTabProps) {
               events={filteredEvents}
               initialCenter={initialCenter}
               initialZoom={initialZoom}
-              disableInitialFit={hasFocus}
+              disableInitialFit={hasFocus || city !== null}
               selectedCity={city}
-              cityCentroid={
-                cityCentroid ? [cityCentroid.lat, cityCentroid.lon] : null
-              }
+              cityCenter={cityFocusCenter}
             />
             <MapInfoPopup events={filteredEvents} />
             {scopeLabel && (

@@ -38,6 +38,7 @@ import { MapController, ZoomListener } from "@/components/map/controls/LeafletMa
 import { buildRenderedMapItems, deriveMapViewportPoints } from "@/components/map/shared/map-derived";
 
 const USER_FOCUS_ZOOM = 12;
+const CITY_FOCUS_ZOOM = 13;
 
 const CLUSTER_ZOOM_MAX = 6;
 
@@ -187,29 +188,27 @@ interface LeafletCanvasProps {
   initialZoom?: number;
   disableInitialFit?: boolean;
   selectedCity?: string | null;
-  cityCentroid?: [number, number] | null;
+  cityCenter?: [number, number] | null;
 }
 
 function MapCityRecenterController({
   selectedCity,
-  cityCentroid,
-  viewportPoints,
+  cityCenter,
 }: {
   selectedCity?: string | null;
-  cityCentroid?: [number, number] | null;
-  viewportPoints: readonly [number, number][];
+  cityCenter?: [number, number] | null;
 }) {
   const map = useMap();
-  const lastRecenterKeyRef = useRef<string | null>(null);
+  const lastCenteredCityRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!selectedCity) {
-      lastRecenterKeyRef.current = null;
+      lastCenteredCityRef.current = null;
       return;
     }
 
-    const key = `${selectedCity}:${viewportPoints.length}:${cityCentroid ? cityCentroid.join(",") : ""}`;
-    if (lastRecenterKeyRef.current === key) return;
+    if (!cityCenter) return;
+    if (lastCenteredCityRef.current === selectedCity) return;
 
     const prefersReducedMotion =
       typeof window !== "undefined" &&
@@ -222,40 +221,21 @@ function MapCityRecenterController({
         const size = map.getSize();
         if (size.x === 0 || size.y === 0) return;
 
-        if (viewportPoints.length === 1 && viewportPoints[0]) {
-          lastRecenterKeyRef.current = key;
-          if (prefersReducedMotion) {
-            map.setView(viewportPoints[0], USER_FOCUS_ZOOM);
-          } else {
-            map.flyTo(viewportPoints[0], USER_FOCUS_ZOOM, { duration: 0.6 });
-          }
-          return;
-        }
+        lastCenteredCityRef.current = selectedCity;
 
-        if (viewportPoints.length > 1) {
-          lastRecenterKeyRef.current = key;
-          const bounds = L.latLngBounds([...viewportPoints]);
-          if (bounds.isValid()) {
-            if (prefersReducedMotion) {
-              map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-            } else {
-              map.flyToBounds(bounds, {
-                padding: [40, 40],
-                maxZoom: 15,
-                duration: 0.6,
-              });
-            }
-          }
-          return;
-        }
+        const currentZoom = map.getZoom();
+        const currentCenter = map.getCenter();
+        const isAlreadyCentered =
+          currentZoom === CITY_FOCUS_ZOOM &&
+          Math.abs(currentCenter.lat - cityCenter[0]) < 0.0001 &&
+          Math.abs(currentCenter.lng - cityCenter[1]) < 0.0001;
 
-        if (cityCentroid) {
-          lastRecenterKeyRef.current = key;
-          if (prefersReducedMotion) {
-            map.setView(cityCentroid, USER_FOCUS_ZOOM);
-          } else {
-            map.flyTo(cityCentroid, USER_FOCUS_ZOOM, { duration: 0.6 });
-          }
+        if (isAlreadyCentered) return;
+
+        if (prefersReducedMotion) {
+          map.setView(cityCenter, CITY_FOCUS_ZOOM);
+        } else {
+          map.flyTo(cityCenter, CITY_FOCUS_ZOOM, { duration: 0.6 });
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
@@ -268,7 +248,7 @@ function MapCityRecenterController({
       if (typeof window === "undefined") return;
       window.requestAnimationFrame(performRecenter);
     });
-  }, [cityCentroid, map, selectedCity, viewportPoints]);
+  }, [cityCenter, map, selectedCity]);
 
   return null;
 }
@@ -309,7 +289,7 @@ export function LeafletCanvas({
   initialZoom,
   disableInitialFit = false,
   selectedCity,
-  cityCentroid,
+  cityCenter,
 }: LeafletCanvasProps) {
   const activeId = useMapStore((s) => s.activePinId);
   const activeEventId = useMapStore((s) => s.activeEventId);
@@ -416,8 +396,7 @@ export function LeafletCanvas({
         />
         <MapCityRecenterController
           selectedCity={selectedCity}
-          cityCentroid={cityCentroid}
-          viewportPoints={viewportPoints}
+          cityCenter={cityCenter}
         />
         <ZoomListener onZoomChange={setZoom} />
         {items.map((item) =>
