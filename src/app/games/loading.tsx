@@ -13,6 +13,7 @@ export default function Loading() {
           <div className="z-30 py-2" aria-hidden="true">
             <div className="mx-auto flex justify-center max-w-6xl gap-2">
               <div className="h-11 w-36 animate-pulse rounded-full bg-surface-container-lowest/95" />
+              <div className="h-11 w-24 animate-pulse rounded-full bg-surface-container-lowest/80" />
               <div className="h-11 w-28 animate-pulse rounded-full bg-surface-container-lowest/80" />
             </div>
           </div>

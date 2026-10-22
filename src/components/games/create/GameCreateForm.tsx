@@ -1233,6 +1233,21 @@ export function GameCreateForm({
               </p>
             ) : null}
 
+            {/* Mobile: Active configuration summary & customize trigger */}
+            <div className="space-y-3 lg:hidden">
+              <ConfigurationSummary {...summaryProps} />
+              <button
+                type="button"
+                onClick={openSetup}
+                disabled={busy}
+                aria-expanded={setupOpen}
+                aria-controls={GAME_SETUP_DIALOG_ID}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Customize settings
+              </button>
+            </div>
+
             <div className="hidden space-y-6 lg:block">
               {!signedIn && mode === "training" ? (
                 <GuestNicknameField
@@ -1459,7 +1474,7 @@ export function GameCreateForm({
         labelledBy={GAME_SETUP_TITLE_ID}
         describedBy={GAME_SETUP_DESCRIPTION_ID}
         contentId={GAME_SETUP_DIALOG_ID}
-        containerClassName="lg:hidden bg-surface/20"
+        containerClassName="lg:hidden"
         panelClassName="mx-4 my-4 flex max-h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
       >
         <div className="flex items-start justify-between gap-4 border-b border-outline-variant p-4 sm:p-6">

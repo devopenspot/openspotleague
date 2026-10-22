@@ -122,6 +122,14 @@ describe("GameLanding", () => {
     expect(trigger).toHaveFocus()
   })
 
+  it("exposes a direct matches trigger for signed-in riders", () => {
+    render(<GameLanding signedIn />)
+
+    const matchesButton = screen.getByRole("button", { name: "Matches" })
+    expect(matchesButton).toBeInTheDocument()
+    expect(matchesButton).toHaveAttribute("aria-controls", "matches-drawer")
+  })
+
   it("exposes game rules and rider policy modal triggers from LandingInfo", async () => {
     const user = userEvent.setup()
     render(<GameLanding signedIn={false} />)

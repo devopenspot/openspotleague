@@ -126,15 +126,26 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
             <div className={`mx-auto flex justify-center max-w-6xl gap-2`}>
               <JoinWithCode variant="games" />
               {signedIn ? (
-                <button
-                  type="button"
-                  onClick={() => setProgressOpen(true)}
-                  aria-expanded={progressOpen}
-                  aria-controls={`rider-progress-drawer`}
-                  className={`inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
-                >
-                  {UI_COPY.yourRecord}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setMatchesOpen(true)}
+                    aria-expanded={matchesOpen}
+                    aria-controls="matches-drawer"
+                    className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
+                  >
+                    Matches
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProgressOpen(true)}
+                    aria-expanded={progressOpen}
+                    aria-controls={`rider-progress-drawer`}
+                    className={`inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
+                  >
+                    {UI_COPY.yourRecord}
+                  </button>
+                </>
               ) : null}
             </div>
           </div>
