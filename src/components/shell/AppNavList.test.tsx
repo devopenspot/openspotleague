@@ -53,7 +53,7 @@ describe("AppNavList", () => {
   });
 
   it("keeps tab semantics and responsive container treatment", () => {
-    navigation.pathname = "/explore";
+    navigation.pathname = "/map";
 
     render(
       <AppNavList
@@ -69,11 +69,11 @@ describe("AppNavList", () => {
       "items-center",
       "pb-[calc(0.625rem+env(safe-area-inset-bottom))]",
     );
-    expect(screen.getByRole("tab", { name: "Explore" })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: "Spots Map" })).toHaveAttribute(
       "aria-selected",
       "true",
     );
-    expect(screen.getByRole("tab", { name: "Explore" })).toHaveClass(
+    expect(screen.getByRole("tab", { name: "Spots Map" })).toHaveClass(
       "text-primary",
     );
   });
@@ -89,7 +89,7 @@ describe("AppNavList", () => {
       />,
     );
 
-    expect(screen.getByRole("tab", { name: "Explore" })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: "Spots Map" })).toHaveAttribute(
       "aria-selected",
       "false",
     );

@@ -127,7 +127,9 @@ export default function MapTab({ searchParams }: MapTabProps) {
   const preferenceSpots = useMemo(
     () =>
       preferredSport && preferredSport !== "all"
-        ? scopedSpots.filter((spot) => spot.sports.includes(preferredSport as SportDiscipline))
+        ? scopedSpots.filter((spot) =>
+            spot.sports.includes(preferredSport as SportDiscipline),
+          )
         : scopedSpots,
     [preferredSport, scopedSpots],
   );
@@ -269,7 +271,9 @@ export default function MapTab({ searchParams }: MapTabProps) {
   const cityRadiusScope = useMemo(() => {
     if (cityCentroid === null || cityRadiusSpots.length === 0) return NO_SPOTS;
     return preferredSport && preferredSport !== "all"
-      ? cityRadiusSpots.filter((s) => s.sports.includes(preferredSport as SportDiscipline))
+      ? cityRadiusSpots.filter((s) =>
+          s.sports.includes(preferredSport as SportDiscipline),
+        )
       : cityRadiusSpots;
   }, [cityCentroid, cityRadiusSpots, preferredSport]);
   const sourceSpots = useMemo(() => {
@@ -594,8 +598,9 @@ export default function MapTab({ searchParams }: MapTabProps) {
             </>
           )}
 
-          {!baseNeeds && requestedMode === "saved" && (
-            user === null ? (
+          {!baseNeeds &&
+            requestedMode === "saved" &&
+            (user === null ? (
               <div
                 role="status"
                 aria-live="polite"
@@ -611,7 +616,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
                       Sign in to view saved spots
                     </p>
                     <p className="mt-1 leading-5 text-secondary">
-                      Your saved skate spots sync across devices when you're signed in.
+                      Your saved skate spots sync across devices when you're
+                      signed in.
                     </p>
                   </div>
                 </div>
@@ -633,7 +639,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
                       No saved spots yet
                     </p>
                     <p className="mt-1 leading-5 text-secondary">
-                      Save spots while browsing the map or exploring spots to quickly access them here.
+                      Save spots while browsing the map or exploring spots to
+                      quickly access them here.
                     </p>
                   </div>
                 </div>
@@ -645,8 +652,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
                   Explore map
                 </button>
               </div>
-            ) : null
-          )}
+            ) : null)}
 
           {(spotsDegraded || eventsDegraded) && (
             <div
@@ -760,7 +766,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
               <div
                 className={cn(
                   "pointer-events-none absolute left-3 bottom-8 z-[1120] max-w-[calc(100%-24px)] truncate rounded-[8px] border border-outline-variant bg-surface/95 px-3 py-2 font-display text-[10px] font-bold uppercase tracking-widest text-secondary",
-                  (activePinId !== null || activeEventId !== null) && "hidden md:block",
+                  (activePinId !== null || activeEventId !== null) &&
+                    "hidden md:block",
                 )}
               >
                 {scopeLabel}

@@ -193,7 +193,7 @@ export async function runGetProfileSummary(userId: string): Promise<ProfileSumma
   const preferences: Preferences = {
     distanceUnit: (profileRow?.distanceUnit as "mi" | "km") ?? "mi",
     temperatureUnit: (profileRow?.temperatureUnit as "C" | "F") ?? "C",
-    disciplineSlug: (profileRow?.preferredDisciplineSlug as Preferences["disciplineSlug"]) ?? null,
+    disciplineSlug: (profileRow?.preferredDisciplineSlug as Preferences["disciplineSlug"]) ?? "all",
   }
 
   return {

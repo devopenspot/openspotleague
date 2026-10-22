@@ -87,7 +87,7 @@ describe("useCityRadiusSpots", () => {
     renderHook(() => useCityRadiusSpots(enabledArgs(4.711, -74.0721)));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
-    expect(fetchMock.mock.calls[0]?.[0]).toContain("near=4.711%2C-74.0721%2C55000");
+    expect(fetchMock.mock.calls[0]?.[0]).toContain("near=4.711%2C-74.0721%2C28000");
     expect(readCityRadiusSlice().map((s) => s.id)).toEqual(["1", "2"]);
   });
 

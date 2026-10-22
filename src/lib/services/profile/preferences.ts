@@ -18,7 +18,7 @@ export interface PreferenceProfile {
 const DEFAULT_PREFERENCES: Preferences = {
   distanceUnit: "mi",
   temperatureUnit: "C",
-  disciplineSlug: null,
+  disciplineSlug: "all",
 };
 
 export class ProfileNotFoundError extends Error {
@@ -89,6 +89,12 @@ export async function updatePreferences(
   input: unknown,
 ): Promise<Preferences> {
   const patch = updatePreferencesSchema.parse(input);
+  const targetDiscipline =
+    patch.disciplineSlug === undefined
+      ? undefined
+      : patch.disciplineSlug === "all"
+        ? null
+        : patch.disciplineSlug;
   const { db } = getDbClient();
   const [row] = await withDbWrite("profiles.update_preferences", () =>
     db.transaction((tx) =>
@@ -97,9 +103,9 @@ export async function updatePreferences(
         .set({
           ...(patch.distanceUnit === undefined ? {} : { distanceUnit: patch.distanceUnit }),
           ...(patch.temperatureUnit === undefined ? {} : { temperatureUnit: patch.temperatureUnit }),
-          ...(patch.disciplineSlug === undefined
+          ...(targetDiscipline === undefined
             ? {}
-            : { preferredDisciplineSlug: patch.disciplineSlug }),
+            : { preferredDisciplineSlug: targetDiscipline }),
           updatedAt: new Date(),
         })
         .where(eq(profiles.id, userId))

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -70,15 +70,11 @@ describe("EMAIL_DIGEST_TYPES", () => {
   });
 
   it("matches the digest whitelist in the sweep migration (drift guard)", () => {
-    const sql = readFileSync(
-      path.join(
-        process.cwd(),
-        "supabase",
-        "migrations",
-        "0032_email_sweep_hardening.sql",
-      ),
-      "utf8",
-    );
+    const migrationPath = [
+      path.join(process.cwd(), "supabase", "migrations", "0032_email_sweep_hardening.sql"),
+      path.join(process.cwd(), "supabase", "migrations_archive", "0032_email_sweep_hardening.sql"),
+    ].find((candidate) => existsSync(candidate));
+    const sql = readFileSync(migrationPath!, "utf8");
     const start = sql.indexOf("digest_types text[] := array[");
     const end = sql.indexOf("];", start);
     const whitelist = sql.slice(start, end);

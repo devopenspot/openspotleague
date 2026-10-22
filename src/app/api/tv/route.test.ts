@@ -28,7 +28,7 @@ describe("GET /api/tv", () => {
     const res = await GET(makeRequest("?discipline=Skateboard"))
     expect(res.status).toBe(400)
     expect(await res.json()).toEqual({
-      error: "Missing query — use ?id= or ?limit=&cursor=",
+      error: "Missing query — use ?id= or ?limit=&cursor= or search params",
     })
   })
 
