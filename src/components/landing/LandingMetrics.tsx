@@ -30,7 +30,7 @@ const METRICS: readonly MetricItem[] = [
   },
   {
     icon: Tv,
-    value: "380+",
+    value: "400+",
     label: "Curated Videos",
     description: "Contest finals, street parts & rider profiles",
   },

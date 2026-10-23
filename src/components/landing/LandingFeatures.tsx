@@ -54,7 +54,7 @@ const FEATURES: readonly FeatureCardProps[] = [
   {
     icon: Tv,
     title: "Open Spot TV",
-    badge: "380+ Videos",
+    badge: "400+ Videos",
     description:
       "Curated non-stop action sports cinema. Stream FISE world cups, street video parts, and athlete profile sessions without noise.",
     bullets: [
