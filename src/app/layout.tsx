@@ -98,7 +98,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(jakarta.variable)} suppressHydrationWarning>
       <body className="bg-background font-sans text-on-background antialiased">
-        <Suspense fallback={null}>
+        <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
           <RootDataProviders>{children}</RootDataProviders>
         </Suspense>
       </body>

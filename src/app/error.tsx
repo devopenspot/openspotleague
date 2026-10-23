@@ -12,10 +12,45 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    log.error('Route error boundary caught', { message: error.message, digest: error.digest, code: (error as unknown as { code?: string }).code, stack: error.stack } as unknown as never);
+    try {
+      log.error('Route error boundary caught', {
+        message: error.message,
+        digest: error.digest,
+        code: (error as unknown as { code?: string }).code,
+        stack: error.stack,
+      } as unknown as never);
+    } catch {
+      // Error boundary logging must never throw
+    }
   }, [error]);
+
+  // Automatic recovery for deployment chunk skew: when a new build is deployed,
+  // open browser tabs fail to load old dynamic chunks. Reloading once fetches
+  // the fresh deployment bundle cleanly without user intervention.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isChunkError =
+      error.name === 'ChunkLoadError' ||
+      /Loading chunk [\d\w_-]+ failed/i.test(error.message) ||
+      /Failed to fetch dynamically imported module/i.test(error.message) ||
+      /Importing a module script failed/i.test(error.message);
+
+    if (isChunkError) {
+      const key = `osp_chunk_reload_${error.digest || error.message}`;
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1');
+        window.location.reload();
+      }
+    }
+  }, [error]);
+
   const code = (error as unknown as { code?: string }).code;
-  const title = code === 'TIMEOUT' ? 'Spot directory is slow' : code === 'INVALID_REF' ? 'Bad filter' : 'Something went wrong';
+  const title =
+    code === 'TIMEOUT'
+      ? 'Spot directory is slow'
+      : code === 'INVALID_REF'
+        ? 'Bad filter'
+        : 'Something went wrong';
   const desc =
     code === 'TIMEOUT'
       ? 'We hit a timeout (15s). Try again — the next attempt reuses the cache.'
@@ -26,9 +61,9 @@ export default function Error({
   return (
     <div
       role="alert"
-      className="mx-auto my-12 max-w-md rounded-none-none border border-outline-variant bg-surface-bright p-6 text-center"
+      className="mx-auto my-12 max-w-md rounded-none border border-outline-variant bg-surface-bright p-6 text-center"
     >
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-none-none border border-outline-variant text-error">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-none border border-outline-variant text-error">
         <AlertTriangle size={20} aria-hidden="true" />
       </div>
       <h2 className="font-display text-base font-bold uppercase tracking-wider text-on-surface">
@@ -41,14 +76,14 @@ export default function Error({
         <button
           type="button"
           onClick={reset}
-          className="rounded-none-none bg-on-surface text-surface px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-on-surface/90 transition-all"
+          className="rounded-none bg-on-surface text-surface px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-on-surface/90 transition-all"
         >
           Try again
         </button>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="rounded-none-none border border-outline text-on-surface px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-surface-container transition-all"
+          className="rounded-none border border-outline text-on-surface px-4 py-2 text-xs font-bold tracking-widest uppercase hover:bg-surface-container transition-all"
         >
           Reload
         </button>

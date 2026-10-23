@@ -208,26 +208,31 @@ export async function proxy(request: NextRequest) {
     },
   })
 
-  // Refresh the session if needed. getClaims validates the cookie JWT
-  // locally (asymmetric signing) or via the auth server (symmetric) — no
-  // network round trip to fetch the full user record on every request.
-  // Cached JWKS avoids one /.well-known/jwks.json fetch (and gateway log line) per request.
+  // Validate session claims. getClaims validates the cookie JWT
+  // locally (asymmetric signing with cached JWKS) — sub-millisecond fast path
+  // with zero network round trips to fetch the full user record on every request.
   const jwks = await getCachedJwks()
-  const { error } = await supabase.auth.getClaims(undefined, jwks ? { jwks } : undefined)
-  if (error) {
-    log.warn("proxy: supabase.auth.getClaims failed", {
-      requestId,
-      message: error.message,
-    })
-    if (isUnrecoverableAuthError(error)) {
-      for (const cookie of request.cookies.getAll()) {
-        if (cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token")) {
-          response.cookies.set(cookie.name, "", {
-            path: "/",
-            maxAge: 0,
-            sameSite: "lax",
-            secure: process.env.NODE_ENV === "production",
-          })
+  const { error: claimsError } = await supabase.auth.getClaims(undefined, jwks ? { jwks } : undefined)
+  if (claimsError) {
+    // getClaims does not refresh expired tokens. When claims verification fails,
+    // invoke getUser() to trigger Supabase Auth token refresh via setAll.
+    const { error: userError } = await supabase.auth.getUser()
+    if (userError) {
+      log.warn("proxy: supabase auth refresh failed", {
+        requestId,
+        claimsMessage: claimsError.message,
+        userMessage: userError.message,
+      })
+      if (isUnrecoverableAuthError(userError) || isUnrecoverableAuthError(claimsError)) {
+        for (const cookie of request.cookies.getAll()) {
+          if (cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token")) {
+            response.cookies.set(cookie.name, "", {
+              path: "/",
+              maxAge: 0,
+              sameSite: "lax",
+              secure: process.env.NODE_ENV === "production",
+            })
+          }
         }
       }
     }
