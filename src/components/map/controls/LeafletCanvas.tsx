@@ -34,11 +34,17 @@ import { milesToMeters } from "@/lib/spots/geo";
 import { SpotMarker } from "@/components/map/markers/SpotMarker";
 import { EventMarker } from "@/components/map/markers/EventMarker";
 import type { MapEvent } from "@/types/sport-events";
-import { MapController, ZoomListener } from "@/components/map/controls/LeafletMapController";
-import { buildRenderedMapItems, deriveMapViewportPoints } from "@/components/map/shared/map-derived";
+import {
+  MapController,
+  ZoomListener,
+} from "@/components/map/controls/LeafletMapController";
+import {
+  buildRenderedMapItems,
+  deriveMapViewportPoints,
+} from "@/components/map/shared/map-derived";
 
 const USER_FOCUS_ZOOM = 12;
-const CITY_FOCUS_ZOOM = 13;
+const CITY_FOCUS_ZOOM = 12;
 
 const CLUSTER_ZOOM_MAX = 6;
 
@@ -150,11 +156,17 @@ function VisibleWeatherLoader({
   useMapEvents({
     moveend: () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => setViewportVersion((v) => v + 1), 100);
+      debounceRef.current = setTimeout(
+        () => setViewportVersion((v) => v + 1),
+        100,
+      );
     },
     zoomend: () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => setViewportVersion((v) => v + 1), 100);
+      debounceRef.current = setTimeout(
+        () => setViewportVersion((v) => v + 1),
+        100,
+      );
     },
   });
 
@@ -239,7 +251,10 @@ function MapCityRecenterController({
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          log.warn("[leaflet] city recenter failed:", error as unknown as never);
+          log.warn(
+            "[leaflet] city recenter failed:",
+            error as unknown as never,
+          );
         }
       }
     };
