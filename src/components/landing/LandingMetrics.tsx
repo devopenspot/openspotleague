@@ -20,13 +20,13 @@ const METRICS: readonly MetricItem[] = [
     icon: Globe2,
     value: "12",
     label: "Global Regions",
-    description: "Covering North America, Europe, LatAm, Oceania & Asia",
+    description: "Covering Americas, Europe, Oceania & Asia",
   },
   {
     icon: Trophy,
     value: "4",
     label: "Sports Disciplines",
-    description: "Skateboarding, BMX Freestyle, Inline & Scooter",
+    description: "Skateboard, BMX, Roller & Scooter",
   },
   {
     icon: Tv,

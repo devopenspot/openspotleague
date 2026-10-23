@@ -19,11 +19,11 @@ export function Hero() {
         <div className="w-full min-w-0 space-y-4 sm:space-y-5 text-center">
           {/* Discipline Badges */}
           <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 rounded-full border border-white/20 bg-black/20 px-3 py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-white backdrop-blur-md">
-            <span>Skateboarding</span>
+            <span>Skateboard</span>
             <span className="opacity-40">•</span>
             <span>BMX</span>
             <span className="opacity-40">•</span>
-            <span>Inline</span>
+            <span>roller</span>
             <span className="opacity-40">•</span>
             <span>Scooter</span>
           </div>
