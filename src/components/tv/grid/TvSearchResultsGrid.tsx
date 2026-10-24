@@ -5,7 +5,10 @@ import Image from "next/image";
 import { Search, Tv, X, Loader2 } from "lucide-react";
 import type { TvCard } from "@/types/tv";
 import { cn } from "@/lib/utils/cn";
-import { formatTvCategory, toTvMarqueeItem } from "@/components/tv/marquee/tv-marquee-data";
+import {
+  formatTvCategory,
+  toTvMarqueeItem,
+} from "@/components/tv/marquee/tv-marquee-data";
 
 export interface TvSearchResultsGridProps {
   items: readonly TvCard[];
@@ -120,7 +123,7 @@ const TvSearchCard = memo(function TvSearchCard({
 
 function TvSearchSkeletonCard() {
   return (
-    <div className="flex flex-col overflow-hidden rounded-[14px] border border-wire-border bg-wire animate-pulse">
+    <div className="flex flex-col overflow-hidden rounded-[14px] border border-wire-border bg-wire ">
       <div className="aspect-video w-full bg-white/5" />
       <div className="space-y-2 p-3">
         <div className="h-4 w-3/4 rounded bg-white/10" />
@@ -151,9 +154,9 @@ export function TvSearchResultsGrid({
 }: TvSearchResultsGridProps) {
   const hasActiveFilters = Boolean(
     query.trim() ||
-      discipline !== "all" ||
-      (category && category !== "all") ||
-      year !== null,
+    discipline !== "all" ||
+    (category && category !== "all") ||
+    year !== null,
   );
 
   return (
@@ -248,12 +251,17 @@ export function TvSearchResultsGrid({
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-[16px] border border-white/10 bg-white/[0.04] px-4 py-12 sm:px-6 sm:py-16 text-center">
-          <Search size={32} className="mx-auto text-white/30" aria-hidden="true" />
+          <Search
+            size={32}
+            className="mx-auto text-white/30"
+            aria-hidden="true"
+          />
           <p className="mt-4 text-base font-semibold text-white">
             No videos match your search
           </p>
           <p className="mt-1.5 text-xs text-white/60 max-w-sm mx-auto">
-            Try adjusting your search terms or clearing some filters to explore more sessions.
+            Try adjusting your search terms or clearing some filters to explore
+            more sessions.
           </p>
           <button
             type="button"
@@ -287,7 +295,11 @@ export function TvSearchResultsGrid({
               >
                 {isLoadingMore ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+                    <Loader2
+                      size={14}
+                      className="animate-spin"
+                      aria-hidden="true"
+                    />
                     <span>Loading more videos...</span>
                   </>
                 ) : (

@@ -223,7 +223,10 @@ export function LandingMarquee({
     >
       <div className="flex items-center justify-between px-4 sm:px-10 pt-3.5 pb-2 border-b border-wire-border">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+          <span
+            className="h-2 w-2 rounded-full bg-emerald-500 "
+            aria-hidden="true"
+          />
           <h2 className="font-display text-[10px] sm:text-xs font-bold uppercase tracking-[0.12em] text-on-wire">
             Live Highlights · Spots, Videos & Events
           </h2>

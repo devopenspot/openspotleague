@@ -119,7 +119,7 @@ export function ProfileStats({
 
 export function ProfileStatsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5 animate-pulse">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5 ">
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}
