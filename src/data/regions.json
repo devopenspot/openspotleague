@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "north-america",
+    "name": "North America",
+    "description": "The birthplace of modern street skating. From LA ledges to NYC gaps and Toronto DIYs.",
+    "image_url": "",
+    "sort_order": 0
+  },
+  {
+    "slug": "latin-america",
+    "name": "Latin America",
+    "description": "Tropical plazas, Andean DIYs, and the deepest vert scene outside California.",
+    "image_url": "",
+    "sort_order": 1
+  },
+  {
+    "slug": "iberia",
+    "name": "Iberia",
+    "description": "Mediterranean sun, mosaic plazas, and a generation raised on MACBA sessions.",
+    "image_url": "",
+    "sort_order": 2
+  },
+  {
+    "slug": "france-benelux",
+    "name": "France & Benelux",
+    "description": "Haussmannian plazas, brutalist squares, and FISE-grade park culture.",
+    "image_url": "",
+    "sort_order": 3
+  },
+  {
+    "slug": "dach",
+    "name": "DACH",
+    "description": "German engineering meets Austrian DIYs and Swiss precision ledges.",
+    "image_url": "",
+    "sort_order": 4
+  },
+  {
+    "slug": "british-isles",
+    "name": "British Isles",
+    "description": "Rain-slick granite, brutalist council estates, and the South Bank lineage.",
+    "image_url": "",
+    "sort_order": 5
+  },
+  {
+    "slug": "nordics",
+    "name": "Nordics",
+    "description": "Year-round dedication. Indoor parks, frosty ledges, and the Helsinki school.",
+    "image_url": "",
+    "sort_order": 6
+  },
+  {
+    "slug": "italy-balkans",
+    "name": "Italy & Balkans",
+    "description": "Renaissance piazzas, Roman travertine, and the Adriatic roller scene.",
+    "image_url": "",
+    "sort_order": 7
+  },
+  {
+    "slug": "eastern-europe",
+    "name": "Eastern Europe",
+    "description": "Post-Soviet blocks, brutalist megastructures, and a fierce new generation.",
+    "image_url": "",
+    "sort_order": 8
+  },
+  {
+    "slug": "asia",
+    "name": "Asia",
+    "description": "Megacity plazas, tropical parks, and the fastest-growing scene on the planet.",
+    "image_url": "",
+    "sort_order": 10
+  },
+  {
+    "slug": "oceania",
+    "name": "Oceania",
+    "description": "Beachside bowls, volcanic coastlines, and the Indo-Pacific crossover.",
+    "image_url": "",
+    "sort_order": 11
+  },
+  {
+    "slug": "middle-east-africa",
+    "name": "Middle East & Africa",
+    "description": "Desert marble, Red Sea ledges, and a rising scene from Tel Aviv to Cape Town.",
+    "image_url": "",
+    "sort_order": 12
+  }
+]

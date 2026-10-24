@@ -1,0 +1,27 @@
+[
+  {
+    "slug": "world-tour",
+    "name": "World Tour",
+    "sort_order": 0
+  },
+  {
+    "slug": "championship",
+    "name": "Championship",
+    "sort_order": 1
+  },
+  {
+    "slug": "festival",
+    "name": "Festival",
+    "sort_order": 2
+  },
+  {
+    "slug": "federation",
+    "name": "Federation",
+    "sort_order": 3
+  },
+  {
+    "slug": "local-event",
+    "name": "Local Event",
+    "sort_order": 4
+  }
+]

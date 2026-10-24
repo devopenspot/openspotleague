@@ -1,0 +1,22 @@
+[
+  {
+    "slug": "skateboard",
+    "name": "Skateboard",
+    "sort_order": 0
+  },
+  {
+    "slug": "bmx",
+    "name": "BMX",
+    "sort_order": 1
+  },
+  {
+    "slug": "scooter",
+    "name": "Scooter",
+    "sort_order": 2
+  },
+  {
+    "slug": "roller",
+    "name": "Roller",
+    "sort_order": 3
+  }
+]

@@ -1,0 +1,115 @@
+{
+  "permissions": [
+    {
+      "slug": "content.read",
+      "name": "Read content",
+      "description": "Read curated application content."
+    },
+    {
+      "slug": "content.write",
+      "name": "Write content",
+      "description": "Create and edit spots and events."
+    },
+    {
+      "slug": "media.manage",
+      "name": "Manage media",
+      "description": "Upload and manage spot and event media."
+    },
+    {
+      "slug": "taxonomy.use",
+      "name": "Use taxonomy",
+      "description": "Assign approved content taxonomy."
+    },
+    {
+      "slug": "roles.manage",
+      "name": "Manage roles",
+      "description": "Assign roles and permissions."
+    },
+    {
+      "slug": "users.manage",
+      "name": "Manage users",
+      "description": "Manage application user access."
+    },
+    {
+      "slug": "database.reset",
+      "name": "Reset database",
+      "description": "Run the non-production application reset."
+    },
+    {
+      "slug": "migrations.manage",
+      "name": "Manage migrations",
+      "description": "Apply the application baseline."
+    },
+    {
+      "slug": "operational.settings",
+      "name": "Manage operational settings",
+      "description": "Change sensitive operational settings."
+    },
+    {
+      "slug": "league.manage",
+      "name": "Manage league",
+      "description": "Manage league plans, payments and account grants."
+    }
+  ],
+  "roles": [
+    {
+      "slug": "admin",
+      "name": "Admin",
+      "description": "Unrestricted application administration.",
+      "permissions": [
+        "content.read",
+        "content.write",
+        "media.manage",
+        "taxonomy.use",
+        "roles.manage",
+        "users.manage",
+        "database.reset",
+        "migrations.manage",
+        "operational.settings",
+        "league.manage"
+      ]
+    },
+    {
+      "slug": "curator",
+      "name": "Curator",
+      "description": "Curated content and media maintenance (legacy).",
+      "permissions": [
+        "content.read",
+        "content.write",
+        "media.manage",
+        "taxonomy.use"
+      ]
+    },
+    {
+      "slug": "spot_curator",
+      "name": "Spot Curator",
+      "description": "Manage spots scoped by country.",
+      "permissions": [
+        "content.read",
+        "content.write",
+        "media.manage",
+        "taxonomy.use"
+      ]
+    },
+    {
+      "slug": "event_curator",
+      "name": "Event Curator",
+      "description": "Manage events scoped by country.",
+      "permissions": [
+        "content.read",
+        "content.write",
+        "media.manage",
+        "taxonomy.use"
+      ]
+    },
+    {
+      "slug": "trick_curator",
+      "name": "Trick Curator",
+      "description": "Manage tricks scoped by discipline.",
+      "permissions": [
+        "content.read",
+        "taxonomy.use"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "slug": "free",
+    "name": "Free",
+    "description": "Community events: 1 organizer (judges implicitly), up to 3 riders.",
+    "price_cents": 0,
+    "currency": "USD",
+    "max_riders": 3,
+    "max_judges": 0,
+    "max_organizers": 1,
+    "monthly_event_limit": 8,
+    "is_default": true,
+    "active": true,
+    "sort_order": 1
+  },
+  {
+    "slug": "starter",
+    "name": "Starter",
+    "description": "Up to 13 riders, 2 judges and 2 organizers.",
+    "price_cents": 500,
+    "currency": "USD",
+    "max_riders": 13,
+    "max_judges": 2,
+    "max_organizers": 2,
+    "monthly_event_limit": 21,
+    "is_default": false,
+    "active": true,
+    "sort_order": 2
+  },
+  {
+    "slug": "pro",
+    "name": "Pro",
+    "description": "Up to 55 riders, 4 judges and 5 organizers.",
+    "price_cents": 2100,
+    "currency": "USD",
+    "max_riders": 55,
+    "max_judges": 4,
+    "max_organizers": 5,
+    "monthly_event_limit": 21,
+    "is_default": false,
+    "active": true,
+    "sort_order": 3
+  }
+]

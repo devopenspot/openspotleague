@@ -1,0 +1,58 @@
+{
+  "player_limits": {
+    "min": 2,
+    "max": 2
+  },
+  "start_grace_minutes": 15,
+  "location_defaults": {
+    "radius_meters": 250,
+    "max_accuracy_meters": 50,
+    "verification_ttl_seconds": 900
+  },
+  "level_points": {
+    "1": 5,
+    "2": 8,
+    "3": 13,
+    "4": 21,
+    "5": 34
+  },
+  "winner_bonus_points": 34,
+  "disciplines": [
+    {
+      "discipline_slug": "roller",
+      "sport_preference": "Roller",
+      "challenge_key": "blade",
+      "game_name": "Play a Blade",
+      "elimination_word": "BLADE",
+      "word_length": 5,
+      "catalog_path": "src/data/tricks/roller.json"
+    },
+    {
+      "discipline_slug": "skateboard",
+      "sport_preference": "Skateboard",
+      "challenge_key": "skate",
+      "game_name": "Play a Skate",
+      "elimination_word": "SKATE",
+      "word_length": 5,
+      "catalog_path": "src/data/tricks/skateboard.json"
+    },
+    {
+      "discipline_slug": "bmx",
+      "sport_preference": "BMX",
+      "challenge_key": "bike",
+      "game_name": "Play a Bike",
+      "elimination_word": "BIKE",
+      "word_length": 4,
+      "catalog_path": "src/data/tricks/bmx.json"
+    },
+    {
+      "discipline_slug": "scooter",
+      "sport_preference": "Scooter",
+      "challenge_key": "scoot",
+      "game_name": "Play a Scoot",
+      "elimination_word": "SCOOT",
+      "word_length": 5,
+      "catalog_path": "src/data/tricks/scooter.json"
+    }
+  ]
+}

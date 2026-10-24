@@ -1,0 +1,72 @@
+[
+  {
+    "slug": "plaza",
+    "name": "Plaza",
+    "sort_order": 0
+  },
+  {
+    "slug": "diy",
+    "name": "DIY",
+    "sort_order": 1
+  },
+  {
+    "slug": "stair",
+    "name": "Stair",
+    "sort_order": 2
+  },
+  {
+    "slug": "bowl",
+    "name": "Bowl",
+    "sort_order": 3
+  },
+  {
+    "slug": "skatepark",
+    "name": "Skatepark",
+    "sort_order": 4
+  },
+  {
+    "slug": "ledges",
+    "name": "Ledges",
+    "sort_order": 5
+  },
+  {
+    "slug": "vert",
+    "name": "Vert",
+    "sort_order": 6
+  },
+  {
+    "slug": "rails",
+    "name": "Rails",
+    "sort_order": 7
+  },
+  {
+    "slug": "box",
+    "name": "Box",
+    "sort_order": 9
+  },
+  {
+    "slug": "ramp",
+    "name": "Ramp",
+    "sort_order": 10
+  },
+  {
+    "slug": "flatground",
+    "name": "Flatground",
+    "sort_order": 11
+  },
+  {
+    "slug": "mini-ramp",
+    "name": "Mini Ramp",
+    "sort_order": 12
+  },
+  {
+    "slug": "flybox",
+    "name": "Flybox",
+    "sort_order": 13
+  },
+  {
+    "slug": "pump-track",
+    "name": "Pump Track",
+    "sort_order": 14
+  }
+]

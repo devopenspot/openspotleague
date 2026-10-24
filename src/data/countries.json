@@ -1,0 +1,1017 @@
+[
+  {
+    "iso2": "AL",
+    "iso3": "ALB",
+    "name": "Albania",
+    "region_slug": "italy-balkans",
+    "aliases": []
+  },
+  {
+    "iso2": "DZ",
+    "iso3": "DZA",
+    "name": "Algeria",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "AD",
+    "iso3": "AND",
+    "name": "Andorra",
+    "region_slug": "iberia",
+    "aliases": []
+  },
+  {
+    "iso2": "AO",
+    "iso3": "AGO",
+    "name": "Angola",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "AR",
+    "iso3": "ARG",
+    "name": "Argentina",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "AM",
+    "iso3": "ARM",
+    "name": "Armenia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "AU",
+    "iso3": "AUS",
+    "name": "Australia",
+    "region_slug": "oceania",
+    "aliases": []
+  },
+  {
+    "iso2": "AT",
+    "iso3": "AUT",
+    "name": "Austria",
+    "region_slug": "dach",
+    "aliases": []
+  },
+  {
+    "iso2": "AZ",
+    "iso3": "AZE",
+    "name": "Azerbaijan",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "BH",
+    "iso3": "BHR",
+    "name": "Bahrain",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "BD",
+    "iso3": "BGD",
+    "name": "Bangladesh",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "BB",
+    "iso3": "BRB",
+    "name": "Barbados",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "BY",
+    "iso3": "BLR",
+    "name": "Belarus",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "BE",
+    "iso3": "BEL",
+    "name": "Belgium",
+    "region_slug": "france-benelux",
+    "aliases": []
+  },
+  {
+    "iso2": "BO",
+    "iso3": "BOL",
+    "name": "Bolivia",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "BA",
+    "iso3": "BIH",
+    "name": "Bosnia and Herzegovina",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "BR",
+    "iso3": "BRA",
+    "name": "Brazil",
+    "region_slug": "latin-america",
+    "aliases": [
+      "Brasil"
+    ]
+  },
+  {
+    "iso2": "BN",
+    "iso3": "BRN",
+    "name": "Brunei",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "BG",
+    "iso3": "BGR",
+    "name": "Bulgaria",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "KH",
+    "iso3": "KHM",
+    "name": "Cambodia",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "CA",
+    "iso3": "CAN",
+    "name": "Canada",
+    "region_slug": "north-america",
+    "aliases": []
+  },
+  {
+    "iso2": "CV",
+    "iso3": "CPV",
+    "name": "Cape Verde",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "KY",
+    "iso3": "CYM",
+    "name": "Cayman Islands",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "CL",
+    "iso3": "CHL",
+    "name": "Chile",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "CN",
+    "iso3": "CHN",
+    "name": "China",
+    "region_slug": "asia",
+    "aliases": [
+      "中国"
+    ]
+  },
+  {
+    "iso2": "CO",
+    "iso3": "COL",
+    "name": "Colombia",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "CR",
+    "iso3": "CRI",
+    "name": "Costa Rica",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "HR",
+    "iso3": "HRV",
+    "name": "Croatia",
+    "region_slug": "italy-balkans",
+    "aliases": []
+  },
+  {
+    "iso2": "CU",
+    "iso3": "CUB",
+    "name": "Cuba",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "CY",
+    "iso3": "CYP",
+    "name": "Cyprus",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "CZ",
+    "iso3": "CZE",
+    "name": "Czech Republic",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "DK",
+    "iso3": "DNK",
+    "name": "Denmark",
+    "region_slug": "nordics",
+    "aliases": []
+  },
+  {
+    "iso2": "DO",
+    "iso3": "DOM",
+    "name": "Dominican Republic",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "EC",
+    "iso3": "ECU",
+    "name": "Ecuador",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "EG",
+    "iso3": "EGY",
+    "name": "Egypt",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "SV",
+    "iso3": "SLV",
+    "name": "El Salvador",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "EE",
+    "iso3": "EST",
+    "name": "Estonia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "ET",
+    "iso3": "ETH",
+    "name": "Ethiopia",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "FJ",
+    "iso3": "FJI",
+    "name": "Fiji",
+    "region_slug": "oceania",
+    "aliases": []
+  },
+  {
+    "iso2": "FI",
+    "iso3": "FIN",
+    "name": "Finland",
+    "region_slug": "nordics",
+    "aliases": []
+  },
+  {
+    "iso2": "FR",
+    "iso3": "FRA",
+    "name": "France",
+    "region_slug": "france-benelux",
+    "aliases": []
+  },
+  {
+    "iso2": "GE",
+    "iso3": "GEO",
+    "name": "Georgia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "DE",
+    "iso3": "DEU",
+    "name": "Germany",
+    "region_slug": "dach",
+    "aliases": [
+      "Deutschland"
+    ]
+  },
+  {
+    "iso2": "GH",
+    "iso3": "GHA",
+    "name": "Ghana",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "GI",
+    "iso3": "GIB",
+    "name": "Gibraltar",
+    "region_slug": "iberia",
+    "aliases": []
+  },
+  {
+    "iso2": "GR",
+    "iso3": "GRC",
+    "name": "Greece",
+    "region_slug": "italy-balkans",
+    "aliases": []
+  },
+  {
+    "iso2": "GL",
+    "iso3": "GRL",
+    "name": "Greenland",
+    "region_slug": "nordics",
+    "aliases": []
+  },
+  {
+    "iso2": "GT",
+    "iso3": "GTM",
+    "name": "Guatemala",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "GG",
+    "iso3": "GGY",
+    "name": "Guernsey",
+    "region_slug": "british-isles",
+    "aliases": []
+  },
+  {
+    "iso2": "HT",
+    "iso3": "HTI",
+    "name": "Haiti",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "HN",
+    "iso3": "HND",
+    "name": "Honduras",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "HK",
+    "iso3": "HKG",
+    "name": "Hong Kong",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "HU",
+    "iso3": "HUN",
+    "name": "Hungary",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "IS",
+    "iso3": "ISL",
+    "name": "Iceland",
+    "region_slug": "nordics",
+    "aliases": []
+  },
+  {
+    "iso2": "IN",
+    "iso3": "IND",
+    "name": "India",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "ID",
+    "iso3": "IDN",
+    "name": "Indonesia",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "IR",
+    "iso3": "IRN",
+    "name": "Iran",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "IQ",
+    "iso3": "IRQ",
+    "name": "Iraq",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "IE",
+    "iso3": "IRL",
+    "name": "Ireland",
+    "region_slug": "british-isles",
+    "aliases": []
+  },
+  {
+    "iso2": "IM",
+    "iso3": "IMN",
+    "name": "Isle of Man",
+    "region_slug": "british-isles",
+    "aliases": []
+  },
+  {
+    "iso2": "IL",
+    "iso3": "ISR",
+    "name": "Israel",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "IT",
+    "iso3": "ITA",
+    "name": "Italy",
+    "region_slug": "italy-balkans",
+    "aliases": [
+      "Italia"
+    ]
+  },
+  {
+    "iso2": "JM",
+    "iso3": "JAM",
+    "name": "Jamaica",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "JP",
+    "iso3": "JPN",
+    "name": "Japan",
+    "region_slug": "asia",
+    "aliases": [
+      "日本"
+    ]
+  },
+  {
+    "iso2": "JE",
+    "iso3": "JEY",
+    "name": "Jersey",
+    "region_slug": "british-isles",
+    "aliases": []
+  },
+  {
+    "iso2": "JO",
+    "iso3": "JOR",
+    "name": "Jordan",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "KZ",
+    "iso3": "KAZ",
+    "name": "Kazakhstan",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "KE",
+    "iso3": "KEN",
+    "name": "Kenya",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "KW",
+    "iso3": "KWT",
+    "name": "Kuwait",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "LA",
+    "iso3": "LAO",
+    "name": "Laos",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "LV",
+    "iso3": "LVA",
+    "name": "Latvia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "LB",
+    "iso3": "LBN",
+    "name": "Lebanon",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "LS",
+    "iso3": "LSO",
+    "name": "Lesotho",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "LI",
+    "iso3": "LIE",
+    "name": "Liechtenstein",
+    "region_slug": "dach",
+    "aliases": []
+  },
+  {
+    "iso2": "LT",
+    "iso3": "LTU",
+    "name": "Lithuania",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "LU",
+    "iso3": "LUX",
+    "name": "Luxembourg",
+    "region_slug": "france-benelux",
+    "aliases": []
+  },
+  {
+    "iso2": "MG",
+    "iso3": "MDG",
+    "name": "Madagascar",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "MY",
+    "iso3": "MYS",
+    "name": "Malaysia",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "MV",
+    "iso3": "MDV",
+    "name": "Maldives",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "ML",
+    "iso3": "MLI",
+    "name": "Mali",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "MT",
+    "iso3": "MLT",
+    "name": "Malta",
+    "region_slug": "italy-balkans",
+    "aliases": []
+  },
+  {
+    "iso2": "MX",
+    "iso3": "MEX",
+    "name": "Mexico",
+    "region_slug": "north-america",
+    "aliases": []
+  },
+  {
+    "iso2": "MD",
+    "iso3": "MDA",
+    "name": "Moldova",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "MC",
+    "iso3": "MCO",
+    "name": "Monaco",
+    "region_slug": "france-benelux",
+    "aliases": []
+  },
+  {
+    "iso2": "MN",
+    "iso3": "MNG",
+    "name": "Mongolia",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "ME",
+    "iso3": "MNE",
+    "name": "Montenegro",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "MA",
+    "iso3": "MAR",
+    "name": "Morocco",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "MZ",
+    "iso3": "MOZ",
+    "name": "Mozambique",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "MM",
+    "iso3": "MMR",
+    "name": "Myanmar",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "NP",
+    "iso3": "NPL",
+    "name": "Nepal",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "NL",
+    "iso3": "NLD",
+    "name": "Netherlands",
+    "region_slug": "france-benelux",
+    "aliases": []
+  },
+  {
+    "iso2": "NZ",
+    "iso3": "NZL",
+    "name": "New Zealand",
+    "region_slug": "oceania",
+    "aliases": []
+  },
+  {
+    "iso2": "NI",
+    "iso3": "NIC",
+    "name": "Nicaragua",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "NG",
+    "iso3": "NGA",
+    "name": "Nigeria",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "KP",
+    "iso3": "PRK",
+    "name": "North Korea",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "MK",
+    "iso3": "MKD",
+    "name": "North Macedonia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "NO",
+    "iso3": "NOR",
+    "name": "Norway",
+    "region_slug": "nordics",
+    "aliases": []
+  },
+  {
+    "iso2": "OM",
+    "iso3": "OMN",
+    "name": "Oman",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "PK",
+    "iso3": "PAK",
+    "name": "Pakistan",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "PA",
+    "iso3": "PAN",
+    "name": "Panama",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "PG",
+    "iso3": "PNG",
+    "name": "Papua New Guinea",
+    "region_slug": "oceania",
+    "aliases": []
+  },
+  {
+    "iso2": "PY",
+    "iso3": "PRY",
+    "name": "Paraguay",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "PE",
+    "iso3": "PER",
+    "name": "Peru",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "PH",
+    "iso3": "PHL",
+    "name": "Philippines",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "PL",
+    "iso3": "POL",
+    "name": "Poland",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "PT",
+    "iso3": "PRT",
+    "name": "Portugal",
+    "region_slug": "iberia",
+    "aliases": []
+  },
+  {
+    "iso2": "PR",
+    "iso3": "PRI",
+    "name": "Puerto Rico",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "QA",
+    "iso3": "QAT",
+    "name": "Qatar",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "RO",
+    "iso3": "ROU",
+    "name": "Romania",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "RU",
+    "iso3": "RUS",
+    "name": "Russia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "WS",
+    "iso3": "WSM",
+    "name": "Samoa",
+    "region_slug": "oceania",
+    "aliases": []
+  },
+  {
+    "iso2": "SA",
+    "iso3": "SAU",
+    "name": "Saudi Arabia",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "SN",
+    "iso3": "SEN",
+    "name": "Senegal",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "RS",
+    "iso3": "SRB",
+    "name": "Serbia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "SG",
+    "iso3": "SGP",
+    "name": "Singapore",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "SK",
+    "iso3": "SVK",
+    "name": "Slovakia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "SI",
+    "iso3": "SVN",
+    "name": "Slovenia",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "ZA",
+    "iso3": "ZAF",
+    "name": "South Africa",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "KR",
+    "iso3": "KOR",
+    "name": "South Korea",
+    "region_slug": "asia",
+    "aliases": [
+      "한국"
+    ]
+  },
+  {
+    "iso2": "ES",
+    "iso3": "ESP",
+    "name": "Spain",
+    "region_slug": "iberia",
+    "aliases": [
+      "España"
+    ]
+  },
+  {
+    "iso2": "LK",
+    "iso3": "LKA",
+    "name": "Sri Lanka",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "SE",
+    "iso3": "SWE",
+    "name": "Sweden",
+    "region_slug": "nordics",
+    "aliases": []
+  },
+  {
+    "iso2": "CH",
+    "iso3": "CHE",
+    "name": "Switzerland",
+    "region_slug": "dach",
+    "aliases": []
+  },
+  {
+    "iso2": "SY",
+    "iso3": "SYR",
+    "name": "Syria",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "TW",
+    "iso3": "TWN",
+    "name": "Taiwan",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "TJ",
+    "iso3": "TJK",
+    "name": "Tajikistan",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "TZ",
+    "iso3": "TZA",
+    "name": "Tanzania",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "TH",
+    "iso3": "THA",
+    "name": "Thailand",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "TL",
+    "iso3": "TLS",
+    "name": "Timor-Leste",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "TO",
+    "iso3": "TON",
+    "name": "Tonga",
+    "region_slug": "oceania",
+    "aliases": []
+  },
+  {
+    "iso2": "TN",
+    "iso3": "TUN",
+    "name": "Tunisia",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "TR",
+    "iso3": "TUR",
+    "name": "Turkey",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "TM",
+    "iso3": "TKM",
+    "name": "Turkmenistan",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "AE",
+    "iso3": "ARE",
+    "name": "UAE",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "UG",
+    "iso3": "UGA",
+    "name": "Uganda",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  },
+  {
+    "iso2": "UA",
+    "iso3": "UKR",
+    "name": "Ukraine",
+    "region_slug": "eastern-europe",
+    "aliases": []
+  },
+  {
+    "iso2": "GB",
+    "iso3": "GBR",
+    "name": "United Kingdom",
+    "region_slug": "british-isles",
+    "aliases": []
+  },
+  {
+    "iso2": "US",
+    "iso3": "USA",
+    "name": "United States",
+    "region_slug": "north-america",
+    "aliases": []
+  },
+  {
+    "iso2": "UY",
+    "iso3": "URY",
+    "name": "Uruguay",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "UZ",
+    "iso3": "UZB",
+    "name": "Uzbekistan",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "VE",
+    "iso3": "VEN",
+    "name": "Venezuela",
+    "region_slug": "latin-america",
+    "aliases": []
+  },
+  {
+    "iso2": "VN",
+    "iso3": "VNM",
+    "name": "Vietnam",
+    "region_slug": "asia",
+    "aliases": []
+  },
+  {
+    "iso2": "ZM",
+    "iso3": "ZMB",
+    "name": "Zambia",
+    "region_slug": "middle-east-africa",
+    "aliases": []
+  }
+]
