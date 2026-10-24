@@ -148,8 +148,8 @@ describe("TvAdminClient multi-categories display", () => {
     );
 
     expect(screen.getByText("Categories")).toBeDefined();
-    expect(screen.getByText("profile")).toBeDefined();
-    expect(screen.getByText("event")).toBeDefined();
+    expect(screen.getAllByText("profile").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("event").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("custom-tag")).toBeDefined();
   });
 });

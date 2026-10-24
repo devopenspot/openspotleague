@@ -8,7 +8,7 @@ describe("parseYouTubeVideoUrl", () => {
     ).toEqual({
       canonicalUrl: "https://www.youtube.com/watch?v=RviTmnuvW5M",
       embedUrl:
-        "https://www.youtube.com/embed/RviTmnuvW5M?autoplay=0&controls=1&playsinline=1&rel=0",
+        "https://www.youtube-nocookie.com/embed/RviTmnuvW5M?autoplay=0&controls=1&playsinline=1&rel=0",
     })
   })
 

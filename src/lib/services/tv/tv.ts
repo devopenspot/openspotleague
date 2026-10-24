@@ -6,6 +6,7 @@ import type {
   TvCardPageOptions,
   TvCardPageResult,
   TvCountOptions,
+  TvDistinctCategoriesOptions,
   TvFilterOptionsResult,
   TvIdListOptions,
 } from "@/lib/repositories/tv/tv-repository";
@@ -18,6 +19,7 @@ export async function runListTvVideos(options: {
   disciplineSlugs?: readonly string[];
   category?: string;
   publishedOnly?: boolean;
+  limit?: number;
 } = {}): Promise<readonly TvVideo[]> {
   const repository = await getTvRepositoryAsync();
   return repository.list(options);
@@ -154,6 +156,27 @@ export async function getTvFilterOptions(): Promise<TvFilterOptionsResult> {
   cacheTag("tv:list");
   cacheLife(TV_CACHE_LIFE);
   return runGetTvFilterOptions();
+}
+
+export async function runListTvDistinctCategories(
+  options: TvDistinctCategoriesOptions = {},
+): Promise<readonly string[]> {
+  const repository = await getTvRepositoryAsync();
+  return repository.listDistinctCategories(options);
+}
+
+export async function listTvDistinctCategories(
+  options: TvDistinctCategoriesOptions = {},
+): Promise<readonly string[]> {
+  "use cache";
+  const normalized: TvDistinctCategoriesOptions = {
+    disciplineSlug: options.disciplineSlug?.trim().toLowerCase() || undefined,
+    disciplineSlugs: options.disciplineSlugs?.map((s) => s.trim().toLowerCase()).filter(Boolean),
+    publishedOnly: options.publishedOnly,
+  };
+  cacheTag("tv:list");
+  cacheLife(TV_CACHE_LIFE);
+  return runListTvDistinctCategories(normalized);
 }
 
 export async function runListTvIdList(

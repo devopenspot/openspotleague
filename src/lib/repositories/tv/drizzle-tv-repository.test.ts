@@ -65,7 +65,7 @@ describe("DrizzleTvRepository read paths", () => {
     expect(video).toMatchObject({
       id: "tv-1",
       embedUrl:
-        "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&playsinline=1&rel=0",
+        "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&playsinline=1&rel=0",
       disciplineSlug: "skateboard",
       categories: ["historic", "profile"],
       published: true,
@@ -120,7 +120,7 @@ describe("DrizzleTvRepository card paths", () => {
       title: "Fifty Classic Clips",
       youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       embedUrl:
-        "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&playsinline=1&rel=0",
+        "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&playsinline=1&rel=0",
       disciplineSlug: "skateboard",
       categories: ["historic", "profile"],
       postDate: "2026-01-15T00:00:00.000Z",
@@ -258,6 +258,23 @@ describe("DrizzleTvRepository card paths", () => {
     expect(options.years).toEqual([2026, 2025])
     // canonical categories first (profile, trick), then custom (custom_cat)
     expect(options.categories).toEqual(["profile", "trick", "custom_cat"])
+  })
+
+  it("returns distinct categories ordered canonically with discipline filter", async () => {
+    let capturedQuery: unknown = null
+    const repository = new DrizzleTvRepository(
+      makeDb([], undefined, (query) => {
+        capturedQuery = query
+        return [
+          { category: "lifestyle" },
+          { category: "street" },
+          { category: "documentary" },
+        ]
+      }),
+    )
+    const categories = await repository.listDistinctCategories({ disciplineSlug: "skateboard" })
+    expect(categories).toEqual(["documentary", "lifestyle", "street"])
+    expect(capturedQuery).toBeDefined()
   })
 })
 

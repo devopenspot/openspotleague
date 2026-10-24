@@ -18,6 +18,7 @@ export function isProxyBypassPath(pathname: string): boolean {
     pathname === "/sitemap.xml" ||
     pathname === "/manifest.webmanifest" ||
     pathname === "/manifest.json" ||
+    pathname === "/favicon.ico" ||
     pathname === "/icon" ||
     pathname === "/apple-icon"
   )

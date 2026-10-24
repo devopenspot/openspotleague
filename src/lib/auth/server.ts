@@ -8,7 +8,9 @@ import { getServerUserFromCookies } from "@/lib/auth/auth"
 import {
   AuthorizationError,
   type AuthorizationRequirement,
-  getAuthorizationSnapshot,
+  getAuthorizationSnapshotCached,
+  hasRole,
+  isScopedCurator,
   hasEventCuratorRole,
   hasSpotCuratorRole,
   hasTrickCuratorRole,
@@ -213,7 +215,10 @@ export async function requireCurationAccessOrRedirect(
     redirect(`/login?next=${encodeURIComponent(nextPath)}`)
   }
   try {
-    return await requireCurationForUser(user)
+    const snapshot = await getAuthorizationSnapshotCached(user.id)
+    const canAccess = hasRole(snapshot, "admin") || isScopedCurator(snapshot)
+    if (!canAccess) throw new AuthorizationError("FORBIDDEN")
+    return user
   } catch {
     redirect("/")
   }
@@ -227,7 +232,9 @@ export async function requireAdministratorOrRedirect(
     redirect(`/login?next=${encodeURIComponent(nextPath)}`)
   }
   try {
-    return await requireAdministratorForUser(user)
+    const snapshot = await getAuthorizationSnapshotCached(user.id)
+    if (!hasRole(snapshot, "admin")) throw new AuthorizationError("FORBIDDEN")
+    return user
   } catch {
     redirect(`/admin/curation?denied=${encodeURIComponent(nextPath)}`)
   }
@@ -235,14 +242,14 @@ export async function requireAdministratorOrRedirect(
 
 async function requireScopedRoleOrRedirect(
   nextPath: string,
-  check: (snapshot: Awaited<ReturnType<typeof getAuthorizationSnapshot>>) => boolean,
+  check: (snapshot: Awaited<ReturnType<typeof getAuthorizationSnapshotCached>>) => boolean,
 ): Promise<User> {
   const user = await getSessionUser()
   if (!user) {
     redirect(`/login?next=${encodeURIComponent(nextPath)}`)
   }
   try {
-    const snapshot = await getAuthorizationSnapshot(user.id)
+    const snapshot = await getAuthorizationSnapshotCached(user.id)
     if (!check(snapshot)) throw new AuthorizationError("FORBIDDEN")
     return user
   } catch {

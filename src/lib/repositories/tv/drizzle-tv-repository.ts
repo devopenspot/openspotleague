@@ -10,6 +10,7 @@ import type {
   TvCategoryRowResult,
   TvCategoryRowsOptions,
   TvCountOptions,
+  TvDistinctCategoriesOptions,
   TvFilterOptionsResult,
   TvIdListOptions,
   TvListOptions,
@@ -538,6 +539,43 @@ export class DrizzleTvRepository implements TvRepository {
     );
 
     return { years, categories };
+  }
+
+  async listDistinctCategories(
+    options: TvDistinctCategoriesOptions = {},
+  ): Promise<readonly string[]> {
+    const conditions = [];
+    if (options.publishedOnly) {
+      conditions.push(eq(tvVideos.published, true));
+    }
+    if (options.disciplineSlug) {
+      conditions.push(eq(tvVideos.disciplineSlug, options.disciplineSlug.trim().toLowerCase()));
+    } else if (options.disciplineSlugs && options.disciplineSlugs.length > 0) {
+      const normalized = options.disciplineSlugs
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean);
+      if (normalized.length > 0) {
+        conditions.push(inArray(tvVideos.disciplineSlug, normalized));
+      }
+    }
+
+    const whereClause = conditions.length ? and(...conditions) : undefined;
+    const rows = await this.db.execute<{ category: string }>(
+      whereClause
+        ? sql`
+          select distinct unnest(${tvVideos.categories}) as category
+          from ${tvVideos}
+          where ${whereClause}
+          order by category asc
+        `
+        : sql`
+          select distinct unnest(${tvVideos.categories}) as category
+          from ${tvVideos}
+          order by category asc
+        `,
+    );
+
+    return orderTvCategories((rows ?? []).map((r) => r.category).filter(Boolean));
   }
 
   async findById(id: string): Promise<TvVideo | null> {

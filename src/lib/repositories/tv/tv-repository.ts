@@ -53,6 +53,12 @@ export interface TvCountOptions {
   publishedOnly?: boolean;
 }
 
+export interface TvDistinctCategoriesOptions {
+  disciplineSlug?: string;
+  disciplineSlugs?: readonly string[];
+  publishedOnly?: boolean;
+}
+
 export interface TvRepository {
   list(options?: TvListOptions): Promise<readonly TvVideo[]>;
   /**
@@ -85,6 +91,8 @@ export interface TvRepository {
   countByDiscipline(options?: TvCountOptions): Promise<readonly { disciplineSlug: string; count: number }[]>;
   /** Distinct available years and categories across published TV videos. */
   getFilterOptions(): Promise<TvFilterOptionsResult>;
+  /** Distinct categories across TV videos, optionally filtered by discipline or publication state. */
+  listDistinctCategories(options?: TvDistinctCategoriesOptions): Promise<readonly string[]>;
   findById(id: string): Promise<TvVideo | null>;
   /**
    * Single public card (theater deep-links, cross-page queue

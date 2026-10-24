@@ -20,6 +20,7 @@ export function cspValue(nonce?: string): string {
     `connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com https://cloudflareinsights.com`,
     `img-src 'self' data: blob: https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://i.ytimg.com https://spots.cdn.openspotleague.com https://events.cdn.openspotleague.com`,
     `font-src 'self' data:`,
+    `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com`,
     `frame-ancestors 'none'`,
     `form-action 'self'`,
     `base-uri 'self'`,

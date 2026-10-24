@@ -43,10 +43,14 @@ function mergeCategories(
 export function TvForm({
   initial,
   disciplines,
+  defaultDisciplineSlug,
+  suggestedCategories,
   onDone,
 }: {
   initial?: TvVideo | null;
   disciplines: readonly { slug: string; name: string }[];
+  defaultDisciplineSlug?: string;
+  suggestedCategories?: readonly string[];
   onDone?: () => void;
 }) {
   const router = useRouter();
@@ -57,7 +61,7 @@ export function TvForm({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [youtubeUrl, setYoutubeUrl] = useState(initial?.youtubeUrl ?? "");
   const [disciplineSlug, setDisciplineSlug] = useState(
-    initial?.disciplineSlug ?? disciplines[0]?.slug ?? "roller",
+    initial?.disciplineSlug ?? defaultDisciplineSlug ?? disciplines[0]?.slug ?? "roller",
   );
   const [categories, setCategories] = useState<TvCategory[]>(() =>
     initial?.categories && initial.categories.length > 0
@@ -304,7 +308,10 @@ export function TvForm({
             <span className="font-mono text-[10px] uppercase tracking-eyebrow text-secondary">
               Suggestions:
             </span>
-            {TV_CATEGORY_VALUES.map((preset) => {
+            {(suggestedCategories && suggestedCategories.length > 0
+              ? suggestedCategories
+              : TV_CATEGORY_VALUES
+            ).map((preset) => {
               const selected = categories.some(
                 (c) => c.toLowerCase() === preset,
               );

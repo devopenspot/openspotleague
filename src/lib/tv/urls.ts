@@ -35,7 +35,7 @@ export function parseYouTubeVideoUrl(
 
     return {
       canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`,
-      embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&playsinline=1&rel=0`,
+      embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&controls=1&playsinline=1&rel=0`,
     }
   } catch {
     return null
