@@ -15,14 +15,15 @@ import type {
   VerificationStatus,
 } from "@/lib/schemas/game"
 import { gameDefinitionSchema } from "@/lib/schemas/game"
+import gameDefinitionsRaw from "@/data/game_definitions.json"
 
-export const PLAYER_LIMITS = { min: 2, max: 2 } as const
-export const START_GRACE_MINUTES = 15
-export const DEFAULT_LOCATION_RADIUS_METERS = 250
-export const DEFAULT_LOCATION_MAX_ACCURACY_METERS = 50
-export const DEFAULT_LOCATION_VERIFICATION_TTL_SECONDS = 900
-export const LEVEL_POINTS: Record<TrickLevel, number> = { 1: 5, 2: 8, 3: 13, 4: 21, 5: 34 }
-export const WINNER_BONUS_POINTS = 34
+export const PLAYER_LIMITS = gameDefinitionsRaw.player_limits as { readonly min: 2; readonly max: 2 }
+export const START_GRACE_MINUTES = gameDefinitionsRaw.start_grace_minutes
+export const DEFAULT_LOCATION_RADIUS_METERS = gameDefinitionsRaw.location_defaults.radius_meters
+export const DEFAULT_LOCATION_MAX_ACCURACY_METERS = gameDefinitionsRaw.location_defaults.max_accuracy_meters
+export const DEFAULT_LOCATION_VERIFICATION_TTL_SECONDS = gameDefinitionsRaw.location_defaults.verification_ttl_seconds
+export const LEVEL_POINTS = gameDefinitionsRaw.level_points as unknown as Record<TrickLevel, number>
+export const WINNER_BONUS_POINTS = gameDefinitionsRaw.winner_bonus_points
 
 export type GameDefinition = {
   sportPreference: "Roller" | "Skateboard" | "BMX" | "Scooter"
@@ -34,44 +35,20 @@ export type GameDefinition = {
   catalogPath: string
 }
 
-export const GAME_DEFINITIONS: Record<DisciplineSlug, GameDefinition> = {
-  roller: {
-    sportPreference: "Roller",
-    disciplineSlug: "roller",
-    challengeKey: "blade",
-    gameName: "Play a Blade",
-    eliminationWord: "BLADE",
-    wordLength: 5,
-    catalogPath: "src/data/tricks/roller.json",
-  },
-  skateboard: {
-    sportPreference: "Skateboard",
-    disciplineSlug: "skateboard",
-    challengeKey: "skate",
-    gameName: "Play a Skate",
-    eliminationWord: "SKATE",
-    wordLength: 5,
-    catalogPath: "src/data/tricks/skateboard.json",
-  },
-  bmx: {
-    sportPreference: "BMX",
-    disciplineSlug: "bmx",
-    challengeKey: "bike",
-    gameName: "Play a Bike",
-    eliminationWord: "BIKE",
-    wordLength: 4,
-    catalogPath: "src/data/tricks/bmx.json",
-  },
-  scooter: {
-    sportPreference: "Scooter",
-    disciplineSlug: "scooter",
-    challengeKey: "scoot",
-    gameName: "Play a Scoot",
-    eliminationWord: "SCOOT",
-    wordLength: 5,
-    catalogPath: "src/data/tricks/scooter.json",
-  },
+const defsMap = {} as Record<DisciplineSlug, GameDefinition>
+for (const d of gameDefinitionsRaw.disciplines) {
+  defsMap[d.discipline_slug as DisciplineSlug] = {
+    sportPreference: d.sport_preference as GameDefinition["sportPreference"],
+    disciplineSlug: d.discipline_slug as DisciplineSlug,
+    challengeKey: d.challenge_key as ChallengeKey,
+    gameName: d.game_name,
+    eliminationWord: d.elimination_word,
+    wordLength: d.word_length as 4 | 5,
+    catalogPath: d.catalog_path,
+  }
 }
+
+export const GAME_DEFINITIONS: Record<DisciplineSlug, GameDefinition> = defsMap
 
 const CHALLENGE_KEY_FOR_DISCIPLINE: Record<DisciplineSlug, ChallengeKey> = {
   roller: "blade",
