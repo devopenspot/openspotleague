@@ -58,6 +58,19 @@ Single private Next.js 16 App Router application ("OpenSpot" — interactive map
 - Concurrency & Read Safety:
   - Global database concurrency gating lives inside `withDbRetry` (`withGlobalDbConcurrency` in `src/lib/db/concurrency.ts`), bounded by `CONCURRENCY_MAX` (capped at `POOL_MAX`). Do not hand-roll per-layout or per-route connection concurrency gating.
   - Displayed spot weather is client-side only via `/api/weather`; per-spot `"use cache"` (`src/lib/weather/weather-cached.ts`) absorbs requests. Do not restore an all-spots weather fetch to SSR/layouts.
+- Data Flow, RSC Flight & Egress Guardrails:
+  - Supavisor & Egress Model: Runtime database queries ride the Supavisor shared pooler (`:6543`, Transaction mode) under the Supabase 5 GB/mo Unified Egress quota (~160 MB/day).
+    - Transaction-Free Reads: Never wrap point reads or read services in `db.transaction(...)`. Always use `withDbRead`. Reads must execute in 1 network RTT on the shared client (`BEGIN`/`COMMIT` wastes 2 extra pooler round trips).
+    - Authorization Snapshot: User permission and role checks on read surfaces must use `getAuthorizationSnapshotCached(userId)` (`AUTHZ_CACHE_LIFE`), never fresh sequential queries on hot paths.
+  - RSC Flight Wire Slimming: Never serialize raw database schema rows (e.g. 27-column events, 21-column spots, 500 TV cards) across the RSC boundary to Client Components.
+    - Always define a minimal UI projection interface (e.g. `MarqueeEventInput`, `MarqueeVideoInput`, `MapSpot`, `SavedSpotHead`) selecting ONLY the fields rendered by the client component.
+    - Never attach unused object references or `.raw` back-pointers to client item models.
+  - Hierarchical Layout Context Deduping: Descendant layouts (`/map/layout.tsx`, `/tv/layout.tsx`, `/games/layout.tsx`) must NEVER duplicate data fetching or mount duplicate providers already mounted in `RootLayout` (`UserProvider`, `SavedSpotsProvider`, `VerifiedSpotsProvider`, `HydrationGate`).
+  - Multiplayer Polling & Realtime Protection:
+    - Any high-cadence polling endpoint must implement a transaction-free, single-query version pre-check (returning HTTP `304 Not Modified` with a 0-byte body when `version === knownVersion`) before opening transactions or joining relation graphs.
+    - Client polling intervals must stay strictly below proxy rate limits (e.g. 2s cadence = 30 req/min requires tier limit >= 60).
+    - Realtime subscribers must ignore signals where `signalVersion <= currentVersion`, and explicit action refreshes must clear pending debounce timers.
+  - Terminal State Caching: Terminal entities (`status: complete` or `status: cancelled`) are immutable; their GET route handlers must return `Cache-Control: private, max-age=300, stale-while-revalidate=3600`.
 
 ## Database & Migrations
 
@@ -118,7 +131,6 @@ Single private Next.js 16 App Router application ("OpenSpot" — interactive map
 
 - Feature specifications live in `.agents/specs/`:
   - `league/`: `api.spec.md`, `business-rule.new.md`, `data-model.spec.md`, `email.spec.md`, `engine.spec.md`, `plan.league.spec.md`, `ui.spec.md`, `verification.spec.md`.
-  - `data-flow-audit/`: `games-realtime.md`, `landing.md`, `map-search.md`, `overview.md`, `tv.md`.
 - Always inspect the relevant specification before modifying league, challenge game, TV, or data catalog implementations.
 
 ## Codebase Memory MCP Usage
