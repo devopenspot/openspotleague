@@ -62,6 +62,7 @@ const APPLICATION_TABLES = [
   "event_plans",
   "sport_disciplines",
   "spot_types",
+  "cities",
   "countries",
   "regions",
 ] as const

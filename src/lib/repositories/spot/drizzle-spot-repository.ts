@@ -3,6 +3,7 @@ import type { drizzle } from "drizzle-orm/postgres-js";
 import {
   communitySpotSubmissions,
   countries,
+  cities,
   regions,
   sportDisciplines,
   spotTypeAssignments,
@@ -774,6 +775,17 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
       .returning({ id: spots.id });
     const rowId = row?.id;
     if (!rowId) throw new Error("Insert returned no row");
+    if (insertValues.citySlug && insertValues.city) {
+      await this.db
+        .insert(cities)
+        .values({
+          countryCode: insertValues.countryCode,
+          slug: insertValues.citySlug,
+          name: insertValues.city,
+          sortOrder: 0,
+        })
+        .onConflictDoNothing();
+    }
     await this.syncSpotDisciplines(rowId, input.sports);
     await this.syncSpotTypes(rowId, input.types);
     return rowId;

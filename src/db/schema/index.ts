@@ -1031,6 +1031,33 @@ export const countries = pgTable(
   ],
 );
 
+export const cities = pgTable(
+  "cities",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: text("slug").notNull(),
+    name: text("name").notNull(),
+    countryCode: text("country_code")
+      .notNull()
+      .references(() => countries.iso2, { onDelete: "restrict" }),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    unique("cities_country_code_slug_key").on(t.countryCode, t.slug),
+    index("cities_country_code_sort_order_idx").on(t.countryCode, t.sortOrder),
+    index("cities_slug_idx").on(t.slug),
+    check("cities_name_check", sql`length(${t.name}) > 0`),
+    check("cities_slug_check", sql`length(${t.slug}) > 0`),
+    check("cities_sort_order_check", sql`${t.sortOrder} >= 0`),
+  ],
+);
+
 export const spotTypes = pgTable(
   "spot_types",
   {
@@ -2109,8 +2136,16 @@ export const countriesRelations = relations(countries, ({ one, many }) => ({
     fields: [countries.regionId],
     references: [regions.id],
   }),
+  cities: many(cities),
   spots: many(spots),
   sportEvents: many(sportEvents),
+}));
+
+export const citiesRelations = relations(cities, ({ one }) => ({
+  country: one(countries, {
+    fields: [cities.countryCode],
+    references: [countries.iso2],
+  }),
 }));
 
 export const regionsRelations = relations(regions, ({ many }) => ({
@@ -2538,6 +2573,8 @@ export type RegionRow = typeof regions.$inferSelect;
 export type NewRegionRow = typeof regions.$inferInsert;
 export type CountryRow = typeof countries.$inferSelect;
 export type NewCountryRow = typeof countries.$inferInsert;
+export type CityRow = typeof cities.$inferSelect;
+export type NewCityRow = typeof cities.$inferInsert;
 export type SpotTypeRow = typeof spotTypes.$inferSelect;
 export type NewSpotTypeRow = typeof spotTypes.$inferInsert;
 export type SportDisciplineRow = typeof sportDisciplines.$inferSelect;

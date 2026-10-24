@@ -8,6 +8,20 @@
       "when": 1724200000000,
       "tag": "0000_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1729728000000,
+      "tag": "0001_profiles_allow_all_discipline",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1729728000001,
+      "tag": "0002_cities_table",
+      "breakpoints": true
     }
   ]
 }
