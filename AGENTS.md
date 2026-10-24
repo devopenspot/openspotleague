@@ -112,6 +112,10 @@ Single private Next.js 16 App Router application ("OpenSpot" — interactive map
 - Map Canvas Palette (`DESIGN.md`, `src/app/globals.css`):
   - All maps (`LeafletCanvas`, `SpotStaticMap`, `SpotMapFallback`) use the high-contrast dark palette (`--color-map-*` tokens and `--map-tile-filter` on `.leaflet-tile-pane` / `.map-tile-dark`) STRICTLY for the map canvas, tiles, and on-map markers/overlays.
   - NEVER apply the map dark mode to surrounding page layouts, headers, sidebars, drawers, or cards.
+- Performance Standard — Ban on `animate-pulse` in UI Components:
+  - `animate-pulse` and continuous pulse animations are strictly prohibited across all user interface components, buttons, badges, status dots, cards, and feature specifications.
+  - Rationale: Continuous CSS opacity/scale pulse loops force continuous GPU compositor repaints, thread churn, and battery drain in web browsers. Stopping use is mandatory and non-negotiable.
+  - ONLY EXCEPTION: Skeletons and loading components (`*Skeleton.tsx`, `loading.tsx`, Suspense loading fallbacks). These transient components are unmounted once data arrives, so they are the only allowed surface for `animate-pulse`. All other UI must be free of pulse animations.
 - Component Structure & Organization:
   - `src/components/games/create/GameCreateForm.tsx`: Helper subcomponents live in `form-parts.tsx` (same directory); trick-catalog filtering and AND-logic live in `trick-catalog-filters.ts` with unit tests.
   - `src/components/games/layout/Header.tsx`: Presentational components in `header-parts.tsx`, pure derived state in `header-state.ts` (tested), and onboarding in `share-onboarding.ts`.

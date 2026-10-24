@@ -29,6 +29,7 @@ Design system: `DESIGN.md` + `src/app/globals.css` (monochrome system, Plus Jaka
 ## States & a11y
 
 - Every list surface: loading skeleton, empty state (no events / no members / no runs / no results / no invites), error boundary with retry.
+- Performance & animation constraints: `animate-pulse` is strictly banned in all league UI components (live status indicators, timers, countdowns, badges, buttons). Only loading skeletons (*Skeleton.tsx / loading.tsx) may use `animate-pulse`.
 - Forms: 16px controls on mobile (`text-base sm:text-sm`), labeled inputs, error text tied via `aria-describedby`, focus moved to first error on submit.
 - Judge view: single column, ≥44px touch targets, no drag interactions; score changes announced via `aria-live="polite"`; keyboard operable throughout.
 - Status/badges: text + color (never color alone), contrast ≥ AA.

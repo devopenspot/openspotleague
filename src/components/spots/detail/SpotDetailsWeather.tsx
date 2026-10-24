@@ -47,7 +47,7 @@ export function SpotDetailsWeather({
           className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 font-display text-[10px] font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container"
         >
           <span>Live weather</span>
-          <Radio size={11} aria-hidden="true" className="animate-radar-pulse" />
+          <Radio size={11} aria-hidden="true" />
         </a>
       </div>
 

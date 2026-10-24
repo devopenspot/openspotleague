@@ -196,9 +196,10 @@ spacing:
   mobile-nav-h: 64px
   note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is fixed 64px (var(--mobile-nav-h)); Header is content-height (py-3.5), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
-  durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse, 2.5s user ping"
+  durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
   easings: "ease-out default, linear for radar sweep (3.5s), cubic-bezier(0, 0, 0.2, 1) for ping"
-  keyframes: "fadeIn 0.3s / slideUp 0.4s / pulseDot 2s / pingSlow 2s / radarSweep 3.5s / heartBurst 600ms / leafletPinPulse 180ms / leafletUserPing 2.5s / ledOn 1.2s / ledBlink 0.6s + panel-scan"
+  keyframes: "fadeIn 0.3s / slideUp 0.4s / pingSlow 2s / radarSweep 3.5s / heartBurst 600ms / leafletPinPulse 180ms / leafletUserPing 2.5s / ledOn 1.2s / ledBlink 0.6s + panel-scan"
+  performance-rule: "animate-pulse and infinite pulse animations are strictly BANNED across all user interface components, buttons, badges, status dots, cards, and specifications. Rationale: Continuous CSS opacity/scale pulse loops force continuous repaints, compositor churn, and battery drain in web browsers. Stopping use is mandatory and non-negotiable. ONLY EXCEPTION: Transient skeletons and loading components (*Skeleton.tsx, loading.tsx), which are short-lived placeholders unmounted upon hydration."
   reduced-motion: "All disabled via @media (prefers-reduced-motion: reduce) — respects useReducedMotion in Toast"
   shadows: "Shadowless by default (shadow-none). Exceptions: PanelShell inset+ 0 8px 24px, MarqueeCard hover:shadow-md + -translate-y-px, hover:shadow-sm on discover cards."
   overlays: "Overlay flush-top: spring damping 30 stiffness 320, 0.18s fade fallback. SideDrawer: spring damping 30 stiffness 320 side slide, backdrop bg-on-surface/50 0.18s. Toast: opacity/y 0.16s easeOut stagger 0.04."
@@ -253,7 +254,7 @@ components:
     wash: "bg-gradient-to-t from-on-surface/45 via-transparent to-transparent over the image bottom"
     rule: "Scrim pills live on photos only — never on flat surfaces (use badges there)."
   skeleton:
-    note: "Loading mirrors of Hero + wire rail (HomeSkeleton). Pulse blocks only, no spinners; keep layout dimensions identical to the loaded component."
+    note: "Loading mirrors of Hero + wire rail (HomeSkeleton). Pulse blocks only (animate-pulse is blessed strictly and solely for skeletons and loading components), no spinners; keep layout dimensions identical to the loaded component."
     on-light: " rounded bg-surface-container-high (blocks) / bg-surface-container-lowest (inner cards)"
     on-gradient-or-wire: " bg-white/10-25 (never surface tokens — invisible on dark)"
   empty-state:
@@ -309,6 +310,7 @@ known-issues:
     problem: "Dark panel bg-on-surface (#121212) with Heart icon text-primary (#0a0a0a, near-invisible) and primary-solid CTA bg-primary (#0a0a0a on #121212, black-on-black)."
     fix: "Eyebrow icon → text-accent-start; primary CTA → keep pill shape but bg-surface-container-lowest text-on-surface, OR gradient accent bg-gradient-primary text-on-gradient. Never primary-solid on on-surface panels."
 guidelines:
+  - "Performance Rule — Strict Ban on animate-pulse in UI: Never use animate-pulse or continuous pulse animation loops in user interface components, controls, badges, status dots, or live indicators. Web browser performance, battery efficiency, and repaint minimization make this mandatory and non-negotiable. Only one exception: transient loading skeletons (*Skeleton.tsx, loading.tsx)."
   - "Monochrome is the system (surface ladder #f7f9fb → #ffffff → #e7eaee). Color only via blessed washes in pages.* plus permission/activity LEDs — photos/maps stay the focus."
   - "All maps across the entire site (LeafletCanvas, SpotStaticMap, SpotMapFallback) use the dedicated high-contrast dark palette in DESIGN_MAP.md (--color-map-* tokens and --map-tile-filter on .leaflet-tile-pane / .map-tile-dark) ONLY for the map canvas, tiles, and on-map markers/overlays; surrounding page shells, layouts, sidebars, and cards stay light monochrome."
   - "One wash per route, picked from pages.* only — never invent a new from-*/via-* gradient. Use var(--gradient-*) or bg-gradient-*."
