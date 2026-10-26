@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { TV_CATEGORY_VALUES, type TvVideo, type TvCategory } from "@/types/tv";
+import type { TvVideo, TvCategory } from "@/types/tv";
 import { parseYouTubeVideoUrl } from "@/lib/tv/urls";
 
 const MAX_TV_CATEGORIES = 12;
@@ -76,6 +76,52 @@ export function TvForm({
   );
   const [published, setPublished] = useState(initial?.published ?? true);
   const [sortOrder, setSortOrder] = useState(String(initial?.sortOrder ?? 0));
+
+  // Suggestion pills are the discipline's real categories (same as the edit
+  // flow). The server-provided list is valid only for `propDiscipline`; any
+  // other discipline is fetched lazily and cached per slug.
+  const propDiscipline = defaultDisciplineSlug ?? initial?.disciplineSlug;
+  const hasPropSuggestions = Boolean(
+    suggestedCategories && suggestedCategories.length > 0,
+  );
+  const suggestionCache = useRef(new Map<string, readonly string[]>());
+  const [fetched, setFetched] = useState<{
+    slug: string;
+    items: readonly string[];
+  } | null>(null);
+
+  useEffect(() => {
+    if (hasPropSuggestions && disciplineSlug === propDiscipline) return;
+    const cached = suggestionCache.current.get(disciplineSlug);
+    if (cached) {
+      setFetched({ slug: disciplineSlug, items: cached });
+      return;
+    }
+    const controller = new AbortController();
+    fetch(
+      `/api/admin/tv/categories?discipline=${encodeURIComponent(disciplineSlug)}`,
+      { signal: controller.signal },
+    )
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: unknown) => {
+        const items = Array.isArray(data)
+          ? data.filter((c): c is string => typeof c === "string")
+          : [];
+        suggestionCache.current.set(disciplineSlug, items);
+        setFetched({ slug: disciplineSlug, items });
+      })
+      .catch(() => {
+        // Non-critical: pills stay empty, custom categories still work.
+      });
+    return () => controller.abort();
+  }, [disciplineSlug, propDiscipline, hasPropSuggestions]);
+
+  const suggestionList: readonly string[] =
+    hasPropSuggestions && disciplineSlug === propDiscipline
+      ? (suggestedCategories ?? [])
+      : fetched?.slug === disciplineSlug
+        ? fetched.items
+        : [];
 
   const embedUrl = (() => {
     const p = parseYouTubeVideoUrl(youtubeUrl);
@@ -308,10 +354,12 @@ export function TvForm({
             <span className="font-mono text-[10px] uppercase tracking-eyebrow text-secondary">
               Suggestions:
             </span>
-            {(suggestedCategories && suggestedCategories.length > 0
-              ? suggestedCategories
-              : TV_CATEGORY_VALUES
-            ).map((preset) => {
+            {suggestionList.length === 0 ? (
+              <span className="font-mono text-[10px] text-secondary">
+                No categories recorded
+              </span>
+            ) : null}
+            {suggestionList.map((preset) => {
               const selected = categories.some(
                 (c) => c.toLowerCase() === preset,
               );

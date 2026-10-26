@@ -54,7 +54,12 @@ describe("TvForm multi-categories", () => {
 
   it("allows typing custom categories, adding multiple categories, and submitting them", async () => {
     const onDone = vi.fn();
-    render(<TvForm disciplines={disciplines} onDone={onDone} />);
+    render(<TvForm
+        disciplines={disciplines}
+        defaultDisciplineSlug="roller"
+        suggestedCategories={["profile", "event"]}
+        onDone={onDone}
+      />);
 
     // Default starts with "profile"
     expect(screen.getByRole("button", { name: "Remove profile" })).toBeDefined();
@@ -102,7 +107,13 @@ describe("TvForm multi-categories", () => {
   });
 
   it("merges pending typed category input on submit and blocks empty categories", async () => {
-    render(<TvForm disciplines={disciplines} />);
+    render(
+      <TvForm
+        disciplines={disciplines}
+        defaultDisciplineSlug="roller"
+        suggestedCategories={["profile", "event"]}
+      />,
+    );
 
     // Remove the default "profile" category
     await userEvent.click(screen.getByRole("button", { name: "Remove profile" }));
@@ -129,6 +140,42 @@ describe("TvForm multi-categories", () => {
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(String(init.body)) as { categories: string[] };
     expect(body.categories).toEqual(["tour", "highlight"]);
+  });
+});
+
+describe("TvForm discipline-scoped suggestions", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("fetches real categories for the create form instead of hardcoded pills", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ["raw-cut", "street"],
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<TvForm disciplines={disciplines} />);
+
+    await screen.findByRole("button", { name: "raw-cut" });
+    expect(screen.queryByRole("button", { name: "music" })).toBeNull();
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      "/api/admin/tv/categories?discipline=roller",
+    );
+  });
+
+  it("refetches pills when the discipline changes", async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => ({
+      ok: true,
+      json: async () =>
+        url.includes("skateboard") ? ["skate-only"] : ["roller-only"],
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<TvForm disciplines={disciplines} />);
+
+    await screen.findByRole("button", { name: "roller-only" });
+    await userEvent.selectOptions(screen.getByRole("combobox"), "skateboard");
+    await screen.findByRole("button", { name: "skate-only" });
+    expect(screen.queryByRole("button", { name: "roller-only" })).toBeNull();
   });
 });
 

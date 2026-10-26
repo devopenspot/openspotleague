@@ -217,6 +217,7 @@ export function TvAdminClient({
 
       {showCreate ? (
         <TvForm
+          key={activeDiscipline ?? "none"}
           disciplines={disciplines}
           defaultDisciplineSlug={activeDiscipline}
           suggestedCategories={availableCategories}
