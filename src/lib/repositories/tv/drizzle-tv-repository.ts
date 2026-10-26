@@ -408,7 +408,7 @@ export class DrizzleTvRepository implements TvRepository {
       options.sinceDays > 0
     ) {
       const since = new Date(Date.now() - options.sinceDays * 24 * 60 * 60 * 1000);
-      conditions.push(gte(tvVideos.postDate, since));
+      conditions.push(gte(tvVideos.createdAt, since));
     }
     if ("year" in options && typeof options.year === "number" && !Number.isNaN(options.year)) {
       const start = new Date(Date.UTC(options.year, 0, 1));
@@ -451,7 +451,7 @@ export class DrizzleTvRepository implements TvRepository {
         .from(tvVideos)
         .orderBy(
           ...(newest
-            ? [desc(tvVideos.postDate), desc(tvVideos.createdAt), desc(tvVideos.id)]
+            ? [desc(tvVideos.createdAt), desc(tvVideos.id)]
             : [
                 asc(tvVideos.sortOrder),
                 desc(tvVideos.postDate),

@@ -35,11 +35,11 @@ export interface TvCardPageOptions extends TvListOptions {
   cursor?: string;
   /**
    * `curated` (default): `sortOrder ASC, postDate DESC, …` — the row order.
-   * `newest`: `postDate DESC, createdAt DESC, id DESC`, single page (no
-   * cursor) — backs the "New this week" shelf.
+   * `newest`: `createdAt DESC, id DESC` (recently added to OpenSpot, not the
+   * YouTube date), single page (no cursor) — backs the "New this week" shelf.
    */
   sort?: "curated" | "newest";
-  /** Only videos posted within the last N days (honored with `sort: "newest"`). */
+  /** Only videos added (`createdAt`) within the last N days (honored with `sort: "newest"`). */
   sinceDays?: number;
 }
 

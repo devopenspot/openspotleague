@@ -46,7 +46,21 @@ const TvShelf = memo(function TvShelf({
   );
 });
 
-/** "New this week" — newest published videos, server-provided. */
+function shuffled<T>(items: readonly T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j] as T, out[i] as T];
+  }
+  return out;
+}
+
+/**
+ * "New this week" — videos recently added to OpenSpot, server-provided and
+ * shown in a random order. The shuffle runs after mount (not during render)
+ * so the server HTML and first client render match and the CDN-cached
+ * response stays identical for everyone.
+ */
 export function TvNewShelf({
   videos,
   discipline,
@@ -58,9 +72,15 @@ export function TvNewShelf({
   activeId: string | null;
   onSelect: (video: TvCard) => void;
 }) {
+  const [ordered, setOrdered] = useState<readonly TvCard[]>(videos);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- post-mount shuffle avoids hydration mismatch
+    setOrdered(shuffled(videos));
+  }, [videos]);
+
   const visible = useMemo(
-    () => videos.filter((v) => matchesDiscipline(v, discipline)),
-    [videos, discipline],
+    () => ordered.filter((v) => matchesDiscipline(v, discipline)),
+    [ordered, discipline],
   );
   if (visible.length === 0) return null;
   return (
