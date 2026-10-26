@@ -139,6 +139,11 @@ export async function listTvCardPage(
         : undefined,
     cursor: options.cursor?.trim() || undefined,
     limit: options.limit,
+    sort: options.sort === "newest" ? "newest" : undefined,
+    sinceDays:
+      typeof options.sinceDays === "number" && options.sinceDays > 0
+        ? Math.floor(options.sinceDays)
+        : undefined,
     publishedOnly: options.publishedOnly !== false,
   };
   cacheTag("tv:list");

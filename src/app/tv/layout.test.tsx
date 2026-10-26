@@ -11,6 +11,6 @@ describe("TvLayout", () => {
     );
 
     expect(screen.getByTestId("tv-child")).toBeInTheDocument();
-    expect(container.firstChild).toHaveClass("min-h-dvh", "bg-black", "text-white");
+    expect(container.firstChild).toHaveClass("min-h-dvh", "bg-wire", "text-white");
   });
 });

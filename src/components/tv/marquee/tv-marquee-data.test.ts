@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   filterByDiscipline,
+  isRecentTvPost,
   formatTvCategory,
   resolveDisciplineParam,
   toTvMarqueeItem,
@@ -137,5 +138,17 @@ describe("withDisciplineParam", () => {
     expect(
       withDisciplineParam("/tv", "?discipline=roller&play=abc", ""),
     ).toBe("/tv?play=abc");
+  });
+});
+
+describe("isRecentTvPost", () => {
+  const now = new Date("2026-02-01T00:00:00.000Z").getTime();
+  it("is true inside the window and on its boundary", () => {
+    expect(isRecentTvPost("2026-01-30T00:00:00.000Z", now)).toBe(true);
+    expect(isRecentTvPost("2026-01-18T00:00:00.000Z", now)).toBe(true);
+  });
+  it("is false outside the window or for invalid dates", () => {
+    expect(isRecentTvPost("2026-01-17T23:59:59.000Z", now)).toBe(false);
+    expect(isRecentTvPost("not-a-date", now)).toBe(false);
   });
 });

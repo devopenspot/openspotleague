@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Tv } from "lucide-react";
 import { orderTvCategories, type TvCard } from "@/types/tv";
 import type { TvCategoryRow } from "@/lib/services/tv/tv";
 import type { TvCardPageResult } from "@/lib/repositories/tv/tv-repository";
@@ -14,6 +13,8 @@ import { useTvCatalogState } from "./use-tv-catalog-state";
 import { useTvDisciplineState } from "./use-tv-discipline-state";
 import { useTvTheaterQueue } from "./use-tv-theater-queue";
 import { useTvSearchState } from "./use-tv-search-state";
+import { useTvWatchHistory } from "./use-tv-watch-history";
+import { TvContinueShelf, TvNewShelf } from "./TvShelves";
 import { TvFilterBar } from "./TvFilterBar";
 import { TvSearchResultsGrid } from "./TvSearchResultsGrid";
 import {
@@ -34,6 +35,7 @@ export function TvGrid({
   initialCategory = null,
   initialYear = null,
   initialSearchResults = null,
+  newVideos = [],
 }: {
   rows: readonly TvCategoryRow[];
   disciplineCounts?: Readonly<Record<string, number>>;
@@ -48,6 +50,8 @@ export function TvGrid({
   initialCategory?: string | null;
   initialYear?: number | null;
   initialSearchResults?: TvCardPageResult | null;
+  /** "New this week" shelf cards (newest first), from the server. */
+  newVideos?: readonly TvCard[];
 }) {
   const searchParams = useSearchParams();
   const playParam = searchParams.get("play") ?? searchParams.get("v") ?? null;
@@ -162,6 +166,12 @@ export function TvGrid({
     [],
   );
 
+  const {
+    ids: historyIds,
+    record: recordWatch,
+    clear: clearHistory,
+  } = useTvWatchHistory();
+
   const openWithId = useCallback(
     (
       id: string,
@@ -172,9 +182,15 @@ export function TvGrid({
       setActiveId(id);
       setIsAutoplaying(autoplay);
       syncUrl(id, { thumb, title });
+      recordWatch(id);
     },
-    [syncUrl],
+    [syncUrl, recordWatch],
   );
+
+  // Shelf cards must be resolvable by the theater (`videoById`).
+  useEffect(() => {
+    if (newVideos.length > 0) appendRowVideos(newVideos);
+  }, [newVideos, appendRowVideos]);
 
   const {
     theaterCategory,
@@ -334,6 +350,13 @@ export function TvGrid({
     [openWithId, autoAdvance, setTheaterCategory],
   );
 
+  const handleSelectShelfVideo = useCallback(
+    (video: TvCard) => {
+      openWithId(video.id, autoAdvance);
+    },
+    [openWithId, autoAdvance],
+  );
+
   const selectFromQueue = useCallback(
     (id: string) => {
       openWithId(id, autoAdvance);
@@ -382,17 +405,8 @@ export function TvGrid({
       >
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 lg:gap-8">
-          <div className="flex items-center justify-between w-full gap-3 sm:gap-6">
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <Tv
-                size={32}
-                className="h-8 w-8 sm:h-10 sm:w-10 text-white"
-                aria-hidden="true"
-              />
-              <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-white">
-                TV
-              </h1>
-            </div>
+          {/* <div className="flex items-center justify-between w-full gap-3 sm:gap-6">
+          
             <TvAutoplayerButton
               count={
                 isSearchActive ? searchItems.length : totalForTheaterFilter
@@ -406,7 +420,7 @@ export function TvGrid({
                   : totalForTheaterFilter === 0
               }
             />
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-6 md:gap-8">
             <div className="space-y-2 sm:space-y-2.5 min-w-0">
@@ -432,7 +446,19 @@ export function TvGrid({
           onSelectYear={setSelectedYear}
           totalActiveFiltersCount={totalActiveFiltersCount}
           onReset={resetSearchFilters}
-        />
+        >
+          <TvAutoplayerButton
+            count={isSearchActive ? searchItems.length : totalForTheaterFilter}
+            disciplineLabel={disciplineLabel}
+            categoryLabel={isSearchActive ? undefined : categoryLabel}
+            onOpen={handleAutoplay}
+            disabled={
+              isSearchActive
+                ? searchItems.length === 0
+                : totalForTheaterFilter === 0
+            }
+          />
+        </TvFilterBar>
 
         {showGenericEmpty ? (
           <TvGenericEmptyState />
@@ -470,18 +496,35 @@ export function TvGrid({
             onClearFilters={() => selectDiscipline("all")}
           />
         ) : (
-          categoryRows.map((row) => (
-            <TvCategoryMarquee
-              key={`${discipline}:${row.category}`}
-              category={row.category}
-              videos={row.videos}
-              initialCursor={row.nextCursor}
+          <>
+            <TvContinueShelf
+              ids={historyIds}
               discipline={discipline}
               activeId={activeId}
-              onSelect={handleSelect}
-              onAppend={appendRowVideos}
+              knownById={videoById}
+              onResolved={appendRowVideos}
+              onSelect={handleSelectShelfVideo}
+              onClear={clearHistory}
             />
-          ))
+            <TvNewShelf
+              videos={newVideos}
+              discipline={discipline}
+              activeId={activeId}
+              onSelect={handleSelectShelfVideo}
+            />
+            {categoryRows.map((row) => (
+              <TvCategoryMarquee
+                key={`${discipline}:${row.category}`}
+                category={row.category}
+                videos={row.videos}
+                initialCursor={row.nextCursor}
+                discipline={discipline}
+                activeId={activeId}
+                onSelect={handleSelect}
+                onAppend={appendRowVideos}
+              />
+            ))}
+          </>
         )}
       </div>
 

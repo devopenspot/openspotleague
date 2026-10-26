@@ -15,6 +15,7 @@ export interface TvFilterBarProps {
   onSelectYear: (year: number | null) => void;
   totalActiveFiltersCount: number;
   onReset: () => void;
+  children?: React.ReactNode;
 }
 
 export function TvFilterBar({
@@ -23,15 +24,12 @@ export function TvFilterBar({
   categories,
   selectedCategory,
   onSelectCategory,
-  years,
-  selectedYear,
-  onSelectYear,
   totalActiveFiltersCount,
   onReset,
+  children,
 }: TvFilterBarProps) {
   const searchInputId = useId();
   const categorySelectId = useId();
-  const yearSelectId = useId();
 
   const isFiltered = totalActiveFiltersCount > 0;
 
@@ -60,7 +58,7 @@ export function TvFilterBar({
             placeholder="Search videos by name..."
             autoComplete="off"
             spellCheck="false"
-            className="w-full rounded-full border border-white/15 bg-white/10 pl-9 pr-9 py-1.5 sm:py-2 min-h-[36px] text-base sm:text-xs font-medium text-white placeholder:text-white/40 focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors"
+            className="w-full rounded-full border border-white/25 bg-white/[0.06] pl-9 pr-9 py-1.5 sm:py-2 min-h-[40px] text-base sm:text-sm font-medium text-white placeholder:text-white/40 focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors"
           />
           {query ? (
             <button
@@ -77,7 +75,7 @@ export function TvFilterBar({
         {/* Filter Selects & Controls */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Category Dropdown */}
-          <div className="relative inline-flex items-center">
+          <div className="relative inline-flex items-center gap-2">
             <label htmlFor={categorySelectId} className="sr-only">
               Filter by category
             </label>
@@ -85,7 +83,7 @@ export function TvFilterBar({
               id={categorySelectId}
               value={selectedCategory}
               onChange={(e) => onSelectCategory(e.target.value)}
-              className="appearance-none rounded-full border border-white/15 bg-white/10 pl-3.5 pr-7 py-1.5 sm:py-2 min-h-[36px] font-display text-base sm:text-[11px] font-bold uppercase tracking-wider text-white/90 hover:bg-white/15 hover:text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors cursor-pointer"
+              className="appearance-none rounded-full border border-white/25 bg-transparent pl-3.5 pr-8 py-1.5 sm:py-2 min-h-[40px] font-display text-base sm:text-[13px] font-medium text-white/90 hover:border-white/60 hover:text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors cursor-pointer"
             >
               <option value="all" className="bg-[#121212] text-white">
                 All Categories
@@ -105,40 +103,7 @@ export function TvFilterBar({
               className="pointer-events-none absolute right-2.5 text-white/60"
               aria-hidden="true"
             />
-          </div>
-
-          {/* Year Dropdown */}
-          <div className="relative inline-flex items-center">
-            <label htmlFor={yearSelectId} className="sr-only">
-              Filter by year
-            </label>
-            <select
-              id={yearSelectId}
-              value={selectedYear !== null ? String(selectedYear) : "all"}
-              onChange={(e) => {
-                const val = e.target.value;
-                onSelectYear(val === "all" ? null : Number(val));
-              }}
-              className="appearance-none rounded-full border border-white/15 bg-white/10 pl-3.5 pr-7 py-1.5 sm:py-2 min-h-[36px] font-display text-base sm:text-[11px] font-bold uppercase tracking-wider text-white/90 hover:bg-white/15 hover:text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors cursor-pointer"
-            >
-              <option value="all" className="bg-[#121212] text-white">
-                All Years
-              </option>
-              {years.map((y) => (
-                <option
-                  key={y}
-                  value={String(y)}
-                  className="bg-[#121212] text-white"
-                >
-                  {y}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={13}
-              className="pointer-events-none absolute right-2.5 text-white/60"
-              aria-hidden="true"
-            />
+            {children}
           </div>
 
           {/* Reset Filters CTA */}
@@ -146,7 +111,7 @@ export function TvFilterBar({
             <button
               type="button"
               onClick={onReset}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/15 px-3 py-1.5 sm:py-2 min-h-[36px] font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white hover:bg-white/25 active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3.5 py-1.5 sm:py-2 min-h-[40px] font-display text-[13px] font-medium text-white hover:bg-white/25 active:scale-[0.98] transition-all"
               aria-label="Reset all search filters"
             >
               <RotateCcw size={12} aria-hidden="true" />

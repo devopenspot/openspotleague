@@ -384,7 +384,7 @@ export function TvForm({
 
         <label className="flex flex-col gap-1">
           <span className="font-mono text-[10px] font-bold uppercase tracking-eyebrow text-secondary">
-            Sort order
+            Display order (lower = first, ties: newest first)
           </span>
           <input
             type="number"

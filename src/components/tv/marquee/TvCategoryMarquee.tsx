@@ -24,6 +24,8 @@ interface TvCategoryMarqueeProps {
     category?: TvCategory,
     nextCursor?: string | null,
   ) => void;
+  /** Optional control rendered at the end of the row heading (e.g. "Clear"). */
+  headerAction?: React.ReactNode;
 }
 
 export const TvCategoryMarquee = memo(function TvCategoryMarquee({
@@ -34,6 +36,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
   activeId,
   onSelect,
   onAppend,
+  headerAction,
 }: TvCategoryMarqueeProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -209,12 +212,13 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
   return (
     <section
       aria-label={`${category} sessions`}
-      className="shrink-0 border-t border-wire-border bg-wire"
+      className="shrink-0 bg-wire pt-3 sm:pt-4"
     >
-      <div className="flex items-center gap-1.5 bg-wire px-0 pt-[clamp(6px,1.2dvh,12px)]">
-        <span className="inline-flex items-center gap-1 rounded-full border border-wire-border bg-wire-border px-2.5 py-[5px] font-display text-[10px] font-bold uppercase tracking-[0.08em] leading-none text-white/90">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="px-0 text-base sm:text-lg font-medium capitalize leading-tight text-white/70">
           {category}
-        </span>
+        </h2>
+        {headerAction}
       </div>
 
       <div className="group/wire relative bg-wire py-2 sm:py-3">

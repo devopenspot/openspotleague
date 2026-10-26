@@ -401,6 +401,15 @@ export class DrizzleTvRepository implements TvRepository {
         conditions.push(ilike(tvVideos.title, `%${sanitized}%`));
       }
     }
+    if (
+      "sinceDays" in options &&
+      typeof options.sinceDays === "number" &&
+      Number.isFinite(options.sinceDays) &&
+      options.sinceDays > 0
+    ) {
+      const since = new Date(Date.now() - options.sinceDays * 24 * 60 * 60 * 1000);
+      conditions.push(gte(tvVideos.postDate, since));
+    }
     if ("year" in options && typeof options.year === "number" && !Number.isNaN(options.year)) {
       const start = new Date(Date.UTC(options.year, 0, 1));
       const end = new Date(Date.UTC(options.year + 1, 0, 1));
@@ -429,6 +438,7 @@ export class DrizzleTvRepository implements TvRepository {
       )`);
     }
     const whereClause = conditions.length ? and(...conditions) : undefined;
+    const newest = options.sort === "newest";
     // sortOrder/createdAt ride along for the next-page cursor only —
     // they never reach the card payload.
     const base = () =>
@@ -440,10 +450,14 @@ export class DrizzleTvRepository implements TvRepository {
         })
         .from(tvVideos)
         .orderBy(
-          asc(tvVideos.sortOrder),
-          desc(tvVideos.postDate),
-          desc(tvVideos.createdAt),
-          desc(tvVideos.id),
+          ...(newest
+            ? [desc(tvVideos.postDate), desc(tvVideos.createdAt), desc(tvVideos.id)]
+            : [
+                asc(tvVideos.sortOrder),
+                desc(tvVideos.postDate),
+                desc(tvVideos.createdAt),
+                desc(tvVideos.id),
+              ]),
         )
         .$dynamic();
     const rows = await (whereClause
@@ -455,7 +469,7 @@ export class DrizzleTvRepository implements TvRepository {
     return {
       items,
       nextCursor:
-        rows.length > limit && last
+        !newest && rows.length > limit && last
           ? encodeTvPageCursor({
               sortOrder: last.sortOrder,
               postDate: last.postDate.toISOString(),

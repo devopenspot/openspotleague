@@ -17,7 +17,7 @@ export function TvDisciplinePills({
       ref={listRef}
       role="tablist"
       aria-label="Filter by discipline"
-      className="flex w-full gap-1 sm:gap-1.5 overflow-x-auto pb-1 no-scrollbar scroll-smooth"
+      className="flex w-full gap-1 overflow-x-auto pb-1 no-scrollbar scroll-smooth"
     >
       <button
         type="button"
@@ -26,10 +26,10 @@ export function TvDisciplinePills({
         aria-selected={selected === "all"}
         tabIndex={selected === "all" ? 0 : -1}
         onClick={() => onSelect("all")}
-        className={`shrink-0 whitespace-nowrap rounded-full border px-3 sm:px-3.5 py-1.5 sm:py-2 min-h-[34px] sm:min-h-[36px] flex items-center justify-center font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest transition-colors touch-manipulation ${
+        className={`shrink-0 whitespace-nowrap rounded-full border px-3 sm:px-4 py-1.5 sm:py-2 min-h-[38px] sm:min-h-[40px] flex items-center justify-center font-display text-[10px] sm:text-sm font-medium transition-colors touch-manipulation ${
           selected === "all"
-            ? "border-white bg-white text-black"
-            : "border-white/15 bg-white/10 text-white/80 hover:bg-white/15 hover:text-white"
+            ? "border-white bg-white text-black font-semibold"
+            : "border-white/30 bg-transparent text-white/85 hover:border-white/60 hover:text-white"
         }`}
       >
         <span className="truncate">All</span>
@@ -43,10 +43,10 @@ export function TvDisciplinePills({
           aria-selected={selected === d.slug}
           tabIndex={selected === d.slug ? 0 : -1}
           onClick={() => onSelect(d.slug)}
-          className={`shrink-0 whitespace-nowrap rounded-full border px-3 sm:px-3.5 py-1.5 sm:py-2 min-h-[34px] sm:min-h-[36px] flex items-center justify-center font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest transition-colors touch-manipulation ${
+          className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 sm:px-4 py-1.5 sm:py-2 min-h-[38px] sm:min-h-[40px] flex items-center justify-center font-display text-[13px] sm:text-sm font-medium transition-colors touch-manipulation ${
             selected === d.slug
-              ? "border-white bg-white text-black"
-              : "border-white/15 bg-white/10 text-white/80 hover:bg-white/15 hover:text-white"
+              ? "border-white bg-white text-black font-semibold"
+              : "border-white/30 bg-transparent text-white/85 hover:border-white/60 hover:text-white"
           }`}
         >
           <span className="truncate">{d.name}</span>
@@ -84,7 +84,7 @@ export function TvFilteredEmptyState({
       <button
         type="button"
         onClick={onClearFilters}
-        className="mt-3 rounded-full bg-white px-4 py-1.5 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wide sm:tracking-widest text-black hover:bg-white/90"
+        className="mt-3 rounded-full bg-white px-4 py-1.5 font-display text-[13px] font-semibold text-black hover:bg-white/90"
       >
         Clear filters
       </button>

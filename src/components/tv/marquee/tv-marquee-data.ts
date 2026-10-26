@@ -4,11 +4,26 @@ import type { TvCard, TvCategory } from "@/types/tv";
 
 export { youtubeThumbUrl } from "@/lib/tv/urls";
 
+/** Videos posted within this window get the "New" tag. */
+export const TV_NEW_WINDOW_DAYS = 14;
+
+export function isRecentTvPost(
+  postDate: string,
+  now: number = Date.now(),
+  windowDays: number = TV_NEW_WINDOW_DAYS,
+): boolean {
+  const t = new Date(postDate).getTime();
+  if (Number.isNaN(t)) return false;
+  return now - t <= windowDays * 24 * 60 * 60 * 1000;
+}
+
 export interface TvMarqueeItem {
   video: TvCard;
   title: string;
   thumb: string | null;
   meta: string;
+  /** Posted within `TV_NEW_WINDOW_DAYS` (computed when the item is built). */
+  isNew: boolean;
   disciplineSlug: string;
   categories: readonly TvCategory[];
 }
@@ -23,6 +38,7 @@ export function toTvMarqueeItem(video: TvCard): TvMarqueeItem {
     title: video.title,
     thumb: youtubeThumbUrl(video.youtubeUrl),
     meta: formatTvPostDate(video.postDate),
+    isNew: isRecentTvPost(video.postDate),
     disciplineSlug: video.disciplineSlug,
     categories: video.categories,
   };

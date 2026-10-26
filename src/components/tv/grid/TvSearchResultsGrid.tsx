@@ -9,6 +9,7 @@ import {
   formatTvCategory,
   toTvMarqueeItem,
 } from "@/components/tv/marquee/tv-marquee-data";
+import { TvBrandMark } from "@/components/tv/marquee/TvBrandMark";
 
 export interface TvSearchResultsGridProps {
   items: readonly TvCard[];
@@ -84,32 +85,35 @@ const TvSearchCard = memo(function TvSearchCard({
       type="button"
       onClick={() => onSelect(video)}
       aria-label={`${item.title} — ${item.disciplineSlug} · ${item.meta}`}
-      className={cn(
-        "group/card flex w-full flex-col overflow-hidden rounded-[14px] border text-left transition-all duration-150 ease-out hover:border-wire-border-strong hover:bg-wire-border-strong hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire",
-        active ? "border-on-wire bg-wire-border" : "border-wire-border bg-wire",
-      )}
+      className="group/card flex w-full flex-col gap-2 text-left focus-visible:outline-none"
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-wire-border flex items-center justify-center">
+      <div
+        className={cn(
+          "relative aspect-video w-full overflow-hidden rounded-md bg-wire-border transition-[box-shadow,transform] duration-150 ease-out group-active/card:scale-[0.99] group-focus-visible/card:ring-2 group-focus-visible/card:ring-white group-focus-visible/card:ring-offset-2 group-focus-visible/card:ring-offset-wire",
+          active && "ring-2 ring-on-wire",
+        )}
+      >
         <CardImage thumb={item.thumb} />
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-40 group-hover/card:opacity-20 transition-opacity"
+          className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
         />
-        <span className="absolute right-0 top-0 inline-flex items-center gap-1 rounded-bl rounded-tr border border-white/15 bg-black/60 px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-md">
-          <span
-            className="h-1.5 w-1.5 shrink-0 rounded-full bg-white"
-            aria-hidden="true"
-          />
-          <span className="truncate max-w-[12ch]">{item.disciplineSlug}</span>
+        <span className="absolute left-2 top-2 inline-flex items-center rounded bg-white px-1.5 py-[3px] font-display text-[10px] font-bold uppercase leading-none tracking-wide text-black">
+          <span className="truncate max-w-[14ch]">
+            {item.isNew ? "New" : item.disciplineSlug}
+          </span>
         </span>
+        <TvBrandMark />
       </div>
 
-      <div className="flex flex-col gap-1 p-2.5 sm:p-3 min-w-0">
-        <p className="line-clamp-2 text-xs sm:text-sm font-semibold leading-snug text-white transition-colors group-hover/card:text-white/90">
+      <div className="flex flex-col gap-0.5 px-0.5 min-w-0">
+        <p className="line-clamp-2 text-[13px] sm:text-sm font-medium leading-snug text-white/90 transition-colors group-hover/card:text-white">
           {item.title}
         </p>
-        <div className="flex items-center justify-between gap-2 text-[11px] font-medium text-wire-muted">
-          <span className="truncate">{item.meta}</span>
+        <div className="flex items-center justify-between gap-2 text-xs text-white/50">
+          <span className="truncate">
+            {item.isNew ? `${item.disciplineSlug} · ${item.meta}` : item.meta}
+          </span>
           {video.categories[0] ? (
             <span className="shrink-0 rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/70">
               {video.categories[0]}

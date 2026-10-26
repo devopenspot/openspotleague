@@ -9,6 +9,7 @@ import {
 } from "@/lib/services/tv/tv";
 import { listSports } from "@/lib/services/taxonomy/taxonomy";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
+import type { TvCard } from "@/types/tv";
 import { env } from "@/lib/config/env";
 import { TV_OG_IMAGE_PATH, buildTvShareDescription, resolveTvOgImage } from "@/lib/tv/share";
 import { resolveDisciplineParam } from "@/components/tv/marquee/tv-marquee-data";
@@ -112,6 +113,8 @@ const EMPTY_FILTER_OPTIONS = {
   categories: [] as readonly string[],
 };
 
+const EMPTY_NEW_VIDEOS: readonly TvCard[] = [];
+
 export default async function TvPage({
   searchParams,
 }: {
@@ -172,7 +175,7 @@ export default async function TvPage({
       initialYear !== null,
   );
 
-  const [rows, initialPlayVideo, initialSearchResults] = await Promise.all([
+  const [rows, initialPlayVideo, initialSearchResults, newShelf] = await Promise.all([
     withSafeDefault(
       () => listTvCategoryRows(effectiveDiscipline),
       [] as Awaited<ReturnType<typeof listTvCategoryRows>>,
@@ -202,6 +205,20 @@ export default async function TvPage({
           "listTvCardPage-tv-search",
         )
       : Promise.resolve(null),
+    // "New this week" shelf — skipped while a search is rendering results.
+    isSearchActive
+      ? Promise.resolve(null)
+      : withSafeDefault(
+          () =>
+            listTvCardPage({
+              disciplineSlug: effectiveDiscipline,
+              sort: "newest",
+              sinceDays: 7,
+              limit: 20,
+            }),
+          null,
+          "listTvCardPage-tv-new",
+        ),
   ]);
 
   return (
@@ -218,6 +235,7 @@ export default async function TvPage({
             initialCategory={initialCategory}
             initialYear={initialYear}
             initialSearchResults={initialSearchResults}
+            newVideos={newShelf?.items ?? EMPTY_NEW_VIDEOS}
           />
         </Suspense>
       </div>

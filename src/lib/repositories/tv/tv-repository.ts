@@ -33,6 +33,14 @@ export interface TvCategoryRowResult {
 export interface TvCardPageOptions extends TvListOptions {
   /** Keyset cursor from a previous `TvCardPageResult` (first page when absent). */
   cursor?: string;
+  /**
+   * `curated` (default): `sortOrder ASC, postDate DESC, …` — the row order.
+   * `newest`: `postDate DESC, createdAt DESC, id DESC`, single page (no
+   * cursor) — backs the "New this week" shelf.
+   */
+  sort?: "curated" | "newest";
+  /** Only videos posted within the last N days (honored with `sort: "newest"`). */
+  sinceDays?: number;
 }
 
 export interface TvCardPageResult {
