@@ -6,6 +6,7 @@ import {
   UserCircle,
   MapPinned,
   Tv,
+  CircleDollarSign,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,7 +56,6 @@ export const NAV_ITEMS: readonly {
     placements: ["header", "bottom", "drawer"],
     group: "discover",
   },
-
   {
     id: "saved",
     path: "/saved",
@@ -88,16 +88,16 @@ export const NAV_ITEMS: readonly {
     placements: ["header", "bottom", "drawer"],
     group: "discover",
   },
-  //   {
-  //     id: "support",
-  //     path: "/support",
-  //     label: "Support",
-  //     shortLabel: "Support",
-  //     drawerLabel: "Support",
-  //     Icon: CircleDollarSign,
-  //     placements: ["drawer"],
-  //     group: "meta",
-  //   },
+  {
+    id: "support",
+    path: "/support",
+    label: "Support",
+    shortLabel: "Support",
+    drawerLabel: "Support",
+    Icon: CircleDollarSign,
+    placements: ["drawer"],
+    group: "meta",
+  },
   {
     id: "admin",
     path: "/admin/curation",
