@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { ArrowUpRight, Heart, ShieldCheck } from "lucide-react";
+import { env } from "@/lib/config/env";
 
 // Process to be a data curator: sign in → fill form → admin review → scoped role.
-const PAYPAL_URL = "https://www.paypal.com/ncp/payment/8XU46EVXHAVYL";
+const PAYPAL_URL =
+  env.NEXT_PUBLIC_PAYPAL_URL ??
+  "https://www.paypal.com/ncp/payment/8XU46EVXHAVYL";
 
 export const metadata = {
   title: "Support Open Spot",
@@ -76,7 +79,7 @@ export default function SupportPage() {
             <a
               href={PAYPAL_URL}
               target="_blank"
-              rel="noreferrer noopener"
+              rel="noopener"
               className={secondaryBtn}
             >
               Support via PayPal <ArrowUpRight size={15} aria-hidden="true" />
