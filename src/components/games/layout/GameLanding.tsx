@@ -9,7 +9,6 @@ import { RulesModal } from "@/components/games/shared/RulesModal";
 import { MatchesDrawer } from "@/components/games/matches/MatchesDrawer";
 import { GAME_DEFINITIONS, type GameDefinition } from "@/lib/games/definitions";
 import { resolveGameDiscipline } from "@/lib/games/discipline";
-import type { SportPreference } from "@/types/sport-events";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
@@ -59,7 +58,7 @@ const UI_COPY = {
   riderPolicy: `Rider policy`,
   disciplineWordDescription: {
     prefix: `You play a game of`,
-    suffix: `— miss and you collect the next letter.`,
+    suffix: `.`,
     fallback: `Pick Roller, Skateboard, BMX or Scooter — your elimination word appears here.`,
   },
   rankingErrorTitle: `ranking request failed`,
@@ -99,6 +98,12 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   const openPreferences = useUIStore((s) => s.openPreferences);
   const discipline = resolveGameDiscipline(preferredSport);
   const riderActivity = useRiderActivity(signedIn);
+
+  const definition: GameDefinition | null = discipline
+    ? GAME_DEFINITIONS[discipline]
+    : null;
+  const eliminationWord = definition?.eliminationWord ?? null;
+  const isAllDisciplines = preferredSport === "all";
 
   useEffect(() => {
     if (
@@ -155,6 +160,41 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               ) : null}
             </div>
           </div>
+          <div className="min-w-0 max-w-xl flex gap-2 items-center mt-4 justify-center">
+            <p className="text-xs leading-5 text-white/80">
+              {discipline && eliminationWord ? (
+                <>{`${UI_COPY.disciplineWordDescription.prefix} `}</>
+              ) : isAllDisciplines ? (
+                <>
+                  All disciplines selected. Choose a sport below to start a
+                  training or challenge game.
+                </>
+              ) : (
+                <>{`${UI_COPY.disciplineWordDescription.fallback}`}</>
+              )}
+            </p>
+            {discipline && eliminationWord ? (
+              <span
+                aria-label={UI_TEMPLATES.eliminationWordAria(eliminationWord)}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm"
+              >
+                <span className="tracking-[0.18em]">
+                  {eliminationWord.split("").join(".")}
+                </span>
+                <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] leading-none tracking-[0.05em] text-primary">
+                  {`${eliminationWord.length}`}
+                </span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={openPreferences}
+                className="inline-flex min-h-9 shrink-0 items-center rounded-full border border-white/20 bg-white/10 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              >
+                {isAllDisciplines ? "Preferences" : UI_COPY.setPreference}
+              </button>
+            )}
+          </div>
           <section aria-labelledby={`create-game-title`}>
             <div className={``}>
               <h2
@@ -195,11 +235,8 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
             </section>
           ) : null}
           <LandingInfo
-            discipline={discipline}
-            preferredSport={preferredSport}
             onOpenRules={() => setRulesOpen(true)}
             onOpenPolicy={() => setPolicyOpen(true)}
-            onOpenPreferences={openPreferences}
           />
         </div>
       </div>
@@ -270,71 +307,20 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
 }
 
 function LandingInfo({
-  discipline,
-  preferredSport,
   onOpenRules,
   onOpenPolicy,
-  onOpenPreferences,
 }: {
-  discipline: ReturnType<typeof resolveGameDiscipline>;
-  preferredSport: SportPreference | null;
   onOpenRules: () => void;
   onOpenPolicy: () => void;
-  onOpenPreferences: () => void;
 }) {
-  const definition: GameDefinition | null = discipline
-    ? GAME_DEFINITIONS[discipline]
-    : null;
-  const eliminationWord = definition?.eliminationWord ?? null;
-  const isAllDisciplines = preferredSport === "all";
-
   return (
     <footer
       role="contentinfo"
       aria-label="Game information and rules"
-      className="mt-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8"
+      className="mt-auto mx-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0 max-w-xl">
-          <p className="text-xs leading-5 text-white/80">
-            {discipline && eliminationWord ? (
-              <>
-                {`${UI_COPY.disciplineWordDescription.prefix} `}
-                <span className="font-semibold text-white">
-                  {eliminationWord}
-                </span>
-                {` ${UI_COPY.disciplineWordDescription.suffix}`}
-              </>
-            ) : isAllDisciplines ? (
-              <>
-                All disciplines selected. Choose a sport below to start a
-                training or challenge game.
-              </>
-            ) : (
-              <>{`${UI_COPY.disciplineWordDescription.fallback}`}</>
-            )}
-          </p>
-        </div>
         <div className="flex flex-nowrap items-center gap-1 sm:gap-2 mb-12">
-          {discipline && eliminationWord ? (
-            <span
-              aria-label={UI_TEMPLATES.eliminationWordAria(eliminationWord)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm"
-            >
-              <span className="tracking-[0.18em]">{eliminationWord}</span>
-              <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] leading-none tracking-[0.05em] text-primary">
-                {`${eliminationWord.length}`}
-              </span>
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenPreferences}
-              className="inline-flex min-h-9 shrink-0 items-center rounded-full border border-white/20 bg-white/10 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-            >
-              {isAllDisciplines ? "Preferences" : UI_COPY.setPreference}
-            </button>
-          )}
           <button
             type="button"
             onClick={onOpenRules}
