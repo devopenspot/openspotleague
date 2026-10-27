@@ -12,22 +12,32 @@ import { useTemperatureUnit } from "@/hooks/preferences/useTemperatureUnit"
 import { haversineMeters } from "@/lib/spots/geo"
 import { showToast } from "@/hooks/ui/useToast"
 import { WeatherConfirmSection } from "@/components/games/create/form-parts"
+import { VerifiedWeatherDualIcons } from "@/components/spots/weather/VerifiedWeatherDualIcons"
+import { isWeatherIconName } from "@/lib/weather/isWeatherIcon"
 import type { MapSpot, WeatherIconName } from "@/lib/types"
+import type { WeatherVerificationSummary } from "@/lib/repositories/spot/weather-verification-repository"
 
 interface SpotWeatherVerificationDialogProps {
   isOpen: boolean
   onClose: () => void
   spot: MapSpot
   containerClassName?: string
+  onVerified?: (summary: WeatherVerificationSummary) => void
 }
 
-export function SpotWeatherVerificationDialog({ isOpen, onClose, spot, containerClassName }: SpotWeatherVerificationDialogProps) {
+export function SpotWeatherVerificationDialog({
+  isOpen,
+  onClose,
+  spot,
+  containerClassName,
+  onVerified,
+}: SpotWeatherVerificationDialogProps) {
   const user = useUser()
   const signedIn = Boolean(user)
   const { location, request } = useUserLocation()
   const temperatureUnit = useTemperatureUnit()
   const { weather: forecastWeather } = useSpotWeather(isOpen ? spot.id : null)
-  const { verifying, verify } = useWeatherVerification(spot.id)
+  const { summary, verifying, verify } = useWeatherVerification(isOpen ? spot.id : null)
   const [weatherConfirmed, setWeatherConfirmed] = useState<boolean | null>(null)
   const [weatherObservedIcon, setWeatherObservedIcon] = useState<WeatherIconName | null>(null)
 
@@ -64,7 +74,10 @@ export function SpotWeatherVerificationDialog({ isOpen, onClose, spot, container
     }
 
     try {
-      await verify({ latitude: loc.lat, longitude: loc.lon, accuracyMeters: loc.accuracy ?? null, voteIcon })
+      const result = await verify({ latitude: loc.lat, longitude: loc.lon, accuracyMeters: loc.accuracy ?? null, voteIcon })
+      if (result?.weather) {
+        onVerified?.(result.weather)
+      }
       setWeatherConfirmed(null)
       setWeatherObservedIcon(null)
       onClose()
@@ -77,6 +90,8 @@ export function SpotWeatherVerificationDialog({ isOpen, onClose, spot, container
     if (verifying) return
     onClose()
   }
+
+  const hasActiveSummary = Boolean(summary?.active && summary.leader && isWeatherIconName(summary.leader))
 
   return (
     <Overlay
@@ -108,6 +123,25 @@ export function SpotWeatherVerificationDialog({ isOpen, onClose, spot, container
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6 space-y-4 no-scrollbar">
+        {hasActiveSummary && summary?.leader && isWeatherIconName(summary.leader) ? (
+          <div className="flex items-center justify-between rounded-[16px] border border-outline-variant bg-surface-container-lowest p-3 sm:px-4">
+            <div className="min-w-0">
+              <p className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+                Community status
+              </p>
+              <p className="text-xs text-on-surface-variant">
+                Forecast vs. most voted live condition
+              </p>
+            </div>
+            <VerifiedWeatherDualIcons
+              apiIcon={forecastWeather?.icon}
+              leaderIcon={summary.leader}
+              count={summary.count}
+              iconSize={16}
+            />
+          </div>
+        ) : null}
+
         {!signedIn ? (
           <p className="rounded-md border border-outline-variant bg-surface-container px-3 py-3 text-sm">
             <Link href={`/login?next=/spots/${spot.id}`} className="font-bold underline">Sign in</Link> to verify weather.

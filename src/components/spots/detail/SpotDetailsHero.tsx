@@ -15,7 +15,7 @@ import {
   verificationCountLabel,
   isSafeExternalUrl,
 } from "./spot-detail.helpers";
-import { WeatherIcon } from "@/components/spots/weather/WeatherIcon";
+import { VerifiedWeatherDualIcons } from "@/components/spots/weather/VerifiedWeatherDualIcons";
 import { isWeatherIconName } from "@/lib/weather/isWeatherIcon";
 import type { Spot } from "@/lib/types";
 import type { WeatherVerificationSummary } from "@/lib/repositories/spot/weather-verification-repository";
@@ -28,6 +28,7 @@ interface SpotDetailsHeroProps {
   isRequestingLocation: boolean;
   onRequestLocation: () => void;
   weatherSummary?: WeatherVerificationSummary | null;
+  weatherIcon?: string | null;
   onVerifyClick?: () => void;
 }
 
@@ -45,6 +46,7 @@ export function SpotDetailsHero({
   isRequestingLocation,
   onRequestLocation,
   weatherSummary,
+  weatherIcon,
   onVerifyClick,
 }: SpotDetailsHeroProps) {
   const hasImage = Boolean(spot.image?.trim());
@@ -68,29 +70,51 @@ export function SpotDetailsHero({
         className="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/10 to-transparent pointer-events-none"
         aria-hidden="true"
       />
-      {/* Weather verification — independent from spot count, distinct icon/color, on image only */}
+      {/* Weather verification — allows any user to verify weather, displays dual tiny icons (API suggested + community leader) */}
       {weatherSummary?.active &&
       weatherSummary.leader &&
       isWeatherIconName(weatherSummary.leader) ? (
-        <div className="absolute left-4 top-4 flex min-h-11 items-center gap-2 rounded-full border border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm md:left-6 md:top-6">
-          <WeatherIcon
-            name={weatherSummary.leader}
-            size={14}
-            className="shrink-0 text-surface"
-          />
-          <span className="font-display text-xs font-semibold uppercase tracking-wider text-surface">
-            Weather verified
-          </span>
-          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface">
-            {weatherSummary.count}
-          </span>
-        </div>
+        onVerifyClick ? (
+          <button
+            type="button"
+            onClick={onVerifyClick}
+            aria-label={`Verify weather — forecast ${weatherIcon ?? "unknown"}, community ${weatherSummary.leader} (${weatherSummary.count} votes)`}
+            title="Confirm on-site weather condition"
+            className="absolute left-4 top-4 flex min-h-11 items-center gap-2 rounded-full border border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/80 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-6 md:top-6"
+          >
+            <VerifiedWeatherDualIcons
+              apiIcon={weatherIcon}
+              leaderIcon={weatherSummary.leader}
+              count={weatherSummary.count}
+              iconSize={14}
+              iconClassName="shrink-0 text-surface"
+              badgeClassName="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface"
+            />
+            <span className="font-display text-xs font-semibold uppercase tracking-wider text-surface">
+              Weather verified
+            </span>
+          </button>
+        ) : (
+          <div className="absolute left-4 top-4 flex min-h-11 items-center gap-2 rounded-full border border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm md:left-6 md:top-6">
+            <VerifiedWeatherDualIcons
+              apiIcon={weatherIcon}
+              leaderIcon={weatherSummary.leader}
+              count={weatherSummary.count}
+              iconSize={14}
+              iconClassName="shrink-0 text-surface"
+              badgeClassName="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface"
+            />
+            <span className="font-display text-xs font-semibold uppercase tracking-wider text-surface">
+              Weather verified
+            </span>
+          </div>
+        )
       ) : onVerifyClick ? (
         <button
           type="button"
           onClick={onVerifyClick}
           aria-label="Verify weather"
-          className="absolute left-4 top-4 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold uppercase tracking-wider text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/60 md:left-6 md:top-6"
+          className="absolute left-4 top-4 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold uppercase tracking-wider text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/60 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-6 md:top-6"
         >
           <CheckCheck size={14} aria-hidden="true" className="shrink-0" />
           <span>Verify Weather</span>

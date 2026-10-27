@@ -12,6 +12,41 @@ type FetchState = {
   error: string | null
 }
 
+const summaryCache = new Map<string, WeatherVerificationSummary | null>()
+const inflight = new Map<string, Promise<WeatherVerificationSummary | null>>()
+const subscribers = new Map<string, Set<(summary: WeatherVerificationSummary | null) => void>>()
+
+function notifySubscribers(spotId: string, summary: WeatherVerificationSummary | null): void {
+  const set = subscribers.get(spotId)
+  if (set) {
+    for (const callback of set) {
+      callback(summary)
+    }
+  }
+}
+
+async function fetchWeatherVerificationSummary(spotId: string): Promise<WeatherVerificationSummary | null> {
+  const existing = inflight.get(spotId)
+  if (existing) return existing
+
+  const promise = (async () => {
+    const res = await fetch(`/api/spot-verifications?spotId=${encodeURIComponent(spotId)}`)
+    const body = (await res.json().catch(() => null)) as
+      | { weather?: WeatherVerificationSummary; error?: string }
+      | null
+    if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`)
+    const summary = body?.weather ?? null
+    summaryCache.set(spotId, summary)
+    notifySubscribers(spotId, summary)
+    return summary
+  })().finally(() => {
+    inflight.delete(spotId)
+  })
+
+  inflight.set(spotId, promise)
+  return promise
+}
+
 function applyVerificationCount(spotId: string, nextCount: number): void {
   const {
     spots,
@@ -60,18 +95,18 @@ function applyVerificationCount(spotId: string, nextCount: number): void {
 }
 
 export function useWeatherVerification(spotId: string | null) {
-  const [state, setState] = useState<FetchState>({ summary: null, loading: false, error: null })
+  const [state, setState] = useState<FetchState>(() => ({
+    summary: spotId ? (summaryCache.get(spotId) ?? null) : null,
+    loading: false,
+    error: null,
+  }))
   const [verifying, setVerifying] = useState(false)
 
   const fetchSummary = useCallback(async (id: string) => {
     setState((s) => ({ ...s, loading: true, error: null }))
     try {
-      const res = await fetch(`/api/spot-verifications?spotId=${encodeURIComponent(id)}`)
-      const body = (await res.json().catch(() => null)) as
-        | { weather?: WeatherVerificationSummary; error?: string }
-        | null
-      if (!res.ok) throw new Error(body?.error ?? `HTTP ${res.status}`)
-      setState({ summary: body?.weather ?? null, loading: false, error: null })
+      const summary = await fetchWeatherVerificationSummary(id)
+      setState({ summary, loading: false, error: null })
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to load"
       setState((s) => ({ ...s, loading: false, error: msg }))
@@ -83,10 +118,37 @@ export function useWeatherVerification(spotId: string | null) {
       setState({ summary: null, loading: false, error: null })
       return
     }
-    void fetchSummary(spotId)
-    // poll every 60s to handle TTL expiry
-    const interval = window.setInterval(() => void fetchSummary(spotId), 60_000)
-    return () => window.clearInterval(interval)
+
+    // Subscribe to cross-component updates for this spot
+    let subs = subscribers.get(spotId)
+    if (!subs) {
+      subs = new Set()
+      subscribers.set(spotId, subs)
+    }
+    const onUpdate = (nextSummary: WeatherVerificationSummary | null) => {
+      setState((s) => ({ ...s, summary: nextSummary, error: null }))
+    }
+    subs.add(onUpdate)
+
+    // Sync initial state if available in cache or fetch
+    if (summaryCache.has(spotId)) {
+      setState((s) => ({ ...s, summary: summaryCache.get(spotId) ?? null }))
+    } else {
+      void fetchSummary(spotId)
+    }
+
+    // Poll every 60s to handle TTL expiry
+    const interval = window.setInterval(() => {
+      void fetchWeatherVerificationSummary(spotId)
+    }, 60_000)
+
+    return () => {
+      subs?.delete(onUpdate)
+      if (subs && subs.size === 0) {
+        subscribers.delete(spotId)
+      }
+      window.clearInterval(interval)
+    }
   }, [spotId, fetchSummary])
 
   const verify = useCallback(
@@ -100,9 +162,6 @@ export function useWeatherVerification(spotId: string | null) {
       setVerifying(true)
       const current = useSpotsStore.getState().spots.find((s) => s.id === spotId)
       const prevCount = current?.verificationCount
-      // Optimistic bump only if not already verified? We don't know isVerified without extra fetch.
-      // We fetch isVerified via GET we already have? Use count bump optimistic +1 and revert on error if server says alreadyVerified.
-      // For now optimistic +1 if we assume not yet verified; server count will correct.
       let optimisticApplied = false
       if (prevCount !== undefined) {
         applyVerificationCount(spotId, prevCount + 1)
@@ -122,8 +181,14 @@ export function useWeatherVerification(spotId: string | null) {
         }
         if (typeof body?.count === "number") applyVerificationCount(spotId, body.count)
         else if (optimisticApplied && prevCount !== undefined) applyVerificationCount(spotId, prevCount + 1)
-        if (body?.weather) setState((s) => ({ ...s, summary: body.weather ?? s.summary }))
-        else await fetchSummary(spotId)
+
+        if (body?.weather) {
+          summaryCache.set(spotId, body.weather)
+          notifySubscribers(spotId, body.weather)
+          setState((s) => ({ ...s, summary: body.weather ?? s.summary }))
+        } else {
+          await fetchSummary(spotId)
+        }
         showToast("Verified spot & weather", "success", { title: "Verification" })
         return body
       } catch (err) {

@@ -87,6 +87,7 @@ export function SpotDetailsContent({
         isRequestingLocation={isRequestingLocation}
         onRequestLocation={handleRequestLocation}
         weatherSummary={weatherSummary}
+        weatherIcon={weather?.icon}
         onVerifyClick={() => setVerifyOpen(true)}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-surface px-5 py-6 no-scrollbar md:px-8 md:py-8">
@@ -101,7 +102,12 @@ export function SpotDetailsContent({
             locationStatus={locationStatus}
             onRequestLocation={handleRequestLocation}
           />
-          <SpotDetailsWeather spot={spot} weather={weather} temperatureUnit={temperatureUnit} />
+          <SpotDetailsWeather
+            spot={spot}
+            weather={weather}
+            temperatureUnit={temperatureUnit}
+            weatherSummary={weatherSummary}
+          />
         </div>
         <SpotDetailsLocation
           spot={spot}
