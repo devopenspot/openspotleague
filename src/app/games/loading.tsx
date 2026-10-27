@@ -18,20 +18,6 @@ export default function Loading() {
             </div>
           </div>
 
-          {/* LandingInfo card placeholder */}
-          <div className="mt-4 space-y-4 sm:mt-8" aria-hidden="true">
-            <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="h-4 w-64 animate-pulse rounded bg-surface-container-high" />
-                <div className="h-8 w-24 animate-pulse rounded-full bg-surface-container-high" />
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-outline-variant pt-3">
-                <div className="h-9 w-24 animate-pulse rounded-full bg-surface-container-high" />
-                <div className="h-9 w-24 animate-pulse rounded-full bg-surface-container-high" />
-              </div>
-            </div>
-          </div>
-
           {/* Title + form — mirrors GameLanding setup */}
           <section aria-hidden="true" className="mt-4">
             <div className="h-8 w-52 animate-pulse rounded bg-white/70" />
@@ -72,6 +58,20 @@ export default function Loading() {
               </div>
             </div>
           </section>
+
+          {/* Footer placeholder — mirrors GameLanding footer */}
+          <div
+            className="mt-auto border-t border-white/20 pt-8 pb-6 sm:pt-10 sm:pb-8"
+            aria-hidden="true"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="h-4 w-72 animate-pulse rounded bg-white/20" />
+              <div className="flex gap-2">
+                <div className="h-9 w-24 animate-pulse rounded-full bg-white/20" />
+                <div className="h-9 w-24 animate-pulse rounded-full bg-white/20" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

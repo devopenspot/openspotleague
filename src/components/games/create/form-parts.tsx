@@ -134,7 +134,7 @@ export function OptionChip({
       tabIndex={tabIndex}
       onKeyDown={onKeyDown}
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
         active
           ? "border border-on-surface bg-on-surface text-surface"
           : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"

@@ -86,16 +86,16 @@ export function MarqueeCard({ item }: { item: MarqueeItem }) {
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-on-surface/45 via-transparent to-transparent opacity-60"
         />
-        <span className="absolute left-0 top-0 inline-flex items-center gap-1 rounded-br rounded-tl border border-white/15 bg-on-surface/55 px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-surface shadow-sm backdrop-blur-md">
+        <span className="absolute left-0 top-0 inline-flex items-center gap-1 rounded-br rounded-tl border border-white/15 bg-white px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-on-background shadow-sm backdrop-blur-md">
           {kindIcon(item.kind)}
           <span>{kindLabel(item.kind)}</span>
         </span>
 
-        <span className="absolute right-0 top-0 inline-flex max-w-full items-center justify-start truncate rounded-bl rounded-tr border border-white/15 bg-on-surface/55 px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-surface shadow-sm backdrop-blur-md sm:max-w-[150px]">
+        <span className="absolute right-0 top-0 inline-flex max-w-2/3 items-center justify-start truncate rounded-bl rounded-tr border border-white/15 bg-white px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-on-background shadow-sm backdrop-blur-md sm:max-w-[150px]">
           {item.meta}
         </span>
 
-        <p className="absolute bottom-0 left-0 max-w-[calc(100%-12px)] truncate rounded-tr rounded-bl border border-white/15 bg-on-surface/55 px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-surface shadow-sm backdrop-blur-md">
+        <p className="absolute bottom-0 left-0 max-w-[calc(100%-12px)] truncate rounded-tr rounded-bl border border-white/15 bg-white px-2 py-1 font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-on-background shadow-sm backdrop-blur-md">
           {item.title}
         </p>
       </div>

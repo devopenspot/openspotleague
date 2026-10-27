@@ -150,6 +150,9 @@ describe("GameLanding", () => {
     const user = userEvent.setup()
     render(<GameLanding signedIn={false} />)
 
+    const footer = screen.getByRole("contentinfo", { name: "Game information and rules" })
+    expect(footer).toBeInTheDocument()
+
     await user.click(screen.getByRole("button", { name: "Game rules" }))
     expect(screen.getByRole("dialog", { name: "Game rules modal" })).toBeInTheDocument()
 

@@ -33,7 +33,7 @@ type Ranking = {
 // Centralized UI copy using template literals — single source for all user-visible strings
 const UI_COPY = {
   joinWithCode: `Join with code`,
-  yourRecord: `Your record`,
+  yourRecord: `record`,
   setupTitle: `Set up your game`,
   joinEyebrow: `Join a game`,
   joinTitle: `Have a share code?`,
@@ -138,7 +138,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
                     onClick={() => setMatchesOpen(true)}
                     aria-expanded={matchesOpen}
                     aria-controls="matches-drawer"
-                    className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
+                    className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
                   >
                     Matches
                   </button>
@@ -147,7 +147,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
                     onClick={() => setProgressOpen(true)}
                     aria-expanded={progressOpen}
                     aria-controls={`rider-progress-drawer`}
-                    className={`inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
+                    className={`inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
                   >
                     {UI_COPY.yourRecord}
                   </button>
@@ -155,13 +155,6 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               ) : null}
             </div>
           </div>
-          <LandingInfo
-            discipline={discipline}
-            preferredSport={preferredSport}
-            onOpenRules={() => setRulesOpen(true)}
-            onOpenPolicy={() => setPolicyOpen(true)}
-            onOpenPreferences={openPreferences}
-          />
           <section aria-labelledby={`create-game-title`}>
             <div className={``}>
               <h2
@@ -180,7 +173,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
             >
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
                 <div>
-                  <p className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+                  <p className="font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-secondary">
                     Your matches
                   </p>
                   <h2
@@ -193,7 +186,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
                 <button
                   type="button"
                   onClick={() => setMatchesOpen(true)}
-                  className="inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container px-3.5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                  className="inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container px-3.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                 >
                   View all
                 </button>
@@ -201,6 +194,13 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               <MatchList bare limit={5} />
             </section>
           ) : null}
+          <LandingInfo
+            discipline={discipline}
+            preferredSport={preferredSport}
+            onOpenRules={() => setRulesOpen(true)}
+            onOpenPolicy={() => setPolicyOpen(true)}
+            onOpenPreferences={openPreferences}
+          />
         </div>
       </div>
       <RulesModal isOpen={rulesOpen} onClose={() => setRulesOpen(false)} />
@@ -223,7 +223,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
           >
             <div>
               <p
-                className={`font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary`}
+                className={`font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-secondary`}
               >
                 {UI_COPY.challengeRecord}
               </p>
@@ -289,40 +289,40 @@ function LandingInfo({
   const isAllDisciplines = preferredSport === "all";
 
   return (
-    <div className={`space-y-4 mt-4 sm:mt-8`}>
-      {/* Current discipline — single, preferred sport only */}
-      <div
-        className={`rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 text-on-surface`}
-      >
-        <div className={`flex flex-wrap items-start justify-between gap-3`}>
-          <div className={`min-w-0`}>
-            <p
-              className={`mt-1 max-w-2xl text-xs leading-5 text-on-surface-variant`}
-            >
-              {discipline && eliminationWord ? (
-                <>
-                  {`${UI_COPY.disciplineWordDescription.prefix} `}
-                  <span className={`font-semibold text-on-surface`}>
-                    {eliminationWord}
-                  </span>
-                  {` ${UI_COPY.disciplineWordDescription.suffix}`}
-                </>
-              ) : isAllDisciplines ? (
-                <>All disciplines selected. Choose a sport below to start a training or challenge game.</>
-              ) : (
-                <>{`${UI_COPY.disciplineWordDescription.fallback}`}</>
-              )}
-            </p>
-          </div>
+    <footer
+      role="contentinfo"
+      aria-label="Game information and rules"
+      className="mt-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 max-w-xl">
+          <p className="text-xs leading-5 text-white/80">
+            {discipline && eliminationWord ? (
+              <>
+                {`${UI_COPY.disciplineWordDescription.prefix} `}
+                <span className="font-semibold text-white">
+                  {eliminationWord}
+                </span>
+                {` ${UI_COPY.disciplineWordDescription.suffix}`}
+              </>
+            ) : isAllDisciplines ? (
+              <>
+                All disciplines selected. Choose a sport below to start a
+                training or challenge game.
+              </>
+            ) : (
+              <>{`${UI_COPY.disciplineWordDescription.fallback}`}</>
+            )}
+          </p>
+        </div>
+        <div className="flex flex-nowrap items-center gap-1 sm:gap-2 mb-12">
           {discipline && eliminationWord ? (
             <span
               aria-label={UI_TEMPLATES.eliminationWordAria(eliminationWord)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-surface`}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm"
             >
-              <span className={`tracking-[0.18em]`}>{eliminationWord}</span>
-              <span
-                className={`rounded-full bg-on-surface px-1.5 py-0.5 text-[10px] leading-none tracking-[0.05em] text-surface`}
-              >
+              <span className="tracking-[0.18em]">{eliminationWord}</span>
+              <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] leading-none tracking-[0.05em] text-primary">
                 {`${eliminationWord.length}`}
               </span>
             </span>
@@ -330,30 +330,28 @@ function LandingInfo({
             <button
               type="button"
               onClick={onOpenPreferences}
-              className={`inline-flex min-h-9 shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
+              className="inline-flex min-h-9 shrink-0 items-center rounded-full border border-white/20 bg-white/10 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
               {isAllDisciplines ? "Preferences" : UI_COPY.setPreference}
             </button>
           )}
-        </div>
-        <div className={`mt-3 flex flex-wrap items-center gap-2 border-t border-outline-variant pt-3`}>
           <button
             type="button"
             onClick={onOpenRules}
-            className={`inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
+            className="inline-flex min-h-9 items-center rounded-full border border-white/20 bg-white/10 px-3.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
           >
             {UI_COPY.gameRules}
           </button>
           <button
             type="button"
             onClick={onOpenPolicy}
-            className={`inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
+            className="inline-flex min-h-9 items-center rounded-full border border-white/20 bg-white/10 px-3.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
           >
             {UI_COPY.riderPolicy}
           </button>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }
 

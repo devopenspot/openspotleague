@@ -60,7 +60,11 @@ export function JoinWithCode({
         aria-expanded={joinOpen}
         aria-controls={JOIN_GAME_DRAWER_ID}
         data-testid={`join-game-trigger`}
-        className={cn(VARIANT_TRIGGER_CLASSES[variant], className)}
+        className={cn(
+          VARIANT_TRIGGER_CLASSES[variant],
+          className,
+          "text-[10px]",
+        )}
       >
         <Hash size={14} aria-hidden="true" />
         {UI_COPY.joinWithCode}
@@ -80,7 +84,7 @@ export function JoinWithCode({
           >
             <div className={`min-w-0`}>
               <p
-                className={`font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary`}
+                className={`font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-secondary`}
               >
                 {UI_COPY.joinEyebrow}
               </p>
@@ -92,7 +96,7 @@ export function JoinWithCode({
               </h2>
               <p
                 id={JOIN_GAME_DESCRIPTION_ID}
-                className={`mt-2 max-w-2xl text-sm leading-6 text-on-surface-variant`}
+                className={`mt-2 max-w-2xl text-[10px] leading-6 text-on-surface-variant`}
               >
                 {UI_COPY.joinDescription}
               </p>
@@ -144,11 +148,11 @@ export function JoinWithCode({
                       )
                     : JOIN_GAME_DESCRIPTION_ID
                 }
-                className={`min-h-11 min-w-0 flex-1 bg-transparent px-3 font-display text-base uppercase tracking-widest outline-none placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-xs`}
+                className={`min-h-11 min-w-0 flex-1 bg-transparent px-3 font-display text-base uppercase tracking-widest outline-none placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-[10px]`}
               />
               <button
                 type={`submit`}
-                className={`min-h-11 shrink-0 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-widest text-on-surface transition-[background-color,transform] hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
+                className={`min-h-11 shrink-0 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-[10px] font-bold uppercase tracking-widest text-on-surface transition-[background-color,transform] hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
               >
                 {UI_COPY.join}
               </button>
@@ -157,7 +161,7 @@ export function JoinWithCode({
               <p
                 id={UI_COPY.shareCodeErrorId}
                 role={`alert`}
-                className={`mt-2 max-w-2xl text-sm text-error`}
+                className={`mt-2 max-w-2xl text-[10px] text-error`}
               >
                 {joinError}
               </p>

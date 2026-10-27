@@ -152,7 +152,8 @@ export function GameCreateForm({
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const preferredSport = usePreferencesStore((state) => state.preferredSport);
   const defaultDiscipline = resolveGameDiscipline(preferredSport);
-  const [selectedDiscipline, setSelectedDiscipline] = useState<DisciplineSlug | null>(defaultDiscipline);
+  const [selectedDiscipline, setSelectedDiscipline] =
+    useState<DisciplineSlug | null>(defaultDiscipline);
 
   useEffect(() => {
     if (defaultDiscipline) {
@@ -1178,26 +1179,28 @@ export function GameCreateForm({
                   </span>
                 </div>
                 <div
-                  className="mt-3 flex flex-wrap gap-2"
+                  className="mt-3 flex flex-nowrap gap-2"
                   role="radiogroup"
                   aria-labelledby="game-discipline-label"
                 >
-                  {(["skateboard", "bmx", "scooter", "roller"] as const).map((slug) => {
-                    const sportName = DISCIPLINE_TO_SPORT[slug];
-                    const active = discipline === slug;
-                    return (
-                      <OptionChip
-                        key={slug}
-                        id={`game-sport-${slug}`}
-                        active={active}
-                        label={sportName}
-                        role="radio"
-                        ariaChecked={active}
-                        tabIndex={active ? 0 : -1}
-                        onClick={() => setSelectedDiscipline(slug)}
-                      />
-                    );
-                  })}
+                  {(["skateboard", "bmx", "scooter", "roller"] as const).map(
+                    (slug) => {
+                      const sportName = DISCIPLINE_TO_SPORT[slug];
+                      const active = discipline === slug;
+                      return (
+                        <OptionChip
+                          key={slug}
+                          id={`game-sport-${slug}`}
+                          active={active}
+                          label={sportName}
+                          role="radio"
+                          ariaChecked={active}
+                          tabIndex={active ? 0 : -1}
+                          onClick={() => setSelectedDiscipline(slug)}
+                        />
+                      );
+                    },
+                  )}
                 </div>
               </div>
             ) : null}
