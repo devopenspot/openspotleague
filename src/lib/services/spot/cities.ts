@@ -35,3 +35,45 @@ export async function listCitiesForCountry(
   cacheLife(LIST_CACHE_LIFE)
   return runListCitiesForCountry(country)
 }
+
+export async function runFindCityInCountry(
+  country: string,
+  citySlug: string,
+): Promise<SpotFacetCity | null> {
+  const repo = await getSpotRepositoryAsync()
+  if (!repo.findCityInCountry) return null
+  return repo.findCityInCountry(country, citySlug)
+}
+
+export async function findCityInCountry(
+  country: string,
+  citySlug: string,
+): Promise<SpotFacetCity | null> {
+  "use cache"
+  cacheTag("spots:list")
+  cacheLife(LIST_CACHE_LIFE)
+  return runFindCityInCountry(country, citySlug)
+}
+
+export async function runSearchCities(
+  q: string,
+  country?: string,
+  limit = 10,
+): Promise<readonly SpotFacetCity[]> {
+  const trimmed = q.trim()
+  if (!trimmed) return []
+  const repo = await getSpotRepositoryAsync()
+  if (!repo.searchCities) return []
+  return repo.searchCities({ q: trimmed, country: country?.trim() || undefined, limit })
+}
+
+export async function searchCities(
+  q: string,
+  country?: string,
+  limit = 10,
+): Promise<readonly SpotFacetCity[]> {
+  "use cache"
+  cacheTag("spots:list")
+  cacheLife(LIST_CACHE_LIFE)
+  return runSearchCities(q, country, limit)
+}

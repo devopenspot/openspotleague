@@ -141,9 +141,11 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     }
     if (query.q) {
       const like = `%${query.q.toLowerCase()}%`
+      const slugLike = `%${query.q.toLowerCase().replace(/[^a-z0-9]+/g, "-")}%`
       filterConditions.push(sql`(
         lower(coalesce(${spots.name}, '')) like ${like}
         or lower(coalesce(${spots.city}, '')) like ${like}
+        or lower(coalesce(${spots.citySlug}, '')) like ${slugLike}
         or lower(coalesce(${spots.address}, '')) like ${like}
       )`)
     }
@@ -211,13 +213,26 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
           and sst.type_slug in ${typeList}
       )`);
     }
-    if (query?.country) conditions.push(eq(countries.name, query.country));
+    if (query?.city && query?.cityRadius) {
+      const point = sql`ST_SetSRID(ST_MakePoint(${query.cityRadius.lon}, ${query.cityRadius.lat}), 4326)::geography`;
+      if (query.country) {
+        conditions.push(
+          sql`((${countries.name} = ${query.country} and ${spots.citySlug} = ${query.city}) or ST_DWithin(${spots.location}, ${point}, ${query.cityRadius.radiusMeters}))`,
+        );
+      } else {
+        conditions.push(
+          sql`(${spots.citySlug} = ${query.city} or ST_DWithin(${spots.location}, ${point}, ${query.cityRadius.radiusMeters}))`,
+        );
+      }
+    } else {
+      if (query?.country) conditions.push(eq(countries.name, query.country));
+      if (query?.city) conditions.push(eq(spots.citySlug, query.city));
+    }
     if (query?.countryCode) conditions.push(eq(spots.countryCode, query.countryCode));
     if (query?.discipline) {
       const canonical = toCanonicalSportDiscipline(query.discipline) ?? query.discipline;
       conditions.push(arrayContains(spots.sports, [canonical]));
     }
-    if (query?.city) conditions.push(eq(spots.citySlug, query.city));
     if (query?.ids && query.ids.length > 0)
       conditions.push(inArray(spots.id, [...query.ids]));
     if (query?.hasImage) {
@@ -227,9 +242,11 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     }
     if (query?.q) {
       const like = `%${query.q.toLowerCase()}%`;
+      const slugLike = `%${query.q.toLowerCase().replace(/[^a-z0-9]+/g, "-")}%`;
       conditions.push(sql`(
         lower(coalesce(${spots.name}, '')) like ${like}
         or lower(coalesce(${spots.city}, '')) like ${like}
+        or lower(coalesce(${spots.citySlug}, '')) like ${slugLike}
         or lower(coalesce(${spots.address}, '')) like ${like}
       )`);
     }
@@ -634,15 +651,53 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
   }
 
   async listCitiesForCountry(country: string): Promise<readonly SpotFacetCity[]> {
-    // Count is ordering-only (never shipped): the facet carries the display
-    // name and the canonical city slug, ordered by true spot volume.
+    const cityRows = await this.db.execute<{
+      slug: string;
+      name: string;
+      admin1: string | null;
+      spot_count: number;
+      lat: number | null;
+      lon: number | null;
+    }>(sql`
+      select
+        ci.slug as slug,
+        ci.name as name,
+        ci.admin1 as admin1,
+        ci.spot_count::int as spot_count,
+        case when ci.location is not null then ST_Y(ci.location::geometry) else null end as lat,
+        case when ci.location is not null then ST_X(ci.location::geometry) else null end as lon
+      from ${cities} ci
+      join ${countries} c on c.iso2 = ci.country_code
+      where c.name = ${country}
+        and ci.spot_count > 0
+      order by ci.spot_count desc, ci.name asc
+    `);
+    if (cityRows.length > 0) {
+      return cityRows.map((row) => ({
+        slug: row.slug,
+        name: row.name,
+        ...(row.admin1 ? { admin1: row.admin1 } : {}),
+        spotCount: Number(row.spot_count),
+        ...(row.lat !== null && row.lon !== null
+          ? { lat: Number(row.lat), lon: Number(row.lon) }
+          : {}),
+      }));
+    }
+
+    // Fallback when `cities` has no populated `spot_count` rows for the country.
     const rows = await this.db.execute<{
       slug: string;
       name: string;
+      spot_count: number;
+      lat: number | null;
+      lon: number | null;
     }>(sql`
       select
         s.city_slug as slug,
-        min(s.city) as name
+        min(s.city) as name,
+        count(*)::int as spot_count,
+        avg(ST_Y(s.location::geometry)) as lat,
+        avg(ST_X(s.location::geometry)) as lon
       from ${spots} s
       join ${countries} c on c.iso2 = s.country_code
       where c.name = ${country}
@@ -655,6 +710,125 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     return rows.map((row) => ({
       slug: row.slug,
       name: row.name,
+      spotCount: Number(row.spot_count),
+      ...(row.lat !== null && row.lon !== null
+        ? { lat: Number(row.lat), lon: Number(row.lon) }
+        : {}),
+    }));
+  }
+
+  async findCityInCountry(
+    country: string,
+    citySlug: string,
+  ): Promise<SpotFacetCity | null> {
+    const rows = await this.db.execute<{
+      slug: string;
+      name: string;
+      admin1: string | null;
+      spot_count: number;
+      lat: number | null;
+      lon: number | null;
+      country: string;
+      region: string;
+    }>(sql`
+      select
+        ci.slug as slug,
+        ci.name as name,
+        ci.admin1 as admin1,
+        ci.spot_count::int as spot_count,
+        case when ci.location is not null then ST_Y(ci.location::geometry) else null end as lat,
+        case when ci.location is not null then ST_X(ci.location::geometry) else null end as lon,
+        c.name as country,
+        r.name as region
+      from ${cities} ci
+      join ${countries} c on c.iso2 = ci.country_code
+      join ${regions} r on r.id = c.region_id
+      where c.name = ${country}
+        and ci.slug = ${citySlug}
+      limit 1
+    `);
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      slug: row.slug,
+      name: row.name,
+      ...(row.admin1 ? { admin1: row.admin1 } : {}),
+      spotCount: Number(row.spot_count),
+      ...(row.lat !== null && row.lon !== null
+        ? { lat: Number(row.lat), lon: Number(row.lon) }
+        : {}),
+      country: row.country,
+      region: row.region,
+    };
+  }
+
+  async searchCities(params: {
+    q: string;
+    country?: string;
+    limit?: number;
+  }): Promise<readonly SpotFacetCity[]> {
+    const trimmedLower = params.q.trim().toLowerCase();
+    if (!trimmedLower) return [];
+    const clampedLimit = this.limitClamp(params.limit ?? 10, 50);
+    const containsLike = `%${trimmedLower}%`;
+    const prefixLike = `${trimmedLower}%`;
+    const exactSlug = trimmedLower.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const containsSlugLike = `%${exactSlug}%`;
+    const prefixSlugLike = `${exactSlug}%`;
+    const countryFilter = params.country?.trim()
+      ? sql`and c.name = ${params.country.trim()}`
+      : sql``;
+
+    const rows = await this.db.execute<{
+      slug: string;
+      name: string;
+      admin1: string | null;
+      spot_count: number;
+      lat: number | null;
+      lon: number | null;
+      country: string;
+      region: string;
+    }>(sql`
+      select
+        ci.slug as slug,
+        ci.name as name,
+        ci.admin1 as admin1,
+        ci.spot_count::int as spot_count,
+        case when ci.location is not null then ST_Y(ci.location::geometry) else null end as lat,
+        case when ci.location is not null then ST_X(ci.location::geometry) else null end as lon,
+        c.name as country,
+        r.name as region
+      from ${cities} ci
+      join ${countries} c on c.iso2 = ci.country_code
+      join ${regions} r on r.id = c.region_id
+      where ci.spot_count > 0
+        ${countryFilter}
+        and (
+          lower(ci.name) like ${containsLike}
+          or (${exactSlug !== ""} and ci.slug like ${containsSlugLike})
+          or lower(coalesce(ci.admin1, '')) = ${trimmedLower}
+          or lower(ci.name || coalesce(', ' || ci.admin1, '')) like ${containsLike}
+          or lower(ci.name || coalesce(' ' || ci.admin1, '')) like ${containsLike}
+        )
+      order by
+        (lower(ci.name) = ${trimmedLower} or (${exactSlug !== ""} and ci.slug = ${exactSlug})) desc,
+        (lower(ci.name) like ${prefixLike} or (${exactSlug !== ""} and ci.slug like ${prefixSlugLike})) desc,
+        ci.featured desc,
+        ci.spot_count desc,
+        ci.name asc
+      limit ${clampedLimit}
+    `);
+
+    return rows.map((row) => ({
+      slug: row.slug,
+      name: row.name,
+      ...(row.admin1 ? { admin1: row.admin1 } : {}),
+      spotCount: Number(row.spot_count),
+      ...(row.lat !== null && row.lon !== null
+        ? { lat: Number(row.lat), lon: Number(row.lon) }
+        : {}),
+      country: row.country,
+      region: row.region,
     }));
   }
 

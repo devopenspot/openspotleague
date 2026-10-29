@@ -2,9 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { MapSpot } from "@/lib/types"
 
 const listMock = vi.fn()
+const findCityInCountryMock = vi.fn()
 
 vi.mock("@/lib/repositories", () => ({
-  getSpotRepositoryAsync: async () => ({ listForMapScope: listMock, list: listMock }),
+  getSpotRepositoryAsync: async () => ({
+    listForMapScope: listMock,
+    list: listMock,
+    findCityInCountry: findCityInCountryMock,
+  }),
 }))
 
 vi.mock("next/cache", () => ({
@@ -36,6 +41,8 @@ function spot(id: string): MapSpot {
 
 beforeEach(() => {
   listMock.mockReset()
+  findCityInCountryMock.mockReset()
+  findCityInCountryMock.mockResolvedValue(null)
 })
 
 describe("runListSpotsForMapScope", () => {
@@ -79,9 +86,36 @@ describe("runListSpotsForMapScope", () => {
     const result = await runListSpotsForMapScope("Colombia", "bogota")
 
     expect(result).toEqual(items)
+    expect(findCityInCountryMock).toHaveBeenCalledWith("Colombia", "bogota")
     expect(listMock).toHaveBeenCalledWith({
       country: "Colombia",
       city: "bogota",
+      limit: 500,
+      cursor: undefined,
+    })
+  })
+
+  it("includes 28km cityRadius when canonical city coordinates are available", async () => {
+    const items = [spot("1")]
+    findCityInCountryMock.mockResolvedValueOnce({
+      slug: "bogota",
+      name: "Bogotá",
+      lat: 4.65,
+      lon: -74.08,
+    })
+    listMock.mockResolvedValueOnce({ items, nextCursor: null })
+
+    const result = await runListSpotsForMapScope("Colombia", "bogota")
+
+    expect(result).toEqual(items)
+    expect(listMock).toHaveBeenCalledWith({
+      country: "Colombia",
+      city: "bogota",
+      cityRadius: {
+        lat: 4.65,
+        lon: -74.08,
+        radiusMeters: 28_000,
+      },
       limit: 500,
       cursor: undefined,
     })

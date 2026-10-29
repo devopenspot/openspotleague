@@ -157,6 +157,18 @@ export const SpotQuerySchema = z
       .optional(),
     discipline: SportDisciplineSchema.optional(),
     city: z.string().optional(),
+    cityRadius: z
+      .object({
+        lat: SpotLocationSchema.shape.lat,
+        lon: SpotLocationSchema.shape.lon,
+        radiusMeters: z
+          .number()
+          .finite()
+          .positive()
+          .max(MAP_NEARBY_MAX_RADIUS_METERS),
+      })
+      .strict()
+      .optional(),
     ids: z.array(z.string()).optional(),
     near: z
       .object({

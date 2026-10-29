@@ -22,6 +22,12 @@ import type { MapSpot } from "@/lib/types";
 const MAP_COUNTRY_MAX_PAGES = 20;
 // Maximum time budget (ms) for paginating sequential pages during server execution
 const MAX_PAGINATION_DURATION_MS = 6000;
+/**
+ * Metro-area radius around a selected city's canonical coordinates so spots in
+ * neighboring municipalities or across an international border (e.g. Basel/Weil
+ * am Rhein, Detroit/Windsor) are included in the single server scope query.
+ */
+export const CITY_RADIUS_METERS = 28_000;
 
 export async function runListSpotsForMapScope(
   country: string,
@@ -31,6 +37,23 @@ export async function runListSpotsForMapScope(
   const listPage = repo.listForMapScope
     ? repo.listForMapScope.bind(repo)
     : repo.list.bind(repo);
+  let cityRadius:
+    | { lat: number; lon: number; radiusMeters: number }
+    | undefined;
+  if (citySlug && repo.findCityInCountry) {
+    const cityRecord = await repo.findCityInCountry(country, citySlug);
+    if (
+      cityRecord &&
+      typeof cityRecord.lat === "number" &&
+      typeof cityRecord.lon === "number"
+    ) {
+      cityRadius = {
+        lat: cityRecord.lat,
+        lon: cityRecord.lon,
+        radiusMeters: CITY_RADIUS_METERS,
+      };
+    }
+  }
   const items: MapSpot[] = [];
   let cursor: string | null = null;
   const startTime = Date.now();
@@ -47,6 +70,7 @@ export async function runListSpotsForMapScope(
     const result = await listPage({
       country,
       city: citySlug ?? undefined,
+      ...(cityRadius ? { cityRadius } : {}),
       limit: SPOT_LIST_HARD_CAP,
       cursor: cursor ?? undefined,
     });

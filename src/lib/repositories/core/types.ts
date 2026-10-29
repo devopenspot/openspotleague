@@ -81,7 +81,10 @@ export interface SpotCardListResult {
  * `random` (implied). `near` is excluded: geo + random stays on the
  * deterministic path (see `listSpotCards`).
  */
-export type SpotShuffleFilters = Omit<SpotQuery, "cursor" | "seed" | "random" | "limit" | "near">
+export type SpotShuffleFilters = Omit<
+  SpotQuery,
+  "cursor" | "seed" | "random" | "limit" | "near" | "cityRadius"
+>
 
 /**
  * Filter-only slice of `SportEventQuery`, same contract as
@@ -128,16 +131,20 @@ export interface SpotFacetRegion {
 }
 
 /**
- * City facet for the searcher's city drill-down: the distinct city slugs
- * (and a display name) of the public, non-hidden spots for one country,
- * ordered by true spot count (server-side) so the overlay can render a
- * complete, correctly-ordered list without shipping count numbers —
- * per-city counts are display-irrelevant and were dropped.
+ * City facet for the searcher's city drill-down and global city search:
+ * canonical `citySlug` and display name, plus optional state/province
+ * (`admin1`), public spot count, coordinates, and country/region context.
  */
 export interface SpotFacetCity {
   /** Canonical `spots.city_slug`, used by the `city` URL param. */
   slug: string
   name: string
+  admin1?: string | null
+  spotCount?: number
+  lat?: number
+  lon?: number
+  country?: string
+  region?: string
 }
 
 export interface SportEventFacetCountry {

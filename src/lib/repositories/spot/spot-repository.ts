@@ -64,12 +64,30 @@ export interface SpotRepository {
   listAllCountries(): Promise<CountryListResult>
   listRegions(): Promise<readonly SpotFacetRegion[]>
   /**
-   * Distinct city slugs (plus a display name) of the public, non-hidden
-   * spots for `country`, ordered by true spot count (descending) then name.
+   * Distinct city slugs (plus a display name, optional admin1, spotCount, and
+   * coordinates) of the public, non-hidden spots for `country`, ordered by
+   * true spot count (descending) then name.
    * Powers the searcher's city drill-down when the capped client directory
    * cannot prove a complete list for the browsed country.
    */
   listCitiesForCountry(country: string): Promise<readonly SpotFacetCity[]>
+  /**
+   * Look up a single canonical city within `country` by `citySlug`, including
+   * its coordinates (`lat`, `lon`) and `admin1` state/province if present.
+   */
+  findCityInCountry?(
+    country: string,
+    citySlug: string,
+  ): Promise<SpotFacetCity | null>
+  /**
+   * Global or country-scoped city search ordered by prefix match, featured
+   * priority, and spot count.
+   */
+  searchCities?(params: {
+    q: string
+    country?: string
+    limit?: number
+  }): Promise<readonly SpotFacetCity[]>
   count(): Promise<number>
   countPublic(): Promise<number>
   create(input: NewSpot): Promise<Spot>

@@ -3,9 +3,11 @@ import type { NextRequest } from "next/server";
 import type { SpotFacetCity } from "@/lib/repositories/core/types";
 
 const listMock = vi.fn();
+const searchMock = vi.fn();
 
 vi.mock("@/lib/services/spot/cities", () => ({
   listCitiesForCountry: (...args: unknown[]) => listMock(...args),
+  searchCities: (...args: unknown[]) => searchMock(...args),
 }));
 
 import { GET } from "./route";
@@ -24,6 +26,7 @@ const sample: SpotFacetCity[] = [
 describe("GET /api/spots/cities", () => {
   beforeEach(() => {
     listMock.mockReset();
+    searchMock.mockReset();
   });
 
   it("rejects a missing country", async () => {
@@ -66,5 +69,23 @@ describe("GET /api/spots/cities", () => {
     const res = await GET(makeRequest("?country=Colombia"));
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: "Internal error" });
+  });
+
+  it("searches cities globally when q is provided", async () => {
+    const searchResults: SpotFacetCity[] = [
+      {
+        slug: "miami",
+        name: "Miami",
+        admin1: "FL",
+        spotCount: 17,
+        country: "United States",
+        region: "North America",
+      },
+    ];
+    searchMock.mockResolvedValue(searchResults);
+    const res = await GET(makeRequest("?q=Miami&limit=8"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ cities: searchResults });
+    expect(searchMock).toHaveBeenCalledWith("Miami", undefined, 8);
   });
 });
