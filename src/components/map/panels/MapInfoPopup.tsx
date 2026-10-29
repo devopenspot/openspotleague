@@ -66,21 +66,20 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
   const countrySpots = useSpotsStore((s) => s.countrySpots);
   const citySpots = useSpotsStore((s) => s.citySpots);
   const nearbySpots = useSpotsStore((s) => s.nearbySpots);
-  const cityRadiusSpots = useSpotsStore((s) => s.cityRadiusSpots);
 
   const { clearActivePin } = useMapActions();
   const event = useEventPopup(activeEventId, events);
 
-  // The pin can point at a country-, city-, nearby- or city-radius-scoped
-  // spot (outside the capped base directory), so resolve against the union
+  // The pin can point at a country-, city-, or nearby-scoped spot
+  // (outside the capped base directory), so resolve against the union
   // of all slices.
   const resolvable = useMemo(
     () =>
-      [spots, citySpots, countrySpots, nearbySpots, cityRadiusSpots].reduce(
+      [spots, citySpots, countrySpots, nearbySpots].reduce(
         unionById,
         [] as readonly MapSpot[],
       ),
-    [cityRadiusSpots, citySpots, countrySpots, nearbySpots, spots],
+    [citySpots, countrySpots, nearbySpots, spots],
   );
   const spot = useMemo(
     () =>

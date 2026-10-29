@@ -23,9 +23,10 @@ interface SpotsState {
   countrySpots: readonly MapSpot[]
   /**
    * Full server-fetched spot list of the city currently filtered on
-   * the map (`&city=<slug>`). Derived from `countrySpots` on the client
-   * when `countrySpots` succeeds, or delivered from the server when the
-   * country walk degrades under DB deadlines.
+   * the map (`&city=<slug>`), including spots within the 28km city
+   * radius scope. Derived from `countrySpots` on the client when
+   * `countrySpots` succeeds, or delivered from the server when a city
+   * scope is active.
    */
   citySpots: readonly MapSpot[]
   /**
@@ -38,19 +39,6 @@ interface SpotsState {
    * and saved mode never read this slice.
    */
   nearbySpots: readonly MapSpot[]
-  /**
-   * Client-walked spots within `MAP_CITY_RADIUS_METERS` (55 km) of the
-   * selected city's spot centroid, fetched by `useCityRadiusSpots`
-   * (`GET /api/spots?near=…`, cursor-walked) while the map's city filter
-   * is active. The rendered city scope is the union of the city-filtered
-   * pins and this slice; rows may live in neighboring countries, so they
-   * can be absent from `countrySpots`, `citySpots` and the base
-   * directory alike — pin resolution and verification bumps must read
-   * this slice too. Cleared by the hook whenever the city scope exits or
-   * the centroid changes, so the slice always matches the last enabled
-   * scope.
-   */
-  cityRadiusSpots: readonly MapSpot[]
   /**
    * True while a committed city-scope change (`city` URL param change in
    * `useMapFilter.writeQuery`) is in flight: the RSC navigation refetches
@@ -71,7 +59,6 @@ interface SpotsState {
   setCountrySpots: (spots: readonly MapSpot[]) => void
   setCitySpots: (spots: readonly MapSpot[]) => void
   setNearbySpots: (spots: readonly MapSpot[]) => void
-  setCityRadiusSpots: (spots: readonly MapSpot[]) => void
 }
 
 export const CITY_SCOPE_LOADING_TIMEOUT_MS = 6_000
@@ -86,7 +73,6 @@ export const useSpotsStore = create<SpotsState>()(
       countrySpots: [],
       citySpots: [],
       nearbySpots: [],
-      cityRadiusSpots: [],
       cityScopeLoading: false,
       setMapData: ({ spots, regions, spotTypes }) =>
         set({ spots, regions, spotTypes }),
@@ -96,7 +82,6 @@ export const useSpotsStore = create<SpotsState>()(
       setCountrySpots: (countrySpots) => set({ countrySpots }),
       setCitySpots: (citySpots) => set({ citySpots }),
       setNearbySpots: (nearbySpots) => set({ nearbySpots }),
-      setCityRadiusSpots: (cityRadiusSpots) => set({ cityRadiusSpots }),
       setCityScopeLoading: (cityScopeLoading) => {
         if (cityScopeLoadingTimer !== null) {
           clearTimeout(cityScopeLoadingTimer)

@@ -45,7 +45,6 @@ import { useMapModeEffects } from "@/components/map/hooks/use-map-mode-effects";
 import { useUIStore } from "@/stores/ui-store";
 import { useOptimisticGate } from "@/hooks/data/useOptimisticGate";
 import { useNearbySpots } from "@/hooks/data/useNearbySpots";
-import { useCityRadiusSpots } from "@/hooks/data/useCityRadiusSpots";
 import { showToast } from "@/hooks/ui/useToast";
 
 const LeafletCanvas = dynamic(
@@ -102,7 +101,6 @@ export default function MapTab({ searchParams }: MapTabProps) {
   const countrySpots = useSpotsStore((s) => s.countrySpots);
   const citySpots = useSpotsStore((s) => s.citySpots);
   const nearbySpots = useSpotsStore((s) => s.nearbySpots);
-  const cityRadiusSpots = useSpotsStore((s) => s.cityRadiusSpots);
   const cityScopeLoading = useSpotsStore((s) => s.cityScopeLoading);
   const preferredSport = usePreferencesStore((s) => s.preferredSport);
   const regions = useSpotsStore((s) => s.regions);
@@ -242,40 +240,30 @@ export default function MapTab({ searchParams }: MapTabProps) {
     lon: userLatLon?.lon ?? null,
     enabled: nearYou,
   });
-  // City-radius scope: while a city filter is committed, the rendered
-  // set widens beyond the city's own spots to everything within
-  // `MAP_CITY_RADIUS_METERS` of the city spots' centroid —
-  // border-crossing rows included (distance-based, like Nearby mode).
-  // The centroid is only derivable once the server-fetched city list
-  // lands; an empty `citySpots` (in-flight read or tampered slug)
-  // means no scope and no walk. The walk runs in `useCityRadiusSpots`
-  // and mirrors into the `cityRadiusSpots` store slice, which is also
-  // read by MapInfoPopup / useWeatherVerification outside this
-  // component.
-  const cityRadiusActive =
+  // Server-delivered `citySpots` includes both the canonical city spots and
+  // any public spots within the 28km metro radius (including neighboring
+  // cities and border-crossing spots). Derive the centroid from the city's
+  // own spots first (falling back to all `citySpots`) and merge the sport-
+  // filtered `citySpots` into `sourceSpots`.
+  const cityScopeActive =
     city !== null && !hasFocus && !savedModeActive && !nearYou;
   const cityCentroid = useMemo(
     () =>
-      cityRadiusActive && citySpots.length > 0
-        ? deriveSpotCentroid(citySpots)
+      cityScopeActive && citySpots.length > 0
+        ? (deriveSpotCentroid(
+            citySpots.filter((s) => s.citySlug === city),
+          ) ?? deriveSpotCentroid(citySpots))
         : null,
-    [cityRadiusActive, citySpots],
+    [city, cityScopeActive, citySpots],
   );
-  useCityRadiusSpots({
-    lat: cityCentroid?.lat ?? null,
-    lon: cityCentroid?.lon ?? null,
-    enabled: cityCentroid !== null,
-  });
-  // Radius rows join the rendered set under the same sport preference
-  // as the city-filtered directory (`preferenceSpots`).
-  const cityRadiusScope = useMemo(() => {
-    if (cityCentroid === null || cityRadiusSpots.length === 0) return NO_SPOTS;
+  const cityServerScope = useMemo(() => {
+    if (!cityScopeActive || citySpots.length === 0) return NO_SPOTS;
     return preferredSport && preferredSport !== "all"
-      ? cityRadiusSpots.filter((s) =>
+      ? citySpots.filter((s) =>
           s.sports.includes(preferredSport as SportDiscipline),
         )
-      : cityRadiusSpots;
-  }, [cityCentroid, cityRadiusSpots, preferredSport]);
+      : citySpots;
+  }, [cityScopeActive, citySpots, preferredSport]);
   const sourceSpots = useMemo(() => {
     // Mandatory gate: when filtered mode requires region+country+city, hide spots until the gate completes.
     // Use baseNeeds (not just visual needsGate) so while willRestore (optimistic) we keep skeleton, not unfiltered spots.
@@ -291,11 +279,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
       return spots.filter((s) => savedIds.has(s.id));
     }
     if (nearYou) return nearbySource;
-    // City-radius widening: union by id so radius rows add to — never
-    // duplicate — the city-filtered pins (rows may re-include city
-    // spots themselves).
-    if (cityRadiusScope.length > 0) {
-      return unionById(filteredSpots, cityRadiusScope);
+    if (cityServerScope.length > 0) {
+      return unionById(filteredSpots, cityServerScope);
     }
     return filteredSpots;
   }, [
@@ -308,7 +293,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
     spots,
     savedIds,
     filteredSpots,
-    cityRadiusScope,
+    cityServerScope,
   ]);
 
   // Bottom-left scope pill: filtered mode only — nearby/saved/focus hide it

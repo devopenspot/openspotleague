@@ -18,15 +18,13 @@ function applyVerificationCount(spotId: string, nextCount: number): void {
     countrySpots,
     citySpots,
     nearbySpots,
-    cityRadiusSpots,
     setSpots,
     setCountrySpots,
     setCitySpots,
     setNearbySpots,
-    setCityRadiusSpots,
   } = useSpotsStore.getState()
   // Bump the base directory first; the mirrored overlay slices
-  // (country-, city-, nearby- and city-radius-only spots) live outside
+  // (country-, city-, and nearby-only spots) live outside
   // SPOT_LIST_HARD_CAP.
   const baseIndex = spots.findIndex((s) => s.id === spotId)
   if (baseIndex !== -1) {
@@ -49,12 +47,6 @@ function applyVerificationCount(spotId: string, nextCount: number): void {
   if (nearbySpots.some((s) => s.id === spotId)) {
     setNearbySpots(
       nearbySpots.map((s) => (s.id === spotId ? { ...s, verificationCount: nextCount } : s)),
-    )
-    return
-  }
-  if (cityRadiusSpots.some((s) => s.id === spotId)) {
-    setCityRadiusSpots(
-      cityRadiusSpots.map((s) => (s.id === spotId ? { ...s, verificationCount: nextCount } : s)),
     )
   }
 }
