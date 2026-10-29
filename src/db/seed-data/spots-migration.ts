@@ -1,7 +1,6 @@
 import { inArray, sql } from "drizzle-orm"
 import type { getDbClient } from "@/lib/db/client"
 import {
-  spotDisciplines,
   spotImages,
   spotTypeAssignments,
   spots,
@@ -209,11 +208,15 @@ export async function migrateSpots(
       instagram: spot.instagram,
       verificationCount: 0,
       types: typesBySpot.get(spot.id) ?? [],
-      sports: spot.sports.map((slug) => {
-        const name = SPORT_NAME_BY_SLUG.get(slug)
-        if (!name) throw new Error(`Missing sport discipline seed for ${slug}`)
-        return name
-      }),
+      sports: Array.from(
+        new Set(
+          spot.sports.map((slug) => {
+            const name = SPORT_NAME_BY_SLUG.get(slug)
+            if (!name) throw new Error(`Missing sport discipline seed for ${slug}`)
+            return name
+          }),
+        ),
+      ).sort((a, b) => a.localeCompare(b)),
       location: spot.location,
       createdBy: null,
       ...(spot.createdAt ? { createdAt: spot.createdAt } : {}),
@@ -283,24 +286,12 @@ export async function migrateSpots(
       })
     }
 
-    // 4. Insert Spot Disciplines
-    const DISCIPLINE_CHUNK = SPOT_CHUNK * 4
-    const disciplineRows = spotsToMigrate.flatMap((spot) =>
-      spot.sports.map((disciplineSlug) => ({ spotId: spot.id, disciplineSlug })),
+    // 4. Count inline Spot Disciplines & Insert Spot Type Assignments
+    insertedDisciplinesCount = spotRows.reduce(
+      (sum, row) => sum + row.sports.length,
+      0,
     )
-    insertedDisciplinesCount = disciplineRows.length
 
-    for (let i = 0; i < disciplineRows.length; i += DISCIPLINE_CHUNK) {
-      const chunk = disciplineRows.slice(i, i + DISCIPLINE_CHUNK)
-      await tx.insert(spotDisciplines).values(chunk).onConflictDoNothing()
-      options.onProgress?.({
-        phase: "disciplines",
-        completed: Math.min(i + DISCIPLINE_CHUNK, disciplineRows.length),
-        total: disciplineRows.length,
-      })
-    }
-
-    // 5. Insert Spot Type Assignments
     const ASSIGNMENT_CHUNK = SPOT_CHUNK * 4
     const assignmentRows = relevantAssignments.map((assignment) => ({
       spotId: assignment.spotId,
@@ -319,8 +310,8 @@ export async function migrateSpots(
     }
   })
 
-  // Refresh query planner statistics after bulk insertion of ~177,000 rows
-  await db.execute(sql`analyze spots, spot_disciplines, spot_type_assignments, spot_images`).catch(() => undefined)
+  // Refresh query planner statistics after bulk insertion
+  await db.execute(sql`analyze spots, spot_type_assignments, spot_images`).catch(() => undefined)
 
   return {
     spots: spotsToMigrate.length,

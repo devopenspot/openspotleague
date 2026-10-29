@@ -25,6 +25,7 @@ const spotRow = {
   name: "HUBBA HIDEOUT",
   city: "San Francisco",
   imageUrl: "spots/spot-1/master.webp",
+  sports: ["Skateboard"],
   origin: "community",
   adminHidden: false,
   createdAt: new Date("2025-01-01T00:00:00.000Z"),
@@ -32,9 +33,9 @@ const spotRow = {
 }
 
 function makeDb(row: unknown) {
-  // auditSnapshot issues three selects: the spot row (ending in `.limit(1)`)
-  // plus disciplines and types (ending in `.where(...)`).
-  const queue: unknown[] = row ? [[row], [], []] : [[]]
+  // auditSnapshot issues two selects: the spot row (ending in `.limit(1)`)
+  // plus types (ending in `.where(...)`).
+  const queue: unknown[] = row ? [[row], []] : [[]]
   return {
     select: () => ({
       from: () => ({

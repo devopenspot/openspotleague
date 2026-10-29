@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm"
+import { and, arrayContains, asc, desc, eq, gt, inArray, isNull, lt, or, sql } from "drizzle-orm"
 import { createHmac } from "node:crypto"
 import { z } from "zod"
 import { requestFingerprint } from "./idempotency"
@@ -19,7 +19,6 @@ import {
   gameSessions,
   riderScoreEvents,
   riderStats,
-  spotDisciplines,
   spotChallengeRecords,
   spotTypeAssignments,
   spotTypes,
@@ -581,17 +580,13 @@ async function findNearestChallengeSpotRow(
 ) {
   const point = sql`ST_SetSRID(ST_MakePoint(${input.longitude}, ${input.latitude}), 4326)::geography`
   if (input.spotTypeSlugs.length === 0) return null
+  const sportName = GAME_DEFINITIONS[input.disciplineSlug].sportPreference
   const rows = await tx
     .select({ id: spots.id, location: spots.location })
     .from(spots)
     .where(and(
       sql`ST_DWithin(${spots.location}, ${point}, ${DEFAULT_LOCATION_RADIUS_METERS})`,
-      sql`exists (
-        select 1
-        from ${spotDisciplines}
-        where ${spotDisciplines.spotId} = ${spots.id}
-          and ${spotDisciplines.disciplineSlug} = ${input.disciplineSlug}
-      )`,
+      arrayContains(spots.sports, [sportName]),
       sql`exists (
         select 1
         from ${spotTypeAssignments}

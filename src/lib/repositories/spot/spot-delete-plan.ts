@@ -49,7 +49,7 @@ import type { SpotDetachSummary } from "../core/types"
  *
  * Deliberately untouched (DB handles them, no statements needed):
  * - `saved_spots`, `verified_spots`, `spot_weather_verifications`,
- *   `spot_disciplines`, `spot_type_assignments` (`ON DELETE CASCADE`)
+ *   `spot_type_assignments` (`ON DELETE CASCADE`)
  * - `community_spot_submissions.canonical_spot_id` (`ON DELETE SET NULL`)
  *
  * When a new `RESTRICT → spots` FK is added, extend this function instead of

@@ -43,4 +43,27 @@ describe("DrizzleTaxonomyRepository trick persistence", () => {
     await repository.deleteTrick("skateboard", "boardslide")
     expect(deleteCanonicalTrickMock).toHaveBeenCalledWith(db, "skateboard", "boardslide")
   })
+
+  it("blocks deleting a sport that is still referenced in spots.sports", async () => {
+    const selectResults = [
+      [{ slug: "skateboard", name: "Skateboard" }],
+      [{ id: "spot-1" }],
+    ]
+    const mockDb = {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: () => Promise.resolve(selectResults.shift() ?? []),
+          }),
+        }),
+      }),
+      delete: vi.fn(),
+    } as unknown as ConstructorParameters<typeof DrizzleTaxonomyRepository>[0]
+
+    const repo = new DrizzleTaxonomyRepository(mockDb)
+    await expect(repo.deleteSport("skateboard")).rejects.toThrow(
+      "Sport is still in use: skateboard",
+    )
+    expect(mockDb.delete).not.toHaveBeenCalled()
+  })
 })

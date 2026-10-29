@@ -1,8 +1,9 @@
-import { asc, eq } from "drizzle-orm"
+import { arrayOverlaps, asc, eq } from "drizzle-orm"
 import { type drizzle } from "drizzle-orm/postgres-js"
 import {
   eventCategories,
   sportDisciplines,
+  spots,
   spotTypes,
 } from "@/db/schema"
 import type {
@@ -49,6 +50,22 @@ export class DrizzleTaxonomyRepository implements TaxonomyRepository {
   }
 
   async deleteSport(slug: string) {
+    const [existing] = await this.db
+      .select({ slug: sportDisciplines.slug, name: sportDisciplines.name })
+      .from(sportDisciplines)
+      .where(eq(sportDisciplines.slug, slug))
+      .limit(1)
+    if (!existing) throw new Error(`Sport not found: ${slug}`)
+
+    const [spotInUse] = await this.db
+      .select({ id: spots.id })
+      .from(spots)
+      .where(arrayOverlaps(spots.sports, [existing.name, existing.slug]))
+      .limit(1)
+    if (spotInUse) {
+      throw new Error(`Sport is still in use: ${slug}`)
+    }
+
     try {
       const result = await this.db.delete(sportDisciplines).where(eq(sportDisciplines.slug, slug)).returning({ slug: sportDisciplines.slug })
       if (result.length === 0) throw new Error(`Sport not found: ${slug}`)

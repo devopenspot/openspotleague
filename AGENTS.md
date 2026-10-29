@@ -53,7 +53,7 @@ Single private Next.js 16 App Router application ("OpenSpot" — interactive map
     - Completed/cancelled games: Detached with display snapshots (`spotId: null, spotRemoved: true`).
     - Challenge records: Snapshot name and slug in place (`spotNameSnapshot`, `spotSlugSnapshot`).
     - Weather reports & location verifications: Deleted (scoped strictly to spot).
-    - Cascades handled by DB: `saved_spots`, `verified_spots`, `spot_weather_verifications`, `spot_disciplines`, `spot_type_assignments`.
+    - Cascades handled by DB: `saved_spots`, `verified_spots`, `spot_weather_verifications`, `spot_type_assignments`.
     - Any new `RESTRICT → spots` foreign key MUST be handled in `detachSpotDependents`; unhandled FK violations surface as 409 by design.
 - Concurrency & Read Safety:
   - Global database concurrency gating lives inside `withDbRetry` (`withGlobalDbConcurrency` in `src/lib/db/concurrency.ts`), bounded by `CONCURRENCY_MAX` (capped at `POOL_MAX`). Do not hand-roll per-layout or per-route connection concurrency gating.

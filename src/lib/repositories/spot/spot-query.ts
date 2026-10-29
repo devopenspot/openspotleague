@@ -3,8 +3,6 @@ import type { drizzle } from "drizzle-orm/postgres-js";
 import {
   countries,
   spotTypeAssignments,
-  spotDisciplines,
-  sportDisciplines,
   spots,
   spotTypes,
 } from "@/db/schema";
@@ -44,23 +42,6 @@ function typesAggregated(db: ReturnType<typeof drizzle>) {
     .as("types_agg");
 }
 
-function sportsAggregated(db: ReturnType<typeof drizzle>) {
-  return db
-    .select({
-       spotId: spotDisciplines.spotId,
-      sports: sql<string[]>`
-        array_agg(${sportDisciplines.name} order by ${sportDisciplines.name})
-      `.as("sports"),
-    })
-     .from(spotDisciplines)
-    .innerJoin(
-      sportDisciplines,
-       eq(sportDisciplines.slug, spotDisciplines.disciplineSlug),
-    )
-     .groupBy(spotDisciplines.spotId)
-    .as("sports_agg");
-}
-
 export interface MapSpotRow {
   id: string;
   slug: string;
@@ -89,26 +70,24 @@ export interface JoinedSpotRow extends MapSpotRow {
 }
 
 /**
- * `COALESCE(..., '{}'::json[])` on the LEFT JOINed aggregates keeps
- * the row shape stable for spots with no types or no sports — the
- * correlated-subquery form produced an empty array via the inner
- * `coalesce(..., '{}'::json[])`; the joined form produces NULL when
- * the spot has no rows in the join table, which `COALESCE` folds to
- * the same empty array. The result type is unchanged for callers.
+ * `COALESCE(..., '{}'::json[])` on the LEFT JOINed `types` aggregate keeps
+ * the row shape stable for spots with no types — the correlated-subquery
+ * form produced an empty array via the inner `coalesce(..., '{}'::json[])`;
+ * the joined form produces NULL when the spot has no rows in the join table,
+ * which `COALESCE` folds to the same empty array. `sports` is read directly
+ * from the inline `spots.sports` (`text[]`) column.
  *
- * The aggregate references are written as raw qualified names
+ * The aggregate reference is written as a raw qualified name
  * (`"types_agg"."types"`) rather than `${typesAgg.types}`: Drizzle
  * renders subquery fields inside `sql` templates UNQUALIFIED, and since
  * migration 0034 the underlying `spots` table itself has a `types`
- * jsonb column (and `sports` text[]) for the read model, which made the
- * bare references ambiguous (Postgres 42702 — every list query failed).
+ * jsonb column for the read model, which made the bare reference
+ * ambiguous (Postgres 42702 — every list query failed).
  */
 const emptyTypes: SQL = sql`'{}'::json[]`;
-const emptySports: SQL = sql`'{}'::text[]`;
 
 export function mapSpotSelect(db: ReturnType<typeof drizzle>) {
   const typesAgg = typesAggregated(db);
-  const sportsAgg = sportsAggregated(db);
   return db
     .select({
       id: spots.id,
@@ -117,7 +96,7 @@ export function mapSpotSelect(db: ReturnType<typeof drizzle>) {
       city: spots.city,
       citySlug: spots.citySlug,
       types: sql<SpotTypeRef[]>`coalesce("types_agg"."types", ${emptyTypes})`,
-      sports: sql<string[]>`coalesce("sports_agg"."sports", ${emptySports})`,
+      sports: spots.sports,
       imageUrl: spots.imageUrl,
       country: countries.name,
       countryCode: spots.countryCode,
@@ -128,7 +107,6 @@ export function mapSpotSelect(db: ReturnType<typeof drizzle>) {
     .from(spots)
     .innerJoin(countries, eq(countries.iso2, spots.countryCode))
     .leftJoin(typesAgg, eq(typesAgg.spotId, spots.id))
-    .leftJoin(sportsAgg, eq(sportsAgg.spotId, spots.id))
     .$dynamic();
 }
 
@@ -156,7 +134,6 @@ export function rowToMapSpotWithImagePath(row: MapSpotRow): SpotWithImagePath<Ma
 
 export function joinedSpotSelect(db: ReturnType<typeof drizzle>) {
   const typesAgg = typesAggregated(db);
-  const sportsAgg = sportsAggregated(db);
   return db
     .select({
       id: spots.id,
@@ -166,7 +143,7 @@ export function joinedSpotSelect(db: ReturnType<typeof drizzle>) {
       citySlug: spots.citySlug,
       address: spots.address,
       types: sql<SpotTypeRef[]>`coalesce("types_agg"."types", ${emptyTypes})`,
-      sports: sql<string[]>`coalesce("sports_agg"."sports", ${emptySports})`,
+      sports: spots.sports,
       imageUrl: spots.imageUrl,
       country: countries.name,
       countryCode: spots.countryCode,
@@ -184,7 +161,6 @@ export function joinedSpotSelect(db: ReturnType<typeof drizzle>) {
     .from(spots)
     .innerJoin(countries, eq(countries.iso2, spots.countryCode))
     .leftJoin(typesAgg, eq(typesAgg.spotId, spots.id))
-    .leftJoin(sportsAgg, eq(sportsAgg.spotId, spots.id))
     .$dynamic();
 }
 
@@ -215,11 +191,9 @@ export interface SpotCardRow {
 }
 
 /**
- * Slim card projection for the landing wire: 5 columns plus a
- * per-row sports aggregate. Unlike `joinedSpotSelect` it skips the
- * countries join and the full-table type aggregate — the caller
- * restricts to page IDs, so the correlated sports subquery runs once
- * per card row instead of once per table.
+ * Slim card projection for the landing wire: 5 columns read directly
+ * from `spots`. Unlike `joinedSpotSelect` it skips the countries join
+ * and the full-table type aggregate.
  */
 export function spotCardSelect(db: ReturnType<typeof drizzle>, ids: readonly string[]) {
   return db
@@ -228,17 +202,7 @@ export function spotCardSelect(db: ReturnType<typeof drizzle>, ids: readonly str
       name: spots.name,
       city: spots.city,
       imageUrl: spots.imageUrl,
-      sports: sql<string[]>`
-        coalesce(
-          (
-            select array_agg(${sportDisciplines.name} order by ${sportDisciplines.name})
-            from ${spotDisciplines} sd
-            join ${sportDisciplines} sdn on sdn.slug = sd.discipline_slug
-            where sd.spot_id = ${spots.id}
-          ),
-          '{}'::text[]
-        )
-      `.as("sports"),
+      sports: spots.sports,
     })
     .from(spots)
     .where(inArray(spots.id, [...ids]));

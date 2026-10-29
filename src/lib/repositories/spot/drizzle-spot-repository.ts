@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
+import { and, arrayContains, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/postgres-js";
 import {
   communitySpotSubmissions,
@@ -7,7 +7,6 @@ import {
   regions,
   sportDisciplines,
   spotTypeAssignments,
-  spotDisciplines,
   spotTypes,
   spots,
   type NewSpotRow,
@@ -72,6 +71,26 @@ function haversineMeters(
   return 2 * EARTH_RADIUS_METERS * Math.asin(Math.sqrt(a));
 }
 
+const CANONICAL_DISCIPLINE_BY_SLUG: Readonly<Record<string, SportDiscipline>> = {
+  bmx: "BMX",
+  roller: "Roller",
+  scooter: "Scooter",
+  skateboard: "Skateboard",
+};
+
+function toCanonicalSportDiscipline(value: string): SportDiscipline | null {
+  return CANONICAL_DISCIPLINE_BY_SLUG[value.trim().toLowerCase()] ?? null;
+}
+
+function normalizeSpotDisciplines(disciplines: readonly string[]): SportDiscipline[] {
+  const unique = new Set<SportDiscipline>();
+  for (const item of disciplines) {
+    const canonical = toCanonicalSportDiscipline(item);
+    if (canonical) unique.add(canonical);
+  }
+  return Array.from(unique).sort((a, b) => a.localeCompare(b));
+}
+
 function sportDisciplineTitleToSlug(title: string): string {
   return title.toLowerCase();
 }
@@ -110,11 +129,8 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     if (query.country) filterConditions.push(eq(countries.name, query.country))
     if (query.countryCode) filterConditions.push(eq(spots.countryCode, query.countryCode))
     if (query.discipline) {
-      filterConditions.push(sql`exists (
-        select 1 from ${spotDisciplines} sd
-        where sd.spot_id = ${spots.id}
-          and sd.discipline_slug = ${query.discipline.toLowerCase()}
-      )`)
+      const canonical = toCanonicalSportDiscipline(query.discipline) ?? query.discipline
+      filterConditions.push(arrayContains(spots.sports, [canonical]))
     }
     if (query.city) filterConditions.push(eq(spots.citySlug, query.city))
     if (query.ids && query.ids.length > 0) filterConditions.push(inArray(spots.id, [...query.ids]))
@@ -198,11 +214,8 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     if (query?.country) conditions.push(eq(countries.name, query.country));
     if (query?.countryCode) conditions.push(eq(spots.countryCode, query.countryCode));
     if (query?.discipline) {
-      conditions.push(sql`exists (
-        select 1 from ${spotDisciplines} sd
-        where sd.spot_id = ${spots.id}
-          and sd.discipline_slug = ${query.discipline.toLowerCase()}
-      )`);
+      const canonical = toCanonicalSportDiscipline(query.discipline) ?? query.discipline;
+      conditions.push(arrayContains(spots.sports, [canonical]));
     }
     if (query?.city) conditions.push(eq(spots.citySlug, query.city));
     if (query?.ids && query.ids.length > 0)
@@ -398,18 +411,15 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     const point = sql`ST_SetSRID(ST_MakePoint(${params.lon}, ${params.lat}), 4326)::geography`;
     const typeSlugs = [...params.spotTypeSlugs];
     if (typeSlugs.length === 0) return null;
+    const canonicalDiscipline =
+      toCanonicalSportDiscipline(params.disciplineSlug) ?? params.disciplineSlug;
     const rows = await joinedSpotSelect(this.db)
       .where(
         and(
           eq(spots.visibility, "public"),
           eq(spots.adminHidden, false),
           sql`ST_DWithin(${spots.location}, ${point}, ${params.radiusMeters})`,
-          sql`exists (
-            select 1
-            from ${spotDisciplines}
-            where ${spotDisciplines.spotId} = ${spots.id}
-              and ${spotDisciplines.disciplineSlug} = ${params.disciplineSlug}
-          )`,
+          arrayContains(spots.sports, [canonicalDiscipline]),
           sql`exists (
             select 1
             from ${spotTypeAssignments}
@@ -648,18 +658,6 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     }));
   }
 
-  private async syncSpotDisciplines(
-    spotId: string,
-    disciplines: readonly SportDiscipline[],
-  ): Promise<void> {
-    await this.db.delete(spotDisciplines).where(eq(spotDisciplines.spotId, spotId));
-    if (disciplines.length === 0) return;
-    const slugs = disciplines.map(sportDisciplineTitleToSlug);
-    await this.db
-      .insert(spotDisciplines)
-      .values(slugs.map((disciplineSlug) => ({ spotId, disciplineSlug })));
-  }
-
   private async syncSpotTypes(
     spotId: string,
     typeSlugs: readonly string[],
@@ -764,6 +762,7 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
           imageUrl: insertValues.imageUrl,
           countryCode: insertValues.countryCode,
           instagram: insertValues.instagram,
+          sports: insertValues.sports,
           location: insertValues.location,
           // Re-seeding or an upsert must never transfer ownership from an
           // existing administrator to the importing caller.
@@ -786,7 +785,6 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
         })
         .onConflictDoNothing();
     }
-    await this.syncSpotDisciplines(rowId, input.sports);
     await this.syncSpotTypes(rowId, input.types);
     return rowId;
   }
@@ -821,6 +819,7 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
       imageUrl: input.image,
       countryCode,
       instagram: input.instagram ?? null,
+      sports: normalizeSpotDisciplines(input.sports),
       location: input.location,
       visibility: "public",
       origin: "seed",
@@ -840,10 +839,6 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     if (!row) return null;
     // No ORDER BY — audit correctness does not require sorted sports/types,
     // and sorting adds an unnecessary Sort node per mutation tail.
-    const disciplines = await this.db
-      .select({ slug: spotDisciplines.disciplineSlug })
-      .from(spotDisciplines)
-      .where(eq(spotDisciplines.spotId, id));
     const types = await this.db
       .select({ slug: spotTypeAssignments.typeSlug })
       .from(spotTypeAssignments)
@@ -852,7 +847,7 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
       ...row,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
-      sports: disciplines.map((discipline) => discipline.slug),
+      sports: (row.sports ?? []).map(sportDisciplineTitleToSlug),
       types: types.map((type) => type.slug),
     }) as Record<string, unknown>;
   }
@@ -984,7 +979,11 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     const expectedDate = this.parseExpectedUpdatedAt(expectedUpdatedAt);
     const before = await this.auditSnapshot(id);
     const [current] = await this.db
-      .select({ countryCode: spots.countryCode, updatedAt: spots.updatedAt })
+      .select({
+        countryCode: spots.countryCode,
+        sports: spots.sports,
+        updatedAt: spots.updatedAt,
+      })
       .from(spots)
       .where(eq(spots.id, id))
       .limit(1);
@@ -1027,16 +1026,15 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     if (patch.location !== undefined)
       setValues.location = patch.location;
 
-    const currentDisciplines = await this.db
-      .select({ slug: spotDisciplines.disciplineSlug })
-      .from(spotDisciplines)
-      .where(eq(spotDisciplines.spotId, id));
     await this.assertReferenceIntegrity(
       countryCode,
-      patch.sports ?? currentDisciplines.map((discipline) => discipline.slug),
+      patch.sports ?? current.sports,
       patch.types ?? [],
       true,
     );
+    if (patch.sports !== undefined) {
+      setValues.sports = normalizeSpotDisciplines(patch.sports);
+    }
     if (actorId !== undefined) setValues.updatedBy = actorId;
 
     const where = expectedDate
@@ -1051,9 +1049,6 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
       throw expectedDate
         ? new StaleRecordError()
         : new Error(`Spot not found: ${id}`);
-    }
-    if (patch.sports !== undefined) {
-      await this.syncSpotDisciplines(id, patch.sports);
     }
     if (patch.types !== undefined) {
       await this.syncSpotTypes(id, patch.types);

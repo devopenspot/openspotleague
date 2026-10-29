@@ -382,7 +382,7 @@ async function main() {
 
     // Refresh query planner stats across all seeded tables
     await db.execute(
-      sql`analyze regions, countries, cities, spot_types, sport_disciplines, event_categories, event_plans, spots, spot_images, spot_disciplines, spot_type_assignments, tv_videos, trick_definitions, challenge_catalogs`,
+      sql`analyze regions, countries, cities, spot_types, sport_disciplines, event_categories, event_plans, spots, spot_images, spot_type_assignments, tv_videos, trick_definitions, challenge_catalogs`,
     ).catch(() => undefined)
 
     log.info("seed.complete")

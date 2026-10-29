@@ -148,6 +148,7 @@ export const spots = pgTable(
     index("spots_origin_idx").on(t.origin),
     index("spots_admin_hidden_idx").on(t.adminHidden),
     index("spots_admin_hidden_visibility_idx").on(t.adminHidden, t.visibility),
+    index("spots_sports_gin_idx").using("gin", t.sports),
     check("spots_city_check", sql`length(${t.city}) > 0`),
     check("spots_city_slug_check", sql`length(${t.citySlug}) > 0`),
     check("spots_name_check", sql`length(${t.name}) > 0`),
@@ -156,6 +157,10 @@ export const spots = pgTable(
     check("spots_visibility_check", sql`${t.visibility} in ('personal','public')`),
     check("spots_origin_check", sql`${t.origin} in ('seed','community','user_personal')`),
     check("spots_community_submission_count_check", sql`${t.communitySubmissionCount} >= 0`),
+    check(
+      "spots_sports_check",
+      sql`cardinality(${t.sports}) >= 1 and cardinality(${t.sports}) <= 4 and ${t.sports} <@ ARRAY['BMX', 'Roller', 'Scooter', 'Skateboard']::text[] and array_position(${t.sports}, null) is null`,
+    ),
   ],
 );
 
@@ -1891,23 +1896,6 @@ export const leagueEmailLog = pgTable(
   (t) => [primaryKey({ columns: [t.eventId, t.kind, t.day] })],
 );
 
-export const spotDisciplines = pgTable(
-  "spot_disciplines",
-  {
-    spotId: uuid("spot_id")
-      .notNull()
-      .references(() => spots.id, { onDelete: "cascade" }),
-    disciplineSlug: text("discipline_slug")
-      .notNull()
-      .references(() => sportDisciplines.slug, { onDelete: "restrict" }),
-  },
-  (t) => [
-    primaryKey({ columns: [t.spotId, t.disciplineSlug] }),
-     index("spot_disciplines_discipline_idx").on(t.disciplineSlug),
-     index("spot_disciplines_discipline_spot_idx").on(t.disciplineSlug, t.spotId),
-  ],
-);
-
 export const eventDisciplines = pgTable(
   "event_disciplines",
   {
@@ -1926,11 +1914,11 @@ export const eventDisciplines = pgTable(
 );
 
 // Many-to-many join between `spots` and `spot_types` (mirrors the
-// `spot_disciplines` / `event_disciplines` shape — the parent entity is the
-// first segment of the table name, the related dimension is the
-// second). `ON DELETE cascade` from the spot so removing a spot
-// tears down its links; `ON DELETE restrict` on the type so removing
-// a type in active use fails loudly (caller must reassign first).
+// `event_disciplines` shape — the parent entity is the first segment of
+// the table name, the related dimension is the second). `ON DELETE cascade`
+// from the spot so removing a spot tears down its links; `ON DELETE restrict`
+// on the type so removing a type in active use fails loudly (caller must
+// reassign first).
 export const spotTypeAssignments = pgTable(
   "spot_type_assignments",
   {
@@ -1988,7 +1976,6 @@ export const spotsRelations = relations(spots, ({ one, many }) => ({
   gameSessions: many(gameSessions),
   locationVerifications: many(gameLocationVerifications),
   challengeRecords: many(spotChallengeRecords),
-  disciplines: many(spotDisciplines),
   typeAssignments: many(spotTypeAssignments),
   savedSpots: many(savedSpots),
   verifiedSpots: many(verifiedSpots),
@@ -2157,16 +2144,7 @@ export const sportDisciplinesRelations = relations(sportDisciplines, ({ many }) 
   trickDefinitions: many(trickDefinitions),
   trickCatalogStates: many(trickCatalogStates),
   challengeCatalogs: many(challengeCatalogs),
-  spotDisciplines: many(spotDisciplines),
   eventDisciplines: many(eventDisciplines),
-}));
-
-export const spotDisciplinesRelations = relations(spotDisciplines, ({ one }) => ({
-  spot: one(spots, { fields: [spotDisciplines.spotId], references: [spots.id] }),
-  discipline: one(sportDisciplines, {
-    fields: [spotDisciplines.disciplineSlug],
-    references: [sportDisciplines.slug],
-  }),
 }));
 
 export const eventDisciplinesRelations = relations(eventDisciplines, ({ one }) => ({
@@ -2609,8 +2587,6 @@ export type UserNotificationRow = typeof userNotifications.$inferSelect;
 export type NewUserNotificationRow = typeof userNotifications.$inferInsert;
 export type LeagueEmailLogRow = typeof leagueEmailLog.$inferSelect;
 export type NewLeagueEmailLogRow = typeof leagueEmailLog.$inferInsert;
-export type SpotDisciplineRow = typeof spotDisciplines.$inferSelect;
-export type NewSpotDisciplineRow = typeof spotDisciplines.$inferInsert;
 export type EventDisciplineRow = typeof eventDisciplines.$inferSelect;
 export type NewEventDisciplineRow = typeof eventDisciplines.$inferInsert;
 
