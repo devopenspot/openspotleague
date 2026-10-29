@@ -51,6 +51,10 @@ export interface CityOption {
   /** Display name, taken from the first spot seen for the slug. */
   name: string;
   count: number;
+  admin1?: string | null;
+  spotCount?: number;
+  lat?: number;
+  lon?: number;
 }
 
 /**

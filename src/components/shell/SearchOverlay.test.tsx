@@ -452,27 +452,64 @@ describe("SearchOverlay server-backed text search", () => {
     }
   });
 
-  it("keeps the map route on the local dataset (no server fetch)", async () => {
+  it("allows global city + spot search even during the /map gate and navigates in 1 click", async () => {
     vi.stubGlobal("fetch", mocks.fetchMock);
+    mocks.fetchMock.mockImplementation((url: string) => {
+      if (url.startsWith("/api/spots/cities")) {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              cities: [
+                {
+                  slug: "miami",
+                  name: "Miami",
+                  admin1: "FL",
+                  spotCount: 17,
+                  country: "United States",
+                  region: "North America",
+                },
+              ],
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({ items: [serverSpot("srv-1", "Lot 11 Miami")] }),
+      });
+    });
     vi.useFakeTimers();
 
     try {
       mocks.pathname.value = "/map";
       render(<SearchOverlayHarness />);
 
-      fireEvent.change(screen.getByRole("searchbox"), {
-        target: { value: "bowl" },
+      expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+      const input = screen.getByRole("searchbox");
+      expect(input).not.toBeDisabled();
+
+      fireEvent.change(input, {
+        target: { value: "Miami" },
       });
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(500);
+        await vi.advanceTimersByTimeAsync(300);
       });
 
-      expect(mocks.fetchMock).not.toHaveBeenCalled();
-      // The map route's forced gate hides query results entirely —
-      // the point is that no server text-search fires there.
-      expect(
-        screen.getByRole("alertdialog"),
-      ).toBeInTheDocument();
+      expect(mocks.fetchMock).toHaveBeenCalledWith(
+        "/api/spots/cities?q=Miami&limit=8",
+        expect.objectContaining({ signal: expect.anything() }),
+      );
+      expect(screen.getByText("Miami, FL")).toBeInTheDocument();
+      expect(screen.getByText("17 spots")).toBeInTheDocument();
+      expect(screen.getByText("Lot 11 Miami")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: /Miami, FL/i }));
+      expect(mocks.replace).toHaveBeenCalledWith(
+        "/map?region=north-america&country=united-states&city=miami",
+        { scroll: false },
+      );
+      expect(mocks.onClose).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }

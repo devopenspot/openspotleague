@@ -10,17 +10,21 @@ import type { CityOption } from "@/hooks/map/useMapFilter";
  * re-drilling a country does not refetch.
  */
 
-export interface CityListState {
-  country: string;
-  /** Server-ordered entries (no counts — display shows none). */
-  cities: readonly { slug: string; name: string }[];
-  /** True once the request settled (success or error). */
-  done: boolean;
-}
-
-interface ServedCity {
+export interface ServedCity {
   slug: string;
   name: string;
+  admin1?: string | null;
+  spotCount?: number;
+  lat?: number;
+  lon?: number;
+}
+
+export interface CityListState {
+  country: string;
+  /** Server-ordered entries with optional admin1 state/province and spotCount. */
+  cities: readonly ServedCity[];
+  /** True once the request settled (success or error). */
+  done: boolean;
 }
 
 function isServedCity(value: unknown): value is ServedCity {
@@ -52,7 +56,17 @@ export function mergeCityOptions(
     merged.push({
       slug: entry.slug,
       name: entry.name,
-      count: baseEntry?.count ?? 0,
+      count:
+        typeof entry.spotCount === "number"
+          ? entry.spotCount
+          : (baseEntry?.count ?? 0),
+      ...(entry.admin1 ? { admin1: entry.admin1 } : {}),
+      ...(typeof entry.spotCount === "number"
+        ? { spotCount: entry.spotCount }
+        : {}),
+      ...(typeof entry.lat === "number" && typeof entry.lon === "number"
+        ? { lat: entry.lat, lon: entry.lon }
+        : {}),
     });
     if (baseEntry) baseBySlug.delete(entry.slug);
   }

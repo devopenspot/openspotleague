@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { AppImage } from "@/components/ui/AppImage";
-import { ArrowLeft, ArrowRight, Globe } from "lucide-react";
+import { ArrowLeft, ArrowRight, Globe, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import {
   SEARCH_CITY_INITIAL_CHUNK,
@@ -280,11 +281,34 @@ export function CityDrillDown({
   onPick,
   onCommitCountryAll,
 }: CityDrillDownProps) {
+  const [cityFilter, setCityFilter] = useState("");
+  const filteredCities = useMemo(() => {
+    const trimmed = cityFilter.trim().toLowerCase();
+    if (!trimmed) return cities;
+    const normalizedFilter = trimmed
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+    return cities.filter((option) => {
+      const label = option.admin1
+        ? `${option.name}, ${option.admin1}`
+        : option.name;
+      const normalizedLabel = label
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      return (
+        normalizedLabel.includes(normalizedFilter) ||
+        option.slug.includes(normalizedFilter) ||
+        (option.admin1?.toLowerCase() ?? "") === normalizedFilter
+      );
+    });
+  }, [cities, cityFilter]);
+
   // Quiet-city countries (US, France, Germany, Australia…) surface hundreds
   // of small cities; the list reveals in chunks past the initial one so the
   // step's first paint stays light. Short lists render fully, identically.
   const { visible: visibleCities, hasMore, sentinelRef } = useProgressiveList(
-    cities,
+    filteredCities,
     {
       initial: SEARCH_CITY_INITIAL_CHUNK,
       step: SEARCH_CITY_STEP_CHUNK,
@@ -320,6 +344,35 @@ export function CityDrillDown({
         {country}
       </h3>
 
+      {!citiesPending && cities.length > 8 && (
+        <div className="flex items-center gap-2.5 rounded-[16px] border border-outline-variant bg-surface-container-lowest px-3.5 py-2">
+          <Search
+            size={15}
+            className="shrink-0 text-secondary"
+            aria-hidden="true"
+          />
+          <input
+            type="text"
+            autoComplete="off"
+            aria-label={`Filter cities in ${country}`}
+            placeholder={`Filter cities in ${country}...`}
+            value={cityFilter}
+            onChange={(e) => setCityFilter(e.target.value)}
+            className="w-full bg-transparent text-base text-on-surface outline-none placeholder:text-secondary sm:text-sm"
+          />
+          {cityFilter && (
+            <button
+              type="button"
+              onClick={() => setCityFilter("")}
+              aria-label="Clear city filter"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-secondary hover:bg-surface-container-high hover:text-on-surface"
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
+
       {citiesPending ? (
         <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">
           Loading cities&hellip;
@@ -328,6 +381,13 @@ export function CityDrillDown({
         <ul role="list" className="space-y-1.5" aria-label={`Cities in ${country}`}>
           {visibleCities.map((option) => {
             const active = city === option.slug;
+            const displayLabel = option.admin1
+              ? `${option.name}, ${option.admin1}`
+              : option.name;
+            const spotCount =
+              typeof option.spotCount === "number" && option.spotCount > 0
+                ? option.spotCount
+                : null;
             return (
               <li key={option.slug}>
                 <button
@@ -343,9 +403,21 @@ export function CityDrillDown({
                   )}
                 >
                   <span className="font-display text-sm font-bold tracking-wide uppercase truncate">
-                    {option.name}
+                    {displayLabel}
                   </span>
                   <span className="flex items-center gap-3 shrink-0">
+                    {spotCount !== null && (
+                      <span
+                        className={cn(
+                          "font-display text-xs font-bold tracking-widest uppercase",
+                          active
+                            ? "text-surface/80"
+                            : "text-secondary group-hover:text-surface/80",
+                        )}
+                      >
+                        {spotCount} {spotCount === 1 ? "spot" : "spots"}
+                      </span>
+                    )}
                     <ArrowRight
                       size={12}
                       className="opacity-60 group-hover:opacity-100"
@@ -360,6 +432,10 @@ export function CityDrillDown({
             <li ref={sentinelRef} aria-hidden="true" className="h-0" />
           )}
         </ul>
+      ) : cities.length > 0 ? (
+        <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">
+          No matching cities in {country}
+        </p>
       ) : (
         <div className="space-y-3">
           <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">

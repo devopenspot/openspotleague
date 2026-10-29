@@ -23,9 +23,85 @@ export function GateNotice({ id }: { id: string }) {
       </p>
       <p className="mt-1 text-secondary">
         Filtered map is gated until you pick a region, a country and a city.
-        Choose a region below, then pick a country, then pick a city to load
-        the map.
+        Search for a city or spot above, or choose a region below to load the
+        map.
       </p>
+    </div>
+  );
+}
+
+export interface MatchedCityItem {
+  slug: string;
+  name: string;
+  admin1?: string | null;
+  spotCount?: number;
+  country?: string;
+  region?: string;
+}
+
+export interface MatchedCitiesProps {
+  cities: readonly MatchedCityItem[];
+  onPickCity: (city: MatchedCityItem) => void;
+}
+
+export function MatchedCities({ cities, onPickCity }: MatchedCitiesProps) {
+  if (cities.length === 0) return null;
+  return (
+    <div className="mb-6 space-y-3">
+      <h3 className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+        Matched cities ({cities.length})
+      </h3>
+      <ul className="space-y-2" aria-label="Matched cities">
+        {cities.map((city) => {
+          const title = city.admin1
+            ? `${city.name}, ${city.admin1}`
+            : city.name;
+          const subtitle = [city.country, city.region]
+            .filter(Boolean)
+            .join(" · ");
+          const spotCount =
+            typeof city.spotCount === "number" && city.spotCount > 0
+              ? city.spotCount
+              : null;
+          return (
+            <li key={`${city.country ?? ""}:${city.slug}`}>
+              <button
+                type="button"
+                onClick={() => onPickCity(city)}
+                className="group flex min-h-14 w-full items-center justify-between gap-3 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-3 text-left transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low text-secondary">
+                    <MapPin size={15} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-display text-sm font-bold tracking-wide uppercase">
+                      {title}
+                    </span>
+                    {subtitle ? (
+                      <span className="block truncate text-xs text-secondary">
+                        {subtitle}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-3">
+                  {spotCount !== null && (
+                    <span className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+                      {spotCount} {spotCount === 1 ? "spot" : "spots"}
+                    </span>
+                  )}
+                  <ArrowRight
+                    size={14}
+                    className="opacity-60 group-hover:opacity-100"
+                    aria-hidden="true"
+                  />
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

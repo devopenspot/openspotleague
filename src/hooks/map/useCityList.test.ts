@@ -47,6 +47,31 @@ describe("mergeCityOptions", () => {
     const base = [cityOption("bogota", "Bogotá")];
     expect(mergeCityOptions(base, [])).toEqual(base);
   });
+
+  it("preserves server admin1, spotCount, and coordinates when present", () => {
+    const base = [cityOption("miami", "Miami", 2)];
+    const server = [
+      {
+        slug: "miami",
+        name: "Miami",
+        admin1: "FL",
+        spotCount: 17,
+        lat: 25.77,
+        lon: -80.19,
+      },
+    ];
+    expect(mergeCityOptions(base, server)).toEqual([
+      {
+        slug: "miami",
+        name: "Miami",
+        count: 17,
+        admin1: "FL",
+        spotCount: 17,
+        lat: 25.77,
+        lon: -80.19,
+      },
+    ]);
+  });
 });
 
 describe("useCityList", () => {

@@ -29,15 +29,24 @@ import {
 import { unionById } from "@/components/map/shared/map-derived";
 import { MAP_DISTANCE_UI_ENABLED } from "@/components/map/shared/map-feature-flags";
 import { setMapPreserveLocation } from "@/lib/map/preserve";
+import { setLastMapFilter } from "@/lib/map/last-filter";
+import { slugify } from "@/lib/utils/slug";
 import { useOptimisticGate } from "@/hooks/data/useOptimisticGate";
 import { MapCityLoader } from "@/components/feedback/MapCityLoader";
-import { GateNotice, MatchedSpots } from "./search-overlay-parts";
+import {
+  GateNotice,
+  MatchedCities,
+  MatchedSpots,
+  type MatchedCityItem,
+} from "./search-overlay-parts";
 
 const DESKTOP_MEDIA_QUERY = "(min-width: 768px)";
 const SEARCH_SERVER_DEBOUNCE_MS = 250;
 const SEARCH_SERVER_LIMIT = 20;
+const SEARCH_SERVER_CITY_LIMIT = 8;
 const SEARCH_SERVER_MIN_QUERY = 2;
 const NO_SPOTS: readonly MapSpot[] = [];
+const NO_CITIES: readonly MatchedCityItem[] = [];
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -80,6 +89,7 @@ export function SearchOverlay({
   const citySpots = useSpotsStore((s) => s.citySpots);
   const nearbySpots = useSpotsStore((s) => s.nearbySpots);
   const cityScopeLoading = useSpotsStore((s) => s.cityScopeLoading);
+  const setCityScopeLoading = useSpotsStore((s) => s.setCityScopeLoading);
   const allEvents = useEventsStore((s) => s.events);
   const { location: userLocation } = useUserLocation();
   const distanceUnit = useDistanceUnit();
@@ -265,55 +275,127 @@ export function SearchOverlay({
     // MapPageClient's preserve flag).
     setMapPreserveLocation();
     onSelectSpot(spot);
-    if (!isForcedGate) onClose();
+    onClose();
   };
 
-  const inQueryMode = deferredQuery.trim() !== "";
-  // When the gate is forced we never show query results — the user must
-  // complete region+country+city first.
-  const effectiveInQueryMode = !isForcedGate && inQueryMode;
+  const handlePickCity = useCallback(
+    (pickedCity: MatchedCityItem) => {
+      if (pickedCity.region && pickedCity.country) {
+        try {
+          setLastMapFilter(
+            pickedCity.region,
+            pickedCity.country,
+            pickedCity.slug,
+            false,
+          );
+        } catch {
+          void 0;
+        }
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("nearby");
+        params.delete("saved");
+        params.delete("spot");
+        params.delete("scope");
+        params.set("region", slugify(pickedCity.region));
+        params.set("country", slugify(pickedCity.country));
+        params.set("city", pickedCity.slug);
+        setCityScopeLoading?.(true);
+        const targetUrl = `${ROUTES.map}?${params.toString()}`;
+        if (pathname !== ROUTES.map && typeof router.push === "function") {
+          router.push(targetUrl, { scroll: false });
+        } else {
+          router.replace(targetUrl, { scroll: false });
+        }
+      } else if (country) {
+        setCity(pickedCity.slug);
+        commit();
+      }
+      setQuery("");
+      cancelPending();
+      onClose();
+    },
+    [
+      cancelPending,
+      commit,
+      country,
+      onClose,
+      pathname,
+      router,
+      searchParams,
+      setCity,
+      setCityScopeLoading,
+    ],
+  );
 
-  // Server-backed text search on non-map pages. The hydrated client
-  // directory is a map-only working set now (the root layout no longer
-  // hydrates a 500-row spot list for public pages), so text queries
-  // outside /map fetch DB results through the cached public API. The
-  // map route keeps local filtering — its scoped dataset (base
-  // directory ∪ full-country overlay) is complete and latency-free.
-  //
+  const inQueryMode = deferredQuery.trim() !== "";
+  // Search is available globally, including during the /map geo gate so users
+  // can jump straight to a city or spot in 1 click.
+  const effectiveInQueryMode = inQueryMode;
+
+  // Server-backed text search across both spots and canonical cities.
   // Responses are keyed by the query that produced them: state is
   // never reset synchronously inside the effect (react-hooks
   // set-state-in-effect); a stale response is simply derived out when
   // the active query no longer matches its key.
-  const activeQuery = !isOpen || isMapRoute ? "" : deferredQuery.trim();
+  const activeQuery = !isOpen ? "" : deferredQuery.trim();
   const [serverState, setServerState] = useState<{
     q: string;
     items: readonly MapSpot[];
+    cities: readonly MatchedCityItem[];
   } | null>(null);
   const [serverPending, setServerPending] = useState<string | null>(null);
   const serverMatches =
     serverState && serverState.q === activeQuery ? serverState.items : null;
+  const serverCityMatches =
+    serverState && serverState.q === activeQuery
+      ? serverState.cities
+      : NO_CITIES;
   const serverSearching =
     serverPending !== null && serverPending === activeQuery;
 
   useEffect(() => {
     const q = activeQuery;
-    if (q.length < SEARCH_SERVER_MIN_QUERY || isMapRoute) return;
+    if (q.length < SEARCH_SERVER_MIN_QUERY) return;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       setServerPending(q);
-      fetch(
-        `/api/spots?q=${encodeURIComponent(q)}&limit=${SEARCH_SERVER_LIMIT}`,
-        { signal: controller.signal },
-      )
-        .then(async (res) => {
+      Promise.allSettled([
+        fetch(
+          `/api/spots?q=${encodeURIComponent(q)}&limit=${SEARCH_SERVER_LIMIT}`,
+          { signal: controller.signal },
+        ).then(async (res) => {
           if (!res.ok) throw new Error(`status ${res.status}`);
-          const data = (await res.json()) as { items?: MapSpot[] };
-          setServerState({ q, items: data.items ?? [] });
+          return (await res.json()) as { items?: MapSpot[] };
+        }),
+        fetch(
+          `/api/spots/cities?q=${encodeURIComponent(q)}&limit=${SEARCH_SERVER_CITY_LIMIT}`,
+          { signal: controller.signal },
+        ).then(async (res) => {
+          if (!res.ok) throw new Error(`status ${res.status}`);
+          return (await res.json()) as { cities?: MatchedCityItem[] };
+        }),
+      ])
+        .then(([spotsResult, citiesResult]) => {
+          if (controller.signal.aborted) return;
+          const items =
+            spotsResult.status === "fulfilled" &&
+            Array.isArray(spotsResult.value?.items)
+              ? spotsResult.value.items
+              : [];
+          const cities =
+            citiesResult.status === "fulfilled" &&
+            Array.isArray(citiesResult.value?.cities)
+              ? citiesResult.value.cities
+              : [];
+          if (
+            spotsResult.status === "fulfilled" ||
+            citiesResult.status === "fulfilled"
+          ) {
+            setServerState({ q, items, cities });
+          }
           setServerPending(null);
         })
         .catch(() => {
-          // Failed search degrades to the (capped) client-derived
-          // matches instead of blocking the overlay.
           setServerPending(null);
         });
     }, SEARCH_SERVER_DEBOUNCE_MS);
@@ -321,36 +403,41 @@ export function SearchOverlay({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [activeQuery, isMapRoute]);
+  }, [activeQuery]);
 
   const matchedSpots = useMemo(() => {
-    if (serverMatches !== null) {
-      // The text match is global; any staged region/country/city
-      // selection in the overlay narrows it client-side (the catalog
-      // maps display names to `country` values on each spot row).
-      return filterSpotsByRegionAndCountry(
-        serverMatches,
-        regions,
-        region,
-        country,
-        city,
-      );
-    }
     const normalizedQuery = deferredQuery.trim().toLocaleLowerCase();
-    if (!normalizedQuery) return filteredSpots;
-    return filteredSpots.filter((spot) =>
-      [
-        spot.name,
-        spot.city,
-        spot.country,
-        ...spot.types.map((type) => type.name),
-      ]
-        .join(" ")
-        .toLocaleLowerCase()
-        .includes(normalizedQuery),
-    );
+    const localPool = isForcedGate ? scopedSpots : filteredSpots;
+    const localMatches = !normalizedQuery
+      ? localPool
+      : localPool.filter((spot) =>
+          [
+            spot.name,
+            spot.city,
+            spot.country,
+            ...spot.types.map((type) => type.name),
+          ]
+            .join(" ")
+            .toLocaleLowerCase()
+            .includes(normalizedQuery),
+        );
+    if (serverMatches !== null) {
+      const filteredServer = isForcedGate
+        ? serverMatches
+        : filterSpotsByRegionAndCountry(
+            serverMatches,
+            regions,
+            region,
+            country,
+            city,
+          );
+      return unionById(localMatches, filteredServer);
+    }
+    return localMatches;
   }, [
     serverMatches,
+    isForcedGate,
+    scopedSpots,
     regions,
     region,
     country,
@@ -409,13 +496,13 @@ export function SearchOverlay({
               role="searchbox"
               autoComplete="off"
               placeholder={
-                isForcedGate ? "Select region, country & city" : "Search"
+                isForcedGate
+                  ? "Search city or spot, or select below"
+                  : "Search cities or spots"
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              disabled={isForcedGate}
-              aria-disabled={isForcedGate}
-              className="w-full rounded-[16px] bg-transparent text-base font-medium text-on-wire outline-none placeholder:text-wire-muted focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-[16px] bg-transparent text-base font-medium text-on-wire outline-none placeholder:text-wire-muted focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             />
             {query && (
               <button
@@ -467,13 +554,19 @@ export function SearchOverlay({
               className="flex min-h-[18rem] w-full flex-1 flex-col items-center justify-center px-6 py-10"
             />
           ) : effectiveInQueryMode ? (
-            <MatchedSpots
-              query={deferredQuery}
-              spots={matchedSpots}
-              searching={serverSearching}
-              onPick={handlePick}
-              distanceLabel={getDistanceLabel}
-            />
+            <>
+              <MatchedCities
+                cities={serverCityMatches}
+                onPickCity={handlePickCity}
+              />
+              <MatchedSpots
+                query={deferredQuery}
+                spots={matchedSpots}
+                searching={serverSearching}
+                onPick={handlePick}
+                distanceLabel={getDistanceLabel}
+              />
+            </>
           ) : (
             <RegionFilter
               region={region}

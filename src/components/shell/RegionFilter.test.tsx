@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Region, Spot } from "@/lib/types";
 import type { CityOption } from "@/hooks/map/useMapFilter";
@@ -329,6 +329,31 @@ describe("RegionFilter city step", () => {
     expect(onAfterChange).toHaveBeenCalledTimes(1);
     expect(setCity).not.toHaveBeenCalled();
     expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it("renders admin1 state suffix, server spotCount, and instant filter when >8 cities exist", () => {
+    const manyCities: CityOption[] = Array.from({ length: 10 }, (_, idx) => ({
+      slug: `city-${idx + 1}`,
+      name: idx === 0 ? "Miami" : `City ${idx + 1}`,
+      count: 10 - idx,
+      admin1: idx === 0 ? "FL" : "CA",
+      spotCount: idx === 0 ? 17 : 5,
+    }));
+
+    renderPicker(latinAmerica, [], {
+      country: "Colombia",
+      showCities: true,
+      availableCities: manyCities,
+    });
+
+    expect(screen.getByText("Miami, FL")).toBeTruthy();
+    expect(screen.getByText("17 spots")).toBeTruthy();
+
+    const filterInput = screen.getByLabelText("Filter cities in Colombia");
+    fireEvent.change(filterInput, { target: { value: "Miami" } });
+
+    expect(screen.getByText("Miami, FL")).toBeTruthy();
+    expect(screen.queryByText("City 2, CA")).toBeNull();
   });
 });
 
