@@ -42,8 +42,16 @@ describe("JoinWithInvite", () => {
     expect(screen.getByText("Barcelona")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/league/invites/abcdefgh1234",
-      { cache: "no-store" },
+      expect.objectContaining({ cache: "no-store" }),
     );
+  });
+
+  it("recovers from a network error without staying stuck on the loading skeleton", async () => {
+    fetchMock.mockRejectedValue(new Error("network down"));
+    render(<JoinWithInvite code="abcdefgh1234" />);
+    expect(
+      await screen.findByText(/could not be loaded/i),
+    ).toBeInTheDocument();
   });
 
   it("shows the revoke/expiry reason instead of a join CTA", async () => {

@@ -64,66 +64,88 @@ export function subscribeToLeagueEvent(options: {
 
   const coordinator = createRefreshCoordinator({
     refreshState: options.refreshState,
-    onSuccess: () => options.onConnectionChange?.("connected"),
+    onSuccess: () => {
+      if (channelConnected) {
+        pollingFallback = false
+        stopPolling()
+      }
+      options.onConnectionChange?.("connected")
+    },
     onFailure: () => {
+      pollingFallback = true
       options.onConnectionChange?.("reconnecting")
       schedulePolling()
     },
   })
 
   let removeChannel = () => undefined
-  try {
-    const supabase = createSupabaseBrowserClient()
-    const channel = supabase
-      .channel(`league:event:${options.eventId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "event_realtime_signals",
-          filter: `event_id=eq.${options.eventId}`,
-        },
-        (payload?: { new?: { version?: unknown } | null }) => {
-          const signalVersion = payload?.new?.version
-          const currentVersion = options.getCurrentVersion?.()
-          if (
-            typeof signalVersion === "number" &&
-            typeof currentVersion === "number" &&
-            signalVersion <= currentVersion
-          ) {
-            return
+  let channelUnhealthy = false
+
+  const connectChannel = () => {
+    if (stopped) return
+    removeChannel()
+    channelUnhealthy = false
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const channel = supabase
+        .channel(`league:event:${options.eventId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "event_realtime_signals",
+            filter: `event_id=eq.${options.eventId}`,
+          },
+          (payload?: { new?: { version?: unknown } | null }) => {
+            const signalVersion = payload?.new?.version
+            const currentVersion = options.getCurrentVersion?.()
+            if (
+              typeof signalVersion === "number" &&
+              typeof currentVersion === "number" &&
+              signalVersion <= currentVersion
+            ) {
+              return
+            }
+            coordinator.schedule()
+          },
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            if (fallbackTimer) clearTimeout(fallbackTimer)
+            channelConnected = true
+            channelUnhealthy = false
+            pollingFallback = false
+            stopPolling()
+            options.onConnectionChange?.("connected")
           }
-          coordinator.schedule()
-        },
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          if (fallbackTimer) clearTimeout(fallbackTimer)
-          channelConnected = true
-          pollingFallback = false
-          stopPolling()
-          options.onConnectionChange?.("connected")
-        }
-        if (
-          status === "CHANNEL_ERROR" ||
-          status === "TIMED_OUT" ||
-          status === "CLOSED"
-        ) {
-          if (fallbackTimer) clearTimeout(fallbackTimer)
-          channelConnected = false
-          pollingFallback = true
-          options.onConnectionChange?.("reconnecting")
-          schedulePolling()
-        }
-      })
-    removeChannel = () => void supabase.removeChannel(channel)
-  } catch {
-    channelConnected = false
-    pollingFallback = true
-    options.onConnectionChange?.("reconnecting")
-    schedulePolling()
+          if (
+            status === "CHANNEL_ERROR" ||
+            status === "TIMED_OUT" ||
+            status === "CLOSED"
+          ) {
+            if (fallbackTimer) clearTimeout(fallbackTimer)
+            channelConnected = false
+            channelUnhealthy = true
+            pollingFallback = true
+            options.onConnectionChange?.("reconnecting")
+            schedulePolling()
+          }
+        })
+      removeChannel = () => {
+        removeChannel = () => undefined
+        void supabase.removeChannel(channel)
+      }
+    } catch {
+      channelConnected = false
+      channelUnhealthy = true
+      pollingFallback = true
+      options.onConnectionChange?.("reconnecting")
+      schedulePolling()
+    }
   }
+
+  connectChannel()
 
   // A stalled channel may not emit an error callback — delayed fallback.
   if (typeof document === "undefined" || document.visibilityState !== "hidden") {
@@ -139,6 +161,9 @@ export function subscribeToLeagueEvent(options: {
     if (document.visibilityState === "hidden") {
       stopPolling()
       return
+    }
+    if (channelUnhealthy) {
+      connectChannel()
     }
     void coordinator.refresh().catch(() => undefined)
     if (pollingFallback) schedulePolling()

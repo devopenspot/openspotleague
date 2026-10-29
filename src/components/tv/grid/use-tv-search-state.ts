@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TvCard } from "@/types/tv";
 import type { TvCardPageResult } from "@/lib/repositories/tv/tv-repository";
+import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
 
 const SEARCH_DEBOUNCE_MS = 250;
 const SEARCH_PAGE_LIMIT = 24;
@@ -183,11 +184,20 @@ export function useTvSearchState({
 
     void (async () => {
       try {
-        const res = await fetch(`/api/tv?${params.toString()}`, {
+        const res = await fetchWithTimeout(`/api/tv?${params.toString()}`, {
           signal: ac.signal,
+          timeoutMs: 10_000,
         });
-        if (ac.signal.aborted) return;
+        if (ac.signal.aborted) {
+          if (lastFetchedKeyRef.current === cacheKey) {
+            lastFetchedKeyRef.current = "";
+          }
+          return;
+        }
         if (!res.ok) {
+          if (lastFetchedKeyRef.current === cacheKey) {
+            lastFetchedKeyRef.current = "";
+          }
           setItems([]);
           setNextCursor(null);
           return;
@@ -196,7 +206,12 @@ export function useTvSearchState({
           items?: TvCard[];
           nextCursor?: string | null;
         };
-        if (ac.signal.aborted) return;
+        if (ac.signal.aborted) {
+          if (lastFetchedKeyRef.current === cacheKey) {
+            lastFetchedKeyRef.current = "";
+          }
+          return;
+        }
 
         const newItems = Array.isArray(data.items) ? data.items : [];
         const newCursor =
@@ -210,6 +225,9 @@ export function useTvSearchState({
         setItems(newItems);
         setNextCursor(newCursor);
       } catch (err) {
+        if (lastFetchedKeyRef.current === cacheKey) {
+          lastFetchedKeyRef.current = "";
+        }
         if ((err as { name?: string })?.name === "AbortError") return;
         setItems([]);
         setNextCursor(null);
@@ -247,7 +265,9 @@ export function useTvSearchState({
     }
 
     try {
-      const res = await fetch(`/api/tv?${params.toString()}`);
+      const res = await fetchWithTimeout(`/api/tv?${params.toString()}`, {
+        timeoutMs: 10_000,
+      });
       if (!res.ok) return;
       const data = (await res.json()) as {
         items?: TvCard[];

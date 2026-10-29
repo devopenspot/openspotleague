@@ -14,6 +14,11 @@ import { cn } from "@/lib/utils/cn";
 import { useUser } from "@/lib/contexts/user-context";
 import { SignInLink } from "@/components/shell/SignInLink";
 import { formatEventTimeInZone, roleLabel } from "@/lib/league/ui-state";
+import {
+  DEFAULT_MUTATION_TIMEOUT_MS,
+  DEFAULT_READ_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
 
 interface InvitePreview {
   eventSlug: string;
@@ -37,16 +42,27 @@ export function JoinWithInvite({ code }: { code: string }) {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const response = await fetch(`/api/league/invites/${code}`, {
-        cache: "no-store",
-      });
-      if (cancelled) return;
-      if (response.ok) {
-        setPreview((await response.json()) as InvitePreview);
-      } else {
-        setError("This invite could not be found.");
+      try {
+        const response = await fetchWithTimeout(`/api/league/invites/${code}`, {
+          cache: "no-store",
+          timeoutMs: DEFAULT_READ_TIMEOUT_MS,
+        });
+        if (cancelled) return;
+        if (response.ok) {
+          const data = (await response.json()) as InvitePreview;
+          if (cancelled) return;
+          setPreview(data);
+        } else {
+          setError("This invite could not be found.");
+        }
+      } catch {
+        if (cancelled) return;
+        setError("This invite could not be loaded. Check your connection and try again.");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     })();
     return () => {
       cancelled = true;
@@ -58,8 +74,9 @@ export function JoinWithInvite({ code }: { code: string }) {
     setJoinState("busy");
     setError(null);
     try {
-      const response = await fetch("/api/league/join", {
+      const response = await fetchWithTimeout("/api/league/join", {
         method: "POST",
+        timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),
       });

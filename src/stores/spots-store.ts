@@ -74,6 +74,9 @@ interface SpotsState {
   setCityRadiusSpots: (spots: readonly MapSpot[]) => void
 }
 
+export const CITY_SCOPE_LOADING_TIMEOUT_MS = 6_000
+let cityScopeLoadingTimer: ReturnType<typeof setTimeout> | null = null
+
 export const useSpotsStore = create<SpotsState>()(
   devtools(
     (set) => ({
@@ -94,7 +97,19 @@ export const useSpotsStore = create<SpotsState>()(
       setCitySpots: (citySpots) => set({ citySpots }),
       setNearbySpots: (nearbySpots) => set({ nearbySpots }),
       setCityRadiusSpots: (cityRadiusSpots) => set({ cityRadiusSpots }),
-      setCityScopeLoading: (cityScopeLoading) => set({ cityScopeLoading }),
+      setCityScopeLoading: (cityScopeLoading) => {
+        if (cityScopeLoadingTimer !== null) {
+          clearTimeout(cityScopeLoadingTimer)
+          cityScopeLoadingTimer = null
+        }
+        set({ cityScopeLoading })
+        if (cityScopeLoading) {
+          cityScopeLoadingTimer = setTimeout(() => {
+            cityScopeLoadingTimer = null
+            set({ cityScopeLoading: false })
+          }, CITY_SCOPE_LOADING_TIMEOUT_MS)
+        }
+      },
     }),
     { name: "SpotsStore", enabled: process.env.NODE_ENV === "development" },
   ),

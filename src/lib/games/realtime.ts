@@ -18,16 +18,20 @@ type RefreshCoordinator = {
   stop: () => void
 }
 
+const DEFAULT_REFRESH_TIMEOUT_MS = 12_000
+
 export function createRefreshCoordinator({
   refreshState,
   onSuccess,
   onFailure,
   debounceMs = 75,
+  refreshTimeoutMs = DEFAULT_REFRESH_TIMEOUT_MS,
 }: {
   refreshState: () => Promise<void>
   onSuccess?: () => void
   onFailure?: () => void
   debounceMs?: number
+  refreshTimeoutMs?: number
 }): RefreshCoordinator {
   let stopped = false
   let refreshTimer: ReturnType<typeof setTimeout> | null = null
@@ -51,13 +55,30 @@ export function createRefreshCoordinator({
       return queuedRefresh
     }
 
-    refreshPromise = refreshState()
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+    const execution =
+      refreshTimeoutMs > 0 && Number.isFinite(refreshTimeoutMs)
+        ? Promise.race([
+            refreshState(),
+            new Promise<never>((_, reject) => {
+              timeoutId = setTimeout(() => {
+                reject(new Error(`Refresh timed out after ${refreshTimeoutMs}ms`))
+              }, refreshTimeoutMs)
+            }),
+          ])
+        : refreshState()
+
+    refreshPromise = execution
       .then(() => onSuccess?.())
       .catch((error) => {
         onFailure?.()
         throw error
       })
       .finally(() => {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
         refreshPromise = null
       })
     return refreshPromise
@@ -68,7 +89,7 @@ export function createRefreshCoordinator({
     if (refreshTimer) clearTimeout(refreshTimer)
     refreshTimer = setTimeout(() => {
       refreshTimer = null
-      void refresh()
+      void refresh().catch(() => undefined)
     }, debounceMs)
   }
 
@@ -148,8 +169,15 @@ export function subscribeToGame<T extends VersionedGameState>(options: {
         options.onState(accepted)
       }
     },
-    onSuccess: () => options.onConnectionChange?.("connected"),
+    onSuccess: () => {
+      if (channelConnected && options.useChannel !== false) {
+        pollingFallback = false
+        stopPolling()
+      }
+      options.onConnectionChange?.("connected")
+    },
     onFailure: () => {
+      pollingFallback = true
       options.onConnectionChange?.("reconnecting")
       startPolling()
     },
@@ -166,59 +194,77 @@ export function subscribeToGame<T extends VersionedGameState>(options: {
   }
 
   let removeChannel = () => undefined
+  let channelUnhealthy = false
+
+  const connectChannel = () => {
+    if (stopped || options.useChannel === false) return
+    removeChannel()
+    channelUnhealthy = false
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const channel = supabase
+        .channel(`game:${options.gameId}`)
+        // Every supported game mutation increments game_sessions.version.
+        // Subscribe only to the safe invalidation row, then refetch through
+        // the authorized application API.
+        .on("postgres_changes", { event: "*", schema: "public", table: "game_realtime_signals", filter: `game_id=eq.${options.gameId}` }, handleRealtimeSignal)
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            if (fallbackTimer) clearTimeout(fallbackTimer)
+            channelConnected = true
+            channelUnhealthy = false
+            pollingFallback = false
+            stopPolling()
+            options.onConnectionChange?.("connected")
+            scheduleRefresh()
+          }
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            if (fallbackTimer) clearTimeout(fallbackTimer)
+            channelConnected = false
+            channelUnhealthy = true
+            pollingFallback = true
+            options.onConnectionChange?.("reconnecting")
+            startPolling()
+          }
+        })
+      removeChannel = () => {
+        removeChannel = () => undefined
+        void supabase.removeChannel(channel)
+      }
+    } catch {
+      channelConnected = false
+      channelUnhealthy = true
+      pollingFallback = true
+      options.onConnectionChange?.("reconnecting")
+      startPolling()
+    }
+  }
+
   if (options.useChannel === false) {
     options.onConnectionChange?.("reconnecting")
     startPolling()
   } else {
-    try {
-       const supabase = createSupabaseBrowserClient()
-       const channel = supabase
-         .channel(`game:${options.gameId}`)
-         // Every supported game mutation increments game_sessions.version.
-         // Subscribe only to the safe invalidation row, then refetch through
-         // the authorized application API.
-         .on("postgres_changes", { event: "*", schema: "public", table: "game_realtime_signals", filter: `game_id=eq.${options.gameId}` }, handleRealtimeSignal)
-         .subscribe((status) => {
-           if (status === "SUBSCRIBED") {
-             if (fallbackTimer) clearTimeout(fallbackTimer)
-             channelConnected = true
-             pollingFallback = false
-             stopPolling()
-             options.onConnectionChange?.("connected")
-             scheduleRefresh()
-           }
-           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-             if (fallbackTimer) clearTimeout(fallbackTimer)
-             channelConnected = false
-             pollingFallback = true
-             options.onConnectionChange?.("reconnecting")
-             startPolling()
-           }
-         })
-       removeChannel = () => void supabase.removeChannel(channel)
-     } catch {
-       channelConnected = false
-       pollingFallback = true
-       options.onConnectionChange?.("reconnecting")
-       startPolling()
-     }
+    connectChannel()
 
-     // A stalled channel may not emit an error callback. Keep a delayed fallback
-     // so a healthy channel is not competing with polling during normal startup.
-     if (typeof document === "undefined" || document.visibilityState !== "hidden") {
-       fallbackTimer = setTimeout(() => {
-         fallbackTimer = null
-         if (channelConnected) return
-         pollingFallback = true
-         startPolling()
-       }, FALLBACK_GRACE_MS)
-     }
+    // A stalled channel may not emit an error callback. Keep a delayed fallback
+    // so a healthy channel is not competing with polling during normal startup.
+    if (typeof document === "undefined" || document.visibilityState !== "hidden") {
+      fallbackTimer = setTimeout(() => {
+        fallbackTimer = null
+        if (channelConnected) return
+        pollingFallback = true
+        startPolling()
+      }, FALLBACK_GRACE_MS)
+    }
   }
 
   const onVisibilityChange = () => {
     if (document.visibilityState === "hidden") {
       stopPolling()
       return
+    }
+    if (channelUnhealthy && options.useChannel !== false) {
+      connectChannel()
     }
     void coordinator.refresh().catch(() => undefined)
     if (pollingFallback) startPolling()

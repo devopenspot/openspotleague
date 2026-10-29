@@ -23,6 +23,11 @@ import {
 } from "@/lib/schemas/game";
 import { SpotSchema } from "@/lib/schemas/spot";
 import {
+  DEFAULT_MUTATION_TIMEOUT_MS,
+  DEFAULT_READ_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
+import {
   type FieldName,
   type FieldErrors,
   type GameSetupStep,
@@ -208,9 +213,13 @@ export function GameCreateForm({
     }
 
     const controller = new AbortController();
-    void fetch(
+    void fetchWithTimeout(
       `/api/games/options?disciplineSlug=${encodeURIComponent(discipline)}`,
-      { signal: controller.signal, cache: "no-store" },
+      {
+        signal: controller.signal,
+        cache: "no-store",
+        timeoutMs: DEFAULT_READ_TIMEOUT_MS,
+      },
     )
       .then(async (response) => {
         const data = await response.json().catch(() => null);
@@ -268,9 +277,10 @@ export function GameCreateForm({
     setPrefillError(null);
     void (async () => {
       try {
-        let response = await fetch(`/api/spots/${encodeURIComponent(spotId)}`, {
+        let response = await fetchWithTimeout(`/api/spots/${encodeURIComponent(spotId)}`, {
           signal: controller.signal,
           cache: "no-store",
+          timeoutMs: DEFAULT_READ_TIMEOUT_MS,
         });
         let data: unknown = await response.json().catch(() => null);
         let rawSpot: unknown = null;
@@ -283,11 +293,12 @@ export function GameCreateForm({
           }
         }
         if (!rawSpot) {
-          response = await fetch(
+          response = await fetchWithTimeout(
             `/api/spots?ids=${encodeURIComponent(spotId)}`,
             {
               signal: controller.signal,
               cache: "no-store",
+              timeoutMs: DEFAULT_READ_TIMEOUT_MS,
             },
           );
           data = await response.json().catch(() => null);
@@ -363,9 +374,13 @@ export function GameCreateForm({
       setNearbySpot(null);
       setSpotAccepted(null);
       try {
-        const spotsResponse = await fetch(
+        const spotsResponse = await fetchWithTimeout(
           `/api/games/nearby-spot?lat=${encodeURIComponent(location.lat)}&lon=${encodeURIComponent(location.lon)}&disciplineSlug=${encodeURIComponent(discipline)}`,
-          { signal: controller.signal, cache: "no-store" },
+          {
+            signal: controller.signal,
+            cache: "no-store",
+            timeoutMs: DEFAULT_READ_TIMEOUT_MS,
+          },
         );
         const spotsData = (await spotsResponse.json().catch(() => null)) as {
           spot?: unknown | null;
@@ -1007,8 +1022,9 @@ export function GameCreateForm({
 
     setBusy(true);
     try {
-      const response = await fetch("/api/games", {
+      const response = await fetchWithTimeout("/api/games", {
         method: "POST",
+        timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
         headers: {
           "content-type": "application/json",
           ...(mode === "training" && !signedIn

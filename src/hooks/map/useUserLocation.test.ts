@@ -188,4 +188,54 @@ describe("useUserLocation", () => {
       location: null,
     });
   });
+
+  it("recovers via safety timeout when the browser drops geolocation callbacks across app switches", async () => {
+    vi.useFakeTimers();
+    try {
+      geolocation.getCurrentPosition
+        .mockImplementationOnce(() => {
+          // Simulate browser dropping both callbacks when user switches apps
+        })
+        .mockImplementationOnce((success) => {
+          success({
+            coords: {
+              latitude: 40.4168,
+              longitude: -3.7038,
+              accuracy: 12,
+            } as GeolocationCoordinates,
+          });
+        });
+
+      const { result } = renderHook(() => useUserLocation());
+      let firstRequest: Promise<string> | undefined;
+
+      act(() => {
+        firstRequest = result.current.request();
+      });
+
+      expect(useUserLocationStore.getState().status).toBe("requesting");
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+
+      await expect(firstRequest).resolves.toBe("unavailable");
+      expect(useUserLocationStore.getState()).toMatchObject({
+        status: "unavailable",
+        error: "timeout",
+      });
+
+      await act(async () => {
+        await expect(result.current.request()).resolves.toBe("granted");
+      });
+
+      expect(geolocation.getCurrentPosition).toHaveBeenCalledTimes(2);
+      expect(useUserLocationStore.getState()).toMatchObject({
+        status: "granted",
+        location: { lat: 40.4168, lon: -3.7038, accuracy: 12 },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

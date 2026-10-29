@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { showToast } from "@/hooks/ui/useToast";
 import type { Preferences } from "@/lib/schemas/preferences";
+import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
+
+const DEFAULT_PREFERENCES: Preferences = {
+  distanceUnit: "mi",
+  temperatureUnit: "F",
+  disciplineSlug: null,
+};
 
 const SPORTS: readonly { slug: string; label: string }[] = [
   { slug: "skateboard", label: "Skateboard" },
@@ -19,14 +26,25 @@ export function ProfileSettings() {
 
   useEffect(() => {
     const ctrl = new AbortController();
-    void fetch("/api/preferences", { signal: ctrl.signal })
+    void fetchWithTimeout("/api/preferences", {
+      signal: ctrl.signal,
+      timeoutMs: 10_000,
+    })
       .then(async (r) => {
         if (!r.ok) throw new Error("failed");
         return r.json() as Promise<Preferences>;
       })
-      .then(setPrefs)
-      .catch(() => showToast("Preferences unavailable", "error"))
-      .finally(() => setLoading(false));
+      .then((data) => {
+        if (!ctrl.signal.aborted) setPrefs(data);
+      })
+      .catch(() => {
+        if (ctrl.signal.aborted) return;
+        setPrefs((prev) => prev ?? DEFAULT_PREFERENCES);
+        showToast("Preferences unavailable", "error");
+      })
+      .finally(() => {
+        if (!ctrl.signal.aborted) setLoading(false);
+      });
     return () => ctrl.abort();
   }, []);
 
@@ -36,10 +54,11 @@ export function ProfileSettings() {
     setPrefs(optimistic);
     setSaving(true);
     try {
-      const res = await fetch("/api/preferences", {
+      const res = await fetchWithTimeout("/api/preferences", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(next),
+        timeoutMs: 10_000,
       });
       if (!res.ok) throw new Error("save failed");
       const saved = (await res.json()) as Preferences;

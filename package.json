@@ -31,7 +31,7 @@
     "db:fresh:seed": "pnpm db:reset && pnpm db:apply && pnpm db:seed && pnpm db:seed-tv && pnpm db:seed-tricks",
     "db:migrate-spots": "tsx scripts/migrate-spots.ts"
   },
-  "packageManager": "pnpm@10.34.5",
+  "packageManager": "pnpm@12.16.1",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1126.0",
     "@base-ui/react": "^1.6.0",
@@ -39,6 +39,7 @@
     "@supabase/supabase-js": "^2.110.0",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/leaflet": "^1.9.21",
+    "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
     "drizzle-orm": "^0.45.2",
     "leaflet": "^1.9.4",

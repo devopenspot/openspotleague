@@ -1,4 +1,5 @@
 import { isShortLinksEnabled } from "@/lib/config/feature-flags";
+import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
 
 const pendingShortUrls = new Map<string, Promise<string>>();
 const resolvedShortUrls = new Map<string, string>();
@@ -57,10 +58,11 @@ export async function getOrFetchShortUrl(
 
   const promise = (async () => {
     try {
-      const response = await fetch("/api/short-links", {
+      const response = await fetchWithTimeout("/api/short-links", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: cacheKey, title }),
+        timeoutMs: 5_000,
       });
 
       if (!response.ok) {

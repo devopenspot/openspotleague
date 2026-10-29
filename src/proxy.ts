@@ -29,6 +29,30 @@ export function hasSessionCookiesFromNames(names: readonly string[]): boolean {
   return names.some((n) => n.startsWith("sb-") && n.includes("-auth-token"))
 }
 
+type RefreshedCookie = {
+  name: string
+  value: string
+  options?: Parameters<NextResponse["cookies"]["set"]>[2]
+}
+
+type SessionRefreshOutcome = {
+  userError: { status?: number; message?: string } | null
+  cookiesToSet: readonly RefreshedCookie[]
+}
+
+const inflightSessionRefreshes = new Map<string, Promise<SessionRefreshOutcome>>()
+
+/** Deterministic fingerprint of incoming Supabase auth-token cookies for in-flight refresh coalescing. */
+export function sessionCookieFingerprint(
+  cookies: readonly { name: string; value: string }[],
+): string | null {
+  const parts = cookies
+    .filter((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((c) => `${c.name}=${c.value}`)
+  return parts.length > 0 ? parts.join(";") : null
+}
+
 /** True when request is speculative prefetch from Next.js router or browser. */
 export function isPrefetchRequest(request: NextRequest): boolean {
   return (
@@ -173,7 +197,8 @@ export async function proxy(request: NextRequest) {
   // Anonymous traffic (no session cookies) skips client alloc + JWT verify.
   // Authenticated pages/handlers still refresh via getClaims below, and do
   // their own cookie reads (getServerUserFromCookies) regardless.
-  if (!hasSessionCookiesFromNames(request.cookies.getAll().map((c) => c.name))) {
+  const initialCookies = request.cookies.getAll()
+  if (!hasSessionCookiesFromNames(initialCookies.map((c) => c.name))) {
     return response
   }
 
@@ -182,29 +207,36 @@ export async function proxy(request: NextRequest) {
     return response
   }
 
+  let capturedCookiesToSet: RefreshedCookie[] = []
+
+  const applyRefreshedCookies = (cookiesToSet: readonly RefreshedCookie[]) => {
+    for (const { name, value } of cookiesToSet) {
+      request.cookies.set(name, value)
+    }
+    response = nextResponse()
+    for (const { name, value, options } of cookiesToSet) {
+      response.cookies.set(name, value, options)
+    }
+    // Re-apply pending seed if response was replaced (Supabase refresh).
+    if (pendingSeed) {
+      response.cookies.set("osp_seed", pendingSeed, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+      })
+    }
+  }
+
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
       },
       setAll(cookiesToSet) {
-        for (const { name, value } of cookiesToSet) {
-          request.cookies.set(name, value)
-        }
-        response = nextResponse()
-        for (const { name, value, options } of cookiesToSet) {
-          response.cookies.set(name, value, options)
-        }
-        // Re-apply pending seed if response was replaced (Supabase refresh).
-        if (pendingSeed) {
-          response.cookies.set("osp_seed", pendingSeed, {
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
-            sameSite: "lax",
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-          })
-        }
+        capturedCookiesToSet = cookiesToSet
+        applyRefreshedCookies(cookiesToSet)
       },
     },
   })
@@ -217,7 +249,49 @@ export async function proxy(request: NextRequest) {
   if (claimsError) {
     // getClaims does not refresh expired tokens. When claims verification fails,
     // invoke getUser() to trigger Supabase Auth token refresh via setAll.
-    const { error: userError } = await supabase.auth.getUser()
+    // Coalesce concurrent refreshes for the same incoming session cookie so a
+    // tab-wake request burst does not race single-use refresh token rotation.
+    const fingerprint = sessionCookieFingerprint(initialCookies)
+    const existingRefresh = fingerprint
+      ? inflightSessionRefreshes.get(fingerprint)
+      : undefined
+
+    let userError: { status?: number; message?: string } | null
+    if (existingRefresh) {
+      const outcome = await existingRefresh
+      userError = outcome.userError
+      if (outcome.cookiesToSet.length > 0) {
+        applyRefreshedCookies(outcome.cookiesToSet)
+      }
+    } else {
+      const refreshPromise = (async (): Promise<SessionRefreshOutcome> => {
+        try {
+          const { error } = await supabase.auth.getUser()
+          return {
+            userError: error ?? null,
+            cookiesToSet: capturedCookiesToSet,
+          }
+        } catch (err) {
+          return {
+            userError: {
+              message: err instanceof Error ? err.message : "auth refresh failed",
+            },
+            cookiesToSet: [],
+          }
+        } finally {
+          if (fingerprint) {
+            inflightSessionRefreshes.delete(fingerprint)
+          }
+        }
+      })()
+
+      if (fingerprint) {
+        inflightSessionRefreshes.set(fingerprint, refreshPromise)
+      }
+      const outcome = await refreshPromise
+      userError = outcome.userError
+    }
+
     if (userError) {
       log.warn("proxy: supabase auth refresh failed", {
         requestId,

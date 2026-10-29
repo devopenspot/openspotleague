@@ -5,6 +5,10 @@ import type { MutableRefObject } from "react";
 import { loadGuestToken } from "@/lib/games/guest";
 import { gameMutationResponseSchema, type GameState } from "@/lib/schemas/game";
 import { showToast } from "@/hooks/ui/useToast";
+import {
+  DEFAULT_MUTATION_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
 
 type ActionOptions = {
   silentStale?: boolean;
@@ -41,10 +45,16 @@ export type GameAction = (
 
 async function fetchWithTransportRetry(url: string, init: RequestInit): Promise<Response> {
   try {
-    return await fetch(url, init);
+    return await fetchWithTimeout(url, {
+      ...init,
+      timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+    });
   } catch {
     // A transport failure can follow a committed write. Retry the exact request so the server's idempotency record can safely reconcile it.
-    return await fetch(url, init);
+    return await fetchWithTimeout(url, {
+      ...init,
+      timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+    });
   }
 }
 

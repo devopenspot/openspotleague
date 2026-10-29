@@ -18,6 +18,10 @@ import {
   roleLabel,
   statusLabel,
 } from "@/lib/league/ui-state";
+import {
+  DEFAULT_READ_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
 
 interface MyLeagueEventItem {
   id: string;
@@ -95,15 +99,27 @@ export default function LeagueHub() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const response = await fetch("/api/league/events", { cache: "no-store" });
-      if (cancelled) return;
-      if (response.ok) {
-        const data = (await response.json()) as { items: MyLeagueEventItem[] };
-        setItems(data.items);
-      } else {
+      try {
+        const response = await fetchWithTimeout("/api/league/events", {
+          cache: "no-store",
+          timeoutMs: DEFAULT_READ_TIMEOUT_MS,
+        });
+        if (cancelled) return;
+        if (response.ok) {
+          const data = (await response.json()) as { items: MyLeagueEventItem[] };
+          if (cancelled) return;
+          setItems(data.items);
+        } else {
+          setError("Your events could not be loaded. Try again shortly.");
+        }
+      } catch {
+        if (cancelled) return;
         setError("Your events could not be loaded. Try again shortly.");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     })();
     return () => {
       cancelled = true;

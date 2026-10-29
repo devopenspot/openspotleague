@@ -8,6 +8,7 @@ import {
   isUnrecoverableAuthError,
   matchRateLimitTier,
   needsSeedForPath,
+  sessionCookieFingerprint,
 } from "./proxy"
 
 describe("isTvEmbedPath", () => {
@@ -171,5 +172,25 @@ describe("isUnrecoverableAuthError", () => {
     expect(isUnrecoverableAuthError({ status: 500, message: "Internal server error" })).toBe(false)
     expect(isUnrecoverableAuthError({ status: 503, message: "Service unavailable" })).toBe(false)
     expect(isUnrecoverableAuthError({ message: "fetch failed" })).toBe(false)
+  })
+})
+
+describe("sessionCookieFingerprint", () => {
+  it("produces an order-independent fingerprint of sb-*-auth-token cookies", () => {
+    const a = sessionCookieFingerprint([
+      { name: "osp_seed", value: "seed-1" },
+      { name: "sb-proj-auth-token.1", value: "part1" },
+      { name: "sb-proj-auth-token.0", value: "part0" },
+    ])
+    const b = sessionCookieFingerprint([
+      { name: "sb-proj-auth-token.0", value: "part0" },
+      { name: "sb-proj-auth-token.1", value: "part1" },
+    ])
+    expect(a).toBe("sb-proj-auth-token.0=part0;sb-proj-auth-token.1=part1")
+    expect(b).toBe(a)
+  })
+
+  it("returns null when no auth-token cookies are present", () => {
+    expect(sessionCookieFingerprint([{ name: "osp_seed", value: "1" }])).toBeNull()
   })
 })

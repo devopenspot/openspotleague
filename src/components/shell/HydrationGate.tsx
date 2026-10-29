@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react"
 import { usePreferencesStore } from "@/stores/preferences-store"
 import { useUIStore } from "@/stores/ui-store"
 import { useUser } from "@/lib/contexts/user-context"
+import { fetchWithTimeout } from "@/lib/utils/fetch-timeout"
 import type { DistanceUnit, TemperatureUnit } from "@/stores/preferences-store"
 import { SPORT_DISCIPLINES, type SportPreference } from "@/types/sport-events"
 
@@ -34,9 +35,10 @@ export function HydrationGate({ children }: { children: ReactNode }) {
           return
         }
 
-        const response = await fetch("/api/preferences", {
+        const response = await fetchWithTimeout("/api/preferences", {
           cache: "no-store",
           signal: abortController.signal,
+          timeoutMs: 10_000,
         })
         if (!response.ok) throw new Error("Preferences unavailable")
         const data = await response.json() as {
@@ -57,7 +59,7 @@ export function HydrationGate({ children }: { children: ReactNode }) {
           local.preferenceAccountId === null && local.hasLocalChanges
 
         if (!accountSport && shouldSyncGuest) {
-          const syncResponse = await fetch("/api/preferences", {
+          const syncResponse = await fetchWithTimeout("/api/preferences", {
             method: "PATCH",
             cache: "no-store",
             headers: { "content-type": "application/json" },
@@ -70,6 +72,7 @@ export function HydrationGate({ children }: { children: ReactNode }) {
                   : local.preferredSport?.toLowerCase() ?? null,
             }),
             signal: abortController.signal,
+            timeoutMs: 10_000,
           })
           if (!syncResponse.ok) {
             throw new Error("Guest preferences could not be synced")

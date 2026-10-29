@@ -23,6 +23,11 @@ import {
   pickOpenRun,
 } from "@/lib/league/ui-state";
 import type { LeagueEventState } from "@/lib/services/league";
+import {
+  DEFAULT_MUTATION_TIMEOUT_MS,
+  DEFAULT_READ_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
 
 type RunState = LeagueEventState["runs"][number];
 type ScoreSummary = RunState["scores"][number];
@@ -56,18 +61,33 @@ export function JudgeQueue({
 
   const load = useCallback(
     async (opts: { isCancelled?: () => boolean } = {}) => {
-      const response = await fetch(`/api/league/events/${eventId}`, {
-        cache: "no-store",
-      });
-      if (opts.isCancelled?.()) return;
-      if (!response.ok) {
-        setError("This event could not be loaded. Try again shortly.");
-        return;
+      try {
+        const response = await fetchWithTimeout(
+          `/api/league/events/${eventId}`,
+          {
+            cache: "no-store",
+            timeoutMs: DEFAULT_READ_TIMEOUT_MS,
+          },
+        );
+        if (opts.isCancelled?.()) return;
+        if (!response.ok) {
+          if (!stateRef.current) {
+            setError("This event could not be loaded. Try again shortly.");
+          }
+          return;
+        }
+        const data = (await response.json()) as LeagueEventState;
+        if (opts.isCancelled?.()) return;
+        stateRef.current = data;
+        setError(null);
+        setState(data);
+      } catch (err) {
+        if (opts.isCancelled?.()) return;
+        if (!stateRef.current) {
+          setError("This event could not be loaded. Try again shortly.");
+        }
+        throw err;
       }
-      const data = (await response.json()) as LeagueEventState;
-      if (opts.isCancelled?.()) return;
-      stateRef.current = data;
-      setState(data);
     },
     [eventId],
   );
@@ -75,7 +95,11 @@ export function JudgeQueue({
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      await load({ isCancelled: () => cancelled });
+      try {
+        await load({ isCancelled: () => cancelled });
+      } catch {
+        // Error state already set by load() when stateRef.current is null.
+      }
     })();
     return () => {
       cancelled = true;
@@ -102,15 +126,19 @@ export function JudgeQueue({
       setBusy(true);
       setActionError(null);
       try {
-        const response = await fetch(`/api/league/events/${eventId}${path}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            expectedVersion: current.event.version,
-            idempotencyKey: crypto.randomUUID(),
-            ...body,
-          }),
-        });
+        const response = await fetchWithTimeout(
+          `/api/league/events/${eventId}${path}`,
+          {
+            method: "POST",
+            timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              expectedVersion: current.event.version,
+              idempotencyKey: crypto.randomUUID(),
+              ...body,
+            }),
+          },
+        );
         const raw = await response.json().catch(() => null);
         if (!response.ok) {
           setActionError(raw?.message ?? raw?.error ?? "Action failed.");

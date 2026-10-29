@@ -27,6 +27,8 @@ function isValidRadius(value: number): value is NearbyRadiusMiles {
 }
 
 let activeLocationRequest: Promise<UserLocationStatus> | null = null;
+const GEOLOCATION_SAFETY_TIMEOUT_MS =
+  (NEARBY_LOCATION_OPTIONS.timeout ?? 8_000) + 2_000;
 
 function requestBrowserLocation(): Promise<UserLocationStatus> {
   if (activeLocationRequest) return activeLocationRequest;
@@ -62,9 +64,16 @@ async function performLocationRequest(): Promise<UserLocationStatus> {
 
   return new Promise<UserLocationStatus>((resolve) => {
     let settled = false;
+    const safetyTimer = setTimeout(() => {
+      if (settled) return;
+      useUserLocationStore.getState().setUnavailable("timeout");
+      finish("unavailable");
+    }, GEOLOCATION_SAFETY_TIMEOUT_MS);
+
     const finish = (next: UserLocationStatus) => {
       if (settled) return;
       settled = true;
+      clearTimeout(safetyTimer);
       resolve(next);
     };
 

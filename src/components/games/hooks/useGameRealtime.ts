@@ -7,6 +7,10 @@ import {
 } from "@/lib/games/realtime";
 import { loadGuestToken } from "@/lib/games/guest";
 import { gameStateSchema, type GameState } from "@/lib/schemas/game";
+import {
+  DEFAULT_READ_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
 
 function guestHeaders(): Record<string, string> {
   const token = loadGuestToken();
@@ -25,9 +29,10 @@ export async function fetchGameState(
   if (shareCode) params.set("share", shareCode);
   if (version !== undefined) params.set("version", String(version));
   const query = params.size > 0 ? `?${params.toString()}` : "";
-  const response = await fetch(`/api/games/${id}${query}`, {
+  const response = await fetchWithTimeout(`/api/games/${id}${query}`, {
     cache: "no-store",
     headers: options.authenticated === false ? guestHeaders() : {},
+    timeoutMs: DEFAULT_READ_TIMEOUT_MS,
   });
   if (response.status === 304) return null;
   if (!response.ok) throw new Error("Game state could not be loaded");
@@ -80,42 +85,68 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
 
   useEffect(() => {
     let cancelled = false;
+    let initialInFlight = false;
 
-    void fetchGameState(id, shareCode, undefined, { authenticated: !guestRef.current })
-      .then((initial) => {
-        if (cancelled) return;
-        if (!initial) throw new Error("Game state could not be loaded");
-        applyGameState(initial);
-        try {
-          controllerRef.current = subscribeToGame({
-            gameId: id,
-            initialState: initial,
-            fetchState: async () =>
-              (await fetchGameState(id, shareCode, latestGameRef.current?.version, { authenticated: !guestRef.current })) ??
-              initial,
-            onState: (state) => {
-              if (!cancelled) applyGameState(state);
-            },
-            onConnectionChange: (status) => {
-              if (!cancelled) setConnection(status);
-            },
-            useChannel: !guestRef.current,
-          });
-        } catch {
-          if (!cancelled) setConnection("reconnecting");
-        }
-      })
-      .catch((reason) => {
-        if (cancelled) return;
-        setError(
-          reason instanceof Error
-            ? reason.message
-            : "Game state could not be loaded",
-        );
-      });
+    const loadInitial = () => {
+      if (cancelled || initialInFlight || controllerRef.current) return;
+      initialInFlight = true;
+      void fetchGameState(id, shareCode, undefined, { authenticated: !guestRef.current })
+        .then((initial) => {
+          if (cancelled) return;
+          if (!initial) throw new Error("Game state could not be loaded");
+          applyGameState(initial);
+          try {
+            controllerRef.current = subscribeToGame({
+              gameId: id,
+              initialState: initial,
+              fetchState: async () =>
+                (await fetchGameState(id, shareCode, latestGameRef.current?.version, { authenticated: !guestRef.current })) ??
+                initial,
+              onState: (state) => {
+                if (!cancelled) applyGameState(state);
+              },
+              onConnectionChange: (status) => {
+                if (!cancelled) setConnection(status);
+              },
+              useChannel: !guestRef.current,
+            });
+          } catch {
+            if (!cancelled) setConnection("reconnecting");
+          }
+        })
+        .catch((reason) => {
+          if (cancelled) return;
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : "Game state could not be loaded",
+          );
+        })
+        .finally(() => {
+          initialInFlight = false;
+        });
+    };
+
+    loadInitial();
+
+    const onVisibilityChange = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      if (!latestGameRef.current && !controllerRef.current) {
+        loadInitial();
+      }
+    };
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibilityChange);
+    }
 
     return () => {
       cancelled = true;
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+      }
       controllerRef.current?.stop();
       controllerRef.current = null;
     };

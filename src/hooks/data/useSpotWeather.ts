@@ -2,6 +2,7 @@
 
 import { useEffect, useReducer, useState } from 'react';
 import { useWeather } from '@/components/shell/WeatherContext';
+import { fetchWithTimeout } from '@/lib/utils/fetch-timeout';
 import { log } from '@/lib/utils/log';
 import type { SpotWeather } from '@/lib/weather/weather-cached';
 
@@ -45,7 +46,7 @@ async function fetchWeatherBatch(
 	// aborted promise and never receive the data. That is the bug
 	// the previous design shipped.
 	const url = `/api/weather?spotIds=${encodeURIComponent(ids.join(','))}`;
-	const res = await fetch(url);
+	const res = await fetchWithTimeout(url, { timeoutMs: 10_000 });
 	if (!res.ok) {
 		throw new Error(`weather fetch failed: ${res.status}`);
 	}
@@ -85,9 +86,12 @@ export function useSpotWeather(
 	const [throwableError, setThrowableError] = useState<Error | null>(null);
 	if (throwableError) throw throwableError;
 
+	const currentWeather = spotId ? weather[spotId] : undefined;
+	const hasWeather = Boolean(currentWeather);
+
 	useEffect(() => {
 		if (!spotId) return;
-		if (weather[spotId]) return;
+		if (hasWeather) return;
 		// `cancelled` is a local closure flag, not React state. The
 		// cleanup function only sets it — it does NOT abort the
 		// underlying fetch. The fetch is shared via the inflight
@@ -96,32 +100,45 @@ export function useSpotWeather(
 		// lands in the per-spot `"use cache"`, so the next visitor
 		// pays nothing for the request we let complete.
 		let cancelled = false;
-		getOrCreateInflight([spotId])
-			.then((data) => {
-				if (cancelled) return;
-				const w = data.weather[spotId];
-				if (w) setWeather(spotId, w);
-			})
-			.catch((err) => {
-				if (cancelled) return;
-				if (err instanceof Error && err.name === "AbortError") return;
-				if (opts?.throwOnError) {
-					setThrowableError(err instanceof Error ? err : new Error(String(err)));
-					return;
-				}
-				log.warn('useSpotWeather', spotId, err);
-			});
+		const runFetch = () => {
+			if (cancelled) return;
+			getOrCreateInflight([spotId])
+				.then((data) => {
+					if (cancelled) return;
+					const w = data.weather[spotId];
+					if (w) setWeather(spotId, w);
+				})
+				.catch((err) => {
+					if (cancelled) return;
+					if (err instanceof Error && err.name === "AbortError") return;
+					if (opts?.throwOnError) {
+						setThrowableError(err instanceof Error ? err : new Error(String(err)));
+						return;
+					}
+					log.warn('useSpotWeather', spotId, err);
+				});
+		};
+
+		runFetch();
+
+		const onVisibilityChange = () => {
+			if (document.visibilityState === 'visible') {
+				runFetch();
+			}
+		};
+		document.addEventListener('visibilitychange', onVisibilityChange);
+
 		return () => {
 			cancelled = true;
+			document.removeEventListener('visibilitychange', onVisibilityChange);
 		};
-		// We intentionally don't depend on `weather` — reading it would
-		// re-run the effect on every context update, which would
-		// re-fire fetches for already-loaded spots. The `weather[spotId]`
-		// guard above is the only check we need.
+		// We intentionally depend on `hasWeather` (boolean) rather than `weather`
+		// so unrelated spot updates in WeatherContext do not re-run this effect,
+		// while still cleaning up the visibility retry listener once this spot loads.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [spotId]);
+	}, [spotId, hasWeather]);
 
-	return { weather: spotId ? weather[spotId] : undefined };
+	return { weather: currentWeather };
 }
 
 /**

@@ -109,6 +109,38 @@ describe("game realtime refresh coordination", () => {
     coordinator.stop()
     vi.useRealTimers()
   })
+
+  it("times out a hung refresh so subsequent wake-up refreshes are not deadlocked", async () => {
+    vi.useFakeTimers()
+    let calls = 0
+    const onFailure = vi.fn()
+    const onSuccess = vi.fn()
+    const refreshState = vi.fn(() => {
+      calls += 1
+      if (calls === 1) {
+        return new Promise<void>(() => undefined)
+      }
+      return Promise.resolve()
+    })
+    const coordinator = createRefreshCoordinator({
+      refreshState,
+      onSuccess,
+      onFailure,
+      refreshTimeoutMs: 500,
+    })
+
+    const hung = coordinator.refresh()
+    const hungAssertion = expect(hung).rejects.toThrow("Refresh timed out after 500ms")
+    await vi.advanceTimersByTimeAsync(500)
+    await hungAssertion
+    expect(onFailure).toHaveBeenCalledTimes(1)
+
+    await expect(coordinator.refresh()).resolves.toBeUndefined()
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(refreshState).toHaveBeenCalledTimes(2)
+    coordinator.stop()
+    vi.useRealTimers()
+  })
 })
 
 describe("safe realtime subscriptions", () => {
@@ -163,6 +195,47 @@ describe("safe realtime subscriptions", () => {
     signalHandler({ new: { version: 3 } })
     await vi.advanceTimersByTimeAsync(75)
     expect(fetchState).toHaveBeenCalledTimes(1)
+
+    controller.stop()
+    vi.useRealTimers()
+  })
+
+  it("activates polling fallback when a refresh fails even after channel was subscribed", async () => {
+    vi.useFakeTimers()
+    const { subscribeToGame } = await import("@/lib/games/realtime")
+    let attempt = 0
+    const fetchState = vi.fn(async () => {
+      attempt += 1
+      if (attempt === 1) throw new Error("network down")
+      return { version: 2 }
+    })
+    const onConnectionChange = vi.fn()
+    const onState = vi.fn()
+
+    const controller = subscribeToGame({
+      gameId: "game-1",
+      initialState: { version: 1 },
+      fetchState,
+      onState,
+      onConnectionChange,
+      useChannel: true,
+    })
+
+    const subscribeCallback = channelMock.subscribe.mock.calls[0]?.[0] as (
+      status: string,
+    ) => void
+    subscribeCallback("SUBSCRIBED")
+
+    // First scheduled refresh after SUBSCRIBED fails:
+    await vi.advanceTimersByTimeAsync(75)
+    expect(fetchState).toHaveBeenCalledTimes(1)
+    expect(onConnectionChange).toHaveBeenLastCalledWith("reconnecting")
+
+    // Polling fallback must be scheduled and recover on the next 2000ms tick:
+    await vi.advanceTimersByTimeAsync(2_000)
+    expect(fetchState).toHaveBeenCalledTimes(2)
+    expect(onState).toHaveBeenCalledWith({ version: 2 })
+    expect(onConnectionChange).toHaveBeenLastCalledWith("connected")
 
     controller.stop()
     vi.useRealTimers()

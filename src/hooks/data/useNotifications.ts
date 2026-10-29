@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NotificationPayload } from "@/types/sport-events";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import {
+  DEFAULT_MUTATION_TIMEOUT_MS,
+  fetchWithTimeout,
+} from "@/lib/utils/fetch-timeout";
 
 export interface NotificationListItem {
   id: string;
@@ -22,18 +26,25 @@ interface ListResponse {
 }
 
 const REFRESH_DEBOUNCE_MS = 75;
+const NOTIFICATION_TIMEOUT_MS = 10_000;
+const FOCUS_REFRESH_COOLDOWN_MS = 2_000;
 
 async function fetchList(params: string): Promise<ListResponse | null> {
-  const response = await fetch(`/api/notifications?${params}`, {
-    cache: "no-store",
-  });
-  if (!response.ok) return null;
-  return (await response.json()) as ListResponse;
+  try {
+    const response = await fetchWithTimeout(`/api/notifications?${params}`, {
+      cache: "no-store",
+      timeoutMs: NOTIFICATION_TIMEOUT_MS,
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as ListResponse;
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Bell-badge hook: unread count only (tiny payload), realtime via the
- * per-user `user:<uid>` postgres_changes channel on `user_notifications`
+ * per-user `user:<uid>:unread` postgres_changes channel on `user_notifications`
  * (mirrors the games signal pattern), refetch-on-focus as fallback.
  */
 export function useUnreadNotificationCount(userId: string | null): number {
@@ -45,44 +56,73 @@ export function useUnreadNotificationCount(userId: string | null): number {
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
-    void (async () => {
-      const data = await fetchList("limit=1&unread=1");
-      if (cancelled) return;
-      if (data) setStoredUnread(data.unreadCount);
-    })();
+    let inFlight = false;
+    let lastRefreshAt = 0;
 
-    let client: ReturnType<typeof createSupabaseBrowserClient> | null = null;
-    let channel: ReturnType<
-      ReturnType<typeof createSupabaseBrowserClient>["channel"]
-    > | null = null;
-    try {
-      client = createSupabaseBrowserClient();
-      channel = client
-        .channel(`user:${userId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "user_notifications",
-            filter: `user_id=eq.${userId}`,
-          },
-          () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(() => {
-              debounceRef.current = null;
-              void (async () => {
-                const data = await fetchList("limit=1&unread=1");
-                if (cancelled) return;
-                if (data) setStoredUnread(data.unreadCount);
-              })();
-            }, REFRESH_DEBOUNCE_MS);
-          },
-        )
-        .subscribe();
-    } catch {
-      client = null;
-    }
+    const refreshUnread = async () => {
+      if (cancelled || inFlight) return;
+      inFlight = true;
+      lastRefreshAt = Date.now();
+      try {
+        const data = await fetchList("limit=1&unread=1");
+        if (cancelled) return;
+        if (data) setStoredUnread(data.unreadCount);
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    void refreshUnread();
+
+    let removeChannel = () => undefined;
+    let channelUnhealthy = false;
+
+    const connectChannel = () => {
+      if (cancelled) return;
+      removeChannel();
+      channelUnhealthy = false;
+      try {
+        const client = createSupabaseBrowserClient();
+        const channel = client
+          .channel(`user:${userId}:unread`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "user_notifications",
+              filter: `user_id=eq.${userId}`,
+            },
+            () => {
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              debounceRef.current = setTimeout(() => {
+                debounceRef.current = null;
+                void refreshUnread();
+              }, REFRESH_DEBOUNCE_MS);
+            },
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              channelUnhealthy = false;
+            }
+            if (
+              status === "CHANNEL_ERROR" ||
+              status === "TIMED_OUT" ||
+              status === "CLOSED"
+            ) {
+              channelUnhealthy = true;
+            }
+          });
+        removeChannel = () => {
+          removeChannel = () => undefined;
+          void client.removeChannel(channel);
+        };
+      } catch {
+        channelUnhealthy = true;
+      }
+    };
+
+    connectChannel();
 
     const refreshOnFocus = () => {
       // Only the hidden→visible transition is interesting; hidden-side
@@ -90,11 +130,13 @@ export function useUnreadNotificationCount(userId: string | null): number {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") {
         return;
       }
-      void (async () => {
-        const data = await fetchList("limit=1&unread=1");
-        if (cancelled) return;
-        if (data) setStoredUnread(data.unreadCount);
-      })();
+      if (channelUnhealthy) {
+        connectChannel();
+      }
+      if (Date.now() - lastRefreshAt < FOCUS_REFRESH_COOLDOWN_MS) {
+        return;
+      }
+      void refreshUnread();
     };
     if (typeof document !== "undefined") {
       document.addEventListener("visibilitychange", refreshOnFocus);
@@ -106,7 +148,7 @@ export function useUnreadNotificationCount(userId: string | null): number {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       document.removeEventListener("visibilitychange", refreshOnFocus);
       window.removeEventListener("focus", refreshOnFocus);
-      if (client && channel) void client.removeChannel(channel);
+      removeChannel();
     };
   }, [userId]);
 
@@ -171,11 +213,16 @@ export function useNotificationList(userId: string | null): {
   }, [userId, cursor]);
 
   const markRead = useCallback(async (ids?: readonly string[]) => {
-    await fetch("/api/notifications/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(ids ? { ids } : { all: true }),
-    });
+    try {
+      await fetchWithTimeout("/api/notifications/read", {
+        method: "POST",
+        timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ids ? { ids } : { all: true }),
+      });
+    } catch {
+      // Fall through to refresh so authoritative state is reconciled.
+    }
     setItems((current) =>
       current.map((item) =>
         !ids || ids.includes(item.id)
@@ -212,36 +259,68 @@ export function useNotificationList(userId: string | null): {
   useEffect(() => {
     if (!userId) return;
     let cancelled = false;
-    let client: ReturnType<typeof createSupabaseBrowserClient> | null = null;
-    let channel: ReturnType<ReturnType<typeof createSupabaseBrowserClient>["channel"]> | null = null;
-    try {
-      client = createSupabaseBrowserClient();
-      channel = client
-        .channel(`user:${userId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "user_notifications",
-            filter: `user_id=eq.${userId}`,
-          },
-          () => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(() => {
-              debounceRef.current = null;
-              if (!cancelled) void refresh();
-            }, REFRESH_DEBOUNCE_MS);
-          },
-        )
-        .subscribe();
-    } catch {
-      client = null;
-    }
+    let lastFocusRefreshAt = 0;
+    let removeChannel = () => undefined;
+    let channelUnhealthy = false;
+
+    const connectChannel = () => {
+      if (cancelled) return;
+      removeChannel();
+      channelUnhealthy = false;
+      try {
+        const client = createSupabaseBrowserClient();
+        const channel = client
+          .channel(`user:${userId}:list`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "user_notifications",
+              filter: `user_id=eq.${userId}`,
+            },
+            () => {
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              debounceRef.current = setTimeout(() => {
+                debounceRef.current = null;
+                if (!cancelled) void refresh();
+              }, REFRESH_DEBOUNCE_MS);
+            },
+          )
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              channelUnhealthy = false;
+            }
+            if (
+              status === "CHANNEL_ERROR" ||
+              status === "TIMED_OUT" ||
+              status === "CLOSED"
+            ) {
+              channelUnhealthy = true;
+            }
+          });
+        removeChannel = () => {
+          removeChannel = () => undefined;
+          void client.removeChannel(channel);
+        };
+      } catch {
+        channelUnhealthy = true;
+      }
+    };
+
+    connectChannel();
+
     const onFocus = () => {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") {
         return;
       }
+      if (channelUnhealthy) {
+        connectChannel();
+      }
+      if (Date.now() - lastFocusRefreshAt < FOCUS_REFRESH_COOLDOWN_MS) {
+        return;
+      }
+      lastFocusRefreshAt = Date.now();
       if (!cancelled) void refresh();
     };
     if (typeof document !== "undefined") {
@@ -253,7 +332,7 @@ export function useNotificationList(userId: string | null): {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       document.removeEventListener("visibilitychange", onFocus);
       window.removeEventListener("focus", onFocus);
-      if (client && channel) void client.removeChannel(channel);
+      removeChannel();
     };
   }, [userId, refresh]);
 
@@ -298,9 +377,13 @@ export function useEmailDigests(userId: string | null): {
         return;
       }
       try {
-        const response = await fetch("/api/notifications/email-preferences", {
-          cache: "no-store",
-        });
+        const response = await fetchWithTimeout(
+          "/api/notifications/email-preferences",
+          {
+            cache: "no-store",
+            timeoutMs: NOTIFICATION_TIMEOUT_MS,
+          },
+        );
         if (cancelled) return;
         if (!response.ok) return;
         const data = (await response.json()) as {
@@ -324,11 +407,15 @@ export function useEmailDigests(userId: string | null): {
     setSaving(true);
     setSaveError(null);
     try {
-      const response = await fetch("/api/notifications/email-preferences", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailDigests: value }),
-      });
+      const response = await fetchWithTimeout(
+        "/api/notifications/email-preferences",
+        {
+          method: "PUT",
+          timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ emailDigests: value }),
+        },
+      );
       if (response.ok) {
         if (aliveRef.current) setEnabledState(value);
       } else {

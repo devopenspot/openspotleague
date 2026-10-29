@@ -56,6 +56,12 @@ export function GameTransitionLoader({
     if (!isOpen) return;
     if (reduced) return;
     intervalRef.current = window.setInterval(() => {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
       setIndex((prev) => (prev + 1) % messages.length);
     }, 1900);
     return () => {

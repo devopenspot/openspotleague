@@ -8,6 +8,7 @@ import {
   filterByDiscipline,
   formatTvCategory,
 } from "@/components/tv/marquee/tv-marquee-data";
+import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
 
 export interface UseTvTheaterQueueProps {
   discipline: string;
@@ -127,7 +128,10 @@ export function useTvTheaterQueue({
       if (theaterCategory !== "all") params.set("category", theaterCategory);
       const qs = params.toString();
       try {
-        const res = await fetch(`/api/tv/ids${qs ? `?${qs}` : ""}`);
+        const res = await fetchWithTimeout(
+          `/api/tv/ids${qs ? `?${qs}` : ""}`,
+          { timeoutMs: 10_000 },
+        );
         if (!res.ok) return null;
         const data = (await res.json()) as { ids?: unknown };
         if (!Array.isArray(data.ids)) return null;
@@ -209,8 +213,9 @@ export function useTvTheaterQueue({
           }
           if (window.length === 0) return;
           try {
-            const res = await fetch(
+            const res = await fetchWithTimeout(
               `/api/tv?ids=${window.map((id) => encodeURIComponent(id)).join(",")}`,
+              { timeoutMs: 10_000 },
             );
             if (!res.ok) continue;
             const data = (await res.json()) as { cards?: unknown };
@@ -287,7 +292,9 @@ export function useTvTheaterQueue({
       if (cursor) params.set("cursor", cursor);
 
       try {
-        const res = await fetch(`/api/tv?${params.toString()}`);
+        const res = await fetchWithTimeout(`/api/tv?${params.toString()}`, {
+          timeoutMs: 10_000,
+        });
         if (!res.ok) {
           appendRowVideos([], cat, null);
           return [];
