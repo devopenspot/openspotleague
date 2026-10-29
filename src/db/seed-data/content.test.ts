@@ -14,9 +14,9 @@ import { PERMISSION_SEED, ROLE_SEED } from "./rbac"
 import { GAME_DEFINITIONS } from "@/lib/games/definitions"
 
 describe("canonical content sources", () => {
-  it("validates the expected source counts and stable identifiers", () => {
-    const content = loadContentSources()
+  const content = loadContentSources()
 
+  it("validates the expected source counts and stable identifiers", () => {
     expect(content.spots.length).toBeGreaterThan(0)
     expect(content.spotTypeAssignments.length).toBeGreaterThan(0)
     expect(new Set(content.spots.map((spot) => spot.id)).size).toBe(content.spots.length)
@@ -25,7 +25,6 @@ describe("canonical content sources", () => {
   })
 
   it("keeps source JSON snake_case and rejects DTO-shaped keys", () => {
-    const content = loadContentSources()
     const source = {
       id: content.spots[0]!.id,
       slug: content.spots[0]!.slug,
@@ -77,7 +76,6 @@ describe("canonical content sources", () => {
     const countryCodes = new Set(countries.map((c: { iso2: string }) => c.iso2))
 
     // Cities
-    const content = loadContentSources()
     expect(CITY_SEED.length).toBeGreaterThan(5000)
     expect(CITY_SEED.length).toBeLessThan(10000)
     const cityKeySet = new Set(CITY_SEED.map((c) => `${c.countryCode}:${c.slug}`))
