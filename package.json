@@ -29,7 +29,8 @@
     "egress:snapshot": "tsx src/db/egress-snapshot.ts",
     "db:fresh": "pnpm db:reset && pnpm db:apply",
     "db:fresh:seed": "pnpm db:reset && pnpm db:apply && pnpm db:seed && pnpm db:seed-tv && pnpm db:seed-tricks",
-    "db:migrate-spots": "tsx scripts/migrate-spots.ts"
+    "db:migrate-spots": "tsx scripts/migrate-spots.ts",
+    "db:curate-cities": "tsx scripts/curate-cities.ts"
   },
   "packageManager": "pnpm@12.16.1",
   "dependencies": {

@@ -148,7 +148,21 @@ export const spots = pgTable(
     index("spots_origin_idx").on(t.origin),
     index("spots_admin_hidden_idx").on(t.adminHidden),
     index("spots_admin_hidden_visibility_idx").on(t.adminHidden, t.visibility),
+    index("spots_country_city_slug_public_idx").on(
+      t.countryCode,
+      t.citySlug,
+      t.adminHidden,
+      t.visibility,
+    ),
     index("spots_sports_gin_idx").using("gin", t.sports),
+    index("spots_name_trgm_idx").using(
+      "gin",
+      sql`lower(${t.name}) gin_trgm_ops`,
+    ),
+    index("spots_city_trgm_idx").using(
+      "gin",
+      sql`lower(${t.city}) gin_trgm_ops`,
+    ),
     check("spots_city_check", sql`length(${t.city}) > 0`),
     check("spots_city_slug_check", sql`length(${t.citySlug}) > 0`),
     check("spots_name_check", sql`length(${t.name}) > 0`),
@@ -1042,9 +1056,13 @@ export const cities = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     slug: text("slug").notNull(),
     name: text("name").notNull(),
+    admin1: text("admin1"),
     countryCode: text("country_code")
       .notNull()
       .references(() => countries.iso2, { onDelete: "restrict" }),
+    location: geographyPoint("location").notNull(),
+    featured: boolean("featured").notNull().default(false),
+    spotCount: integer("spot_count").notNull().default(0),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -1056,10 +1074,17 @@ export const cities = pgTable(
   (t) => [
     unique("cities_country_code_slug_key").on(t.countryCode, t.slug),
     index("cities_country_code_sort_order_idx").on(t.countryCode, t.sortOrder),
+    index("cities_country_code_spots_idx").on(t.countryCode, t.spotCount, t.name),
     index("cities_slug_idx").on(t.slug),
+    index("cities_location_gist_idx").using("gist", t.location),
+    index("cities_name_trgm_idx").using(
+      "gin",
+      sql`lower(${t.name}) gin_trgm_ops`,
+    ),
     check("cities_name_check", sql`length(${t.name}) > 0`),
     check("cities_slug_check", sql`length(${t.slug}) > 0`),
     check("cities_sort_order_check", sql`${t.sortOrder} >= 0`),
+    check("cities_spot_count_check", sql`${t.spotCount} >= 0`),
   ],
 );
 

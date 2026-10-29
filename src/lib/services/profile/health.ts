@@ -9,7 +9,7 @@ import {
 } from "@/lib/db/client"
 import { HEALTH_CACHE_LIFE } from "@/lib/cache/lifetimes"
 
-export const FALLBACK_EXPECTED_MIGRATION_ID = "0003_drop_spot_disciplines"
+export const FALLBACK_EXPECTED_MIGRATION_ID = "0004_curated_cities_geo_search"
 
 export function getExpectedMigrationId(): string {
   try {

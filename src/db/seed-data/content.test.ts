@@ -77,11 +77,22 @@ describe("canonical content sources", () => {
     const countryCodes = new Set(countries.map((c: { iso2: string }) => c.iso2))
 
     // Cities
-    expect(CITY_SEED.length).toBeGreaterThan(17000)
+    const content = loadContentSources()
+    expect(CITY_SEED.length).toBeGreaterThan(5000)
+    expect(CITY_SEED.length).toBeLessThan(10000)
+    const cityKeySet = new Set(CITY_SEED.map((c) => `${c.countryCode}:${c.slug}`))
     for (const city of CITY_SEED.slice(0, 100)) {
       expect(countryCodes.has(city.countryCode)).toBe(true)
       expect(city.slug.length).toBeGreaterThan(0)
       expect(city.name.length).toBeGreaterThan(0)
+      expect(city.lat).toBeGreaterThanOrEqual(-90)
+      expect(city.lat).toBeLessThanOrEqual(90)
+      expect(city.lon).toBeGreaterThanOrEqual(-180)
+      expect(city.lon).toBeLessThanOrEqual(180)
+      expect(city.spotCount).toBeGreaterThan(0)
+    }
+    for (const spot of content.spots) {
+      expect(cityKeySet.has(`${spot.countryCode}:${spot.citySlug}`)).toBe(true)
     }
 
     // Taxonomy Dimensions

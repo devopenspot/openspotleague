@@ -21,6 +21,10 @@ export interface CitySeed {
   countryCode: string;
   slug: string;
   name: string;
+  admin1: string | null;
+  lat: number;
+  lon: number;
+  spotCount: number;
   sortOrder: number;
   featured: boolean;
 }
@@ -44,6 +48,10 @@ const CitySchema = z.object({
   country_code: z.string().length(2),
   slug: z.string().min(1),
   name: z.string().min(1),
+  admin1: z.string().nullable().default(null),
+  lat: z.number().min(-90).max(90),
+  lon: z.number().min(-180).max(180),
+  spot_count: z.number().int().nonnegative().default(0),
   sort_order: z.number().int().nonnegative(),
   featured: z.boolean().default(false),
 });
@@ -56,6 +64,10 @@ export const CITY_SEED: readonly CitySeed[] = rawCities.map((c) => ({
   countryCode: c.country_code,
   slug: c.slug,
   name: c.name,
+  admin1: c.admin1,
+  lat: c.lat,
+  lon: c.lon,
+  spotCount: c.spot_count,
   sortOrder: c.sort_order,
   featured: c.featured,
 }));

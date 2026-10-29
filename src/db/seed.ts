@@ -114,6 +114,10 @@ async function seedCities(tx: Tx): Promise<void> {
       countryCode: c.countryCode,
       slug: c.slug,
       name: c.name,
+      admin1: c.admin1,
+      location: { lat: c.lat, lon: c.lon },
+      featured: c.featured,
+      spotCount: c.spotCount,
       sortOrder: c.sortOrder,
     }))
     await tx
@@ -123,6 +127,10 @@ async function seedCities(tx: Tx): Promise<void> {
         target: [cities.countryCode, cities.slug],
         set: {
           name: sql`excluded.name`,
+          admin1: sql`excluded.admin1`,
+          location: sql`excluded.location`,
+          featured: sql`excluded.featured`,
+          spotCount: sql`excluded.spot_count`,
           sortOrder: sql`excluded.sort_order`,
           updatedAt: new Date(),
         },

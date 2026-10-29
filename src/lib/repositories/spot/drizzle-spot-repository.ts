@@ -781,6 +781,8 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
           countryCode: insertValues.countryCode,
           slug: insertValues.citySlug,
           name: insertValues.city,
+          location: insertValues.location,
+          spotCount: 1,
           sortOrder: 0,
         })
         .onConflictDoNothing();
