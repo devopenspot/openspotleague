@@ -16,6 +16,7 @@ import type {
 import type { SpotWeather } from "@/lib/weather/weather-cached";
 
 export type FieldName =
+  | "discipline"
   | "guestNickname"
   | "spotType"
   | "level"
@@ -37,6 +38,14 @@ export const WEATHER_LIVE_OPTIONS: ReadonlyArray<{
 ] as const;
 
 export const GAME_CREATE_FORM_ID = "game-create-form";
+
+export const SPORT_REQUIRED_MESSAGE = "Pick a sport to load spots and levels.";
+
+export function getEmptySpotTypesMessage(hasDiscipline: boolean) {
+  return hasDiscipline
+    ? "No compatible spot types are available for this game."
+    : "Pick a sport above to load spots and levels.";
+}
 
 export const GAME_SETTINGS_ANCHOR_ID = "anchor-settings-land";
 
@@ -157,12 +166,14 @@ export function GameFormatSettings({
   levelCounts,
   ruleMode,
   fieldErrors,
+  hasDiscipline,
   onSpotTypeChange,
   onLevelChange,
   onRuleModeChange,
   clearFieldError: _clearFieldError,
 }: {
   idPrefix?: string;
+  hasDiscipline: boolean;
   optionsLoading: boolean;
   activeOptionsError: string | null;
   availableSpotTypes: readonly GameCreationSpotType[];
@@ -222,7 +233,7 @@ export function GameFormatSettings({
             </p>
           ) : availableSpotTypes.length === 0 ? (
             <p className="mt-3 rounded-[8px] bg-surface-container px-3 py-3 text-sm text-on-surface-variant">
-              No compatible spot types are available for this game.
+              {getEmptySpotTypesMessage(hasDiscipline)}
             </p>
           ) : (
             <div
