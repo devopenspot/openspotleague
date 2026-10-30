@@ -62,6 +62,26 @@ beforeEach(() => {
   });
 });
 
+describe("useWeatherVerification summary cache", () => {
+  it("revalidates a cached summary on remount instead of trusting it", async () => {
+    const spotId = "cache-1";
+    fetchMock.mockClear();
+    const active = { active: true, leader: "rain", count: 2, expiresAt: null, totalActive: 2 };
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ weather: active }) });
+
+    const first = renderHook(() => useWeatherVerification(spotId));
+    await vi.waitFor(() => expect(first.result.current.summary).toEqual(active));
+    first.unmount();
+
+    // The votes expired while unmounted; the server now reports no summary.
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ weather: null }) });
+    const second = renderHook(() => useWeatherVerification(spotId));
+    expect(second.result.current.summary).toEqual(active);
+    await vi.waitFor(() => expect(second.result.current.summary).toBeNull());
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("useWeatherVerification optimistic count bump", () => {
   it("bumps country-only spots inside the countrySpots slice", async () => {
     const spot = makeSpot("co-9", 3);

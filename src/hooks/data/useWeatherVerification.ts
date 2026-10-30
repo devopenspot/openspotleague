@@ -122,16 +122,20 @@ export function useWeatherVerification(spotId: string | null) {
     }
     subs.add(onUpdate)
 
-    // Sync initial state if available in cache or fetch
+    // Seed from the cache, but always revalidate: the module cache never
+    // expires, so a remount after the 2h TTL would otherwise show a stale
+    // badge until the next poll. Concurrent mounts share one request via
+    // `inflight`; subscribers receive the fresh summary.
     if (summaryCache.has(spotId)) {
       setState((s) => ({ ...s, summary: summaryCache.get(spotId) ?? null }))
+      fetchWeatherVerificationSummary(spotId).catch(() => {})
     } else {
       void fetchSummary(spotId)
     }
 
     // Poll every 60s to handle TTL expiry
     const interval = window.setInterval(() => {
-      void fetchWeatherVerificationSummary(spotId)
+      fetchWeatherVerificationSummary(spotId).catch(() => {})
     }, 60_000)
 
     return () => {
