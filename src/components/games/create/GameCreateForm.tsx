@@ -46,6 +46,8 @@ import {
   ConfigurationSummary,
   CreateSubmitButton,
   FieldError,
+  SPORT_REQUIRED_MESSAGE,
+  getEmptySpotTypesMessage,
 } from "./form-parts";
 
 import type { Spot, WeatherIconName } from "@/lib/types";
@@ -69,6 +71,8 @@ const GAME_SETUP_TITLE_ID = "game-setup-title";
 const GAME_SETUP_DESCRIPTION_ID = "game-setup-description";
 
 const GUEST_NICKNAME_SETUP_ID = "guest-nickname-setup";
+const GAME_SPORT_CARD_ID = "game-sport-card";
+const GAME_SPORTS = ["skateboard", "bmx", "scooter", "roller"] as const;
 const GUEST_NAME_STORAGE_KEY = "openspot-guest-name";
 const CHALLENGE_SETUP_STEPS = [
   { id: "settings", label: "Player", title: "Who & how you play" },
@@ -156,7 +160,18 @@ export function GameCreateForm({
   const [prefillLoading, setPrefillLoading] = useState(false);
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const preferredSport = usePreferencesStore((state) => state.preferredSport);
+  const preferencesHydrationStatus = usePreferencesStore(
+    (state) => state.hydrationStatus,
+  );
   const defaultDiscipline = resolveGameDiscipline(preferredSport);
+  // Offer the picker whenever preferences resolve to no single sport (dismissed
+  // dialog or "All disciplines"). The choice stays local to this form so map
+  // and TV filters keep the user's saved preference.
+  const showSportPicker =
+    !defaultDiscipline &&
+    (preferredSport === "all" ||
+      preferencesHydrationStatus === "ready" ||
+      preferencesHydrationStatus === "error");
   const [selectedDiscipline, setSelectedDiscipline] =
     useState<DisciplineSlug | null>(defaultDiscipline);
 
@@ -172,7 +187,9 @@ export function GameCreateForm({
   const [level, setLevel] = useState<TrickLevel>(1);
   const [spotType, setSpotType] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [guestNickname, setGuestNickname] = useState(getStoredGuestName);
+  // Starts empty on both server and client; the stored name is restored after
+  // mount so the rendered input always matches the submitted value.
+  const [guestNickname, setGuestNickname] = useState("");
   const [timezone, setTimezone] = useState("");
   const prefillSpotAppliedRef = useRef<string | null>(null);
   const [startDelayMinutes, setStartDelayMinutes] =
@@ -248,6 +265,14 @@ export function GameCreateForm({
 
   useEffect(() => {
     const timer = window.setTimeout(() => setTimezone(getBrowserTimeZone()), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setGuestNickname((current) => current || getStoredGuestName()),
+      0,
+    );
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -777,6 +802,9 @@ export function GameCreateForm({
   function getSettingsErrors(): FieldErrors {
     const nextErrors: FieldErrors = {};
 
+    if (!discipline) {
+      nextErrors.discipline = SPORT_REQUIRED_MESSAGE;
+    }
     if (
       mode === "training" &&
       !signedIn &&
@@ -904,9 +932,26 @@ export function GameCreateForm({
     }, 0);
   }
 
+  function focusSportCard() {
+    const card = document.getElementById(GAME_SPORT_CARD_ID);
+    card?.scrollIntoView({ block: "center", behavior: "smooth" });
+    focusFirstInvalidField(card ?? document);
+  }
+
   function openSetup() {
+    // The sport picker lives on the page, not in the wizard: ask for it first.
+    if (!discipline) {
+      applyValidationErrors({ discipline: SPORT_REQUIRED_MESSAGE });
+      focusSportCard();
+      return;
+    }
     setSetupStep("settings");
     setSetupOpen(true);
+  }
+
+  function handleDisciplineChange(slug: DisciplineSlug) {
+    setSelectedDiscipline(slug);
+    clearFieldError("discipline");
   }
 
   function advanceSetup() {
@@ -1173,11 +1218,19 @@ export function GameCreateForm({
             noValidate
             className="min-w-0 space-y-6"
           >
-            {preferredSport === "all" ? (
+            {showSportPicker ? (
               <div
+                id={GAME_SPORT_CARD_ID}
                 role="group"
                 aria-labelledby="game-discipline-label"
-                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+                aria-describedby={
+                  fieldErrors.discipline ? "game-discipline-error" : undefined
+                }
+                className={`scroll-mt-24 rounded-[16px] border bg-surface-container-lowest p-4 sm:p-5 ${
+                  discipline
+                    ? "border-outline-variant"
+                    : "border-primary ring-1 ring-primary"
+                }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <p
@@ -1199,25 +1252,33 @@ export function GameCreateForm({
                   role="radiogroup"
                   aria-labelledby="game-discipline-label"
                 >
-                  {(["skateboard", "bmx", "scooter", "roller"] as const).map(
-                    (slug) => {
-                      const sportName = DISCIPLINE_TO_SPORT[slug];
-                      const active = discipline === slug;
-                      return (
-                        <OptionChip
-                          key={slug}
-                          id={`game-sport-${slug}`}
-                          active={active}
-                          label={sportName}
-                          role="radio"
-                          ariaChecked={active}
-                          tabIndex={active ? 0 : -1}
-                          onClick={() => setSelectedDiscipline(slug)}
-                        />
-                      );
-                    },
-                  )}
+                  {GAME_SPORTS.map((slug, index) => {
+                    const sportName = DISCIPLINE_TO_SPORT[slug];
+                    const active = discipline === slug;
+                    return (
+                      <OptionChip
+                        key={slug}
+                        id={`game-sport-${slug}`}
+                        active={active}
+                        label={sportName}
+                        role="radio"
+                        ariaChecked={active}
+                        tabIndex={active || (!discipline && index === 0) ? 0 : -1}
+                        invalid={Boolean(fieldErrors.discipline) && index === 0}
+                        onClick={() => handleDisciplineChange(slug)}
+                      />
+                    );
+                  })}
                 </div>
+                {fieldErrors.discipline ? (
+                  <FieldError id="game-discipline-error">
+                    {fieldErrors.discipline}
+                  </FieldError>
+                ) : !discipline ? (
+                  <p className="mt-3 text-xs leading-5 text-on-surface-variant">
+                    {SPORT_REQUIRED_MESSAGE}
+                  </p>
+                ) : null}
               </div>
             ) : null}
             <div
@@ -1374,6 +1435,7 @@ export function GameCreateForm({
               ) : null}
               <GameFormatSettings
                 idPrefix="desktop"
+                hasDiscipline={Boolean(discipline)}
                 optionsLoading={optionsLoading}
                 activeOptionsError={activeOptionsError}
                 availableSpotTypes={availableSpotTypes}
@@ -1518,6 +1580,14 @@ export function GameCreateForm({
                 busy={busy}
                 testId="desktop-create-game"
               />
+              {!discipline && showSportPicker ? (
+                <p
+                  role="note"
+                  className="mt-3 text-xs leading-5 text-on-surface-variant"
+                >
+                  {SPORT_REQUIRED_MESSAGE}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -1707,7 +1777,7 @@ export function GameCreateForm({
                     </p>
                   ) : availableSpotTypes.length === 0 ? (
                     <p className="mt-3 rounded-[8px] bg-surface-container px-3 py-3 text-sm text-on-surface-variant">
-                      No compatible spot types are available for this game.
+                      {getEmptySpotTypesMessage(Boolean(discipline))}
                     </p>
                   ) : (
                     <div
@@ -2053,7 +2123,7 @@ export function GameCreateForm({
                   </p>
                 ) : availableSpotTypes.length === 0 ? (
                   <p className="mt-3 rounded-[8px] bg-surface-container px-3 py-3 text-sm text-on-surface-variant">
-                    No compatible spot types are available for this game.
+                    {getEmptySpotTypesMessage(Boolean(discipline))}
                   </p>
                 ) : (
                   <div
