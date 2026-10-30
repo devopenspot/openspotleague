@@ -15,9 +15,15 @@ vi.mock("@/components/map/hooks/use-map-actions", () => ({
   useMapActions: () => ({ clearActivePin: vi.fn() }),
 }));
 
+const mockWeatherSummary = vi.fn().mockReturnValue(null);
+
+vi.mock("@/hooks/data/useSpotWeather", () => ({
+  useSpotWeather: () => ({ weather: { icon: "sunny", current: 20 } }),
+}));
+
 vi.mock("@/hooks/data/useWeatherVerification", () => ({
   useWeatherVerification: () => ({
-    summary: null,
+    summary: mockWeatherSummary(),
     loading: false,
     error: null,
     verifying: false,
@@ -139,5 +145,23 @@ describe("MapInfoPopup active spot resolution", () => {
     expect(container.querySelector(".ring-map-outline\\/60")).toBeNull();
     expect(container.querySelectorAll("img.map-tile-dark").length).toBeGreaterThan(0);
     expect(screen.queryByTestId("app-image")).toBeNull();
+  });
+
+  it("renders weather verify button with dual tiny icons when active", () => {
+    mockWeatherSummary.mockReturnValue({
+      active: true,
+      leader: "rain",
+      count: 4,
+      expiresAt: "2026-01-01T02:00:00.000Z",
+      totalActive: 4,
+    });
+    useSpotsStore.setState({ spots: [countryOnlySpot] });
+    useMapStore.setState({ activePinId: countryOnlySpot.id });
+
+    render(<MapInfoPopup events={[]} />);
+
+    expect(screen.getByRole("button", { name: /confirm on-site weather/i })).toBeTruthy();
+    expect(screen.getByText("4")).toBeTruthy();
+    mockWeatherSummary.mockReturnValue(null);
   });
 });

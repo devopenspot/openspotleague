@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     ])
     return NextResponse.json(
       { spotId, count, isVerified: userVerified, weather },
-      { headers: { "Cache-Control": "private, max-age=15" } },
+      { headers: { "Cache-Control": "private, no-cache" } },
     )
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Internal error"

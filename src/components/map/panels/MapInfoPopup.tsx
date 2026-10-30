@@ -36,7 +36,8 @@ import type { MapEvent } from "@/types/sport-events";
 import type { MapSpot } from "@/lib/types";
 import { buildGamePrefillUrl } from "@/lib/games/prefill";
 import { useWeatherVerification } from "@/hooks/data/useWeatherVerification";
-import { WeatherIcon } from "@/components/spots/weather/WeatherIcon";
+import { useSpotWeather } from "@/hooks/data/useSpotWeather";
+import { VerifiedWeatherDualIcons } from "@/components/spots/weather/VerifiedWeatherDualIcons";
 import { SpotWeatherVerificationDialog } from "@/components/spots/verification/SpotWeatherVerificationDialog";
 import { isWeatherIconName } from "@/lib/weather/isWeatherIcon";
 import { CloudSun } from "lucide-react";
@@ -96,6 +97,9 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
     [spot],
   );
   const { summary: weatherSummary } = useWeatherVerification(spot?.id ?? null);
+  const { weather: forecastWeather } = useSpotWeather(
+    weatherSummary?.active && spot ? spot.id : null,
+  );
   const [verifyOpen, setVerifyOpen] = useState(false);
 
   // Event popup takes precedence over spot popup when both are
@@ -263,7 +267,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
               <X size={14} aria-hidden="true" />
             </button>
           </div>
-          {/* Weather verification — independent icon+count, distinct color from spot ShieldCheck, on image only, dialog triggered from icon */}
+          {/* Weather verification — allows any user to verify weather, displays dual tiny icons (API suggested + community leader) */}
           {weatherSummary?.active &&
           weatherSummary.leader &&
           isWeatherIconName(weatherSummary.leader) ? (
@@ -272,22 +276,15 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
               onClick={() => setVerifyOpen(true)}
               aria-label="Confirm on-site weather condition"
               title="Confirm on-site weather (requires GPS proximity within 250m)"
-              className="absolute left-3 top-14 flex items-center gap-1 rounded-full border border-primary bg-primary px-2 py-1 shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-3.5 md:top-12"
+              className="absolute left-3 top-14 flex items-center gap-1 rounded-full border border-primary bg-primary px-2.5 py-1 shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-3.5 md:top-12"
             >
-              <span className="relative inline-flex">
-                <WeatherIcon
-                  name={weatherSummary.leader}
-                  size={14}
-                  className="shrink-0 text-on-primary"
-                />
-                <span className="absolute -right-7 -top-3 inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface">
-                  {weatherSummary.count}
-                </span>
-              </span>
-              <CloudSun
-                size={10}
-                aria-hidden="true"
-                className="shrink-0 text-on-primary"
+              <VerifiedWeatherDualIcons
+                apiIcon={forecastWeather?.icon}
+                leaderIcon={weatherSummary.leader}
+                count={weatherSummary.count}
+                iconSize={14}
+                iconClassName="shrink-0 text-on-primary"
+                badgeClassName="inline-flex h-4 min-w-4 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface"
               />
             </button>
           ) : (

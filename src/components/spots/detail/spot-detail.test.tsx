@@ -67,7 +67,8 @@ describe("SpotDetailsHero", () => {
     expect(onVerifyClick).toHaveBeenCalledTimes(1);
   });
 
-  it("renders weather verified badge when summary is active", () => {
+  it("renders weather verified badge when summary is active and remains clickable for other users", () => {
+    const onVerifyClick = vi.fn();
     render(
       <SpotDetailsHero
         spot={mockSpot}
@@ -76,16 +77,23 @@ describe("SpotDetailsHero", () => {
         onRequestLocation={vi.fn()}
         weatherSummary={{
           active: true,
-          leader: "sunny",
+          leader: "cloudy",
           count: 5,
           expiresAt: "2026-01-01T02:00:00.000Z",
           totalActive: 5,
         }}
+        weatherIcon="rain"
+        onVerifyClick={onVerifyClick}
       />,
     );
 
     expect(screen.getByText("Weather verified")).toBeTruthy();
     expect(screen.getByText("5")).toBeTruthy();
+
+    const btn = screen.getByRole("button", { name: /verify weather/i });
+    expect(btn.className).toContain("min-h-11");
+    fireEvent.click(btn);
+    expect(onVerifyClick).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -118,6 +126,32 @@ describe("SpotDetailsWeather", () => {
     const liveLink = screen.getByRole("link", { name: /zoom\.earth/i });
     expect(liveLink.getAttribute("target")).toBe("_blank");
     expect(liveLink.getAttribute("rel")).toContain("noopener");
+  });
+
+  it("renders verified community badge with dual icons when weatherSummary is active", () => {
+    render(
+      <SpotDetailsWeather
+        spot={mockSpot}
+        weather={{
+          icon: "rain",
+          current: 18,
+          description: "light rain",
+          wind: 5.5,
+          humidity: 45,
+        }}
+        temperatureUnit="C"
+        weatherSummary={{
+          active: true,
+          leader: "cloudy",
+          count: 3,
+          expiresAt: "2026-01-01T02:00:00.000Z",
+          totalActive: 3,
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId("weather-status-community-badge")).toBeTruthy();
+    expect(screen.getByText("3")).toBeTruthy();
   });
 });
 

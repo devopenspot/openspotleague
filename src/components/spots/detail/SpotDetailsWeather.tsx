@@ -3,10 +3,12 @@
 import { CloudOff, Radio } from "lucide-react";
 import { WeatherIcon } from "@/components/spots/weather/WeatherIcon";
 import { WeatherAccuracyNote } from "@/components/spots/weather/WeatherAccuracyNote";
+import { VerifiedWeatherDualIcons } from "@/components/spots/weather/VerifiedWeatherDualIcons";
 import { formatTemp } from "@/lib/weather/format";
 import { isWeatherIconName } from "@/lib/weather/isWeatherIcon";
 import type { TemperatureUnit } from "@/stores/preferences-store";
 import type { Spot } from "@/lib/types";
+import type { WeatherVerificationSummary } from "@/lib/repositories/spot/weather-verification-repository";
 
 interface SpotDetailsWeatherProps {
   spot: Spot;
@@ -18,27 +20,53 @@ interface SpotDetailsWeatherProps {
     humidity?: number | null;
   } | null | undefined;
   temperatureUnit: TemperatureUnit;
+  weatherSummary?: WeatherVerificationSummary | null;
 }
 
 export function SpotDetailsWeather({
   spot,
   weather,
   temperatureUnit,
+  weatherSummary,
 }: SpotDetailsWeatherProps) {
   const windKmh = weather?.wind != null ? Math.round(weather.wind * 3.6) : null;
+  const isVerifiedActive = Boolean(
+    weatherSummary?.active &&
+      weatherSummary.leader &&
+      isWeatherIconName(weatherSummary.leader),
+  );
+
   return (
     <section
       aria-labelledby="weather-status-heading"
       className="bg-surface-container-low px-5 py-4 md:px-8 md:py-6 space-y-4 -mx-5 md:-mx-8 border-y border-outline-variant/60"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2
-          id="weather-status-heading"
-          className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary"
-        >
-          Weather status
-          <WeatherAccuracyNote variant="block" />
-        </h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2
+            id="weather-status-heading"
+            className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary"
+          >
+            Weather status
+            <WeatherAccuracyNote variant="block" />
+          </h2>
+          {isVerifiedActive && weatherSummary?.leader && isWeatherIconName(weatherSummary.leader) ? (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-2.5 py-1 text-[11px] font-semibold text-on-surface"
+              data-testid="weather-status-community-badge"
+            >
+              <span className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+                Verified
+              </span>
+              <VerifiedWeatherDualIcons
+                apiIcon={weather?.icon}
+                leaderIcon={weatherSummary.leader}
+                count={weatherSummary.count}
+                iconSize={14}
+              />
+            </span>
+          ) : null}
+        </div>
         <a
           href={`https://zoom.earth/maps/precipitation/#view=${spot.location.lat},${spot.location.lon},10z/model=icon`}
           target="_blank"

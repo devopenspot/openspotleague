@@ -1,9 +1,10 @@
-import { cacheLife, cacheTag, revalidateTag } from "next/cache"
-import { getDbClient } from "@/lib/db/client"
+import { cacheLife, cacheTag } from "next/cache"
+import { getDbClient, withDbWrite } from "@/lib/db/client"
+import { queueTagRevalidate } from "@/lib/cache/deferred"
 import { getSpotRepositoryAsync, getWeatherVerificationRepositoryAsync } from "@/lib/repositories"
 import { REPORT_CACHE_LIFE, LIST_CACHE_LIFE } from "@/lib/cache/lifetimes"
 import { spots, verifiedSpots, spotWeatherVerifications } from "@/db/schema"
-import { and, eq } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import type { WeatherVerificationSummary } from "@/lib/repositories/spot/weather-verification-repository"
 
 export const WEATHER_VERIFICATION_TTL_MS = 2 * 60 * 60 * 1000
@@ -73,41 +74,37 @@ export async function verifySpotWithWeatherForUser(params: {
     throw err
   }
 
-  const { db } = getDbClient()
   const now = new Date()
   const expiresAt = new Date(now.getTime() + WEATHER_VERIFICATION_TTL_MS)
 
-  // Transaction: insert verified_spots (idempotent) + weather verification
-  let verificationCount = 0
+  return withDbWrite("spot.verify_with_weather", async () => {
+    const { db } = getDbClient()
+    let verificationCount = 0
 
-  await db.transaction(async (tx) => {
-    await tx.insert(verifiedSpots).values({ userId, spotId }).onConflictDoNothing()
+    await db.transaction(async (tx) => {
+      await tx.insert(verifiedSpots).values({ userId, spotId }).onConflictDoNothing()
 
-    await tx
-      .insert(spotWeatherVerifications)
-      .values({
-        spotId,
-        userId,
-        voteIcon: voteIcon as never,
-        expiresAt,
-      })
+      await tx
+        .insert(spotWeatherVerifications)
+        .values({
+          spotId,
+          userId,
+          voteIcon: voteIcon as never,
+          expiresAt,
+        })
 
-    const [row] = await tx.select({ x: spots.verificationCount }).from(spots).where(eq(spots.id, spotId)).limit(1)
-    verificationCount = row?.x ?? 0
+      const [row] = await tx.select({ x: spots.verificationCount }).from(spots).where(eq(spots.id, spotId)).limit(1)
+      verificationCount = row?.x ?? 0
+    })
+
+    const verifyRepo = await getWeatherVerificationRepositoryAsync()
+    const summary = await verifyRepo.getActiveSummary(spotId)
+
+    // Queued cache invalidation executed post-commit
+    queueTagRevalidate(weatherTag(spotId), REPORT_CACHE_LIFE)
+    queueTagRevalidate(spotVerifiedTag(spotId), LIST_CACHE_LIFE)
+    queueTagRevalidate(userVerifiedTag(userId), LIST_CACHE_LIFE)
+
+    return { verificationCount, summary, alreadyVerifiedSpot: true }
   })
-
-  const verifyRepo = await getWeatherVerificationRepositoryAsync()
-  const summary = await verifyRepo.getActiveSummary(spotId)
-  const [vRow] = await db
-    .select({ userId: verifiedSpots.userId })
-    .from(verifiedSpots)
-    .where(and(eq(verifiedSpots.userId, userId), eq(verifiedSpots.spotId, spotId)))
-    .limit(1)
-  const alreadyVerifiedSpot = Boolean(vRow)
-
-  revalidateTag(weatherTag(spotId), REPORT_CACHE_LIFE)
-  revalidateTag(spotVerifiedTag(spotId), LIST_CACHE_LIFE)
-  revalidateTag(userVerifiedTag(userId), LIST_CACHE_LIFE)
-
-  return { verificationCount, summary, alreadyVerifiedSpot }
 }

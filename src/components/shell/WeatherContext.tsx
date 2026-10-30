@@ -47,10 +47,13 @@ export function WeatherProvider({
   return <WeatherCtx.Provider value={value}>{children}</WeatherCtx.Provider>;
 }
 
+const DEFAULT_WEATHER_CTX: WeatherContextValue = {
+  weather: {},
+  getWeather: () => undefined,
+  setWeather: () => {},
+};
+
 export function useWeather(): WeatherContextValue {
   const ctx = useContext(WeatherCtx);
-  if (!ctx) {
-    throw new Error('useWeather must be used within a WeatherProvider');
-  }
-  return ctx;
+  return ctx ?? DEFAULT_WEATHER_CTX;
 }
