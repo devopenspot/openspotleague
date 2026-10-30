@@ -85,7 +85,7 @@ export async function runListRegions(): Promise<readonly Region[]> {
 }
 
 export async function listRegions(): Promise<readonly Region[]> {
-  "use cache"
+  "use cache: remote"
   cacheTag("regions:all")
   cacheLife(LIST_CACHE_LIFE)
   return runListRegions()

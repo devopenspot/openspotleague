@@ -491,17 +491,26 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     lat: number;
     lon: number;
     radiusMeters: number;
+    limit?: number;
+    excludeId?: string;
   }): Promise<readonly Spot[]> {
     const point = sql`ST_SetSRID(ST_MakePoint(${params.lon}, ${params.lat}), 4326)::geography`;
-    const rows = await joinedSpotSelect(this.db)
-      .where(
-        and(
-          sql`ST_DWithin(${spots.location}, ${point}, ${params.radiusMeters})`,
-          eq(spots.visibility, "public"),
-          eq(spots.adminHidden, false),
-        ),
-      )
-      .limit(200);
+    const where = and(
+      sql`ST_DWithin(${spots.location}, ${point}, ${params.radiusMeters})`,
+      eq(spots.visibility, "public"),
+      eq(spots.adminHidden, false),
+      params.excludeId ? sql`${spots.id} <> ${params.excludeId}::uuid` : undefined,
+    );
+    // Bounded callers (spot-detail suggestions) get the nearest N, ordered
+    // by distance, so the pooler ships only the rows that are rendered.
+    // Shipping a fixed 200 full rows and slicing to 30 in JS made the
+    // spot detail page the single largest Shared Pooler Egress source.
+    const rows = params.limit
+      ? await joinedSpotSelect(this.db)
+          .where(where)
+          .orderBy(sql`${spots.location} <-> ${point}`, asc(spots.id))
+          .limit(Math.min(Math.max(1, Math.floor(params.limit)), 200))
+      : await joinedSpotSelect(this.db).where(where).limit(200);
     const { withCardImageUrls } = await import("@/lib/storage");
     return withCardImageUrls(rows.map(rowToSpotWithImagePath));
   }

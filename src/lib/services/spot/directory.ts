@@ -27,7 +27,7 @@ export async function runGetCommonDirectoryData(): Promise<CommonDirectoryData> 
 }
 
 async function getCommonDirectoryDataCached(): Promise<CommonDirectoryData> {
-  "use cache"
+  "use cache: remote"
   cacheTag("directory:common")
   cacheLife(LIST_CACHE_LIFE)
   return runGetCommonDirectoryData()

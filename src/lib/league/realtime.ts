@@ -7,7 +7,7 @@
  * All league viewers are signed in — no guest polling path needed.
  */
 
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
+import { createSupabaseBrowserClient, uniqueChannelTopic } from "@/lib/supabase/browser"
 import {
   createRefreshCoordinator,
   type RealtimeController,
@@ -80,15 +80,18 @@ export function subscribeToLeagueEvent(options: {
 
   let removeChannel = () => undefined
   let channelUnhealthy = false
+  // Bumped on every (re)connect so callbacks from a superseded channel are ignored.
+  let channelGeneration = 0
 
   const connectChannel = () => {
     if (stopped) return
     removeChannel()
     channelUnhealthy = false
+    const generation = ++channelGeneration
     try {
       const supabase = createSupabaseBrowserClient()
       const channel = supabase
-        .channel(`league:event:${options.eventId}`)
+        .channel(uniqueChannelTopic(`league:event:${options.eventId}`))
         .on(
           "postgres_changes",
           {
@@ -111,6 +114,7 @@ export function subscribeToLeagueEvent(options: {
           },
         )
         .subscribe((status) => {
+          if (stopped || generation !== channelGeneration) return
           if (status === "SUBSCRIBED") {
             if (fallbackTimer) clearTimeout(fallbackTimer)
             channelConnected = true

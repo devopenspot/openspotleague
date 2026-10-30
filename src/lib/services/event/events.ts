@@ -113,7 +113,7 @@ export function toEventShuffleFilters(query: SportEventQuery): EventShuffleFilte
 export async function listEventShuffleIds(
   filters: EventShuffleFilters,
 ): Promise<readonly string[]> {
-  "use cache"
+  "use cache: remote"
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
   const repo = await getEventRepositoryAsync()
@@ -196,7 +196,7 @@ export async function runListEventDirectory(): Promise<SportEventsDirectoryData>
 }
 
 export async function listEventDirectory(): Promise<SportEventsDirectoryData> {
-  "use cache"
+  "use cache: remote"
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
   return runListEventDirectory()
@@ -263,7 +263,7 @@ export const EVENTS_FOR_MAP_LIMIT = 50;
 export async function listEventsForMap(
   citySlug: string | null,
 ): Promise<readonly MapEvent[]> {
-  "use cache"
+  "use cache: remote"
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
   const repo = await getEventRepositoryAsync()

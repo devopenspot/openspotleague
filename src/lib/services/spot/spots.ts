@@ -47,7 +47,7 @@ export async function runGetSpotsTotalCount(): Promise<number> {
  * derived from the capped hydrated directory (`spots.length <= 500`).
  */
 export async function getSpotsTotalCount(): Promise<number> {
-  "use cache"
+  "use cache: remote"
   cacheTag("spots:list")
   cacheLife(LIST_CACHE_LIFE)
   return runGetSpotsTotalCount()
@@ -75,7 +75,7 @@ export function toSpotShuffleFilters(query: SpotQuery): SpotShuffleFilters {
 export async function listSpotShuffleIds(
   filters: SpotShuffleFilters,
 ): Promise<readonly string[]> {
-  "use cache"
+  "use cache: remote"
   cacheTag("spots:list")
   cacheLife(LIST_CACHE_LIFE)
   const repo = await getSpotRepositoryAsync()

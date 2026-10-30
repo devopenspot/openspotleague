@@ -1,4 +1,4 @@
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser"
+import { createSupabaseBrowserClient, uniqueChannelTopic } from "@/lib/supabase/browser"
 
 export type VersionedGameState = { version: number; [key: string]: unknown }
 
@@ -195,20 +195,26 @@ export function subscribeToGame<T extends VersionedGameState>(options: {
 
   let removeChannel = () => undefined
   let channelUnhealthy = false
+  // Bumped on every (re)connect: status callbacks from a superseded channel
+  // (e.g. the CLOSED emitted when the previous channel is removed) must not
+  // overwrite the state of the current one.
+  let channelGeneration = 0
 
   const connectChannel = () => {
     if (stopped || options.useChannel === false) return
     removeChannel()
     channelUnhealthy = false
+    const generation = ++channelGeneration
     try {
       const supabase = createSupabaseBrowserClient()
       const channel = supabase
-        .channel(`game:${options.gameId}`)
+        .channel(uniqueChannelTopic(`game:${options.gameId}`))
         // Every supported game mutation increments game_sessions.version.
         // Subscribe only to the safe invalidation row, then refetch through
         // the authorized application API.
         .on("postgres_changes", { event: "*", schema: "public", table: "game_realtime_signals", filter: `game_id=eq.${options.gameId}` }, handleRealtimeSignal)
         .subscribe((status) => {
+          if (stopped || generation !== channelGeneration) return
           if (status === "SUBSCRIBED") {
             if (fallbackTimer) clearTimeout(fallbackTimer)
             channelConnected = true

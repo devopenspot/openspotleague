@@ -54,7 +54,18 @@ export interface SpotRepository {
     spotTypeSlugs: readonly string[]
   }): Promise<Spot | null>
   findNearby(params: { lat: number; lon: number; radiusMeters: number }): Promise<readonly Spot[]>
-  findNearbyPublic(params: { lat: number; lon: number; radiusMeters: number }): Promise<readonly Spot[]>
+  /**
+   * Public spots within `radiusMeters`. Without `limit`: up to 200 rows in
+   * arbitrary order (community duplicate check). With `limit`: the nearest
+   * `limit` rows ordered by distance, optionally excluding `excludeId`.
+   */
+  findNearbyPublic(params: {
+    lat: number
+    lon: number
+    radiusMeters: number
+    limit?: number
+    excludeId?: string
+  }): Promise<readonly Spot[]>
   listCountries(): Promise<readonly { name: string; region: string; count: number }[]>
   listCountriesForRegion(region: string): Promise<readonly { name: string; count: number }[]>
   listTypes(): Promise<readonly { name: string; count: number }[]>

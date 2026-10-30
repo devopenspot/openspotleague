@@ -4,6 +4,7 @@ import { LIST_CACHE_LIFE } from "@/lib/cache/lifetimes";
 import { SPOT_LIST_HARD_CAP } from "@/lib/config/constants";
 import { log } from "@/lib/utils/log";
 import type { MapSpot } from "@/lib/types";
+import type { MapSpotListResult } from "@/lib/repositories/core/types";
 
 /**
  * The map searcher filters the hydrated client directory, which is
@@ -29,31 +30,90 @@ const MAX_PAGINATION_DURATION_MS = 6000;
  */
 export const CITY_RADIUS_METERS = 28_000;
 
-export async function runListSpotsForMapScope(
+type CityRadius = { lat: number; lon: number; radiusMeters: number };
+
+async function resolveCityRadius(
   country: string,
-  citySlug?: string | null,
-): Promise<readonly MapSpot[]> {
+  citySlug: string,
+): Promise<CityRadius | undefined> {
+  const repo = await getSpotRepositoryAsync();
+  if (!repo.findCityInCountry) return undefined;
+  const cityRecord = await repo.findCityInCountry(country, citySlug);
+  if (
+    cityRecord &&
+    typeof cityRecord.lat === "number" &&
+    typeof cityRecord.lon === "number"
+  ) {
+    return {
+      lat: cityRecord.lat,
+      lon: cityRecord.lon,
+      radiusMeters: CITY_RADIUS_METERS,
+    };
+  }
+  return undefined;
+}
+
+export async function runListMapScopePage(
+  country: string,
+  citySlug: string | null,
+  cityRadius: CityRadius | undefined,
+  cursor: string | null,
+): Promise<MapSpotListResult> {
   const repo = await getSpotRepositoryAsync();
   const listPage = repo.listForMapScope
     ? repo.listForMapScope.bind(repo)
     : repo.list.bind(repo);
-  let cityRadius:
-    | { lat: number; lon: number; radiusMeters: number }
-    | undefined;
-  if (citySlug && repo.findCityInCountry) {
-    const cityRecord = await repo.findCityInCountry(country, citySlug);
-    if (
-      cityRecord &&
-      typeof cityRecord.lat === "number" &&
-      typeof cityRecord.lon === "number"
-    ) {
-      cityRadius = {
-        lat: cityRecord.lat,
-        lon: cityRecord.lon,
-        radiusMeters: CITY_RADIUS_METERS,
-      };
-    }
-  }
+  return listPage({
+    country,
+    city: citySlug ?? undefined,
+    ...(cityRadius ? { cityRadius } : {}),
+    limit: SPOT_LIST_HARD_CAP,
+    cursor: cursor ?? undefined,
+  });
+}
+
+/**
+ * One cached page (<= SPOT_LIST_HARD_CAP rows, ~250 KB) of a map scope.
+ *
+ * `"use cache: remote"`: plain `"use cache"` is a per-instance in-memory
+ * LRU, so on Vercel serverless nearly every request missed and re-read the
+ * whole country (up to 20 pages) through the Supavisor shared pooler —
+ * the dominant Shared Pooler Egress cost. Remote entries are shared across
+ * instances (Vercel Runtime Cache). Caching per PAGE (not per country)
+ * keeps each entry far below the 2 MB runtime-cache item limit; the US
+ * scope alone serialises to well over 2 MB.
+ */
+async function listMapScopePage(
+  country: string,
+  citySlug: string | null,
+  cityRadius: CityRadius | undefined,
+  cursor: string | null,
+): Promise<MapSpotListResult> {
+  "use cache: remote";
+  cacheTag("spots:list");
+  cacheLife(LIST_CACHE_LIFE);
+  return runListMapScopePage(country, citySlug, cityRadius, cursor);
+}
+
+async function findCityRadiusCached(
+  country: string,
+  citySlug: string,
+): Promise<CityRadius | null> {
+  "use cache: remote";
+  cacheTag("spots:list");
+  cacheLife(LIST_CACHE_LIFE);
+  return (await resolveCityRadius(country, citySlug)) ?? null;
+}
+
+async function walkMapScope(
+  country: string,
+  citySlug: string | null,
+  fetchRadius: (country: string, citySlug: string) => Promise<CityRadius | null | undefined>,
+  fetchPage: typeof runListMapScopePage,
+): Promise<readonly MapSpot[]> {
+  const cityRadius = citySlug
+    ? ((await fetchRadius(country, citySlug)) ?? undefined)
+    : undefined;
   const items: MapSpot[] = [];
   let cursor: string | null = null;
   const startTime = Date.now();
@@ -67,13 +127,7 @@ export async function runListSpotsForMapScope(
       });
       return items;
     }
-    const result = await listPage({
-      country,
-      city: citySlug ?? undefined,
-      ...(cityRadius ? { cityRadius } : {}),
-      limit: SPOT_LIST_HARD_CAP,
-      cursor: cursor ?? undefined,
-    });
+    const result = await fetchPage(country, citySlug, cityRadius, cursor);
     items.push(...result.items);
     if (!result.nextCursor) return items;
     cursor = result.nextCursor;
@@ -81,15 +135,24 @@ export async function runListSpotsForMapScope(
   return items;
 }
 
+/** Uncached walk (scripts/tests). */
+export async function runListSpotsForMapScope(
+  country: string,
+  citySlug?: string | null,
+): Promise<readonly MapSpot[]> {
+  return walkMapScope(country, citySlug ?? null, resolveCityRadius, runListMapScopePage);
+}
+
+/**
+ * Full public map scope for a country (optionally a city + metro radius).
+ * The walk itself is not cached — each page is (see `listMapScopePage`),
+ * so the per-entry size stays bounded and pages are shared by every
+ * instance. Every spot mutation already revalidates "spots:list" via
+ * `revalidateSpotCaches`.
+ */
 export async function listSpotsForMapScope(
   country: string,
   citySlug?: string | null,
 ): Promise<readonly MapSpot[]> {
-  "use cache";
-  // Same tag the standard list service carries: every spot mutation
-  // already revalidates "spots:list" via `revalidateSpotCaches`, which
-  // keeps these per-scope pages fresh without extra tag plumbing.
-  cacheTag("spots:list");
-  cacheLife(LIST_CACHE_LIFE);
-  return runListSpotsForMapScope(country, citySlug);
+  return walkMapScope(country, citySlug ?? null, findCityRadiusCached, listMapScopePage);
 }

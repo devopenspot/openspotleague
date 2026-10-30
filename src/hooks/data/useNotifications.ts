@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NotificationPayload } from "@/types/sport-events";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import {
+  createSupabaseBrowserClient,
+  uniqueChannelTopic,
+} from "@/lib/supabase/browser";
 import {
   DEFAULT_MUTATION_TIMEOUT_MS,
   fetchWithTimeout,
@@ -76,15 +79,18 @@ export function useUnreadNotificationCount(userId: string | null): number {
 
     let removeChannel = () => undefined;
     let channelUnhealthy = false;
+    // Bumped on every (re)connect so callbacks from a superseded channel are ignored.
+    let channelGeneration = 0;
 
     const connectChannel = () => {
       if (cancelled) return;
       removeChannel();
       channelUnhealthy = false;
+      const generation = ++channelGeneration;
       try {
         const client = createSupabaseBrowserClient();
         const channel = client
-          .channel(`user:${userId}:unread`)
+          .channel(uniqueChannelTopic(`user:${userId}:unread`))
           .on(
             "postgres_changes",
             {
@@ -102,6 +108,7 @@ export function useUnreadNotificationCount(userId: string | null): number {
             },
           )
           .subscribe((status) => {
+            if (cancelled || generation !== channelGeneration) return;
             if (status === "SUBSCRIBED") {
               channelUnhealthy = false;
             }
@@ -262,15 +269,18 @@ export function useNotificationList(userId: string | null): {
     let lastFocusRefreshAt = 0;
     let removeChannel = () => undefined;
     let channelUnhealthy = false;
+    // Bumped on every (re)connect so callbacks from a superseded channel are ignored.
+    let channelGeneration = 0;
 
     const connectChannel = () => {
       if (cancelled) return;
       removeChannel();
       channelUnhealthy = false;
+      const generation = ++channelGeneration;
       try {
         const client = createSupabaseBrowserClient();
         const channel = client
-          .channel(`user:${userId}:list`)
+          .channel(uniqueChannelTopic(`user:${userId}:list`))
           .on(
             "postgres_changes",
             {
@@ -288,6 +298,7 @@ export function useNotificationList(userId: string | null): {
             },
           )
           .subscribe((status) => {
+            if (cancelled || generation !== channelGeneration) return;
             if (status === "SUBSCRIBED") {
               channelUnhealthy = false;
             }

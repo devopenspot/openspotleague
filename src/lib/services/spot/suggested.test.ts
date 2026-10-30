@@ -68,6 +68,8 @@ describe("runListSuggestedSpots", () => {
       lat: current.location.lat,
       lon: current.location.lon,
       radiusMeters: NEARBY_RADIUS_CAP_METERS,
+      limit: 30,
+      excludeId: current.id,
     })
     expect(result.map((s) => s.id)).toEqual(["a", "b"])
   })

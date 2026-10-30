@@ -35,10 +35,15 @@ export async function runListSuggestedSpots(
     return []
   }
   const repo = await getSpotRepositoryAsync()
+  // Nearest-N in SQL (current spot excluded server-side): ~30 rows on the
+  // wire instead of a fixed 200-row page. The client filter/slice stays as
+  // a guard for repositories that ignore `limit`/`excludeId`.
   const nearby = await repo.findNearbyPublic({
     lat: params.lat,
     lon: params.lon,
     radiusMeters: NEARBY_RADIUS_CAP_METERS,
+    limit: SUGGESTED_POOL_LIMIT,
+    excludeId: params.spotId,
   })
   return nearby
     .filter((s) => s.id !== params.spotId)

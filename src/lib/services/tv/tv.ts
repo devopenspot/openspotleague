@@ -127,7 +127,7 @@ export async function runListTvCardPage(
 export async function listTvCardPage(
   options: TvCardPageOptions = {},
 ): Promise<TvCardPageResult> {
-  "use cache";
+  "use cache: remote";
   const normalized: TvCardPageOptions = {
     disciplineSlug: options.disciplineSlug?.trim().toLowerCase() || undefined,
     category: options.category?.trim().toLowerCase() || undefined,
@@ -157,7 +157,7 @@ export async function runGetTvFilterOptions(): Promise<TvFilterOptionsResult> {
 }
 
 export async function getTvFilterOptions(): Promise<TvFilterOptionsResult> {
-  "use cache";
+  "use cache: remote";
   cacheTag("tv:list");
   cacheLife(TV_CACHE_LIFE);
   return runGetTvFilterOptions();
@@ -173,7 +173,7 @@ export async function runListTvDistinctCategories(
 export async function listTvDistinctCategories(
   options: TvDistinctCategoriesOptions = {},
 ): Promise<readonly string[]> {
-  "use cache";
+  "use cache: remote";
   const normalized: TvDistinctCategoriesOptions = {
     disciplineSlug: options.disciplineSlug?.trim().toLowerCase() || undefined,
     disciplineSlugs: options.disciplineSlugs?.map((s) => s.trim().toLowerCase()).filter(Boolean),
@@ -194,7 +194,7 @@ export async function runListTvIdList(
 export async function listTvIdList(
   options: TvIdListOptions = {},
 ): Promise<readonly string[]> {
-  "use cache";
+  "use cache: remote";
   const normalized: TvIdListOptions = {
     disciplineSlug: options.disciplineSlug?.trim().toLowerCase() || undefined,
     category: options.category?.trim().toLowerCase() || undefined,
@@ -273,7 +273,7 @@ export async function runListTvCategoryRows(
 export async function listTvCategoryRows(
   disciplineSlug?: string,
 ): Promise<readonly TvCategoryRow[]> {
-  "use cache";
+  "use cache: remote";
   const normalized = disciplineSlug?.trim().toLowerCase() || undefined;
   cacheTag("tv:list");
   cacheLife(TV_CACHE_LIFE);

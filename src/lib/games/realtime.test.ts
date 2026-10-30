@@ -20,6 +20,7 @@ const { channelMock, createSupabaseBrowserClientMock } = vi.hoisted(() => {
 
 vi.mock("@/lib/supabase/browser", () => ({
   createSupabaseBrowserClient: () => createSupabaseBrowserClientMock(),
+  uniqueChannelTopic: (base: string) => base,
 }))
 
 describe("game realtime version handling", () => {
@@ -195,6 +196,41 @@ describe("safe realtime subscriptions", () => {
     signalHandler({ new: { version: 3 } })
     await vi.advanceTimersByTimeAsync(75)
     expect(fetchState).toHaveBeenCalledTimes(1)
+
+    controller.stop()
+    vi.useRealTimers()
+  })
+
+  it("ignores status callbacks from a superseded channel after reconnecting", async () => {
+    vi.useFakeTimers()
+    const { subscribeToGame } = await import("@/lib/games/realtime")
+    const onConnectionChange = vi.fn()
+    const controller = subscribeToGame({
+      gameId: "game-1",
+      initialState: { version: 1 },
+      fetchState: vi.fn().mockResolvedValue({ version: 1 }),
+      onState: vi.fn(),
+      onConnectionChange,
+      useChannel: true,
+    })
+
+    const firstCallback = channelMock.subscribe.mock.calls[0]?.[0] as (
+      status: string,
+    ) => void
+    // First channel drops -> unhealthy; the next tab focus reconnects.
+    firstCallback("CLOSED")
+    document.dispatchEvent(new Event("visibilitychange"))
+    expect(channelMock.subscribe).toHaveBeenCalledTimes(2)
+
+    const secondCallback = channelMock.subscribe.mock.calls[1]?.[0] as (
+      status: string,
+    ) => void
+    secondCallback("SUBSCRIBED")
+    expect(onConnectionChange).toHaveBeenLastCalledWith("connected")
+
+    // Late CLOSED from the removed first channel must not flip the healthy one.
+    firstCallback("CLOSED")
+    expect(onConnectionChange).toHaveBeenLastCalledWith("connected")
 
     controller.stop()
     vi.useRealTimers()

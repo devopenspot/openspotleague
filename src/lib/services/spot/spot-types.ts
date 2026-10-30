@@ -10,7 +10,7 @@ export async function runListSpotTypes(): Promise<readonly SpotTypeEntity[]> {
 }
 
 export async function listSpotTypes(): Promise<readonly SpotTypeEntity[]> {
-  "use cache"
+  "use cache: remote"
   cacheTag("spot-types:all")
   cacheLife(LIST_CACHE_LIFE)
   return runListSpotTypes()

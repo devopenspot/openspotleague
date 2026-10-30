@@ -26,7 +26,7 @@ export async function runListCitiesForCountry(
 export async function listCitiesForCountry(
   country: string,
 ): Promise<readonly SpotFacetCity[]> {
-  "use cache"
+  "use cache: remote"
   // Same tag the map-country and standard list services carry: every
   // spot mutation already revalidates "spots:list" via
   // `revalidateSpotCaches`, keeping these facet reads fresh without
@@ -49,7 +49,7 @@ export async function findCityInCountry(
   country: string,
   citySlug: string,
 ): Promise<SpotFacetCity | null> {
-  "use cache"
+  "use cache: remote"
   cacheTag("spots:list")
   cacheLife(LIST_CACHE_LIFE)
   return runFindCityInCountry(country, citySlug)
@@ -72,7 +72,7 @@ export async function searchCities(
   country?: string,
   limit = 10,
 ): Promise<readonly SpotFacetCity[]> {
-  "use cache"
+  "use cache: remote"
   cacheTag("spots:list")
   cacheLife(LIST_CACHE_LIFE)
   return runSearchCities(q, country, limit)
