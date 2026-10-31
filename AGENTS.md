@@ -84,6 +84,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - High-cadence polling endpoints do a single-query version pre-check and return `304` with an empty body. Client poll rates must stay below the proxy tier limit.
 - The build stays DB-free: layouts call `connection()` and wrap reads in `withSafeDefault` / `withSafeDefaultResult` with the `EMPTY_*` fallbacks.
 - **Never query Supabase logs** from agents or scripts (no MCP `get_logs`, no Management API log endpoints). Use `pg_stat_statements` or `pnpm egress:snapshot` instead.
+- Before finishing a change that touches DB reads or writes, caching, layouts, API routes, polling or realtime, migrations, auth, storage, scripts, or MCP/agent config, run `/supabase_egress_bestpractices` (`.claude/commands/supabase_egress_bestpractices.md`) on the diff and resolve any blockers.
 
 ### Notifications (`docs/notifications.md`)
 

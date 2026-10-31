@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getSessionUser } from "@/lib/auth/server"
+import { isConnectionError, TimeoutError } from "@/lib/db/client"
 import { GameDomainError } from "@/lib/games/definitions"
 import {
   GUEST_NAME_HEADER,
@@ -89,12 +90,20 @@ const DOMAIN_ERROR_STATUS: Record<string, number> = {
 
 /**
  * Single canonical GameDomainError → HTTP mapping shared by every game
- * route, so status codes cannot drift between endpoints.
+ * route, so status codes cannot drift between endpoints. Transient DB
+ * failures (timeouts, including waits for a DB gate slot, and connection
+ * errors) map to 503 like `leagueErrorResponse`.
  */
 export function gameErrorResponse(error: unknown, onInternalError?: () => void) {
   if (error instanceof GameDomainError) {
     const status = DOMAIN_ERROR_STATUS[error.code] ?? 409
     return NextResponse.json({ error: error.message, code: error.code }, { status })
+  }
+  if (error instanceof TimeoutError || isConnectionError(error)) {
+    return NextResponse.json(
+      { error: "The games service is temporarily unavailable", code: "SERVICE_UNAVAILABLE" },
+      { status: 503 },
+    )
   }
   onInternalError?.()
   return NextResponse.json({ error: "Internal error" }, { status: 500 })
