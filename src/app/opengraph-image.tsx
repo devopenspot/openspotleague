@@ -8,8 +8,8 @@ export const contentType = "image/png";
 export const runtime = "nodejs";
 export const dynamic = "force-static";
 
-export default function Image() {
-  const leagueDataUrl = loadPublicImageAsDataUrl("/opengraph.png");
+export default async function Image() {
+  const leagueDataUrl = await loadPublicImageAsDataUrl("/opengraph.png");
 
   return new ImageResponse(
     <div

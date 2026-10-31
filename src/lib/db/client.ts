@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { sql } from "drizzle-orm";
 import postgres from "postgres";
-import { env, getDatabaseUrl } from "@/lib/config/env";
+import { env, getDatabaseUrl, isUsingHyperdrive } from "@/lib/config/env";
 import { log } from "@/lib/utils/log";
 import * as schema from "@/db/schema";
 import {
@@ -10,6 +10,12 @@ import {
 } from "@/lib/db/concurrency";
 import { getRequestCorrelationId } from "@/lib/db/request-context";
 import { runWithDeferredCacheInvalidation } from "@/lib/cache/deferred";
+import {
+  isRequestScoped,
+  isWorkerRuntime,
+  perRequest,
+  runInRequestScope,
+} from "@/lib/utils/request-scope";
 import { collectErrorCodes, collectErrorMessages } from "./error-collect";
 import { getPostgresOptions } from "./postgres-options";
 
@@ -21,11 +27,13 @@ const globalForDb = globalThis as typeof globalThis & {
   __openspotDb?: DbState;
 };
 
-// Vercel Fluid Compute can run concurrent invocations in one warm instance,
-// so one connection can become a local bottleneck. Keep this configurable,
-// but bounded because every warm instance can create its own client pool.
+// A pool serves one warm Node instance, or one request on Workers, so a single
+// connection can become a local bottleneck. Keep this configurable, but bounded
+// because every instance or request can create its own client pool.
 const POOL_MAX = env.DB_POOL_MAX ?? (env.NODE_ENV === "production" ? 3 : 5);
 const CONCURRENCY_MAX = Math.min(env.DB_CONCURRENCY_MAX ?? POOL_MAX, POOL_MAX);
+// Cloudflare's limit for a Hyperdrive client, from Workers' cap on open sockets.
+const HYPERDRIVE_POOL_MAX = 5;
 
 // Tightened from 8s. If a connect takes >5s the network or DNS is
 // broken; retrying with backoff is faster than waiting.
@@ -241,6 +249,24 @@ function poolSnapshot(): PoolSnapshot | null {
 }
 
 /**
+ * Cache regeneration enters through vinext's RPC entrypoint, which
+ * `src/worker.ts` cannot wrap. Each DB operation there gets its own connection
+ * and closes it, since a Worker invocation may only hold six at a time.
+ */
+function withScopedDbConcurrency<T>(fn: () => Promise<T>): Promise<T> {
+  if (!isWorkerRuntime || isRequestScoped()) {
+    return withGlobalDbConcurrency(CONCURRENCY_MAX, fn);
+  }
+  return runInRequestScope(undefined, async () => {
+    try {
+      return await withGlobalDbConcurrency(CONCURRENCY_MAX, fn);
+    } finally {
+      await requestDbState().client.end({ timeout: 1 });
+    }
+  });
+}
+
+/**
  * Wraps an async function in a timeout. If the function doesn't resolve
  * within `ms`, the returned promise rejects with a `TimeoutError`. The
  * When the returned promise exposes postgres-js' `.cancel()` method, the
@@ -287,7 +313,7 @@ export async function withRetry<T>(
   const retryOnConnectionError = opts.retryOnConnectionError ?? true;
   const allowUncancelableTimeout = opts.allowUncancelableTimeout ?? true;
 
-  return withGlobalDbConcurrency(CONCURRENCY_MAX, async () => {
+  return withScopedDbConcurrency(async () => {
     const started = Date.now();
     const deadline = timeoutMs ? started + timeoutMs : null;
     const requestId = getRequestCorrelationId() ?? crypto.randomUUID();
@@ -407,7 +433,7 @@ export async function withPoolRetry<T>(
   const label = opts.label ?? "db.pool_checkout";
   const started = Date.now();
   const requestId = getRequestCorrelationId() ?? crypto.randomUUID();
-  return withGlobalDbConcurrency(CONCURRENCY_MAX, async () => {
+  return withScopedDbConcurrency(async () => {
     let lastError: unknown;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -464,17 +490,17 @@ export async function withPoolRetry<T>(
   });
 }
 
-export function getDbClient() {
-  const existing = globalForDb.__openspotDb;
-  if (existing) return existing;
+function createDbState(): DbState {
   const url = getDatabaseUrl();
   if (!url) {
     throw new Error(
       "SUPABASE_DATABASE_URL or SUPABASE_DIRECT_URL is not configured",
     );
   }
+  const hyperdrive = isUsingHyperdrive();
   const options = getPostgresOptions("runtime", {
-    max: POOL_MAX,
+    hyperdrive,
+    max: hyperdrive ? Math.min(POOL_MAX, HYPERDRIVE_POOL_MAX) : POOL_MAX,
     statementTimeoutMs: STATEMENT_TIMEOUT_MS,
     connectTimeoutSeconds: CONNECT_TIMEOUT_SECONDS,
     idleTimeoutSeconds: IDLE_TIMEOUT_SECONDS,
@@ -490,7 +516,39 @@ export function getDbClient() {
     },
   });
   const db = instrumentDb(drizzle(client, { schema }));
-  const state = { db, client };
+  return { db, client };
+}
+
+const requestDbState = perRequest(createDbState);
+
+// Repositories are cached singletons that keep the `db` they were built with,
+// so on Workers that reference has to resolve the current request's connection.
+function forCurrentRequest<T extends object>(select: (state: DbState) => T): T {
+  return new Proxy(select as unknown as T, {
+    get(_target, prop) {
+      const target = select(requestDbState());
+      const value: unknown = Reflect.get(target, prop);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+    apply(_target, _thisArg, args: unknown[]) {
+      const target = select(requestDbState()) as unknown as (
+        ...callArgs: unknown[]
+      ) => unknown;
+      return target(...args);
+    },
+  });
+}
+
+const requestDbFacade: DbState = {
+  db: forCurrentRequest((state) => state.db),
+  client: forCurrentRequest((state) => state.client),
+};
+
+export function getDbClient(): DbState {
+  if (isWorkerRuntime) return requestDbFacade;
+  const existing = globalForDb.__openspotDb;
+  if (existing) return existing;
+  const state = createDbState();
   globalForDb.__openspotDb = state;
   return state;
 }

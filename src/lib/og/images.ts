@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { getRequestAssets } from "@/lib/utils/request-scope";
 
 const MIME_FOR_EXT: Record<string, string> = {
   ".jpg": "image/jpeg",
@@ -70,11 +71,21 @@ export async function fetchRemoteImageAsDataUrl(
 
 /**
  * Load a public asset as a data URL for use inside `next/og` ImageResponse.
- * Falls back to null if the file is missing (e.g. in edge runtime or build without fs).
+ * Workers has no public/ on disk, so assets come from the ASSETS binding there.
+ * Falls back to null if the file is missing.
  */
-export function loadPublicImageAsDataUrl(relativePublicPath: string): string | null {
+export async function loadPublicImageAsDataUrl(relativePublicPath: string): Promise<string | null> {
   try {
     const clean = relativePublicPath.startsWith("/") ? relativePublicPath.slice(1) : relativePublicPath;
+    const assets = getRequestAssets();
+    if (assets) {
+      // The binding ignores the host in production; Vite's dev host check does not.
+      const res = await assets.fetch(new URL(`/${clean}`, "http://localhost"));
+      if (!res.ok) return null;
+      const buf = Buffer.from(await res.arrayBuffer());
+      const mime = MIME_FOR_EXT[extOf(clean)] ?? "image/jpeg";
+      return `data:${mime};base64,${buf.toString("base64")}`;
+    }
     // public/ is at process.cwd()/public
     const full = join(process.cwd(), "public", clean);
     if (!existsSync(full)) return null;

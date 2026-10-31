@@ -13,3 +13,6 @@ tsconfig.tsbuildinfo
 next-env.d.ts
 src/data-backup/*
 .local/
+/dist/
+.vinext/
+.cloudflare/

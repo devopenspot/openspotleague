@@ -246,11 +246,31 @@ export function resolveDatabaseUrl(
  * The build is DB-free and never calls this.
  *
  * Resolution order:
- *   1. SUPABASE_DATABASE_URL (port 6543, pgBouncer pooler — runtime default)
- *   2. SUPABASE_DIRECT_URL   (port 5432, direct — local DDL only)
+ *   1. The Hyperdrive binding (Workers only, see `setHyperdriveUrl`)
+ *   2. SUPABASE_DATABASE_URL (port 6543, pgBouncer pooler — runtime default)
+ *   3. SUPABASE_DIRECT_URL   (port 5432, direct — local DDL only)
  */
 export function getDatabaseUrl(): string | null {
-  return resolveDatabaseUrl(env.SUPABASE_DATABASE_URL, env.SUPABASE_DIRECT_URL);
+  return (
+    hyperdriveUrl ??
+    resolveDatabaseUrl(env.SUPABASE_DATABASE_URL, env.SUPABASE_DIRECT_URL)
+  );
+}
+
+let hyperdriveUrl: string | null = null;
+
+/**
+ * Called by `src/worker.ts` on every request. Workers cannot reach the pooler
+ * directly: `workerd` rejects the certificate from Supabase's private CA, and
+ * postgres.js has no way to skip that check there. Kept at module level
+ * because cache regeneration opens connections outside `fetch`.
+ */
+export function setHyperdriveUrl(url: string): void {
+  hyperdriveUrl = url;
+}
+
+export function isUsingHyperdrive(): boolean {
+  return hyperdriveUrl !== null;
 }
 
 /** Direct Postgres connection reserved for reset and schema DDL. */

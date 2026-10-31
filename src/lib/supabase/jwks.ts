@@ -11,6 +11,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/config/env"
+import { perRequest } from "@/lib/utils/request-scope"
 
 type GetClaimsOptions = NonNullable<Parameters<SupabaseClient["auth"]["getClaims"]>[1]>
 export type CachedJwks = NonNullable<GetClaimsOptions["jwks"]>
@@ -22,12 +23,12 @@ const FETCH_TIMEOUT_MS = 3_000
 const FAILURE_BACKOFF_MS = 30 * 1000
 
 let cached: { jwks: CachedJwks; expiresAt: number } | null = null
-let inflight: Promise<CachedJwks | undefined> | null = null
+const getInflight = perRequest<{ fetch: Promise<CachedJwks | undefined> | null }>(() => ({ fetch: null }))
 let retryAfter = 0
 
 export function resetJwksCacheForTests(): void {
   cached = null
-  inflight = null
+  getInflight().fetch = null
   retryAfter = 0
 }
 
@@ -57,8 +58,9 @@ export async function getCachedJwks(now: number = Date.now()): Promise<CachedJwk
   const url = getSupabaseUrl()
   if (!url) return undefined
   if (now < retryAfter) return cached?.jwks
-  if (!inflight) {
-    inflight = fetchJwks(url, getSupabasePublishableKey())
+  const inflight = getInflight()
+  if (!inflight.fetch) {
+    inflight.fetch = fetchJwks(url, getSupabasePublishableKey())
       .then((jwks) => {
         if (jwks) {
           cached = { jwks, expiresAt: Date.now() + JWKS_TTL_MS }
@@ -68,8 +70,8 @@ export async function getCachedJwks(now: number = Date.now()): Promise<CachedJwk
         return jwks ?? cached?.jwks
       })
       .finally(() => {
-        inflight = null
+        inflight.fetch = null
       })
   }
-  return inflight
+  return inflight.fetch
 }

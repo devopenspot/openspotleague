@@ -1,6 +1,6 @@
 # Repository Guide
 
-OpenSpot is a single private Next.js 16 App Router app. It covers an interactive map of sports spots, community and editorial events (the "league"), multiplayer challenge games, and action sports TV. It runs on Node 22 (`.nvmrc`) and pnpm 12.16.1 (`packageManager` in `package.json`). It is not a monorepo: `pnpm-workspace.yaml` only holds pnpm policies.
+OpenSpot is a single private Next.js 16 App Router app that runs on vinext (Vite) and deploys to Cloudflare Workers. It covers an interactive map of sports spots, community and editorial events (the "league"), multiplayer challenge games, and action sports TV. It runs on Node 22 (`.nvmrc`) and pnpm 12.16.1 (`packageManager` in `package.json`). It is not a monorepo: `pnpm-workspace.yaml` only holds pnpm policies.
 
 Detailed explanations live in `docs/`. This file keeps the commands, the map, and the hard rules.
 
@@ -17,7 +17,7 @@ pnpm lint && pnpm typecheck && pnpm test
 - `pnpm test`: `vitest run` in `happy-dom` with globals. It only picks up `src/**/*.{test,spec}.{ts,tsx}`, aliases `@` to `src`, and stubs `server-only`.
   - Single file: `pnpm test src/path/file.test.ts`. By name: add `-t "name"`. Watch mode: `pnpm test:watch`.
 - `pnpm build` must stay DB-free. See [Hard rules](#hard-rules).
-- `pnpm dev`: `next dev`. Never point `.env.local` at the production pooler (see `docs/caching-and-egress.md`).
+- `pnpm dev`: `vite dev`. `pnpm start`: `vite preview` (runs the production build in `workerd`). `pnpm deploy`: deploy to Cloudflare. `pnpm deploy:response-store`: deploy the cache Worker. Never point `.env.local` at the production pooler (see `docs/caching-and-egress.md`).
 - Database: `pnpm db:apply` (migrations), `pnpm db:fresh:seed` (reset, migrate, and seed everything), `pnpm db:health`, `pnpm db:check-pool`, `pnpm egress:snapshot`. Full list in `docs/database.md`.
 
 ## Map
@@ -25,6 +25,8 @@ pnpm lint && pnpm typecheck && pnpm test
 | Path | Role |
 | --- | --- |
 | `src/proxy.ts` | Next 16 proxy (replaces `middleware.ts`). Handles request ids, per-IP rate limits, the seed cookie, Supabase session refresh, and security headers. |
+| `src/worker.ts` | Workers entry. Opens the request scope around vinext's handler. |
+| `cloudflare.config.ts` | Worker config. Every server env var must be declared here or the Worker never sees it. |
 | `src/app/**` | Pages and route handlers. They only call services. |
 | `src/lib/services/*` | Orchestration and the single writers. |
 | `src/lib/repositories/*` | Repository interfaces plus Drizzle implementations, resolved through `repositories/index.ts`. |
@@ -45,6 +47,12 @@ Architecture (`docs/architecture.md`):
 - Any new `RESTRICT` foreign key to `spots` must be handled in `detachSpotDependents`.
 - Import canonical paths. About 65 files in `src/lib`, `src/lib/services`, and `src/lib/repositories` are `@deprecated` one-line re-export shims, for example `@/lib/safe-fetch` → `@/lib/utils/safe-fetch` and `@/lib/supabase/storage` → `@/lib/storage`.
 - Storage errors are `UploadValidationError`. Check them with `instanceof`, never by matching the message.
+
+Workers runtime (`docs/architecture.md`):
+- Sockets and in-flight promises cannot cross requests. Module-level state holding either must go through `perRequest` (`src/lib/utils/request-scope.ts`). Plain data caches are fine.
+- The Worker reaches Postgres only through the `HYPERDRIVE` binding, because `workerd` rejects the Supabase pooler's private CA. Never give the Worker a pooler URL, and keep Hyperdrive query caching disabled.
+- `public/` is not on disk at runtime, and `sharp` and other native modules do not load.
+- `clientIp` must keep `cf-connecting-ip` first. On Workers the other forwarding headers are client-controlled.
 
 Caching and data (`docs/caching-and-egress.md`):
 - Never call `revalidateTag` inside a transaction. Use `queueTagRevalidate` and extend the existing `revalidate*Caches` / `revalidate*Paths` helpers.

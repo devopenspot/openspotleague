@@ -8,8 +8,10 @@ Copy `.env.example` to `.env.local`; the comments in that file document each var
 
 | Variable | Purpose |
 | --- | --- |
-| `SUPABASE_DATABASE_URL` | Transaction pooler (`:6543`). The runtime client prefers it, and Vercel requires it. |
-| `SUPABASE_DIRECT_URL` | Direct or session connection (`:5432`) for DDL, reset, and seeding. Never set it on Vercel. |
+| `HYPERDRIVE` binding | The Worker's only route to Postgres. Declared in `cloudflare.config.ts`, and never a URL in the Worker's env. |
+| `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` | Where the binding connects under `pnpm dev` and `pnpm start`. Include `sslmode=require`. |
+| `SUPABASE_DATABASE_URL` | Transaction pooler (`:6543`) for Node scripts. Never set it on the Worker. |
+| `SUPABASE_DIRECT_URL` | Direct or session connection (`:5432`) for DDL, reset, and seeding. Never set it on the Worker. |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser-safe auth keys. |
 | `SUPABASE_URL`, `SUPABASE_SECRET_KEY` | Server-only privileged access. |
 | `ADMIN_EMAILS` | Comma-separated emails granted `admin` during `pnpm db:seed`. |
@@ -17,7 +19,7 @@ Copy `.env.example` to `.env.local`; the comments in that file document each var
 
 How each tool picks its connection string:
 
-- **Runtime.** `getDatabaseUrl()` (`src/lib/config/env.ts`) tries `SUPABASE_DATABASE_URL` first, then `SUPABASE_DIRECT_URL`.
+- **Runtime.** `getDatabaseUrl()` (`src/lib/config/env.ts`) uses the Hyperdrive binding on Workers. On Node it tries `SUPABASE_DATABASE_URL` first, then `SUPABASE_DIRECT_URL`.
 - **`drizzle.config.ts`.** Tries `SUPABASE_DIRECT_URL`, then `DB_CONNECTION_STRING`, then `DATABASE_URL`. If it finds the misspelled `DB_CONNETION_STRING`, it throws.
 - **CLI scripts.** They import `src/db/load-env.ts`, which loads `.env.local` with `override: true` and then `.env` with `override: false`. As a result, `.env.local` wins even over variables exported in your shell.
 

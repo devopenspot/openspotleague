@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { resolveDatabaseUrl } from "./env"
 
 describe("database URL resolution", () => {
@@ -8,5 +8,20 @@ describe("database URL resolution", () => {
       "postgres://pooler",
     )
     expect(resolveDatabaseUrl(undefined, undefined)).toBeNull()
+  })
+
+  it("prefers the Hyperdrive binding over the configured URLs", async () => {
+    vi.resetModules()
+    vi.stubEnv("SUPABASE_DATABASE_URL", "postgres://pooler")
+    const { getDatabaseUrl, isUsingHyperdrive, setHyperdriveUrl } = await import("./env")
+
+    expect(getDatabaseUrl()).toBe("postgres://pooler")
+    expect(isUsingHyperdrive()).toBe(false)
+
+    setHyperdriveUrl("postgres://hyperdrive")
+
+    expect(getDatabaseUrl()).toBe("postgres://hyperdrive")
+    expect(isUsingHyperdrive()).toBe(true)
+    vi.unstubAllEnvs()
   })
 })

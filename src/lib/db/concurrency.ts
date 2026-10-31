@@ -1,7 +1,9 @@
-// These gates are deliberately process-local. A Vercel instance cannot
-// coordinate with another instance, but a gate still prevents one warm
-// instance from multiplying a small Supabase pool with an unbounded
-// Promise.all fan-out.
+// These gates are deliberately process-local, and request-local on Workers,
+// where a waiter cannot be resumed by another request. They cannot coordinate
+// across instances, but a gate still prevents one request or warm instance
+// from multiplying a small Supabase pool with an unbounded Promise.all fan-out.
+
+import { isRequestScoped, perRequest } from "@/lib/utils/request-scope"
 
 type AsyncFn = () => unknown
 
@@ -94,20 +96,29 @@ export class ConcurrencyGate {
 }
 
 interface GlobalConcurrencyState {
-  gate: ConcurrencyGate
+  gate?: ConcurrencyGate
 }
 
 const globalForConcurrency = globalThis as typeof globalThis & {
   __openspotDbConcurrency?: GlobalConcurrencyState
 }
 
+const requestConcurrencyState = perRequest<GlobalConcurrencyState>(() => ({}))
+
+function getConcurrencyState(): GlobalConcurrencyState {
+  if (isRequestScoped()) return requestConcurrencyState()
+  globalForConcurrency.__openspotDbConcurrency ??= {}
+  return globalForConcurrency.__openspotDbConcurrency
+}
+
 function getGlobalGate(limit: number): ConcurrencyGate {
-  const existing = globalForConcurrency.__openspotDbConcurrency?.gate
+  const state = getConcurrencyState()
+  const existing = state.gate
   if (existing && existing.snapshot().limit === limit) return existing
   if (existing) existing.drain()
 
   const gate = new ConcurrencyGate(limit)
-  globalForConcurrency.__openspotDbConcurrency = { gate }
+  state.gate = gate
   return gate
 }
 

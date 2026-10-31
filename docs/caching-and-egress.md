@@ -8,8 +8,8 @@
 
 | Directive | Scope | Use for |
 | --- | --- | --- |
-| `"use cache: remote"` | Vercel Runtime Cache, shared across instances | Public reads that many visitors share: map scope pages, directory, regions, spot types, cities, shuffle id lists, event and TV lists. Keep each entry under 2 MB and cache per page, never a whole country. |
-| `"use cache"` | In-memory LRU per instance | User-specific or low-fanout reads. On Vercel serverless it almost always misses. |
+| `"use cache: remote"` | Workers Response Store, shared across isolates | Public reads that many visitors share: map scope pages, directory, regions, spot types, cities, shuffle id lists, event and TV lists. Keep each entry under 2 MB and cache per page, never a whole country. |
+| `"use cache"` | Workers Response Store | User-specific or low-fanout reads. |
 | `"use cache: private"` | Per user | User-specific reads. |
 
 ### Profiles
@@ -35,7 +35,7 @@ Never call `revalidateTag` inside a transaction. If you do, a concurrent request
 
 ## Supabase egress budget
 
-- Runtime queries go through the Supavisor shared pooler (`:6543`, transaction mode). Its traffic counts against the 5 GB/month unified egress quota, about 160 MB/day.
+- Runtime queries go through Hyperdrive on Workers, and Node scripts use the Supavisor shared pooler (`:6543`, transaction mode). Pooler traffic counts against the 5 GB/month unified egress quota, about 160 MB/day.
 - **Reads take one round trip.** Use `withDbRead`, and never wrap a point read or read service in `db.transaction(...)`, because `BEGIN`/`COMMIT` adds two pooler round trips.
 - **Weather is client-side only.** Spot weather is fetched in the browser via `/api/weather`. A per-spot `"use cache"` in `src/lib/weather/weather-cached.ts` absorbs repeat requests. Do not bring back an all-spots weather fetch in SSR or layouts.
 - **Local development.** A `.env.local` pointing at `*.pooler.supabase.com` (on either `:6543` or `:5432`) is billed as production shared-pooler egress. `next dev` also invalidates `"use cache"` on every HMR save. Develop against a separate Supabase project or branch, or a local Supabase instance.

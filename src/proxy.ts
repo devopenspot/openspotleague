@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr"
 import { log } from "@/lib/utils/log"
 import { clientIp, isRateLimited, rateLimitedResponse, rateLimitKey } from "@/lib/api/rate-limit"
 import { securityHeaders, cspValue } from "@/lib/security/headers"
+import { perRequest } from "@/lib/utils/request-scope"
 import { getCachedJwks } from "@/lib/supabase/jwks"
 
 export function isTvEmbedPath(pathname: string): boolean {
@@ -40,7 +41,9 @@ type SessionRefreshOutcome = {
   cookiesToSet: readonly RefreshedCookie[]
 }
 
-const inflightSessionRefreshes = new Map<string, Promise<SessionRefreshOutcome>>()
+const getInflightSessionRefreshes = perRequest(
+  () => new Map<string, Promise<SessionRefreshOutcome>>(),
+)
 
 /** Deterministic fingerprint of incoming Supabase auth-token cookies for in-flight refresh coalescing. */
 export function sessionCookieFingerprint(
@@ -253,7 +256,7 @@ export async function proxy(request: NextRequest) {
     // tab-wake request burst does not race single-use refresh token rotation.
     const fingerprint = sessionCookieFingerprint(initialCookies)
     const existingRefresh = fingerprint
-      ? inflightSessionRefreshes.get(fingerprint)
+      ? getInflightSessionRefreshes().get(fingerprint)
       : undefined
 
     let userError: { status?: number; message?: string } | null
@@ -280,13 +283,13 @@ export async function proxy(request: NextRequest) {
           }
         } finally {
           if (fingerprint) {
-            inflightSessionRefreshes.delete(fingerprint)
+            getInflightSessionRefreshes().delete(fingerprint)
           }
         }
       })()
 
       if (fingerprint) {
-        inflightSessionRefreshes.set(fingerprint, refreshPromise)
+        getInflightSessionRefreshes().set(fingerprint, refreshPromise)
       }
       const outcome = await refreshPromise
       userError = outcome.userError
