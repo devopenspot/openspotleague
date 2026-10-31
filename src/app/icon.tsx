@@ -10,8 +10,8 @@ export const contentType = "image/png";
 export const runtime = "nodejs";
 export const dynamic = "force-static";
 
-export default function Icon() {
-  const faviconDataUrl = loadPublicImageAsDataUrl("/favicon.png");
+export default async function Icon() {
+  const faviconDataUrl = await loadPublicImageAsDataUrl("/favicon.png");
 
   return new ImageResponse(
     <div

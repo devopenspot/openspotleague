@@ -23,6 +23,7 @@ export function getPostgresOptions(
     connectTimeoutSeconds: number;
     idleTimeoutSeconds: number;
     maxLifetimeSeconds: number;
+    hyperdrive: boolean;
   }> = {},
 ): PostgresOptions<Record<string, never>> {
   const max =
@@ -48,12 +49,15 @@ export function getPostgresOptions(
     overrides.maxLifetimeSeconds ?? RUNTIME_MAX_LIFETIME_SECONDS;
 
   return {
-    ssl: "require",
+    // Hyperdrive's connection string decides TLS for the hop to its proxy.
+    ...(overrides.hyperdrive ? {} : { ssl: "require" }),
     max,
     connect_timeout: connectTimeoutSeconds,
     idle_timeout: idleTimeoutSeconds,
     max_lifetime: jitteredLifetime(maxLifetimeSeconds),
-    prepare: false,
+    // Cloudflare warns that `prepare: false` can hang through Hyperdrive.
+    // `fetch_types` stays on either way: the schema has `text[]` columns.
+    prepare: overrides.hyperdrive === true,
     connection: {
       application_name: purpose === "runtime" ? "openspot" : `openspot-${purpose}`,
       statement_timeout: statementTimeoutMs,

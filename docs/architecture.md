@@ -74,6 +74,17 @@ Pool settings come from environment variables, validated in `src/lib/config/env.
 | `DB_POOL_CHECKOUT_TIMEOUT_MS` | 3000 |
 | `DB_POOL_CHECKOUT_MAX_ATTEMPTS` | 3 |
 
+### On Cloudflare Workers
+
+Workers ties sockets and promises to the request that created them, so the Node model of one shared pool fails there: roughly every other request hits a dead socket.
+
+- `src/worker.ts` opens a request scope (`src/lib/utils/request-scope.ts`), and `perRequest` gives each request its own client, concurrency gate, and in-flight maps. `DB_POOL_MAX` is therefore per request, not per instance. Workers allows six open connections per invocation.
+- `getDbClient()` returns a facade on Workers, because repositories are cached singletons that keep their `db` reference. The facade resolves the current request's connection on each access.
+- Cache regeneration enters through vinext's `ResponseStoreRevalidator`, which `src/worker.ts` cannot wrap: the build re-exports the original class over any override. `withScopedDbConcurrency` gives each DB operation there its own connection instead.
+- The Worker reaches Postgres only through the `HYPERDRIVE` binding. Supabase's pooler uses a private CA, `workerd` rejects it (`TLS handshake failed: invalid peer certificate`), and postgres.js cannot skip that check on Workers. Direct connections from `pnpm dev` fail the same way, and layouts then render empty fallbacks with a 200.
+- Local Hyperdrive runs on Node and connects without verifying the certificate, so it has no pooling or query cache. Production Hyperdrive must keep query caching disabled: it would otherwise serve reads up to 60 seconds old, which breaks `expectedVersion` checks and polling. The app's own cache layers handle caching.
+- Node scripts are unaffected and keep using the pooler URLs.
+
 ## Deletion lifecycle
 
 - Deletes of spots, events, and TV entries go through `deleteWithOccAudit` (`src/lib/repositories/core/occ-delete.ts`). It enforces `expectedDate` (If-Match) against `updatedAt` and writes to `content_audit_log`.

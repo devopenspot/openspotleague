@@ -1,5 +1,6 @@
 import { env } from "@/lib/config/env"
 import { log } from "@/lib/utils/log"
+import { perRequest } from "@/lib/utils/request-scope"
 import {
 	acquireOpenWeatherToken,
 	releaseOpenWeatherToken,
@@ -21,12 +22,12 @@ const FETCH_TIMEOUT_MS = 5000
 // In-process single-flight dedupe. Multiple code paths (root layout,
 // map layout, per-spot detail) ask for the same `lat,lon,lang` tuple
 // inside a single render. Coalescing concurrent calls into one upstream
-// fetch is a free win inside a single Vercel instance — the per-spot
+// fetch is a free win inside a single request — the per-spot
 // `"use cache"` boundary already prevents cross-render dedup, so this
 // map only ever holds promises that are currently in flight.
 // `Map.delete` runs in the `finally` block, so the next caller after
 // resolution gets a fresh fetch.
-const inflight = new Map<string, Promise<unknown>>()
+const getInflight = perRequest(() => new Map<string, Promise<unknown>>())
 
 function inflightKey(
 	endpoint: string,
@@ -126,6 +127,7 @@ function singleFlight<T>(endpoint: string, params: {
 		params.longitude,
 		params.language,
 	)
+	const inflight = getInflight()
 	const existing = inflight.get(key) as Promise<T> | undefined
 	if (existing) return existing
 	const promise = fn().finally(() => {

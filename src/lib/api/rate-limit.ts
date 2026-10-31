@@ -14,7 +14,11 @@ const MAX_BUCKETS = 10_000
 const hits = new Map<string, number[]>()
 
 export function clientIp(request: Request): string {
-  // Trust Vercel headers first — x-vercel-forwarded-for is set by Vercel edge.
+  // Cloudflare sets this on every request and overwrites client values. It must
+  // come first: on Workers the other headers below are client-controlled.
+  const cloudflareIp = request.headers.get("cf-connecting-ip")?.trim()
+  if (cloudflareIp) return cloudflareIp
+  // x-vercel-forwarded-for is set by Vercel edge.
   const vercelForwarded = request.headers.get("x-vercel-forwarded-for")
   if (vercelForwarded) {
     const first = vercelForwarded.split(",")[0]?.trim()

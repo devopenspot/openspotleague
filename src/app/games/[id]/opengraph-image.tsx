@@ -22,7 +22,7 @@ export default async function Image({
     "getGameOgPreviewById(og-image)",
   );
 
-  const leagueDataUrl = loadPublicImageAsDataUrl("/opengraph.png");
+  const leagueDataUrl = await loadPublicImageAsDataUrl("/opengraph.png");
 
   if (!preview) {
     return new ImageResponse(
@@ -61,7 +61,7 @@ export default async function Image({
 
   const isChallenge = preview.mode === "challenge";
   const baseImagePath = isChallenge ? "/challenges.jpg" : "/trainings.jpg";
-  const baseDataUrl = loadPublicImageAsDataUrl(baseImagePath) ?? leagueDataUrl;
+  const baseDataUrl = await loadPublicImageAsDataUrl(baseImagePath) ?? leagueDataUrl;
 
   return new ImageResponse(
     <div

@@ -25,7 +25,7 @@ export default async function Image({
     null,
     "findSpotById(og-image)",
   );
-  const leagueDataUrl = loadPublicImageAsDataUrl(DEFAULT_OG_IMAGE_PATH);
+  const leagueDataUrl = await loadPublicImageAsDataUrl(DEFAULT_OG_IMAGE_PATH);
 
   // Server-side fetch so `next/og` (satori) never depends on the
   // renderer fetching a remote R2/Supabase URL itself: slow, redirecting,
