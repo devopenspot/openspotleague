@@ -31,7 +31,7 @@
     "db:fresh:seed": "pnpm db:reset && pnpm db:apply && pnpm db:seed && pnpm db:seed-tv && pnpm db:seed-tricks",
     "db:migrate-spots": "tsx scripts/migrate-spots.ts",
     "db:curate-cities": "tsx scripts/curate-cities.ts",
-    "deploy": "vinext-cloudflare deploy --warm-cache",
+    "deploy": "vinext-cloudflare deploy",
     "deploy:secrets": "vite build && tsx scripts/deploy-with-secrets.ts",
     "deploy:response-store": "cf deploy --prebuilt --mode production --worker open-spot-response-store"
   },

@@ -597,7 +597,7 @@ describe("TvGrid multi-category compatibility", () => {
 });
 
 describe("TvGrid searching and filtering", () => {
-  it("renders search bar with search input, category select, and year select", () => {
+  it("renders search bar with search input and category select", () => {
     renderGrid([row([card("v1", "Sample", "skateboard")])], "all");
 
     expect(
@@ -607,8 +607,8 @@ describe("TvGrid searching and filtering", () => {
       screen.getByRole("combobox", { name: /filter by category/i }),
     ).toBeDefined();
     expect(
-      screen.getByRole("combobox", { name: /filter by year/i }),
-    ).toBeDefined();
+      screen.queryByRole("combobox", { name: /filter by year/i }),
+    ).toBeNull();
   });
 
   it("transitions to search results grid when search is active with initial results", () => {

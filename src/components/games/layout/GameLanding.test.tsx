@@ -103,12 +103,12 @@ describe("GameLanding", () => {
     const user = userEvent.setup()
     render(<GameLanding signedIn />)
 
-    const trigger = screen.getByRole("button", { name: "Your record" })
+    const trigger = screen.getByRole("button", { name: "record" })
     expect(trigger).toHaveClass("inline-flex")
     expect(trigger).not.toHaveClass("lg:hidden")
     await user.click(trigger)
 
-    const dialog = await screen.findByRole("dialog", { name: "Your record" })
+    const dialog = await screen.findByRole("dialog", { name: "record" })
     expect(trigger).toHaveAttribute("aria-expanded", "true")
     expect(
       within(dialog).getByRole("button", { name: "View your matches" }),
@@ -117,7 +117,7 @@ describe("GameLanding", () => {
     await user.keyboard("{Escape}")
 
     await waitFor(() =>
-      expect(screen.queryByRole("dialog", { name: "Your record" })).not.toBeInTheDocument(),
+      expect(screen.queryByRole("dialog", { name: "record" })).not.toBeInTheDocument(),
     )
     expect(trigger).toHaveFocus()
   })
