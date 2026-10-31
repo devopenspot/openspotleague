@@ -21,7 +21,11 @@ import {
   stageRoundResult,
 } from "@/lib/games/challenge-board-model";
 import { ChallengeRiderTracksContent } from "@/components/games/board/ChallengeRiderTracks";
-import { ChallengeRiderTracksSheet } from "@/components/games/board/ChallengeRiderTracksSheet";
+import {
+  PendingResultBar,
+  pendingResultStatus,
+} from "@/components/games/board/PendingResultBar";
+import type { PendingResult } from "@/components/games/hooks/usePendingResult";
 
 type InlineResultAction = {
   label: string;
@@ -36,6 +40,9 @@ export function ChallengeGameBoard({
   alternativeTricksRemaining = 0,
   onNextTrick,
   busy = false,
+  pendingResult = null,
+  onUndoResult,
+  onResendResult,
 }: {
   game: GameState;
   variant?: "default" | "panel";
@@ -44,6 +51,9 @@ export function ChallengeGameBoard({
   alternativeTricksRemaining?: number;
   onNextTrick?: () => void;
   busy?: boolean;
+  pendingResult?: PendingResult | null;
+  onUndoResult?: () => void;
+  onResendResult?: () => void;
 }) {
   const stages = buildChallengeBoardStages(game);
   const currentStageId = game.currentRound?.id ?? null;
@@ -107,6 +117,9 @@ export function ChallengeGameBoard({
                       alternativeTricksRemaining={alternativeTricksRemaining}
                       onNextTrick={onNextTrick}
                       busy={busy}
+                      pendingResult={pendingResult}
+                      onUndoResult={onUndoResult}
+                      onResendResult={onResendResult}
                     />
                   ))
               )}
@@ -130,7 +143,6 @@ export function ChallengeGameBoard({
           ) : null}
         </div>
       </section>
-      {showRiderTracks ? <ChallengeRiderTracksSheet game={game} /> : null}
     </>
   );
 }
@@ -141,15 +153,15 @@ function EmptyStageRow() {
       <StageNode state="future" />
       <div className="min-w-0">
         <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <p className="shrink-0 rounded-full bg-surface-container-high px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-secondary">
+          <p className="shrink-0 rounded-full bg-surface-container-high px-2 py-0.5 font-display text-sm font-bold uppercase tracking-[0.05em] text-secondary md:text-[11px]">
             Get Ready
           </p>
           <h3 className="min-w-0 flex-1 font-display text-[16px] font-bold leading-[1.3] text-on-surface sm:text-[18px] md:text-xl">
             Your First Trick Drops When You Start
           </h3>
         </div>
-        <p className="mt-1.5 text-[13px] leading-5 text-on-surface-variant">
-          Invite your crew and drop in — your line starts here.
+        <p className="mt-1.5 text-sm leading-5 text-on-surface-variant">
+          Invite a rider and drop in — your line starts here.
         </p>
       </div>
     </li>
@@ -165,6 +177,9 @@ function ChallengeStageRow({
   alternativeTricksRemaining,
   onNextTrick,
   busy,
+  pendingResult,
+  onUndoResult,
+  onResendResult,
 }: {
   view: ChallengeBoardStage;
   game: GameState;
@@ -174,6 +189,9 @@ function ChallengeStageRow({
   alternativeTricksRemaining: number;
   onNextTrick?: () => void;
   busy: boolean;
+  pendingResult: PendingResult | null;
+  onUndoResult?: () => void;
+  onResendResult?: () => void;
 }) {
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const stage = view.stage;
@@ -202,7 +220,7 @@ function ChallengeStageRow({
       <div className="min-w-0">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            <p className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-secondary">
+            <p className="inline-flex items-center rounded-full bg-surface-container-high px-2 py-0.5 font-display text-sm font-bold uppercase tracking-[0.05em] text-secondary md:text-[11px]">
               Round {stage.sequence}
             </p>
             <StageNode
@@ -223,7 +241,7 @@ function ChallengeStageRow({
                 aria-expanded={instructionsOpen}
                 aria-controls={instructionsContentId}
                 aria-haspopup="dialog"
-                className="flex h-6 w-6  shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary transition-[background-color,border-color,color,transform] hover:border-outline hover:bg-surface-container hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+                className="hidden h-6 w-6 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-secondary transition-[background-color,border-color,color,transform] hover:border-outline hover:bg-surface-container hover:text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px md:flex"
               >
                 <CircleHelp
                   size={14}
@@ -233,7 +251,7 @@ function ChallengeStageRow({
               </button>
             ) : null}
             {game.mode === "challenge" && score > 0 ? (
-              <span className="inline-flex items-center rounded-full bg-on-surface px-2 py-0.5 font-display text-[11px] font-bold text-surface">
+              <span className="inline-flex items-center rounded-full bg-on-surface px-2 py-0.5 font-display text-sm font-bold text-surface md:text-[11px]">
                 +{score} pts
               </span>
             ) : null}
@@ -253,27 +271,39 @@ function ChallengeStageRow({
           ) : null}
         </div>
 
-        {isCurrent && resultAction ? (
+        {isCurrent && pendingResult ? (
+          <div className="mt-2.5 hidden items-center gap-3 md:flex">
+            <p role="status" className="font-display text-sm font-bold">
+              {pendingResultStatus(pendingResult)}
+            </p>
+            <PendingResultBar
+              pending={pendingResult}
+              size="inline"
+              onUndo={() => onUndoResult?.()}
+              onResend={() => onResendResult?.()}
+            />
+          </div>
+        ) : isCurrent && resultAction ? (
           <div
-            className="mt-2 flex items-stretch gap-1.5 sm:mt-2.5 sm:flex-initial sm:items-center"
+            className="mt-2.5 hidden items-center gap-2 md:flex"
             aria-label={resultAction.label}
           >
             <button
               type="button"
               disabled={busy}
               onClick={() => resultAction.onSelect("landed")}
-              className="inline-flex sm:flex-initial min-h-8 items-center justify-center gap-1 rounded-full border border-primary bg-primary px-2 sm:px-2.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_1px_0_rgba(0,0,0,0.1)] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-full border border-primary bg-primary px-5 font-display text-sm font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_1px_0_rgba(0,0,0,0.1)] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
-              <Check size={12} strokeWidth={2.25} aria-hidden="true" />
+              <Check size={18} strokeWidth={2.5} aria-hidden="true" />
               Landed
             </button>
             <button
               type="button"
               disabled={busy}
               onClick={() => resultAction.onSelect("failed")}
-              className="inline-flex sm:flex-initial min-h-8 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+              className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-full border-2 border-on-surface bg-surface-container-lowest px-5 font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
-              <X size={12} strokeWidth={2.25} aria-hidden="true" />
+              <X size={18} strokeWidth={2.5} aria-hidden="true" />
               Failed
             </button>
             {canAdvanceToNextTrick && onNextTrick ? (
@@ -281,12 +311,12 @@ function ChallengeStageRow({
                 type="button"
                 onClick={onNextTrick}
                 disabled={busy || alternativeTricksRemaining === 0}
-                className="truncate inline-flex sm:flex-initial min-h-8 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface-container-lowest px-2 sm:px-2.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-12 items-center justify-center gap-1.5 truncate rounded-full border border-outline-variant bg-surface-container-lowest px-5 font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <RotateCcw size={12} strokeWidth={2.25} aria-hidden="true" />
+                <RotateCcw size={18} strokeWidth={2.5} aria-hidden="true" />
                 {alternativeTricksRemaining > 0
-                  ? `Next · ${alternativeTricksRemaining}`
-                  : "No more"}
+                  ? `Skip Trick (${alternativeTricksRemaining} Left)`
+                  : "No Skips Left"}
               </button>
             ) : null}
           </div>
@@ -297,7 +327,7 @@ function ChallengeStageRow({
             className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-1.5"
             aria-label={`Stage ${stage.sequence} rider results`}
           >
-            <span className="mr-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
+            <span className="mr-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
               {game.trainingVariant === "solo" ? "Result" : "Responses"}
             </span>
             {stage.attempts.map((attempt) => {
@@ -307,7 +337,7 @@ function ChallengeStageRow({
               return (
                 <span
                   key={attempt.playerId}
-                  className={`rounded-[6px] border px-1.5 py-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em] ${attempt.result === "landed" ? "border-on-surface bg-on-surface text-surface" : "border-outline-variant bg-surface-container-high text-on-surface-variant"}`}
+                  className={`rounded-[6px] border px-1.5 py-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em] ${attempt.result === "landed" ? "border-on-surface bg-on-surface text-surface" : "border-outline-variant bg-surface-container-high text-on-surface-variant"}`}
                 >
                   {player?.displayName ?? "Rider"} / {attempt.result}
                 </span>
@@ -321,7 +351,7 @@ function ChallengeStageRow({
             className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-1.5"
             aria-label={`Stage ${stage.sequence} points posted`}
           >
-            <span className="mr-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
+            <span className="mr-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
               Points
             </span>
             {stage.scores.map((stageScore) => {
@@ -331,7 +361,7 @@ function ChallengeStageRow({
               return (
                 <span
                   key={stageScore.playerId}
-                  className="rounded-[6px] border border-on-surface bg-surface-container-high px-1.5 py-0.5 font-display text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.05em]"
+                  className="rounded-[6px] border border-on-surface bg-surface-container-high px-1.5 py-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em]"
                 >
                   {player?.displayName ?? "Rider"} / +{stageScore.points} pts
                 </span>

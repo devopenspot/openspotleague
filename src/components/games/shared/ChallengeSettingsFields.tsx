@@ -12,14 +12,14 @@ const LEVELS: { value: TrickLevel; label: string }[] = [
   { value: 5, label: "Master" },
 ];
 
-// Unified pill tokens — DESIGN.md monochrome, radius-full, label-sm
-// Compact on mobile to keep 3 sections in viewport: 11px/1.2 then 12px on sm, reduced padding, consistent border.
+// Unified pill tokens — DESIGN.md monochrome, radius-full. Outdoor session sizes:
+// 48px tall, 14px labels, opened from the live game on a phone.
 const PILL_BASE =
-  "inline-flex items-center justify-center rounded-full border font-display text-[11px] font-bold uppercase tracking-[0.05em] leading-none transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed px-2.5 py-1 sm:px-3 sm:py-1.5 sm:text-xs";
+  "inline-flex min-h-12 items-center justify-center rounded-full border-2 px-4 font-display text-sm font-bold uppercase tracking-[0.05em] leading-none transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed";
 const PILL_ACTIVE = "border-on-surface bg-on-surface text-surface";
-const PILL_IDLE = "border-outline-variant bg-surface text-on-surface hover:bg-surface-container-low";
+const PILL_IDLE = "border-on-surface bg-surface text-on-surface hover:bg-surface-container-low";
 const PILL_DISABLED =
-  "border-outline-variant bg-surface-container-high text-on-surface-variant opacity-50";
+  "border-outline bg-surface-container-high text-on-surface-variant";
 
 function pillClasses(active: boolean, disabled?: boolean) {
   if (active) return `${PILL_BASE} ${PILL_ACTIVE}`;
@@ -167,7 +167,7 @@ export function ChallengeSettingsFields({
   return (
     <div className="space-y-5 sm:space-y-6">
       <fieldset>
-        <legend className="font-display text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary sm:text-xs">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.05em] text-secondary">
           Where To Ride
         </legend>
         <div
@@ -195,7 +195,7 @@ export function ChallengeSettingsFields({
       </fieldset>
 
       <fieldset>
-        <legend className="font-display text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary sm:text-xs">
+        <legend className="font-display text-sm font-semibold uppercase tracking-[0.05em] text-secondary">
           How Hard
         </legend>
         <div
@@ -236,13 +236,13 @@ export function ChallengeSettingsFields({
 
       {disciplineSlug ? (
         <fieldset>
-          <legend className="font-display text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary sm:text-xs">
+          <legend className="font-display text-sm font-semibold uppercase tracking-[0.05em] text-secondary">
             Categories
-            <span className="ml-1.5 hidden font-sans text-[11px] font-medium normal-case tracking-normal text-on-surface-variant sm:inline">
+            <span className="ml-1.5 hidden font-sans text-sm font-medium normal-case tracking-normal text-on-surface-variant sm:inline">
               · level ∧ spot ∧ categories
             </span>
           </legend>
-          <p className="mt-1 text-[11px] leading-4 text-on-surface-variant sm:mt-1.5 sm:text-xs sm:leading-5">
+          <p className="mt-1.5 text-sm leading-5 text-on-surface-variant">
             <span className="sm:hidden">Flexible: solo instant, multi needs consensus.</span>
             <span className="hidden sm:inline">
               Same panel — picking categories updates the current trick immediately when flexible (solo instant, multi needs all active to accept).
@@ -250,7 +250,7 @@ export function ChallengeSettingsFields({
           </p>
           {pendingProposal ? (
             <div className="mt-2 rounded-[12px] border border-primary bg-surface-container-low px-3 py-2.5 sm:mt-3 sm:rounded-[16px] sm:px-3 sm:py-3">
-              <p className="font-display text-[10px] font-bold uppercase tracking-[0.05em] text-primary">
+              <p className="font-display text-sm font-bold uppercase tracking-[0.05em] text-primary">
                 Proposal:{" "}
                 {pendingProposal.categories.length === 0
                   ? "All"
@@ -262,7 +262,7 @@ export function ChallengeSettingsFields({
                   return (
                     <span
                       key={v.playerId}
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${v.vote === "accepted" ? "bg-on-surface text-surface" : v.vote === "rejected" ? "bg-error-container text-on-error-container" : "bg-surface-container-high text-secondary"}`}
+                      className={`rounded-full px-2.5 py-1 text-sm font-bold uppercase ${v.vote === "accepted" ? "bg-on-surface text-surface" : v.vote === "rejected" ? "bg-error-container text-on-error-container" : "bg-surface-container-high text-secondary"}`}
                     >
                       {p?.displayName ?? v.playerId.slice(0, 4)}: {v.vote}
                     </span>
@@ -280,7 +280,7 @@ export function ChallengeSettingsFields({
                         type="button"
                         disabled={busy}
                         onClick={() => onCategoriesVote(true)}
-                        className="rounded-full bg-primary px-4 py-1.5 text-[11px] font-bold uppercase text-on-primary disabled:opacity-50 sm:text-xs"
+                        className="min-h-12 rounded-full bg-primary px-5 text-sm font-bold uppercase text-on-primary disabled:cursor-wait disabled:bg-surface-container-high disabled:text-on-surface"
                       >
                         Accept
                       </button>
@@ -288,7 +288,7 @@ export function ChallengeSettingsFields({
                         type="button"
                         disabled={busy}
                         onClick={() => onCategoriesVote(false)}
-                        className="rounded-full border border-outline-variant bg-surface px-4 py-1.5 text-[11px] font-bold uppercase text-on-surface transition-colors hover:bg-surface-container disabled:opacity-50 sm:text-xs"
+                        className="min-h-12 rounded-full border-2 border-on-surface bg-surface px-5 text-sm font-bold uppercase text-on-surface transition-colors hover:bg-surface-container disabled:cursor-wait disabled:border-outline"
                       >
                         Reject
                       </button>
@@ -296,7 +296,7 @@ export function ChallengeSettingsFields({
                   );
                 }
                 return (
-                  <p className="mt-1.5 text-[11px] text-on-surface-variant sm:mt-2 sm:text-xs">
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     {my?.vote === "accepted"
                       ? "You accepted — waiting for others."
                       : my?.vote === "rejected"
@@ -358,12 +358,12 @@ export function ChallengeSettingsFields({
                     type="button"
                     disabled={busy || !isCategoriesDirty}
                     onClick={() => onCategoriesPropose(draftCategories)}
-                    className="rounded-full bg-primary px-3.5 py-1.5 text-[11px] font-bold uppercase text-on-primary transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4 sm:py-1.5 sm:text-xs"
+                    className="min-h-12 rounded-full bg-primary px-5 text-sm font-bold uppercase text-on-primary transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4 sm:py-1.5 sm:text-xs"
                     aria-label="Apply categories"
                   >
                     Apply
                   </button>
-                  <span className="text-[11px] leading-4 text-on-surface-variant sm:text-xs">
+                  <span className="text-sm leading-5 text-on-surface-variant">
                     {isCategoriesDirty ? (
                       <>
                         <span className="hidden sm:inline">
@@ -389,7 +389,7 @@ export function ChallengeSettingsFields({
                           [...(selectedCategories ?? [])].map((c) => c.toLowerCase()),
                         )
                       }
-                      className="ml-auto text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary underline decoration-outline-variant underline-offset-4 hover:text-on-surface sm:text-xs"
+                      className="ml-auto inline-flex min-h-12 items-center text-sm font-semibold uppercase tracking-[0.05em] text-secondary underline decoration-outline-variant underline-offset-4 hover:text-on-surface sm:text-xs"
                     >
                       Reset
                     </button>

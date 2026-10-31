@@ -11,7 +11,7 @@ export function PanelShell({
 }) {
   return (
     <div
-      className={`panel-chassis relative overflow-hidden rounded-[20px] border-[1.5px] border-on-surface bg-surface-container-high p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_24px_rgba(18,18,18,0.08)] sm:rounded-[24px] sm:p-2 ${className}`}
+      className={`panel-chassis relative overflow-hidden rounded-[16px] border-[1.5px] border-on-surface bg-surface-container-high shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_24px_rgba(18,18,18,0.08)] md:rounded-[24px] md:p-2 ${className}`}
     >
       {/* top screws */}
       <div className="pointer-events-none absolute left-3 top-3 hidden h-1.5 w-1.5 rounded-full border border-on-surface/20 bg-surface-container-lowest sm:block" />
@@ -20,7 +20,7 @@ export function PanelShell({
       <div className="pointer-events-none absolute bottom-3 right-3 hidden h-1.5 w-1.5 rounded-full border border-on-surface/20 bg-surface-container-lowest sm:block" />
 
       {/* inner deck */}
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:rounded-[18px]">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-container-lowest shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] md:rounded-[18px] md:border md:border-outline-variant">
         {children}
       </div>
     </div>
@@ -39,7 +39,7 @@ export function PanelScreenBezel({
   const isFlex = className.includes("flex");
   return (
     <div
-      className={`panel-screen relative overflow-hidden rounded-[14px] border-[2px] border-on-surface bg-on-surface p-1.5 sm:p-2 ${className}`}
+      className={`panel-screen relative overflow-hidden rounded-[14px] bg-on-surface md:border-[2px] md:border-on-surface md:p-2 ${label ? "p-1.5" : ""} ${className}`}
     >
       {label ? (
         <div className="mb-1.5 flex shrink-0 items-center justify-between px-1 sm:mb-2">

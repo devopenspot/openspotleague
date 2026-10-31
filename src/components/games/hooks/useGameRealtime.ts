@@ -66,6 +66,10 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
     setError(null);
   }, []);
 
+  const startSubscriptionRef = useRef<((initial: GameState) => void) | null>(
+    null,
+  );
+
   const refreshGameState = useCallback(async () => {
     if (controllerRef.current) {
       try {
@@ -79,13 +83,40 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
       authenticated: !guestRef.current,
     });
     if (fresh) applyGameState(fresh);
-    if (latestGameRef.current) return latestGameRef.current;
+    if (latestGameRef.current) {
+      // A retry after a failed first load still has to go live.
+      startSubscriptionRef.current?.(latestGameRef.current);
+      return latestGameRef.current;
+    }
     throw new Error("Game state could not be loaded");
   }, [applyGameState, id, shareCode]);
 
   useEffect(() => {
     let cancelled = false;
     let initialInFlight = false;
+
+    const startSubscription = (initial: GameState) => {
+      if (cancelled || controllerRef.current) return;
+      try {
+        controllerRef.current = subscribeToGame({
+          gameId: id,
+          initialState: initial,
+          fetchState: async () =>
+            (await fetchGameState(id, shareCode, latestGameRef.current?.version, { authenticated: !guestRef.current })) ??
+            initial,
+          onState: (state) => {
+            if (!cancelled) applyGameState(state);
+          },
+          onConnectionChange: (status) => {
+            if (!cancelled) setConnection(status);
+          },
+          useChannel: !guestRef.current,
+        });
+      } catch {
+        if (!cancelled) setConnection("reconnecting");
+      }
+    };
+    startSubscriptionRef.current = startSubscription;
 
     const loadInitial = () => {
       if (cancelled || initialInFlight || controllerRef.current) return;
@@ -95,24 +126,7 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
           if (cancelled) return;
           if (!initial) throw new Error("Game state could not be loaded");
           applyGameState(initial);
-          try {
-            controllerRef.current = subscribeToGame({
-              gameId: id,
-              initialState: initial,
-              fetchState: async () =>
-                (await fetchGameState(id, shareCode, latestGameRef.current?.version, { authenticated: !guestRef.current })) ??
-                initial,
-              onState: (state) => {
-                if (!cancelled) applyGameState(state);
-              },
-              onConnectionChange: (status) => {
-                if (!cancelled) setConnection(status);
-              },
-              useChannel: !guestRef.current,
-            });
-          } catch {
-            if (!cancelled) setConnection("reconnecting");
-          }
+          startSubscription(initial);
         })
         .catch((reason) => {
           if (cancelled) return;
@@ -147,6 +161,7 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
       if (typeof document !== "undefined") {
         document.removeEventListener("visibilitychange", onVisibilityChange);
       }
+      startSubscriptionRef.current = null;
       controllerRef.current?.stop();
       controllerRef.current = null;
     };

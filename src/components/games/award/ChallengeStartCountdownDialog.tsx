@@ -7,6 +7,7 @@ import { Countdown } from "@/components/ui/Countdown";
 import { ShareActions } from "@/components/ui/ShareActions";
 import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
 import type { GameState } from "@/lib/schemas/game";
+import { lobbyReadiness } from "@/components/games/board/sheet-state";
 import { GuestJoinForm } from "@/components/games/shared/GuestJoinForm";
 
 const DIALOG_ID = "challenge-start-countdown-dialog";
@@ -43,24 +44,7 @@ export function ChallengeStartCountdownDialog({
 }) {
   if (!game.scheduledStartAt) return null;
 
-  const activeRiderCount = game.players.filter(
-    (player) => player.status === "active",
-  ).length;
-  const verifiedRiderCount =
-    game.currentRound?.verifications.filter(
-      (verification) =>
-        verification.status === "verified" &&
-        game.players.some(
-          (player) =>
-            player.id === verification.playerId && player.status === "active",
-        ),
-    ).length ?? 0;
-  const readinessMessage =
-    activeRiderCount < 2
-      ? "Need One More Rider To Drop In!"
-      : verifiedRiderCount < activeRiderCount
-        ? "Everyone Needs To Check In At The Spot Before The Host Can Drop In."
-        : "Crew Is Ready — Host Can Drop In Anytime!";
+  const readinessMessage = lobbyReadiness(game);
   const showGuestJoinForm = !authenticated && canJoin;
 
   return (
@@ -101,8 +85,8 @@ export function ChallengeStartCountdownDialog({
           id={DESCRIPTION_ID}
           className="mt-3 max-w-md text-sm leading-5 text-surface-dim"
         >
-          Everyone Sees The Same Countdown. Host Can Drop In Early Once The
-          Crew Is Checked In.
+          Everyone Sees The Same Countdown. Host Can Drop In Early Once Both
+          Riders Are Checked In.
         </p>
       </div>
 
@@ -169,10 +153,10 @@ export function ChallengeStartCountdownDialog({
                 id={SHARE_TITLE_ID}
                 className="font-display text-xs font-bold uppercase tracking-[0.06em] text-secondary"
               >
-                Invite Your Crew
+                Invite A Rider
               </h3>
               <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                Share The Crew Code, Link, Or QR.
+                Share The Code, Link, Or QR.
               </p>
             </div>
             <code className="shrink-0 font-display text-xs font-bold tracking-[0.12em] text-on-surface">

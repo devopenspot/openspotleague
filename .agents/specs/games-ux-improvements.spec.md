@@ -27,7 +27,7 @@ In both cases the discipline is `null`:
 
 Files: `src/components/games/create/GameCreateForm.tsx`, `form-parts.tsx`, `trick-catalog-filters.ts`, `src/components/games/layout/GameLanding.tsx`.
 
-- [ ] **1. [P0] Always offer a sport picker when no sport is resolved**
+- [x] **1. [P0] Always offer a sport picker when no sport is resolved**
   - Render the sport chips whenever `resolveGameDiscipline(...)` is `null`, which covers both `null` and `"all"`, not only `"all"`.
   - When no sport is selected:
     - Replace the empty spot-type message with "Pick a sport above to load spots and levels."
@@ -45,7 +45,7 @@ Files: `src/components/games/create/GameCreateForm.tsx`, `form-parts.tsx`, `tric
   - `OnboardingDialog` is shared app-wide (`AppShell.tsx`). In onboarding mode it already requires a choice. "All disciplines" is valid for map and TV. Do not make the global dialog stricter.
   - Item 1 handles the `/games` case inside the form. The dialog can stay dismissible on `/games`.
 
-- [ ] **4. [P0] Fix the rider name display/submit mismatch**
+- [x] **4. [P0] Fix the rider name display/submit mismatch**
   - **Cause:** `useState(getStoredGuestName)` reads `sessionStorage` in the initializer. The server renders `""` while the client state holds the stored name ("TestRider"). The input shows empty but the game starts with the stored name. This is a hydration mismatch, not two sources of state.
   - **Fix:** initialize to `""` and load the stored name after mount (an effect or `useSyncExternalStore`).
   - Validation already exists on click (`getSettingsErrors`: "Enter a rider name between 1 and 30 characters."). Show that message inline under the field, both desktop `guest-nickname-desktop` and mobile `guest-nickname-setup`, not just the generic "Review the highlighted fields".
@@ -70,13 +70,13 @@ Files: `src/components/games/create/GameCreateForm.tsx`, `form-parts.tsx`, `tric
 
 Files: `src/components/games/board/GameBoardControls.tsx` (live, rendered) and `src/components/games/layout/header-parts.tsx` (`GameShareDrawer`, `CancelSessionDialog`). `Header.tsx` is deprecated; do not edit it for these items.
 
-- [ ] **8. [P1] Shorten the solo start path**
+- [x] **8. [P1] Shorten the solo start path**
   - Current path: Start Training → drawer auto-opens → "Continue to session" (only closes the drawer) → Ride solo.
-  - Add a primary **"Ride solo now"** button inside `GameShareDrawer`. Wire it to the existing `/train-alone` action and gate it by `capabilities.canTrainAlone`.
+  - Shipped differently: **Ride Solo** on `/games` creates the lobby and calls `/train-alone` in one tap, and the game-sheet offers it in the lobby. The share drawer no longer opens by itself.
   - Keep creating the game in the lobby. `createGame` defaults to `multiplayer`, and `startSoloTraining` requires lobby, creator and exactly one active rider.
   - **Acceptance:** A solo session starts with one click after Start Training. 2-rider training and scheduled challenges, where the drawer does not auto-open, are unchanged.
 
-- [ ] **9. [P1] Invite drawer action hierarchy and sharing**
+- [x] **9. [P1] Invite drawer action hierarchy and sharing**
   - Hierarchy:
     - Primary (black): **Ride solo now**.
     - Secondary: **Copy invite link / QR**.
@@ -121,12 +121,12 @@ Files: `src/components/games/board/ChallengeGameBoard.tsx`, `ChallengeRiderTrack
   - Short, step-style copy in `src/data/tricks/*.json`.
   - Video/GIF needs a new catalog field plus a migration. Track it as a separate item.
 
-- [ ] **15. [P2] Remove duplicate trick controls**
-  - Landed / Failed / Next appear in both `TrickActionDrawer` and the current round row in `ChallengeGameBoard`.
-  - Target: the drawer on mobile, the inline row on desktop. The inline row must then also hold the trick details and Next.
-  - The drawer auto-opens every round (`GameBoardControls.tsx`, `shouldPromptTrickDrawer` in `header-state.ts`). Update that rule and its tests so the drawer doesn't auto-open on desktop.
+- [x] **15. [P2] Remove duplicate trick controls**
+  - Landed / Failed / Next appeared in both `TrickActionDrawer` and the current round row in `ChallengeGameBoard`.
+  - Target: the game-sheet on mobile (`DESIGN.md`, `components.overlays.game-sheet`), the inline row on desktop. The inline row must then also hold the trick details and Next.
+  - `TrickActionDrawer` is removed. Nothing auto-opens during play on any viewport.
 
-- [ ] **16. [P2] Clarify session labels**
+- [x] **16. [P2] Clarify session labels**
   - "Your turn — open panel" → "Open trick".
   - "Next · 3" swaps the trick, at most 3 per round, flexible rules only → "Skip trick (3 left)".
   - "Switch it up" opens line settings (spot type, level, categories) → "Change line".
@@ -150,13 +150,13 @@ Constraint: `DESIGN.md` is the source of truth. A change that conflicts with it 
     - Grey-on-grey states.
   - Use sentence case for helper text. Text contrast must be at least 4.5:1.
 
-- [ ] **19. [P2] Tap targets and component consistency**
+- [x] **19. [P2] Tap targets and component consistency**
   - `OptionChip` and the level buttons need a hit area of at least 44px (padding or a pseudo-element; the visual size can stay). Make the checkbox label clickable.
   - Use the button and chip tokens already defined in `DESIGN.md` (primary / secondary / accent) and one selected-state style. Do not invent new tokens.
   - While touching these files, replace `rounded-[16px]` / `rounded-[8px]` literals with the `DESIGN.md` radius classes.
 
-- [ ] **20. [P1] Mobile layout**
-  - Bug: the sticky Start bar is `bottom-18` (72px) but the mobile nav is 64px (`--mobile-nav-h`).
+- [x] **20. [P1] Mobile layout**
+  - Bug: the sticky Start bar is `bottom-18` (72px) but the mobile nav is 77px. `--mobile-nav-h` said 64px, and is now corrected.
   - Bug: between 768 and 1023px the nav is hidden (`md:hidden`) but the bar still shows (`lg:hidden`), so it floats above an empty gap.
   - Anchor the bar to `--mobile-nav-h` below `md` and to `bottom-0` from `md` to `lg`.
   - Merge the summary and Start into one sticky bar ("Skateboard · Plaza · L1 — Start").

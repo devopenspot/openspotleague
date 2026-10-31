@@ -5,6 +5,7 @@ import {
   GUEST_TOKEN_STORAGE_KEY,
   assertGuestAllowedOnTraining,
   createGuestToken,
+  generateGuestName,
   identityActorId,
   identityMatches,
   isGuest,
@@ -148,5 +149,15 @@ describe("requireGuestName", () => {
 
   it("never requires a name from signed-in users", () => {
     expect(() => requireGuestName({ userId: "user-1", guestToken: null, name: "" })).not.toThrow()
+  })
+})
+
+describe("generateGuestName", () => {
+  it("is always a valid name a guest can join with", () => {
+    for (let index = 0; index < 200; index += 1) {
+      const name = generateGuestName()
+      expect(name).toMatch(/^Rider [1-9]\d{3}$/)
+      expect(normalizeGuestName(name)).toBe(name)
+    }
   })
 })

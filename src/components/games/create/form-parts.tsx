@@ -143,10 +143,10 @@ export function OptionChip({
       tabIndex={tabIndex}
       onKeyDown={onKeyDown}
       onClick={onClick}
-      className={`rounded-full px-3 py-1.5 text-[10px] font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`min-h-12 rounded-full border-2 px-4 text-sm font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:border-outline disabled:bg-surface-container-high disabled:text-on-surface-variant ${
         active
-          ? "border border-on-surface bg-on-surface text-surface"
-          : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
+          ? "border-on-surface bg-on-surface text-surface"
+          : "border-on-surface bg-surface text-on-surface hover:bg-surface-container"
       }`}
     >
       {label}

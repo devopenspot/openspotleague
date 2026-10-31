@@ -1,10 +1,14 @@
 "use client";
 
 import { Settings2, Share } from "lucide-react";
-import { startTransition, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import { ChallengeStartCountdownDialog } from "@/components/games/award/ChallengeStartCountdownDialog";
+import type { PendingResult } from "@/components/games/hooks/usePendingResult";
+import { useShareUrl } from "@/components/games/hooks/useShareUrl";
+import { showToast } from "@/hooks/ui/useToast";
+import { shareOrCopyUrl } from "@/lib/utils/share";
 import { GuestJoinForm } from "@/components/games/shared/GuestJoinForm";
 import type { GameCapabilities } from "@/lib/games/capabilities";
 import type { GameState } from "@/lib/schemas/game";
@@ -21,31 +25,33 @@ import {
   GameStatusStrip,
   TerminalResultBar,
 } from "@/components/games/layout/header-parts";
-import { TrickActionDrawer } from "@/components/games/layout/TrickActionDrawer";
+import { GameSheet } from "./GameSheet";
 import {
-  hasSeenShareOnboarding,
-  markShareOnboardingSeen,
-} from "@/components/games/layout/share-onboarding";
+  deriveGameSheetView,
+  type GameSheetActionId,
+  type GameSheetSessionActionId,
+} from "./sheet-state";
 import { Led } from "./panel/PanelIndicators";
 
 const noop = () => undefined;
 
 /**
- * Board-owned control deck — migrated from `Header` (see `GameBoard.tsx:393` TODO).
- * Tailored to video-game panel: mono, compact 11px/36px pills, outside `PanelShell` so
- * `PanelShell` only wraps the CRT screen. Keeps every behavior/feature intact.
+ * Board-owned controls. Below `md` the deck is replaced by `GameSheet`, which
+ * carries every action; only the slim identity row [A] stays above the board.
+ * From `md` up the deck stays outside `PanelShell` so that only wraps the screen.
  *
  * Data order (UX hierarchy, mono + primary discipline per DESIGN.md):
- *  [A] Identity + System — game name, live LED, share/back (always)
+ *  [A] Identity + System — game name, live state, letters, share/back
  *  [B] Context strip — riders/mode/level/categories/leader/weather (secondary)
  *  [C] Primary action deck — phase-driven single primary CTA (lobby/active/guest)
- *  [D] Notices / terminal — amber round notice, blocked-location banner, results
+ *  [D] Notices / terminal — errors, round notice, blocked-location banner, results
  */
 export function GameBoardControls({
   game,
   connection = "connected",
   authenticated = true,
   busy = false,
+  error = null,
   locationPending = false,
   locationPermission = "unknown",
   capabilities = EMPTY_CAPABILITIES,
@@ -54,6 +60,9 @@ export function GameBoardControls({
   guestName = "",
   guestJoinError = null,
   alternativeTricksRemaining = 3,
+  pendingResult = null,
+  onUndoResult = noop,
+  onResendResult = noop,
   onGuestNameChange = noop,
   onGuestJoin = noop,
   onVerifyLocation = noop,
@@ -68,6 +77,7 @@ export function GameBoardControls({
   onLeaveLobby = noop,
   onCancelActive = noop,
   onOpenSettings = noop,
+  onCategoriesVote = noop,
   onBackToChallenges,
   onViewResults,
 }: {
@@ -75,6 +85,7 @@ export function GameBoardControls({
   connection?: "connected" | "reconnecting";
   authenticated?: boolean;
   busy?: boolean;
+  error?: string | null;
   locationPending?: boolean;
   locationPermission?: LocationPermission;
   capabilities?: GameCapabilities;
@@ -83,6 +94,9 @@ export function GameBoardControls({
   guestName?: string;
   guestJoinError?: string | null;
   alternativeTricksRemaining?: number;
+  pendingResult?: PendingResult | null;
+  onUndoResult?: () => void;
+  onResendResult?: () => void;
   onGuestNameChange?: (name: string) => void;
   onGuestJoin?: () => void;
   onVerifyLocation?: () => void;
@@ -97,17 +111,13 @@ export function GameBoardControls({
   onLeaveLobby?: () => void;
   onCancelActive?: () => void;
   onOpenSettings?: () => void;
+  onCategoriesVote?: (accept: boolean) => void;
   onBackToChallenges: () => void;
   onViewResults?: () => void;
 }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isShareOnboardingOpen, setIsShareOnboardingOpen] = useState(false);
   const [isCountdownOpen, setIsCountdownOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [isTrickDrawerOpen, setIsTrickDrawerOpen] = useState(false);
-  const shareOnboardingGameRef = useRef<string | null>(null);
-  const countdownGameRef = useRef<string | null>(null);
-  const lastTrickDrawerRoundRef = useRef<string | null>(null);
 
   const {
     current,
@@ -136,56 +146,17 @@ export function GameBoardControls({
     terminalDescription,
     isWaitingForOthers,
     pendingCount,
-    pendingNames,
-    shouldPromptTrickDrawer,
   } = deriveHeaderState(game, capabilities);
 
   const sharePath = game
     ? `/games/join/${encodeURIComponent(game.shareCode)}`
     : null;
-  const shareOnboardingGameId = game?.id ?? null;
-  const isHostLobby = Boolean(
-    game && game.status === "lobby" && game.viewerIsHost,
-  );
   const isScheduledChallengeLobby = Boolean(
     game &&
     game.mode === "challenge" &&
     game.status === "lobby" &&
     game.scheduledStartAt,
   );
-  const shouldSuggestShareOnboarding =
-    game?.mode === "training" || !capabilities.canTrainAlone;
-
-  useEffect(() => {
-    if (!game?.id || !isScheduledChallengeLobby) return;
-    if (countdownGameRef.current === game.id) return;
-    countdownGameRef.current = game.id;
-    setIsCountdownOpen(true);
-  }, [game?.id, isScheduledChallengeLobby]);
-
-  useEffect(() => {
-    if (
-      !shareOnboardingGameId ||
-      !isHostLobby ||
-      !shouldSuggestShareOnboarding ||
-      isScheduledChallengeLobby
-    )
-      return;
-    if (shareOnboardingGameRef.current === shareOnboardingGameId) return;
-    shareOnboardingGameRef.current = shareOnboardingGameId;
-    if (hasSeenShareOnboarding(shareOnboardingGameId)) return;
-    markShareOnboardingSeen(shareOnboardingGameId);
-    startTransition(() => {
-      setIsDrawerOpen(true);
-      setIsShareOnboardingOpen(true);
-    });
-  }, [
-    isHostLobby,
-    isScheduledChallengeLobby,
-    shareOnboardingGameId,
-    shouldSuggestShareOnboarding,
-  ]);
-
   const resultAction: {
     label: string;
     onSelect: (result: Result) => void;
@@ -195,24 +166,13 @@ export function GameBoardControls({
       : current && capabilities.canSubmitResponse
         ? { label: "Your Call", onSelect: onAttemptResult }
         : null;
-  const hasResultAction = Boolean(resultAction);
 
-  useEffect(() => {
-    if (!shouldPromptTrickDrawer || !current) return;
-    const promptKey = `${current.id}:${current.status}:${hasResultAction ? "turn" : "wait"}`;
-    if (lastTrickDrawerRoundRef.current === promptKey) return;
-    lastTrickDrawerRoundRef.current = promptKey;
-    startTransition(() => setIsTrickDrawerOpen(true));
-  }, [shouldPromptTrickDrawer, current, hasResultAction]);
+  const shareUrl = useShareUrl(sharePath ?? "/games", game?.gameName ?? "Open Spot");
 
-  function openGameControls() {
-    setIsShareOnboardingOpen(false);
-    setIsDrawerOpen(true);
-  }
-
-  function closeGameControls() {
-    setIsShareOnboardingOpen(false);
-    setIsDrawerOpen(false);
+  async function shareInvite() {
+    const outcome = await shareOrCopyUrl(shareUrl, game?.gameName ?? "Open Spot");
+    if (outcome === "copied") showToast("Link copied.", "success");
+    else if (outcome === "failed") setIsDrawerOpen(true);
   }
 
   const showGuestJoinForm = !authenticated && canJoinLobby;
@@ -228,6 +188,39 @@ export function GameBoardControls({
     else if (canCancelActive) onCancelActive();
   }
 
+  const sheetView = game
+    ? deriveGameSheetView(game, capabilities, {
+        authenticated,
+        locationPending,
+        locationPermission,
+        canConfigureChallenge,
+      })
+    : null;
+
+  function handleSheetAction(id: GameSheetActionId) {
+    if (id === "join") {
+      if (showGuestJoinForm) onGuestJoin();
+      else onJoinLobby();
+    } else if (id === "dropIn") onStartLobby();
+    else if (id === "dropInNow") onStartNow();
+    else if (id === "rideSolo") onTrainAlone();
+    else if (id === "share") void shareInvite();
+    else if (id === "checkIn") onVerifyLocation();
+    else if (id === "changeLine") onOpenSettings();
+    else if (id === "voteAccept") onCategoriesVote(true);
+    else if (id === "voteReject") onCategoriesVote(false);
+    else if (id === "results") onViewResults?.();
+    else onBackToChallenges();
+  }
+
+  function handleSheetSessionAction(id: GameSheetSessionActionId) {
+    if (id === "invite") setIsDrawerOpen(true);
+    else if (id === "changeLine") onOpenSettings();
+    else if (id === "leave") onLeaveLobby();
+    else if (id === "cancel") requestCancel();
+    else onBackToChallenges();
+  }
+
   const connectionLed = connection === "connected" ? "live" : "pending";
   const statusLabel = !game
     ? ""
@@ -238,6 +231,13 @@ export function GameBoardControls({
         : game.status === "complete"
           ? "Complete — Results in"
           : "Closed";
+  const letterSummary =
+    game && game.trainingVariant !== "solo" && game.status !== "lobby"
+      ? game.players
+          .filter((player) => player.status !== "left")
+          .map((player) => `${player.displayName}: ${player.letters || "—"}`)
+          .join(" · ")
+      : null;
   const showLocationBanner =
     capabilities.canVerifyLocation && locationPermission === "denied";
   const needsVerification =
@@ -252,53 +252,64 @@ export function GameBoardControls({
     canStartLobby ||
     canTrainAlone ||
     needsVerification ||
-    shouldPromptTrickDrawer ||
+    isWaitingForOthers ||
     isScheduledChallengeLobby;
   const hasSecondaryAction =
     canConfigureChallenge || canCancelActive || canCancelLobby || canLeaveLobby;
 
   return (
     <>
-      {/* deck control — outside chassis, mono, compact 11px/36px pills */}
+      {/* deck control — outside chassis; below md only the identity row remains */}
       <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-2 px-1 py-2 sm:py-2.5">
         {/* [A] Identity + system — always visible, mono hierarchy per DESIGN.md */}
         {game ? (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3 sm:py-2.5">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
-              <Led tone={connectionLed} pulse={connection === "reconnecting"} />
-              <h2 className="min-w-0 truncate font-display text-[15px] font-bold leading-tight tracking-tight text-on-surface sm:text-[18px]">
-                {game.gameName}
-              </h2>
+              <Led tone={connectionLed} />
+              <div className="min-w-0">
+                <h2 className="min-w-0 truncate font-display text-base font-bold leading-tight tracking-tight text-on-surface sm:text-[18px]">
+                  {game.gameName}
+                </h2>
+                {letterSummary ? (
+                  <p className="truncate font-display text-sm font-semibold text-on-surface-variant md:hidden">
+                    {letterSummary}
+                  </p>
+                ) : null}
+              </div>
               <span className="hidden shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary sm:inline-flex">
                 {statusLabel}
               </span>
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
-              {/* compact status on mobile to preserve scan */}
-              <span className="inline-flex font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary sm:hidden">
-                {game.status === "lobby"
-                  ? "Lobby"
-                  : game.status === "active"
-                    ? "Live"
-                    : game.status === "complete"
-                      ? "Complete"
-                      : "Closed"}
+              {/* status as text so it reads without relying on the LED colour */}
+              <span className="inline-flex font-display text-sm font-bold text-on-surface sm:hidden">
+                {connection === "reconnecting"
+                  ? "Reconnecting…"
+                  : game.status === "lobby"
+                    ? "Lobby"
+                    : game.status === "active"
+                      ? current
+                        ? `Round ${current.sequence}`
+                        : "Live"
+                      : game.status === "complete"
+                        ? "Complete"
+                        : "Closed"}
               </span>
               <button
                 type="button"
                 aria-label="Open game controls"
                 aria-controls={DRAWER_ID}
                 aria-expanded={isDrawerOpen}
-                onClick={openGameControls}
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+                onClick={() => setIsDrawerOpen(true)}
+                className="hidden min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px md:inline-flex"
               >
                 <Share size={15} aria-hidden="true" />
-                <span className="hidden sm:inline">Share</span>
+                <span>Share</span>
               </button>
               <button
                 type="button"
                 onClick={onBackToChallenges}
-                className="inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                className="hidden min-h-9 items-center rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:inline-flex"
               >
                 Back
               </button>
@@ -307,7 +318,7 @@ export function GameBoardControls({
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3">
             <div className="flex items-center gap-2">
-              <Led tone="pending" pulse />
+              <Led tone="pending" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary">
                 Control — Syncing
               </span>
@@ -318,7 +329,7 @@ export function GameBoardControls({
                 aria-label="Open game controls"
                 aria-controls={DRAWER_ID}
                 aria-expanded={isDrawerOpen}
-                onClick={openGameControls}
+                onClick={() => setIsDrawerOpen(true)}
                 className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
               >
                 <Share size={15} aria-hidden="true" />
@@ -336,34 +347,41 @@ export function GameBoardControls({
 
         {/* [B] Context strip — secondary, wraps monochrome chips per DESIGN.md */}
         {game ? (
-          <GameStatusStrip
-            game={game}
-            current={current}
-            leader={leader}
-            effectiveLevel={effectiveLevel}
-            levelLabel={levelLabel}
-            isCategoriesAll={isCategoriesAll}
-            categoriesDisplay={categoriesDisplay}
-            hasPendingCategories={hasPendingCategories}
-            pendingProposal={pendingProposal}
-          />
+          <div className="hidden md:block">
+            <GameStatusStrip
+              game={game}
+              current={current}
+              leader={leader}
+              effectiveLevel={effectiveLevel}
+              levelLabel={levelLabel}
+              isCategoriesAll={isCategoriesAll}
+              categoriesDisplay={categoriesDisplay}
+              hasPendingCategories={hasPendingCategories}
+              pendingProposal={pendingProposal}
+            />
+          </div>
         ) : null}
 
         {/* [C] Primary action deck — phase-driven, single primary CTA per row */}
         {game && isTerminal ? (
-          <TerminalResultBar
-            tone={terminalTone}
-            label={terminalLabel}
-            title={terminalTitle}
-            description={terminalDescription}
-            showResultsLink={(game.stageLedger?.length ?? 0) > 0}
-            onViewResults={onViewResults}
-            onBackToChallenges={onBackToChallenges}
-            showRunAgain={isComplete}
-          />
+          <div className="hidden md:block">
+            <TerminalResultBar
+              tone={terminalTone}
+              label={terminalLabel}
+              title={terminalTitle}
+              description={terminalDescription}
+              showResultsLink={(game.stageLedger?.length ?? 0) > 0}
+              onViewResults={onViewResults}
+              onBackToChallenges={onBackToChallenges}
+              showRunAgain={isComplete}
+            />
+          </div>
         ) : !isTerminal ? (
           hasPrimaryAction || hasSecondaryAction ? (
-            <div className="flex flex-col gap-2 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-2 sm:p-2.5">
+            <div
+              data-testid="game-deck"
+              className="hidden flex-col gap-2 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-2.5 md:flex"
+            >
               {/* tier 1: primary CTA — only one primary visually; others secondary */}
               <div className="flex flex-wrap items-center gap-1.5">
                 {showGuestJoinForm ? (
@@ -386,7 +404,7 @@ export function GameBoardControls({
                     disabled={busy}
                     className="min-h-9 rounded-full border border-primary bg-primary px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
                   >
-                    {busy ? "Joining Crew…" : "Join Crew"}
+                    {busy ? "Joining…" : "Join"}
                   </button>
                 ) : null}
 
@@ -467,25 +485,13 @@ export function GameBoardControls({
                   </button>
                 ) : null}
 
-                {shouldPromptTrickDrawer ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsTrickDrawerOpen(true)}
-                    aria-label={
-                      resultAction
-                        ? "Open your turn panel"
-                        : "Open waiting for riders panel"
-                    }
-                    className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] transition-[background-color,transform,border-color] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px ${resultAction ? "border-primary bg-primary text-on-primary shadow-[0_2px_0_rgba(0,0,0,0.12)]" : "border-outline-variant bg-surface-container-high text-on-surface hover:border-outline"}`}
+                {isWaitingForOthers ? (
+                  <p
+                    role="status"
+                    className="inline-flex min-h-9 items-center font-display text-sm font-bold text-on-surface"
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${resultAction ? "bg-on-primary" : "bg-permission-pending -dot"}`}
-                      aria-hidden
-                    />
-                    {resultAction
-                      ? "Your Turn — Open Panel"
-                      : `Waiting · ${pendingCount} rider${pendingCount === 1 ? "" : "s"}`}
-                  </button>
+                    {`Waiting · ${pendingCount} rider${pendingCount === 1 ? "" : "s"}`}
+                  </p>
                 ) : null}
 
                 {/* tier 2: management — outline, separated; still compact 11px/36px */}
@@ -495,7 +501,7 @@ export function GameBoardControls({
                       <button
                         type="button"
                         aria-label={
-                          isLiveChallenge ? "Switch It Up" : "Set The Line"
+                          isLiveChallenge ? "Change Line" : "Set The Line"
                         }
                         aria-controls="challenge-settings-drawer"
                         aria-expanded={settingsModalOpen}
@@ -505,9 +511,9 @@ export function GameBoardControls({
                       >
                         <Settings2 size={15} aria-hidden="true" />
                         <span className="hidden sm:inline">
-                          {isLiveChallenge ? "Switch It Up" : "Set The Line"}
+                          {isLiveChallenge ? "Change Line" : "Set The Line"}
                         </span>
-                        <span className="sm:hidden">Line</span>
+                        
                       </button>
                     ) : null}
 
@@ -561,49 +567,68 @@ export function GameBoardControls({
         ) : null}
 
         {/* [D] Notices — tonal, role=status, monochrome per DESIGN.md */}
+        {error ? (
+          <p
+            role="alert"
+            className="hidden rounded-[12px] border border-error bg-error-container px-3 py-2.5 text-sm font-semibold leading-5 text-on-error-container md:block"
+          >
+            {error}
+          </p>
+        ) : null}
+
         {roundNotice ? (
           <p
             role="status"
-            className="rounded-[12px] border border-primary/25 bg-primary-container/60 px-3 py-2.5 text-sm leading-5 text-on-primary-container"
+            className="hidden rounded-[12px] border border-primary/25 bg-primary-container/60 px-3 py-2.5 text-sm leading-5 text-on-primary-container md:block"
           >
             {roundNotice}
           </p>
         ) : null}
 
         {showLocationBanner ? (
-          <LocationBlockedCallout
-            variant="banner"
-            onRetry={onVerifyLocation}
-            className="w-full"
-          />
+          <div className="hidden md:block">
+            <LocationBlockedCallout
+              variant="banner"
+              onRetry={onVerifyLocation}
+              className="w-full"
+            />
+          </div>
         ) : null}
       </div>
 
       <GameShareDrawer
         isOpen={isDrawerOpen}
-        onClose={closeGameControls}
+        onClose={() => setIsDrawerOpen(false)}
         game={game}
         sharePath={sharePath}
-        isShareOnboardingOpen={isShareOnboardingOpen}
-        canTrainAlone={canTrainAlone}
       />
-      <TrickActionDrawer
-        isOpen={isTrickDrawerOpen}
-        onClose={() => setIsTrickDrawerOpen(false)}
-        game={game}
-        current={current}
-        disciplineSlug={game?.disciplineSlug ?? null}
-        effectiveLevel={effectiveLevel}
-        levelLabel={levelLabel}
-        isWaitingForOthers={isWaitingForOthers}
-        pendingCount={pendingCount}
-        pendingNames={pendingNames}
-        canAdvanceToNextTrick={capabilities.canAdvanceToNextTrick}
-        alternativeTricksRemaining={alternativeTricksRemaining}
-        busy={busy}
-        resultAction={resultAction}
-        onNextTrick={onNextTrick}
-      />
+      {game && sheetView ? (
+        <GameSheet
+          game={game}
+          view={sheetView}
+          busy={busy}
+          error={error}
+          effectiveLevel={effectiveLevel}
+          levelLabel={levelLabel}
+          resultAction={resultAction}
+          pendingResult={pendingResult}
+          shareUrl={shareUrl}
+          canAdvanceToNextTrick={capabilities.canAdvanceToNextTrick}
+          alternativeTricksRemaining={alternativeTricksRemaining}
+          showGuestForm={showGuestJoinForm}
+          guestName={guestName}
+          guestJoinError={guestJoinError}
+          showLocationBanner={showLocationBanner}
+          onGuestNameChange={onGuestNameChange}
+          onGuestJoin={onGuestJoin}
+          onRetryLocation={onVerifyLocation}
+          onNextTrick={onNextTrick}
+          onUndoResult={onUndoResult}
+          onResendResult={onResendResult}
+          onAction={handleSheetAction}
+          onSessionAction={handleSheetSessionAction}
+        />
+      ) : null}
       <CancelSessionDialog
         isOpen={isCancelDialogOpen && canCancel}
         busy={busy}

@@ -119,7 +119,7 @@ export function AppShell({
         onSelectSpot={handleSelectSpot}
       />
       <OnboardingDialog />
-      <ToastViewport />
+      <ToastViewport placement={isGameSession ? "top" : "bottom"} />
     </div>
   );
 }

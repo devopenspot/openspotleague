@@ -19,7 +19,7 @@ export function ChallengeRiderTracksContent({
       {showHeader ? (
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+            <p className="font-display text-sm font-semibold uppercase tracking-[0.05em] text-secondary md:text-xs">
               Who’s Riding
             </p>
             <h2
@@ -80,7 +80,7 @@ export function ChallengeRiderTracksContent({
                     <h3 className="truncate font-display text-lg font-semibold leading-[1.3] text-on-surface sm:text-xl">
                       {player.displayName}
                     </h3>
-                    <p className="mt-1 font-display text-xs uppercase tracking-[0.05em] text-secondary">
+                    <p className="mt-1 font-display text-sm uppercase tracking-[0.05em] text-secondary md:text-xs">
                       {riderLabel}
                     </p>
                   </div>
@@ -90,7 +90,7 @@ export function ChallengeRiderTracksContent({
                 </div>
 
                 {game.trainingVariant === "solo" ? (
-                  <p className="mt-2 rounded-[8px] border border-outline-variant bg-surface-container-high px-2 py-2 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+                  <p className="mt-2 rounded-[8px] border border-outline-variant bg-surface-container-high px-2 py-2 font-display text-sm font-semibold uppercase tracking-[0.05em] text-secondary md:text-xs">
                     Free Ride — Keep Going Until You Finish Your Run
                   </p>
                 ) : (
@@ -113,7 +113,7 @@ export function ChallengeRiderTracksContent({
                 )}
 
                 {game.mode === "challenge" ? (
-                  <p className="mt-2 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+                  <p className="mt-2 font-display text-sm font-bold uppercase tracking-[0.05em] text-secondary md:text-xs">
                     {totalPoints} Pts · {isViewer ? "Your Total" : "Session Score"}
                   </p>
                 ) : null}

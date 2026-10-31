@@ -11,17 +11,15 @@ const toneMap: Record<LedTone, string> = {
 
 export function Led({
   tone = "off",
-  pulse = false,
   label,
 }: {
   tone?: LedTone;
-  pulse?: boolean;
   label?: string;
 }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span
-        className={`h-2 w-2 shrink-0 rounded-full border border-on-surface/10 ${toneMap[tone]} ${pulse ? "-dot" : ""}`}
+        className={`h-2 w-2 shrink-0 rounded-full border border-on-surface/10 ${toneMap[tone]}`}
         aria-hidden
       />
       {label ? (

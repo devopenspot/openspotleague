@@ -62,7 +62,6 @@ describe("ChallengeGameBoard", () => {
     expect(screen.getByText("13 Pts · Your Total")).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Crew Board" })).toBeInTheDocument()
     expect(screen.getByLabelText("Rider elimination progress")).toBeInTheDocument()
-    expect(screen.getByTestId("challenge-rider-tracks-sheet")).toBeInTheDocument()
 
     await user.click(helpButton)
 
@@ -104,7 +103,6 @@ describe("ChallengeGameBoard", () => {
     expect(screen.getByRole("list", { name: "Your Run" })).toBeInTheDocument()
     expect(screen.queryByText("Responses")).not.toBeInTheDocument()
     expect(screen.queryByRole("heading", { name: "Crew Board" })).not.toBeInTheDocument()
-    expect(screen.queryByTestId("challenge-rider-tracks-sheet")).not.toBeInTheDocument()
     expect(screen.queryByText("Free Ride — Keep Going Until You Finish Your Run")).not.toBeInTheDocument()
     expect(screen.queryByLabelText("Rider elimination progress")).not.toBeInTheDocument()
   })

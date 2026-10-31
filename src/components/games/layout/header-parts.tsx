@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
+import {
+  DrawerHeader,
+  SIDE_DRAWER_PANEL,
+} from "@/components/feedback/DrawerParts";
 import { Overlay } from "@/components/feedback/Overlay";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 import { type BadgeTone } from "@/components/ui/Badge";
@@ -185,21 +189,17 @@ export function TerminalResultBar({
   );
 }
 
-/** Branded controls drawer: share onboarding, crew code, QR, weather. */
+/** Invite drawer: share code, link, QR, weather. */
 export function GameShareDrawer({
   isOpen,
   onClose,
   game,
   sharePath,
-  isShareOnboardingOpen,
-  canTrainAlone,
 }: {
   isOpen: boolean;
   onClose: () => void;
   game: GameState | null;
   sharePath: string | null;
-  isShareOnboardingOpen: boolean;
-  canTrainAlone: boolean;
 }) {
   return (
     <SideDrawer
@@ -208,80 +208,26 @@ export function GameShareDrawer({
       labelledBy={DRAWER_TITLE_ID}
       contentId={DRAWER_ID}
       testId={DRAWER_ID}
-      panelClassName="w-[min(28rem,calc(100vw-1rem))] rounded-l-[16px] border-l border-outline-variant bg-surface"
+      panelClassName={`${SIDE_DRAWER_PANEL} bg-surface`}
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-outline-variant px-5 py-5 sm:px-6 sm:py-6">
-          <div className="min-w-0">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-              {game ? "Invite Your Crew" : "Session Status"}
-            </p>
-            <h2
-              id={DRAWER_TITLE_ID}
-              className="mt-2 font-display text-2xl font-bold leading-[1.15]"
-            >
-              {game ? "Invite Your Crew" : "Game Controls"}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close game controls"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] border border-outline-variant bg-surface-container-high text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
-          >
-            <X size={16} aria-hidden="true" />
-          </button>
-        </div>
+        <DrawerHeader
+          eyebrow={game?.gameName ?? "Session Status"}
+          title={game ? "Invite A Rider" : "Game Controls"}
+          titleId={DRAWER_TITLE_ID}
+          closeLabel="Close game controls"
+          onClose={onClose}
+        />
         {game && sharePath ? (
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <div className="space-y-5 px-5 py-5 sm:px-6">
-              <section
-                aria-labelledby="game-share-onboarding-title"
-                className="rounded-[16px] border border-primary/40 bg-primary-container p-4 text-on-primary-container"
-              >
-                <p className="font-display text-xs font-bold uppercase tracking-[0.05em]">
-                  How To Start
-                </p>
-                <h3
-                  id="game-share-onboarding-title"
-                  className="mt-2 font-display text-2xl font-bold leading-[1.15]"
-                >
-                  {canTrainAlone
-                    ? "Ride Solo Or Bring The Crew"
-                    : "Bring Your Crew"}
-                </h3>
-                <p className="mt-2 text-sm leading-5">
-                  {canTrainAlone
-                    ? "Drop in solo right now, or share the crew code or link so friends can join before you start."
-                    : "Share the crew code or link so your crew can join the lobby before you drop in."}
-                </p>
-                <ol className="mt-3 space-y-2 border-t border-on-primary-container/20 pt-3 text-sm leading-5">
-                  <li className="flex gap-3">
-                    <span className="font-display font-bold">1</span>
-                    <span>
-                      {canTrainAlone
-                        ? "Ride solo now, or share the crew code, link, or QR."
-                        : "Share the crew code, link, or QR."}
-                    </span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-display font-bold">2</span>
-                    <span>Crew joins the lobby.</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-display font-bold">3</span>
-                    <span>Drop in when everyone’s ready!</span>
-                  </li>
-                </ol>
-              </section>
-
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <div className="space-y-5 px-5 py-5">
               <section aria-labelledby="game-share-code-title">
                 <div className="mt-3 flex items-center justify-between gap-4 rounded-[8px] border border-outline-variant bg-surface-container-low px-3 py-2.5">
                   <h3
                     id="game-share-code-title"
                     className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary"
                   >
-                    Crew Code
+                    Share Code
                   </h3>
                   <code className="font-display text-sm font-bold tracking-[0.12em] text-on-surface">
                     {game.shareCode}
@@ -291,20 +237,10 @@ export function GameShareDrawer({
                   url={sharePath}
                   code={game.shareCode}
                   title={`${game.gameName} challenge`}
-                  showShare={false}
                   compact
                   className="mt-3"
                 />
                 <GameWeatherBanner game={game} />
-                {isShareOnboardingOpen ? (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="mt-3 min-h-11 w-full rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
-                  >
-                    Continue To Session
-                  </button>
-                ) : null}
               </section>
             </div>
           </div>
