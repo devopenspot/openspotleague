@@ -2,7 +2,10 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { TV_CARD_BATCH_MAX, type TvCard } from "@/types/tv";
-import { TvCategoryMarquee } from "@/components/tv/marquee/TvCategoryMarquee";
+import {
+  TV_ROW_ACTION_CLASS,
+  TvCategoryMarquee,
+} from "@/components/tv/marquee/TvCategoryMarquee";
 
 const noopAppend = () => {};
 
@@ -21,12 +24,14 @@ const TvShelf = memo(function TvShelf({
   activeId,
   onSelect,
   headerAction,
+  progressById,
 }: {
   title: string;
   videos: readonly TvCard[];
   activeId: string | null;
   onSelect: (video: TvCard) => void;
   headerAction?: React.ReactNode;
+  progressById?: ReadonlyMap<string, number>;
 }) {
   const handleSelect = useCallback(
     (video: TvCard) => onSelect(video),
@@ -42,6 +47,7 @@ const TvShelf = memo(function TvShelf({
       onSelect={handleSelect}
       onAppend={noopAppend}
       headerAction={headerAction}
+      progressById={progressById}
     />
   );
 });
@@ -56,7 +62,7 @@ function shuffled<T>(items: readonly T[]): T[] {
 }
 
 /**
- * "New this week" — videos recently added to OpenSpot, server-provided and
+ * "Just added" — videos recently added to OpenSpot, server-provided and
  * shown in a random order. The shuffle runs after mount (not during render)
  * so the server HTML and first client render match and the CDN-cached
  * response stays identical for everyone.
@@ -85,7 +91,7 @@ export function TvNewShelf({
   if (visible.length === 0) return null;
   return (
     <TvShelf
-      title="New this week"
+      title="Just added"
       videos={visible}
       activeId={activeId}
       onSelect={onSelect}
@@ -96,9 +102,11 @@ export function TvNewShelf({
 /**
  * "Continue watching" — recently watched ids (localStorage) resolved to
  * cards via the cached batch endpoint (max `TV_CARD_BATCH_MAX` per call).
+ * Unfinished videos only: the player drops one once it is mostly watched.
  */
 export function TvContinueShelf({
   ids,
+  progressById,
   discipline,
   activeId,
   knownById,
@@ -107,6 +115,7 @@ export function TvContinueShelf({
   onClear,
 }: {
   ids: readonly string[];
+  progressById: ReadonlyMap<string, number>;
   discipline: string;
   activeId: string | null;
   knownById: ReadonlyMap<string, TvCard>;
@@ -167,7 +176,8 @@ export function TvContinueShelf({
       <button
         type="button"
         onClick={onClear}
-        className="text-xs font-medium text-white/50 hover:text-white transition-colors"
+        aria-label="Clear Continue watching"
+        className={TV_ROW_ACTION_CLASS}
       >
         Clear
       </button>
@@ -183,6 +193,7 @@ export function TvContinueShelf({
       activeId={activeId}
       onSelect={onSelect}
       headerAction={clearButton}
+      progressById={progressById}
     />
   );
 }

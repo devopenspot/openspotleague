@@ -13,7 +13,7 @@ import { useTvCatalogState } from "./use-tv-catalog-state";
 import { useTvDisciplineState } from "./use-tv-discipline-state";
 import { useTvTheaterQueue } from "./use-tv-theater-queue";
 import { useTvSearchState } from "./use-tv-search-state";
-import { useTvWatchHistory } from "./use-tv-watch-history";
+import { getTvResumeTime, useTvWatchHistory } from "./use-tv-watch-history";
 import { TvContinueShelf, TvNewShelf } from "./TvShelves";
 import { TvFilterBar } from "./TvFilterBar";
 import { TvSearchResultsGrid } from "./TvSearchResultsGrid";
@@ -50,10 +50,11 @@ export function TvGrid({
   initialCategory?: string | null;
   initialYear?: number | null;
   initialSearchResults?: TvCardPageResult | null;
-  /** "New this week" shelf cards (newest first), from the server. */
+  /** "Just added" shelf cards (newest first), from the server. */
   newVideos?: readonly TvCard[];
 }) {
   const searchParams = useSearchParams();
+  const gridRef = useRef<HTMLDivElement>(null);
   const playParam = searchParams.get("play") ?? searchParams.get("v") ?? null;
   const pendingThumb = searchParams.get("thumb");
   const pendingTitle = searchParams.get("title");
@@ -63,6 +64,10 @@ export function TvGrid({
   );
   const [isAutoplaying, setIsAutoplaying] = useState(() =>
     Boolean(initialPlayVideo),
+  );
+  // Resume point for videos opened from the app. Shared links start at 0.
+  const [resume, setResume] = useState<{ id: string; seconds: number } | null>(
+    null,
   );
   const [autoAdvance, setAutoAdvance] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
@@ -109,7 +114,6 @@ export function TvGrid({
     hasMore: hasMoreSearchResults,
     loadMore: loadMoreSearchResults,
     resetFilters: resetSearchFilters,
-    totalActiveFiltersCount,
   } = useTvSearchState({
     discipline,
     initialQuery,
@@ -168,7 +172,9 @@ export function TvGrid({
 
   const {
     ids: historyIds,
-    record: recordWatch,
+    progressById,
+    track: trackWatch,
+    flush: flushHistory,
     clear: clearHistory,
   } = useTvWatchHistory();
 
@@ -181,10 +187,10 @@ export function TvGrid({
     ) => {
       setActiveId(id);
       setIsAutoplaying(autoplay);
+      setResume({ id, seconds: getTvResumeTime(id) });
       syncUrl(id, { thumb, title });
-      recordWatch(id);
     },
-    [syncUrl, recordWatch],
+    [syncUrl],
   );
 
   // Shelf cards must be resolvable by the theater (`videoById`).
@@ -319,19 +325,31 @@ export function TvGrid({
     openWithId,
   ]);
 
-  const handleAutoplay = useCallback(() => {
-    if (isSearchActive) {
-      const first = searchItems[0];
-      if (!first) return;
-      setAutoAdvance(true);
-      openWithId(first.id, true);
-      return;
-    }
-    const first = theaterQueue[0] ?? filtered[0];
-    if (!first) return;
+  // Starts at a random loaded video, then plays on through the queue.
+  const handleShuffle = useCallback(() => {
+    let pool: readonly TvCard[] = filtered;
+    if (isSearchActive) pool = searchItems;
+    else if (theaterQueue.length > 0) pool = theaterQueue;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (!pick) return;
     setAutoAdvance(true);
-    openWithId(first.id, true);
+    openWithId(pick.id, true);
   }, [isSearchActive, searchItems, theaterQueue, filtered, openWithId]);
+
+  const handleSeeAll = useCallback(
+    (category: string) => {
+      setSelectedCategory(category);
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      // The shell scrolls an inner container, so anchor to the grid itself.
+      gridRef.current?.scrollIntoView?.({
+        block: "start",
+        behavior: reduced ? "auto" : "smooth",
+      });
+    },
+    [setSelectedCategory],
+  );
 
   const handleSelectSearchVideo = useCallback(
     (video: TvCard) => {
@@ -369,7 +387,8 @@ export function TvGrid({
     setIsAutoplaying(false);
     resetTheaterCategory();
     syncUrl(null);
-  }, [syncUrl, resetTheaterCategory]);
+    flushHistory();
+  }, [syncUrl, resetTheaterCategory, flushHistory]);
 
   const handleEnded = useCallback(() => {
     if (!autoAdvance) return;
@@ -395,7 +414,10 @@ export function TvGrid({
   const showGenericEmpty = !hasVideos && discipline === "all";
 
   return (
-    <div className="min-w-0 space-y-2 sm:space-y-4 overflow-x-hidden px-3 mt-6 mb-30">
+    <div
+      ref={gridRef}
+      className="min-w-0 scroll-mt-20 space-y-2 sm:space-y-4 overflow-x-hidden px-3 mt-6 mb-30"
+    >
       {/* Background container — suspended and hidden from compositor when modal is active */}
       <div
         aria-hidden={isModalOpen ? true : undefined}
@@ -403,36 +425,12 @@ export function TvGrid({
         style={{ visibility: isModalOpen ? "hidden" : "visible" }}
         className="space-y-2 sm:space-y-4"
       >
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 lg:gap-8">
-          {/* <div className="flex items-center justify-between w-full gap-3 sm:gap-6">
-          
-            <TvAutoplayerButton
-              count={
-                isSearchActive ? searchItems.length : totalForTheaterFilter
-              }
-              disciplineLabel={disciplineLabel}
-              categoryLabel={isSearchActive ? undefined : categoryLabel}
-              onOpen={handleAutoplay}
-              disabled={
-                isSearchActive
-                  ? searchItems.length === 0
-                  : totalForTheaterFilter === 0
-              }
-            />
-          </div> */}
-
-          <div className="flex items-center gap-6 md:gap-8">
-            <div className="space-y-2 sm:space-y-2.5 min-w-0">
-              <TvDisciplinePills
-                listRef={disciplineListRef}
-                disciplines={sortedDisciplines}
-                selected={discipline}
-                onSelect={selectDiscipline}
-              />
-            </div>
-          </div>
-        </div>
+        <TvDisciplinePills
+          listRef={disciplineListRef}
+          disciplines={sortedDisciplines}
+          selected={discipline}
+          onSelect={selectDiscipline}
+        />
 
         {/* Search & Filter Bar */}
         <TvFilterBar
@@ -441,17 +439,12 @@ export function TvGrid({
           categories={allCategories}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
-          years={filterOptions.years}
-          selectedYear={selectedYear}
-          onSelectYear={setSelectedYear}
-          totalActiveFiltersCount={totalActiveFiltersCount}
-          onReset={resetSearchFilters}
         >
           <TvAutoplayerButton
             count={isSearchActive ? searchItems.length : totalForTheaterFilter}
             disciplineLabel={disciplineLabel}
             categoryLabel={isSearchActive ? undefined : categoryLabel}
-            onOpen={handleAutoplay}
+            onOpen={handleShuffle}
             disabled={
               isSearchActive
                 ? searchItems.length === 0
@@ -469,7 +462,7 @@ export function TvGrid({
                 ? "all sports"
                 : (disciplines.find((d) => d.slug === pendingDiscipline)
                     ?.name ?? pendingDiscipline)
-            } sessions…`}
+            } videos…`}
           />
         ) : isSearchActive ? (
           <TvSearchResultsGrid
@@ -492,13 +485,12 @@ export function TvGrid({
             onResetAll={resetSearchFilters}
           />
         ) : filtered.length === 0 ? (
-          <TvFilteredEmptyState
-            onClearFilters={() => selectDiscipline("all")}
-          />
+          <TvFilteredEmptyState onShowAll={() => selectDiscipline("all")} />
         ) : (
           <>
             <TvContinueShelf
               ids={historyIds}
+              progressById={progressById}
               discipline={discipline}
               activeId={activeId}
               knownById={videoById}
@@ -522,6 +514,7 @@ export function TvGrid({
                 activeId={activeId}
                 onSelect={handleSelect}
                 onAppend={appendRowVideos}
+                onSeeAll={handleSeeAll}
               />
             ))}
           </>
@@ -552,6 +545,8 @@ export function TvGrid({
                   theaterQueue.length < totalForTheaterFilter
         }
         autoplay={isAutoplaying}
+        startAt={resume?.id === activeId ? resume.seconds : 0}
+        onProgress={trackWatch}
         autoAdvance={autoAdvance}
         onToggleAutoAdvance={() => setAutoAdvance((v) => !v)}
         onClose={handleClose}

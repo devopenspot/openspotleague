@@ -27,7 +27,7 @@ describe("TvCategoryPills", () => {
     expect(musicBtn).toBeDefined();
     expect(musicBtn.getAttribute("aria-pressed")).toBe("false");
 
-    const profileBtn = screen.getByRole("button", { name: "Profile" });
+    const profileBtn = screen.getByRole("button", { name: "Rider profiles" });
     expect(profileBtn).toBeDefined();
     expect(profileBtn.getAttribute("aria-pressed")).toBe("false");
   });
@@ -72,6 +72,6 @@ describe("TvCategoryPills", () => {
 
     expect(screen.getByRole("button", { name: "All categories" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Music" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Profile" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Rider profiles" })).toBeDisabled();
   });
 });

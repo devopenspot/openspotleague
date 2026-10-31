@@ -4,6 +4,7 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TvCard } from "@/types/tv";
 import { cn } from "@/lib/utils/cn";
+import { TvQueueItemSkeleton } from "@/components/tv/grid/TvCatalogSkeleton";
 import {
   toTvMarqueeItems,
   type TvMarqueeItem,
@@ -25,7 +26,7 @@ function QueueThumb({ thumb }: { thumb: string | null }) {
     return (
       <span
         aria-hidden="true"
-        className="flex h-full w-full items-center justify-center bg-white/10 font-display text-[9px] font-bold uppercase tracking-widest text-white/50"
+        className="flex h-full w-full items-center justify-center bg-wire-border font-display text-[9px] font-bold uppercase tracking-widest text-wire-muted"
       >
         TV
       </span>
@@ -72,10 +73,10 @@ const TvQueueStripItem = memo(function TvQueueStripItem({
       style={{ contentVisibility: "auto", containIntrinsicSize: "112px 76px" }}
       className={cn(
         "group relative w-auto max-w-60 min-w-52 shrink-0 snap-start overflow-hidden rounded-[10px] border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:w-20",
-        active ? "border-white" : "border-white/15 hover:border-white/40",
+        active ? "border-on-wire" : "border-wire-border-strong hover:border-wire-muted",
       )}
     >
-      <span className="relative block aspect-video w-full overflow-hidden bg-white/10">
+      <span className="relative block aspect-video w-full overflow-hidden bg-wire-border">
         <QueueThumb thumb={item.thumb} />
         {active ? (
           <span
@@ -92,7 +93,7 @@ const TvQueueStripItem = memo(function TvQueueStripItem({
       <span
         className={cn(
           "block truncate px-1.5 py-1 text-[10px] font-semibold leading-tight landscape:hidden",
-          active ? "text-white" : "text-white/60",
+          active ? "text-on-wire" : "text-wire-muted",
         )}
       >
         {item.title}
@@ -175,7 +176,7 @@ export const TvQueueStrip = memo(function TvQueueStrip({
   if (items.length === 0) return null;
 
   return (
-    <div className="shrink-0 border-t border-white/10 bg-black px-2 py-2 sm:px-4 landscape:py-1">
+    <div className="shrink-0 border-t border-wire-border bg-black px-2 py-2 sm:px-4 landscape:py-1">
       <div
         ref={scrollerRef}
         role="region"
@@ -197,18 +198,7 @@ export const TvQueueStrip = memo(function TvQueueStrip({
         ))}
 
         {/* Skeleton placeholder during in-flight page loading */}
-        {isLoadingMore ? (
-          <div
-            role="status"
-            aria-label="Loading more videos…"
-            className="group relative w-auto max-w-60 min-w-52 shrink-0 snap-start overflow-hidden rounded-[10px] border border-white/10 bg-white/5 landscape:w-20 "
-          >
-            <span className="relative block aspect-video w-full bg-white/10" />
-            <span className="block px-1.5 py-1 text-[10px] landscape:hidden">
-              <span className="block h-2.5 w-16 bg-white/10 rounded" />
-            </span>
-          </div>
-        ) : null}
+        {isLoadingMore ? <TvQueueItemSkeleton /> : null}
 
         {/* Sentinel for queue lazy loading */}
         {hasMore ? (

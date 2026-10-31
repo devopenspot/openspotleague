@@ -7,7 +7,7 @@ const tvTheme = { "--color-wire": "#060912" } as CSSProperties;
 
 export default function TvLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-wire text-white" style={tvTheme}>
+    <div className="min-h-dvh bg-wire text-on-wire" style={tvTheme}>
       {children}
     </div>
   );

@@ -14,11 +14,10 @@ describe("TvAutoplayerButton", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: /Autoplay All sports/i,
+      name: /Shuffle All sports/i,
     });
     expect(button).toBeDefined();
     expect(button.getAttribute("disabled")).toBeNull();
-    expect(screen.getByText("All sports")).toBeDefined();
   });
 
   it("includes category label when provided", () => {
@@ -33,10 +32,9 @@ describe("TvAutoplayerButton", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /Autoplay BMX · Music/i,
+        name: /Shuffle BMX · Music/i,
       }),
     ).toBeDefined();
-    expect(screen.getByText("BMX · Music")).toBeDefined();
   });
 
   it("treats category label 'All' as all categories without redundancy", () => {
@@ -51,10 +49,9 @@ describe("TvAutoplayerButton", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /Autoplay All sports/i,
+        name: /Shuffle All sports/i,
       }),
     ).toBeDefined();
-    expect(screen.getByText("All sports")).toBeDefined();
   });
 
   it("calls onOpen when clicked by user", async () => {
@@ -68,7 +65,7 @@ describe("TvAutoplayerButton", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: /Autoplay Skateboard/i,
+      name: /Shuffle Skateboard/i,
     });
     await userEvent.click(button);
     expect(onOpen).toHaveBeenCalledTimes(1);
@@ -84,7 +81,7 @@ describe("TvAutoplayerButton", () => {
     );
 
     const button = screen.getByRole("button", {
-      name: /Autoplay unavailable — No videos for this filter/i,
+      name: /Shuffle unavailable — No videos for this filter/i,
     });
     expect(button.hasAttribute("disabled")).toBe(true);
   });

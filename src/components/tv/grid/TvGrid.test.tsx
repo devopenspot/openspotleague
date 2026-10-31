@@ -122,7 +122,7 @@ describe("TvGrid discipline preference", () => {
     );
     // Switch pending → skeleton covers the refetch gap…
     expect(
-      screen.getByRole("status", { name: "Loading BMX sessions…" }),
+      screen.getByRole("status", { name: "Loading BMX videos…" }),
     ).toBeDefined();
     // …fresh rows landing resolves it and grid content agrees with the pill
     rerender(gridElement([row([card("v1", "BMX Night", "bmx")])]));
@@ -228,7 +228,7 @@ describe("TvGrid discipline preference", () => {
     // Tap → pill flips instantly, skeleton covers the refetch gap…
     await userEvent.click(screen.getByRole("tab", { name: "Skateboard" }));
     expect(
-      screen.getByRole("status", { name: "Loading Skateboard sessions…" }),
+      screen.getByRole("status", { name: "Loading Skateboard videos…" }),
     ).toBeDefined();
     // …pills stay interactive while loading
     expect(screen.getByRole("tab", { name: "BMX" })).not.toBeDisabled();
@@ -278,7 +278,7 @@ describe("TvGrid discipline preference", () => {
       usePreferencesStore.getState().setPreferredSport("BMX");
       renderGrid([row([card("v1", "BMX Night", "bmx")])]);
       expect(
-        screen.getByRole("status", { name: "Loading BMX sessions…" }),
+        screen.getByRole("status", { name: "Loading BMX videos…" }),
       ).toBeDefined();
 
       await act(async () => {
@@ -328,9 +328,9 @@ describe("TvGrid theater queue affordances (lazy /api/tv/ids)", () => {
     renderGrid([row([card("v1", "BMX Night", "bmx"), card("v2", "BMX Sequel", "bmx")], 12)]);
 
     await userEvent.click(
-      screen.getByRole("button", { name: /BMX Night — bmx/ }),
+      screen.getByRole("button", { name: /BMX Night — BMX/ }),
     );
-    expect(screen.getByText(/Now Playing — All sports/)).toBeDefined();
+    expect(screen.getByText(/Now playing · All sports/)).toBeDefined();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -341,9 +341,9 @@ describe("TvGrid theater queue affordances (lazy /api/tv/ids)", () => {
     renderGrid([row([card("v1", "BMX Night", "bmx"), card("v2", "BMX Sequel", "bmx")], 2)]);
 
     await userEvent.click(
-      screen.getByRole("button", { name: /BMX Sequel — bmx/ }),
+      screen.getByRole("button", { name: /BMX Sequel — BMX/ }),
     );
-    expect(screen.getByText(/Now Playing — All sports/)).toBeDefined();
+    expect(screen.getByText(/Now playing · All sports/)).toBeDefined();
     expect(queryQueue(fetchMock)).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Next video" })).toBeDisabled();
   });
@@ -360,7 +360,7 @@ describe("TvGrid theater queue affordances (lazy /api/tv/ids)", () => {
     renderGrid([row([card("v1", "BMX Night", "bmx"), card("v2", "BMX Sequel", "bmx")], 3)]);
 
     await userEvent.click(
-      screen.getByRole("button", { name: /BMX Sequel — bmx/ }),
+      screen.getByRole("button", { name: /BMX Sequel — BMX/ }),
     );
     // Right-edge open with more pages → one snapshot fetch affords Next…
     await waitFor(() => expect(queryQueue(fetchMock)).toHaveLength(1));
@@ -393,7 +393,7 @@ describe("TvGrid theater queue affordances (lazy /api/tv/ids)", () => {
     renderGrid([row([card("v1", "BMX Night", "bmx"), card("v2", "BMX Sequel", "bmx")], 5)]);
 
     await userEvent.click(
-      screen.getByRole("button", { name: /BMX Sequel — bmx/ }),
+      screen.getByRole("button", { name: /BMX Sequel — BMX/ }),
     );
     await waitFor(() => expect(queryQueue(fetchMock)).toHaveLength(1));
     const nextBtn = screen.getByRole("button", { name: "Next video" });
@@ -417,7 +417,12 @@ describe("TvGrid theater queue affordances (lazy /api/tv/ids)", () => {
 });
 
 describe("TvAutoplayerButton continuous playback", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("plays video after video automatically when triggered", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
     renderGrid([
       row([
         card("v1", "BMX First", "bmx"),
@@ -427,18 +432,18 @@ describe("TvAutoplayerButton continuous playback", () => {
 
     // 1. Locate and click the Autoplayer button
     const autoplayBtn = screen.getByRole("button", {
-      name: /Autoplay All sports/i,
+      name: /Shuffle All sports/i,
     });
     expect(autoplayBtn).toBeDefined();
     await userEvent.click(autoplayBtn);
 
     // 2. First video opens and starts playing in Auto mode
     await waitFor(() =>
-      expect(screen.getByText(/Now Playing — All sports/)).toBeDefined(),
+      expect(screen.getByText(/Now playing · All sports/)).toBeDefined(),
     );
     expect(screen.getAllByText(/BMX First/).length).toBeGreaterThan(0);
     expect(
-      screen.getByRole("button", { name: /Auto-advance on/i }),
+      screen.getByRole("button", { name: /Autoplay next on/i }),
     ).toBeDefined();
 
     // 3. YouTube video ends: iframe dispatches state 0 (ended)
@@ -515,7 +520,7 @@ describe("TvGrid All categories pill button", () => {
 
     // Shows switch status
     expect(
-      screen.getByRole("status", { name: "Loading all sports sessions…" }),
+      screen.getByRole("status", { name: "Loading all sports videos…" }),
     ).toBeDefined();
 
     // Settle with fresh unfiltered rows
@@ -557,6 +562,25 @@ describe("TvGrid All categories pill button", () => {
   });
 });
 
+describe("TvGrid row order", () => {
+  it("puts hype rows ahead of long watches", () => {
+    renderGrid(
+      [
+        row([card("v1", "A Doc", "bmx")], 1, "documentary"),
+        row([card("v2", "A Part", "bmx")], 1, "video part"),
+      ],
+      "all",
+    );
+
+    const headings = screen
+      .getAllByRole("heading", { level: 2 })
+      .map((h) => h.textContent);
+    expect(headings.indexOf("Video parts")).toBeLessThan(
+      headings.indexOf("Documentary"),
+    );
+  });
+});
+
 describe("TvGrid multi-category compatibility", () => {
   it("renders a multi-category video across all its category rows and deduplicates the total count when fully loaded", async () => {
     const multiVideo = card("v1", "Dual Session", "bmx", [
@@ -575,22 +599,22 @@ describe("TvGrid multi-category compatibility", () => {
     );
 
     expect(
-      screen.getAllByRole("region", { name: "profile sessions" }).length,
+      screen.getAllByRole("region", { name: "Rider profiles" }).length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getAllByRole("region", { name: "music sessions" }).length,
+      screen.getAllByRole("region", { name: "Music" }).length,
     ).toBeGreaterThan(0);
     expect(
-      screen.getAllByRole("region", { name: "custom-jam sessions" }).length,
+      screen.getAllByRole("region", { name: "Custom-jam" }).length,
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByRole("group", { name: "Dual Session" }),
     ).toHaveLength(2);
 
-    // Autoplay button reflects All sports without count suffix
+    // Shuffle button reflects All sports without count suffix
     expect(
       screen.getByRole("button", {
-        name: /Autoplay All sports/i,
+        name: /Shuffle All sports/i,
       }),
     ).toBeDefined();
   });
@@ -601,7 +625,7 @@ describe("TvGrid searching and filtering", () => {
     renderGrid([row([card("v1", "Sample", "skateboard")])], "all");
 
     expect(
-      screen.getByPlaceholderText("Search videos by name..."),
+      screen.getByPlaceholderText("Search riders or tricks"),
     ).toBeDefined();
     expect(
       screen.getByRole("combobox", { name: /filter by category/i }),
@@ -630,7 +654,7 @@ describe("TvGrid searching and filtering", () => {
     expect(screen.getByText("Paris Street League")).toBeDefined();
     // Default marquee row is hidden
     expect(
-      screen.queryByRole("region", { name: /music sessions/i }),
+      screen.queryByRole("region", { name: "Music" }),
     ).toBeNull();
   });
 
@@ -657,7 +681,7 @@ describe("TvGrid searching and filtering", () => {
 
     // Reset button is present
     const resetButton = screen.getByRole("button", {
-      name: /reset all search filters/i,
+      name: "Clear filters",
     });
     expect(resetButton).toBeDefined();
 
@@ -666,9 +690,21 @@ describe("TvGrid searching and filtering", () => {
     // After reset, search is inactive and default category marquee reappears
     await waitFor(() => {
       expect(
-        screen.getAllByRole("region", { name: /music sessions/i }).length,
+        screen.getAllByRole("region", { name: "Music" }).length,
       ).toBeGreaterThan(0);
     });
+  });
+
+  it("See all opens the row's category as a full grid", async () => {
+    renderGrid([row([card("v1", "Epic Line", "bmx")], 1, "epic tricks")], "all");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "See all Epic tricks" }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: /remove category filter/i }),
+    ).toBeDefined();
   });
 
   it("opens theater modal when clicking a video card from search results", async () => {
@@ -688,7 +724,7 @@ describe("TvGrid searching and filtering", () => {
 
     // Modal opens displaying video title
     await waitFor(() => {
-      expect(screen.getByText(/Now Playing/i)).toBeDefined();
+      expect(screen.getByText(/Now playing/i)).toBeDefined();
     });
   });
 });

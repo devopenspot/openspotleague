@@ -13,8 +13,8 @@ import type { TvCard } from "@/types/tv";
 import { env } from "@/lib/config/env";
 import { TV_OG_IMAGE_PATH, buildTvShareDescription, resolveTvOgImage } from "@/lib/tv/share";
 import { resolveDisciplineParam } from "@/components/tv/marquee/tv-marquee-data";
+import { TvCatalogSkeleton } from "@/components/tv/grid/TvCatalogSkeleton";
 import { TvGrid } from "@/components/tv/grid/TvGrid";
-import TvLoading from "./loading";
 
 const TV_TITLE = "TV — Open Spot";
 const TV_DESCRIPTION =
@@ -205,7 +205,7 @@ export default async function TvPage({
           "listTvCardPage-tv-search",
         )
       : Promise.resolve(null),
-    // "New this week" shelf — skipped while a search is rendering results.
+    // "Just added" shelf — skipped while a search is rendering results.
     isSearchActive
       ? Promise.resolve(null)
       : withSafeDefault(
@@ -222,9 +222,9 @@ export default async function TvPage({
   ]);
 
   return (
-    <div className="min-h-dvh bg-black">
+    <div className="min-h-dvh">
       <div className="mx-auto max-w-6xl px-0 py-2 md:py-8">
-        <Suspense fallback={<TvLoading />}>
+        <Suspense fallback={<TvCatalogSkeleton />}>
           <TvGrid
             rows={rows}
             disciplines={normalized}

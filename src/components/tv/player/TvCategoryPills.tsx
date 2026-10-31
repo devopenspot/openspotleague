@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import type { TvCategory } from "@/types/tv";
 import { cn } from "@/lib/utils/cn";
 import { formatTvCategory } from "@/components/tv/marquee/tv-marquee-data";
@@ -19,8 +19,8 @@ function pillClassName(active: boolean): string {
   return cn(
     "inline-flex h-8 sm:h-7.5 shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 sm:px-2.5 font-display text-[11px] sm:text-[10px] font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 touch-manipulation landscape:h-6.5 landscape:px-2.5 landscape:text-[9.5px]",
     active
-      ? "border-white bg-white text-black"
-      : "border-white/15 bg-white/10 text-white/80 hover:bg-white/15 hover:text-white",
+      ? "border-on-wire bg-on-wire text-black"
+      : "border-wire-border-strong bg-wire-border text-on-wire hover:bg-wire-border-strong",
   );
 }
 
@@ -30,11 +30,21 @@ export const TvCategoryPills = memo(function TvCategoryPills({
   onSelect,
   disabled = false,
 }: TvCategoryPillsProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // One scrolling line: keep the active pill in view when opened from a row
+  useEffect(() => {
+    listRef.current
+      ?.querySelector<HTMLElement>('[aria-pressed="true"]')
+      ?.scrollIntoView?.({ inline: "center", block: "nearest" });
+  }, [selected]);
+
   return (
     <div
+      ref={listRef}
       role="group"
       aria-label="Filter queue by category"
-      className="flex flex-wrap snap-x gap-1.5 overflow-x-auto overscroll-x-contain px-3 py-1.5 no-scrollbar touch-pan-x sm:px-4 landscape:py-0.5"
+      className="flex snap-x gap-1.5 overflow-x-auto overscroll-x-contain px-3 py-1.5 no-scrollbar touch-pan-x sm:px-4 landscape:py-0.5"
     >
       <button
         type="button"
