@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy, Link as LinkIcon, QrCode, Share2 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { useShareUrl } from "@/components/games/hooks/useShareUrl";
 import { showToast } from "@/hooks/ui/useToast";
 import { copyText, shareOrCopyUrl } from "@/lib/utils/share";
-import { getOrFetchShortUrl, resolveCanonicalShareUrl } from "@/lib/utils/short-url";
 import { cn } from "@/lib/utils/cn";
 
 export function ShareActions({
@@ -24,21 +24,7 @@ export function ShareActions({
   compact?: boolean;
 }) {
   const [showQr, setShowQr] = useState(false);
-  const [shortUrl, setShortUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    void getOrFetchShortUrl(url, title).then((resolved) => {
-      if (active) {
-        setShortUrl(resolved);
-      }
-    });
-    return () => {
-      active = false;
-    };
-  }, [url, title]);
-
-  const activeUrl = shortUrl ?? resolveCanonicalShareUrl(url);
+  const activeUrl = useShareUrl(url, title);
 
   async function handleCopy(value: string, message: string) {
     if (await copyText(value)) showToast(message, "success");

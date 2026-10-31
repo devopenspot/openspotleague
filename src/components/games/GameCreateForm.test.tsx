@@ -9,7 +9,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { Mock } from "vitest";
 
-const { requestLocationMock, userLocationState, routerPushMock, spotWeatherState } = vi.hoisted(() => ({
+const { requestLocationMock, userLocationState, routerPushMock, spotWeatherState, showToastSpy } = vi.hoisted(() => ({
+  showToastSpy: vi.fn(),
   requestLocationMock: vi.fn(),
   userLocationState: {
     status: "idle",
@@ -23,6 +24,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: routerPushMock }),
   usePathname: () => "/games/new",
 }));
+
+vi.mock("@/hooks/ui/useToast", () => ({ showToast: showToastSpy }));
 
 vi.mock("@/hooks/map/useUserLocation", () => ({
   useUserLocation: () => ({
@@ -103,6 +106,7 @@ async function openSetupDialog(
 beforeEach(() => {
   vi.clearAllMocks();
   sessionStorage.clear();
+  localStorage.clear();
   spotWeatherState.current = 22;
   vi.stubGlobal("fetch", vi.fn());
   (fetch as Mock).mockImplementation(async (input: RequestInfo | URL) => {
@@ -243,6 +247,8 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn={false} />);
 
     const nameInput = await screen.findByLabelText("Rider name");
+    await waitFor(() => expect(nameInput).not.toHaveValue(""));
+    await user.clear(nameInput);
     await user.type(nameInput, "Street Rider");
     await user.click(screen.getByTestId("desktop-create-game"));
 
@@ -363,6 +369,11 @@ describe("GameCreateForm", () => {
 
     const dialog = await openSetupDialog(user);
     const nameInput = within(dialog).getByLabelText("Rider name");
+    await waitFor(() =>
+      expect((nameInput as HTMLInputElement).value).toMatch(/^Rider \d{4}$/),
+    );
+
+    await user.clear(nameInput);
     await user.type(nameInput, "Street Rider");
 
     expect(nameInput).toHaveValue("Street Rider");
@@ -373,6 +384,7 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn={false} />);
 
     const dialog = await openSetupDialog(user);
+    await user.clear(within(dialog).getByLabelText("Rider name"));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
 
     const nameInput = within(dialog).getByLabelText("Rider name");
@@ -728,6 +740,7 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn={false} />);
 
     const dialog = await openSetupDialog(user);
+    await user.clear(within(dialog).getByLabelText("Rider name"));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
 
     const nameInput = within(dialog).getByLabelText("Rider name");
@@ -741,6 +754,220 @@ describe("GameCreateForm", () => {
         ([input]) => String(input) === "/api/games",
       ),
     ).toBe(false);
+  });
+
+  describe("one-tap start", () => {
+    function mockCreate(trainAlone = jsonResponse({ id: "game-1", version: 1 })) {
+      const fetchMock = fetch as Mock;
+      fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/games/options")) {
+          return jsonResponse({
+            disciplineSlug: "skateboard",
+            spotTypes: [
+              { slug: "rails", name: "Rails", sortOrder: 1, levels: [1, 2, 3] },
+              { slug: "ledge", name: "Ledge", sortOrder: 2, levels: [1, 2, 3] },
+            ],
+          });
+        }
+        if (url === "/api/games") {
+          return jsonResponse({ id: "game-1", version: 4 }, 201);
+        }
+        if (url === "/api/games/game-1/train-alone") return trainAlone;
+        return jsonResponse({ error: "Not found" }, 404);
+      });
+      return fetchMock;
+    }
+
+    const calls = (fetchMock: Mock) =>
+      fetchMock.mock.calls
+        .map(([input]) => String(input))
+        .filter((url) => !url.includes("options"));
+
+    async function tap(user: TestUser, name: string) {
+      await user.click(await screen.findByRole("button", { name }));
+    }
+
+    it("Ride Solo creates the lobby, starts solo, then opens the game", async () => {
+      const user = userEvent.setup();
+      const fetchMock = mockCreate();
+      render(<GameCreateForm signedIn />);
+
+      await screen.findByText(/Rails · Level 1 · Flexible/);
+      await tap(user, "Ride Solo");
+
+      await waitFor(() => expect(routerPushMock).toHaveBeenCalledWith("/games/game-1"));
+      expect(calls(fetchMock)).toEqual([
+        "/api/games",
+        "/api/games/game-1/train-alone",
+      ]);
+      const soloCall = fetchMock.mock.calls.find(([input]) =>
+        String(input).endsWith("/train-alone"),
+      );
+      expect(JSON.parse(String(soloCall?.[1]?.body))).toMatchObject({
+        expectedVersion: 4,
+      });
+    });
+
+    it("lands in the lobby if the solo start fails", async () => {
+      const user = userEvent.setup();
+      mockCreate(jsonResponse({ error: "Nope" }, 500));
+      render(<GameCreateForm signedIn />);
+
+      await screen.findByText(/Rails · Level 1 · Flexible/);
+      await tap(user, "Ride Solo");
+
+      await waitFor(() => expect(routerPushMock).toHaveBeenCalledWith("/games/game-1"));
+    });
+
+    it("Play A Friend only creates the lobby", async () => {
+      const user = userEvent.setup();
+      const fetchMock = mockCreate();
+      render(<GameCreateForm signedIn />);
+
+      await screen.findByText(/Rails · Level 1 · Flexible/);
+      await tap(user, "Play A Friend");
+
+      await waitFor(() => expect(routerPushMock).toHaveBeenCalledWith("/games/game-1"));
+      expect(calls(fetchMock)).toEqual(["/api/games"]);
+    });
+
+    it("lets a guest start with no typing", async () => {
+      const user = userEvent.setup();
+      const fetchMock = mockCreate();
+      render(<GameCreateForm signedIn={false} />);
+
+      await screen.findByText(/Rails · Level 1 · Flexible/);
+      await tap(user, "Ride Solo");
+
+      await waitFor(() => expect(routerPushMock).toHaveBeenCalled());
+      const createCall = fetchMock.mock.calls.find(
+        ([input]) => String(input) === "/api/games",
+      );
+      expect(createCall?.[1]?.headers).toMatchObject({
+        "x-guest-name": expect.stringMatching(/^Rider \d{4}$/),
+      });
+      const soloCall = fetchMock.mock.calls.find(([input]) =>
+        String(input).endsWith("/train-alone"),
+      );
+      expect(soloCall?.[1]?.headers).toHaveProperty("x-guest-token");
+    });
+
+    it("keeps a tap made while the settings are still loading", async () => {
+      const user = userEvent.setup();
+      const fetchMock = mockCreate();
+      const realFetch = fetchMock.getMockImplementation()!;
+      let finishOptions = () => undefined as void;
+      const optionsGate = new Promise<void>((resolve) => {
+        finishOptions = resolve;
+      });
+      fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+        if (String(input).includes("/api/games/options")) await optionsGate;
+        return realFetch(input);
+      });
+      render(<GameCreateForm signedIn />);
+
+      await tap(user, "Ride Solo");
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Starting…" }),
+      ).toBeDisabled();
+      expect(calls(fetchMock)).toEqual([]);
+
+      finishOptions();
+
+      await waitFor(() =>
+        expect(routerPushMock).toHaveBeenCalledWith("/games/game-1"),
+      );
+      expect(calls(fetchMock)).toEqual([
+        "/api/games",
+        "/api/games/game-1/train-alone",
+      ]);
+    });
+
+    it("says so when the settings can't load, instead of opening setup", async () => {
+      const user = userEvent.setup();
+      (fetch as Mock).mockImplementation(async (input: RequestInfo | URL) =>
+        String(input).includes("/api/games/options")
+          ? jsonResponse({ error: "Game settings could not be loaded." }, 500)
+          : jsonResponse({ error: "Not found" }, 404),
+      );
+      render(<GameCreateForm signedIn />);
+
+      await tap(user, "Ride Solo");
+
+      await waitFor(() =>
+        expect(showToastSpy).toHaveBeenCalledWith(
+          "Game settings could not be loaded.",
+          "error",
+        ),
+      );
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(routerPushMock).not.toHaveBeenCalled();
+    });
+
+    it("starts from the settings of the last game", async () => {
+      localStorage.setItem(
+        "openspot:game-setup:v1:skateboard",
+        JSON.stringify({
+          ruleMode: "strict",
+          level: 2,
+          spotType: "ledge",
+          categories: [],
+        }),
+      );
+      mockCreate();
+      render(<GameCreateForm signedIn />);
+
+      expect(
+        await screen.findByText(/Ledge · Level 2 · Strict/),
+      ).toBeInTheDocument();
+    });
+
+    it("remembers the settings after a game starts", async () => {
+      const user = userEvent.setup();
+      mockCreate();
+      render(<GameCreateForm signedIn />);
+
+      await screen.findByText(/Rails · Level 1 · Flexible/);
+      await tap(user, "Ride Solo");
+
+      await waitFor(() => expect(routerPushMock).toHaveBeenCalled());
+      expect(
+        JSON.parse(localStorage.getItem("openspot:game-setup:v1:skateboard") ?? "{}"),
+      ).toMatchObject({ ruleMode: "flexible", level: 1, spotType: "rails" });
+    });
+
+    it("asks for the sport first when none is set", async () => {
+      const user = userEvent.setup();
+      usePreferencesStore.getState().setPreferences(
+        { distanceUnit: "km", temperatureUnit: "C", preferredSport: "all" },
+        { accountId: "user-1", hasLocalChanges: false },
+      );
+      const fetchMock = mockCreate();
+      render(<GameCreateForm signedIn />);
+
+      await tap(user, "Ride Solo");
+
+      expect(calls(fetchMock)).toEqual([]);
+      expect(routerPushMock).not.toHaveBeenCalled();
+      expect(
+        screen.queryByRole("dialog", { name: "Start training" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("sends Challenge through setup rather than starting it", async () => {
+      const user = userEvent.setup();
+      render(<GameCreateForm signedIn />);
+
+      await user.click(await screen.findByRole("radio", { name: "Challenge" }));
+
+      expect(screen.queryByRole("button", { name: "Ride Solo" })).toBeNull();
+      expect(
+        screen.getAllByRole("button", { name: "Create Challenge" }).length,
+      ).toBeGreaterThan(0);
+    });
   });
 
   it("submits Training with explicit flexible trick settings", async () => {

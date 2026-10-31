@@ -1,13 +1,17 @@
-import { render, screen, waitFor, within } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { pushMock } = vi.hoisted(() => ({ pushMock: vi.fn() }))
+const { pushMock, searchParams } = vi.hoisted(() => ({
+  pushMock: vi.fn(),
+  searchParams: { value: new URLSearchParams() },
+}))
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
   usePathname: () => "/games",
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParams.value,
 }))
 
 vi.mock("@/components/games/create/GameCreateForm", () => ({
@@ -27,7 +31,10 @@ vi.mock("@/components/games/shared/ResponsibilityPolicyModal", () => ({
   ResponsibilityPolicyModal: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div role="dialog" aria-label="Rider policy modal" /> : null,
 }))
-vi.mock("@/components/games/matches/MatchesDrawer", () => ({ MatchesDrawer: () => null }))
+vi.mock("@/components/games/matches/MatchesDrawer", () => ({
+  MatchesDrawer: ({ isOpen, children }: { isOpen: boolean; children: ReactNode }) =>
+    isOpen ? <div role="dialog" aria-label="Your games">{children}</div> : null,
+}))
 vi.mock("@/components/games/board/RiderActivityBoard", () => ({
   RiderActivityBoard: () => null,
   useRiderActivity: () => ({ days: [], error: false }),
@@ -40,6 +47,8 @@ import { useUIStore } from "@/stores/ui-store"
 describe("GameLanding", () => {
   beforeEach(() => {
     pushMock.mockReset()
+    searchParams.value = new URLSearchParams()
+    window.localStorage.clear()
     vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("offline"))))
     usePreferencesStore.getState().setPreferences(
       { distanceUnit: "km", temperatureUnit: "C", preferredSport: "Skateboard" },
@@ -99,35 +108,99 @@ describe("GameLanding", () => {
     expect(pushMock).not.toHaveBeenCalled()
   })
 
-  it("opens the signed-in rider record in a drawer across viewports", async () => {
+  it("keeps a rider's record and matches together in one drawer", async () => {
     const user = userEvent.setup()
     render(<GameLanding signedIn />)
 
-    const trigger = screen.getByRole("button", { name: "record" })
-    expect(trigger).toHaveClass("inline-flex")
-    expect(trigger).not.toHaveClass("lg:hidden")
+    const trigger = screen.getByRole("button", { name: "Your games" })
+    expect(trigger).toHaveAttribute("aria-controls", "matches-drawer")
+    expect(trigger).toHaveAttribute("aria-expanded", "false")
     await user.click(trigger)
 
-    const dialog = await screen.findByRole("dialog", { name: "record" })
+    const dialog = await screen.findByRole("dialog", { name: "Your games" })
     expect(trigger).toHaveAttribute("aria-expanded", "true")
-    expect(
-      within(dialog).getByRole("button", { name: "View your matches" }),
-    ).toBeInTheDocument()
-
-    await user.keyboard("{Escape}")
-
-    await waitFor(() =>
-      expect(screen.queryByRole("dialog", { name: "record" })).not.toBeInTheDocument(),
-    )
-    expect(trigger).toHaveFocus()
+    expect(within(dialog).getByText("Your record")).toBeInTheDocument()
+    expect(within(dialog).getByText("Played")).toBeInTheDocument()
   })
 
-  it("exposes a direct matches trigger for signed-in riders", () => {
+  it("explains a failed join, which used to fail silently", () => {
+    searchParams.value = new URLSearchParams("error=game-not-found")
+    render(<GameLanding signedIn={false} />)
+
+    expect(screen.getByRole("alert")).toHaveTextContent("That code didn't match a game")
+  })
+
+  it("puts a Resume card first when a game is still running", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.startsWith("/api/games?limit=")) {
+          return {
+            ok: true,
+            json: async () => [
+              {
+                id: "game-9",
+                status: "active",
+                shareCode: "code",
+                mode: "training",
+                disciplineSlug: "skateboard",
+                gameName: "Sunset Plaza",
+                spotId: null,
+                scheduledStartAt: null,
+                nextSpotType: "ledge",
+                version: 1,
+                updatedAt: "2030-01-01T12:05:00.000Z",
+              },
+            ],
+          }
+        }
+        throw new Error("offline")
+      }),
+    )
     render(<GameLanding signedIn />)
 
-    const matchesButton = screen.getByRole("button", { name: "Matches" })
-    expect(matchesButton).toBeInTheDocument()
-    expect(matchesButton).toHaveAttribute("aria-controls", "matches-drawer")
+    const resume = await screen.findByRole("link", { name: /Resume Game/ })
+    expect(resume).toHaveAttribute("href", "/games/game-9")
+    expect(resume).toHaveTextContent("Sunset Plaza")
+  })
+
+  it("shows no Resume card when nothing is running", async () => {
+    render(<GameLanding signedIn />)
+    await act(async () => undefined)
+    expect(screen.queryByRole("link", { name: /Resume Game/ })).not.toBeInTheDocument()
+  })
+
+  it("follows a pasted invite link in one tap", async () => {
+    const user = userEvent.setup()
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        readText: vi.fn(async () => "https://openspotleague.com/games/join/aB3_x"),
+      },
+    })
+    render(<GameLanding signedIn={false} />)
+
+    await user.click(screen.getByTestId("join-game-trigger"))
+    const dialog = await screen.findByRole("dialog", { name: "Have a share code?" })
+    await user.click(await within(dialog).findByRole("button", { name: "Paste" }))
+
+    expect(pushMock).toHaveBeenCalledWith("/games/join/aB3_x")
+  })
+
+  it("rejects a pasted link that isn't a game", async () => {
+    const user = userEvent.setup()
+    render(<GameLanding signedIn={false} />)
+
+    await user.click(screen.getByTestId("join-game-trigger"))
+    const dialog = await screen.findByRole("dialog", { name: "Have a share code?" })
+    await user.type(
+      within(dialog).getByLabelText("Enter a game share code"),
+      "https://example.com/phish",
+    )
+    await user.click(within(dialog).getByRole("button", { name: "Join" }))
+
+    expect(screen.getByRole("alert")).toHaveTextContent("doesn't look like a game link")
+    expect(pushMock).not.toHaveBeenCalled()
   })
 
   it("renders active and recent matches section when signed in", () => {

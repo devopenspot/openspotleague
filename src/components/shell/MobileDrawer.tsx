@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { X, Settings } from "lucide-react";
 import Link from "next/link";
+import { SIDE_DRAWER_PANEL } from "@/components/feedback/DrawerParts";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 import { UserAvatar } from "@/components/ui";
 import { SignInLink } from "@/components/shell/SignInLink";
@@ -62,7 +63,7 @@ export function MobileDrawer() {
       contentId={DRAWER_ID}
       closeOnRouteChange={false}
       side="right"
-      panelClassName="w-98 max-w-[calc(100vw-1rem)] justify-between border-l border-wire-border bg-primary text-on-primary"
+      panelClassName={`${SIDE_DRAWER_PANEL} justify-between bg-primary text-on-primary`}
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-wire-border bg-primary px-5 py-3.5">
@@ -72,9 +73,9 @@ export function MobileDrawer() {
             type="button"
             onClick={closeDrawer}
             aria-label="Close menu"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-wire-border bg-wire-border text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-wire-border bg-wire-border text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
           >
-            <X size={16} aria-hidden="true" />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
 

@@ -161,12 +161,6 @@ export function deriveHeaderState(
       (pid) => game?.players.find((p) => p.id === pid)?.displayName ?? "Rider",
     )
     .slice(0, 4);
-  const shouldPromptTrickDrawer = Boolean(
-    (canSubmitThisRound || isWaitingForOthers) &&
-    current &&
-    isLiveChallenge &&
-    !isTerminal,
-  );
 
   const winner = game?.players.find(
     (player) => player.id === game?.winnerPlayerId,
@@ -218,7 +212,6 @@ export function deriveHeaderState(
     pendingIds,
     pendingNames,
     pendingCount: pendingIds.length,
-    shouldPromptTrickDrawer,
     canSubmitThisRound,
   };
 }

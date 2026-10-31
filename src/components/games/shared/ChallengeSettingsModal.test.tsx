@@ -50,7 +50,7 @@ describe("ChallengeSettingsModal", () => {
       />,
     )
 
-    expect(screen.getByText("Switch It Up")).toBeInTheDocument()
+    expect(screen.getByText("Change Line")).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Next Trick" })).toBeInTheDocument()
   })
 })

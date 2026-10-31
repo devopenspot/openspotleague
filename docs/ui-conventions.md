@@ -29,7 +29,8 @@ Inputs, selects, and textareas must render at 16px or larger on mobile, otherwis
 ## Component organization
 
 - `src/components/games/create/GameCreateForm.tsx`: helper subcomponents live in `form-parts.tsx`. Trick-catalog filtering (AND logic) lives in `trick-catalog-filters.ts`, which has tests.
-- `src/components/games/layout/Header.tsx`: presentational parts are in `header-parts.tsx`, derived state in `header-state.ts` (tested), and onboarding in `share-onboarding.ts`.
+- `src/components/games/board/GameBoardControls.tsx`: renders the desktop deck and `GameSheet`, the phone action surface. Each phase's next step comes from `deriveGameSheetView` in `sheet-state.ts` (tested), derived game state from `layout/header-state.ts` (tested), and presentational parts are in `layout/header-parts.tsx`.
+- `src/components/feedback/`: `BottomSheet` is the non-modal game-sheet, `SideDrawer` plus `DrawerParts` are for anything opened on purpose. See `DESIGN.md`, `components.overlays`.
 - When JSX dereferences `game`, keep the explicit `game &&` guard. TypeScript narrowing is lost across module boundaries.
 
 ## Imports

@@ -5,8 +5,9 @@ description:
   monochrome everywhere else so photos and maps stay the focus. Relaxed
   16px/full for interactive, 14px for cards nested inside 16px parents,
   high-contrast type for outdoor glare, shadowless flat with subtle
-  hover/border, soft brutalist pins. Two overlay patterns only:
-  flush top-sheet (search) and right side-drawer (nav).
+  hover/border, soft brutalist pins. Three overlay patterns only:
+  flush top-sheet (search), right side-drawer (tasks you open yourself),
+  and the non-modal game-sheet (live game sessions on phones).
 colors:
   surface: "#f7f9fb"
   surface-dim: "#d8dadc"
@@ -194,7 +195,7 @@ spacing:
   stack-sm: 8px
   stack-md: 24px
   mobile-nav-h: 64px
-  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is fixed 64px (var(--mobile-nav-h)); Header is content-height (py-3.5), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
+  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is fixed 77px (var(--mobile-nav-h)); Header is content-height (py-3.5), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
   durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
   easings: "ease-out default, linear for radar sweep (3.5s), cubic-bezier(0, 0, 0.2, 1) for ping"
@@ -202,7 +203,7 @@ motion:
   performance-rule: "animate-pulse and infinite pulse animations are strictly BANNED across all user interface components, buttons, badges, status dots, cards, and specifications. Rationale: Continuous CSS opacity/scale pulse loops force continuous repaints, compositor churn, and battery drain in web browsers. Stopping use is mandatory and non-negotiable. ONLY EXCEPTION: Transient skeletons and loading components (*Skeleton.tsx, loading.tsx), which are short-lived placeholders unmounted upon hydration."
   reduced-motion: "All disabled via @media (prefers-reduced-motion: reduce) — respects useReducedMotion in Toast"
   shadows: "Shadowless by default (shadow-none). Exceptions: PanelShell inset+ 0 8px 24px, MarqueeCard hover:shadow-md + -translate-y-px, hover:shadow-sm on discover cards."
-  overlays: "Overlay flush-top: spring damping 30 stiffness 320, 0.18s fade fallback. SideDrawer: spring damping 30 stiffness 320 side slide, backdrop bg-on-surface/50 0.18s. Toast: opacity/y 0.16s easeOut stagger 0.04."
+  overlays: "Overlay flush-top: spring damping 30 stiffness 320, 0.18s fade fallback. SideDrawer: 280ms ease-out enter, 200ms ease-in exit, backdrop bg-on-surface/50 0.18s. Game-sheet: 280ms ease-out between detents, 0ms under reduced motion. Toast: opacity/y 0.16s easeOut stagger 0.04."
 components:
   buttons:
     primary:
@@ -233,7 +234,13 @@ components:
     text-style: "label 12px 600 uppercase 0.05em"
     note: "Tones use semantic containers — neutral/info/success vs error. Fix Badge rounded-[8px] literal → rounded-md."
   overlays:
-    note: "Exactly two patterns — pick one, never a third. Both lock body scroll, trap focus, close on Escape, honor reduced-motion."
+    note: "Exactly three patterns — pick one, never a fourth. Top-sheet and side-drawer are modal: they lock body scroll, trap focus, close on Escape, honor reduced-motion. The game-sheet is the only non-modal pattern. None of them auto-open during play."
+    game-sheet:
+      component: "BottomSheet (GameSheet) — /games/:id below md only"
+      container: "non-modal, no backdrop, always open; the page behind stays scrollable and tappable"
+      detents: "peek, half, full. Peek carries the status line and the one primary action; half adds trick detail; full adds the board and session actions."
+      rule: "No action may depend on a drag: actions stay pinned to the sheet's visible bottom edge at every detent, and a full-width 48px handle button cycles detents. Swipe-down stops at peek, the sheet cannot close. State may change the detent, but never over a choice the rider made during the current round."
+      panel: "bg-surface-container-lowest, rounded-t-lg, border-t-2 border-on-surface, pb-[env(safe-area-inset-bottom)]"
     top-sheet:
       component: "Overlay flush animation=top (SearchOverlay)"
       container: "z-[1300], flush full-bleed column"
@@ -241,11 +248,13 @@ components:
       backdrop: "fixed inset-0 bg-on-surface opacity 0.5 — click closes unless gate forced (closeOnBackdrop=false + role=alertdialog)"
       header-row: "search field row radius-lg border-outline-variant bg-surface-container-low; step label (eyebrow) + Close pill (secondary button pattern) right"
     side-drawer:
-      component: "SideDrawer side=right (MobileDrawer)"
-      container: "z-[1200]"
-      panel: "w-90 max-w-[calc(100vw-1rem)] bg-surface-container-lowest text-on-surface — NO border-r on a right-side drawer (see migration-checklist)"
+      component: "SideDrawer side=right (MobileDrawer, MatchesDrawer, GameShareDrawer, ChallengeSettingsModal) with DrawerHeader / DrawerFooter from DrawerParts"
+      container: "z-[1200], portalled to body"
+      panel: "SIDE_DRAWER_PANEL: w-[min(24rem,calc(100vw-2.5rem))] overflow-hidden rounded-l-lg, leaving 40px of the page visible — NO border on a right-side drawer"
+      gestures: "Touch swipe toward the edge closes (96px or 500px/s). Mouse never drags, so text stays selectable."
+      timing: "Only ever opened by a tap: side-drawers never auto-open."
       backdrop: "absolute inset-0 bg-on-surface opacity 0.5"
-      header: "BrandLogo + circular h-11 w-11 rounded-full close button (border-outline-variant, never border-on-surface)"
+      header: "DrawerHeader: eyebrow, title, and one circular h-12 w-12 rounded-full close button with an X at 20 (border-outline-variant, never border-on-surface). MobileDrawer swaps the title for BrandLogo."
       footer: "border-t border-outline-variant bg-surface-container-low px-5 py-5; Preferences full-width pill; profile card radius-lg"
       rule: "NavLink variants own their own styles — never restyle [data-nav-tab] from the drawer/header parent."
   scrim-pills:
@@ -290,7 +299,7 @@ components:
       border: "1px solid var(--color-outline-variant)"
       bg: var(--color-surface-container-lowest)
       text: "font-display 10px bold uppercase — +N more, self-center"
-    viewport: "fixed bottom-[calc(var(--mobile-nav-h)+1rem)] left-1/2 -translate-x-1/2 z-[1100] w-[min(28rem,calc(100vw-2rem))] gap-2 md:bottom-6"
+    viewport: "fixed bottom-[calc(var(--mobile-nav-h)+1rem)] left-1/2 -translate-x-1/2 z-[1400] w-[min(28rem,calc(100vw-2rem))] gap-2 md:bottom-6; above every overlay. placement=top below md during game sessions, where the game-sheet owns the bottom edge."
     motion: "motion/react opacity/y 0.16s easeOut stagger 0.04, useReducedMotion opacity-only"
     a11y: "error tone role=alert aria-live=assertive + border-l-2 or dot may remain but not square; others role=status polite"
     bugfix: "Remove rounded-[4px] everywhere in Toast.tsx:38,71,81,107 → radius-lg/full above. No square."
@@ -301,7 +310,7 @@ components:
     event: "See DESIGN_MAP.md — tier 8px 4px radius bg-map-surface-container-low (#2b2b2b) border-map-outline (#c29e99) text-map-on-surface-variant (#f0ccc9); square 88-132px 4px radius bg-map-surface-container (#303030) text-map-on-surface border-map-primary-container (#ff6b63) (active bg-map-electric #ff3131 outline 2px map-primary #ffc4bd); status dot live (#ff3131)/upcoming (#ffc4bd)/completed (#d6d4d3) by form"
   panel:
     chassis: "radius-chassis 20px border 1.5px on-surface bg-surface-container-high + inset highlight"
-    screen: "radial highlight + 0 2px 12px shadow, CRT scanline 0.035 (hidden on reduced-motion)"
+    screen: "radial highlight + 0 2px 12px shadow, no scanline"
     deck: "surface-container + border-top outline-variant"
 known-issues:
   final-cta-contrast:
@@ -317,8 +326,9 @@ guidelines:
   - "Reserve #0a0a0a (primary — pure black) strictly for CTAs, active nav, critical states, pins active, wire rail. Never on dark panels (see known-issues)."
   - "Use relaxed 16px (radius-lg) or full for interactive; 14px (radius-inner) only for rows/cards nested inside a 16px parent. No new rounded-[*] literals — use the shape.literal-map."
   - "On wire surfaces use wire-* tokens, never white/* literals. On photos use scrim-pills. The two never mix."
-  - "Overlays: pick top-sheet OR side-drawer from components.overlays — never a third pattern, never restyle NavLink from a parent."
+  - "Overlays: pick top-sheet, side-drawer, or game-sheet from components.overlays — never a fourth pattern, never restyle NavLink from a parent."
   - "Keep type high-contrast (Plus Jakarta Sans bold/600, tight tracking) for outdoor glare. Mono only for Eyebrow stamps."
+  - "Outdoor session rule — inside /games/:id on phones: text at least 14px (the 10-12px label convention does not apply here), controls at least 48px, gaps at least 12px, result buttons 72px with 18px bold labels. Landed is solid primary with a check, Failed is white with a 3px on-surface border and an X: they differ by fill, shape, and icon, never by hue alone. Status is text plus icon, never colour alone. No CRT scanline."
   - "Shadows are the exception, not the rule — Panel chassis + Marquee hover are the only 8-24px + shadow sits. Else flat border."
   - "New pages/sections must declare their pages.* entry first — if not listed, default to surface monochrome."
 rounded:

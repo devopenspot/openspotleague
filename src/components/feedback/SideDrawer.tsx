@@ -1,7 +1,13 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  AnimatePresence,
+  motion,
+  useDragControls,
+  useReducedMotion,
+} from "motion/react";
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { useBodyScrollLock } from "@/hooks/ui/useBodyScrollLock";
 import { useFocusTrap } from "@/hooks/ui/useFocusTrap";
@@ -9,6 +15,11 @@ import { useKeyboardShortcuts } from "@/hooks/ui/useKeyboardShortcuts";
 import { cn } from "@/lib/utils/cn";
 
 const EMPTY_SHORTCUTS: { key: string; handler: () => void }[] = [];
+const SWIPE_CLOSE_DISTANCE_PX = 96;
+const SWIPE_CLOSE_VELOCITY = 500;
+const ENTER_TRANSITION = { duration: 0.28, ease: [0.32, 0.72, 0, 1] } as const;
+const EXIT_TRANSITION = { duration: 0.2, ease: "easeIn" } as const;
+const REDUCED_TRANSITION = { duration: 0.18 } as const;
 
 interface SideDrawerProps {
   isOpen: boolean;
@@ -42,6 +53,7 @@ export function SideDrawer({
   const pathname = usePathname();
   const previousPathnameRef = useRef(pathname);
   const reducedMotion = useReducedMotion();
+  const dragControls = useDragControls();
   const shortcuts = useMemo(
     () => (isOpen ? [{ key: "Escape", handler: onClose }] : EMPTY_SHORTCUTS),
     [isOpen, onClose],
@@ -66,8 +78,10 @@ export function SideDrawer({
     ? { y: side === "top" ? "-100%" : "100%" }
     : { x: side === "right" ? "100%" : "-100%" };
   const openTransform = isVertical ? { y: 0 } : { x: 0 };
+  // Top and bottom panels hold inputs and vertical scrollers, so they don't swipe.
+  const swipeDirection = isVertical ? 0 : side === "right" ? 1 : -1;
 
-  return (
+  const drawer = (
     <AnimatePresence>
       {isOpen ? (
         <div
@@ -92,6 +106,7 @@ export function SideDrawer({
             tabIndex={-1}
             className={cn(
               "absolute flex flex-col bg-surface-bright outline-none",
+              swipeDirection !== 0 ? "touch-pan-y" : null,
               side === "top"
                 ? "inset-x-0 top-0 max-h-[min(90dvh,48rem)] pt-[env(safe-area-inset-top)]"
                 : side === "bottom"
@@ -102,12 +117,38 @@ export function SideDrawer({
             )}
             initial={reducedMotion ? { opacity: 0 } : closedTransform}
             animate={reducedMotion ? { opacity: 1 } : openTransform}
-            exit={reducedMotion ? { opacity: 0 } : closedTransform}
-            transition={
+            exit={
               reducedMotion
-                ? { duration: 0.18 }
-                : { type: "spring", damping: 30, stiffness: 320 }
+                ? { opacity: 0, transition: REDUCED_TRANSITION }
+                : { ...closedTransform, transition: EXIT_TRANSITION }
             }
+            transition={reducedMotion ? REDUCED_TRANSITION : ENTER_TRANSITION}
+            drag={swipeDirection !== 0 ? "x" : false}
+            dragControls={dragControls}
+            dragListener={false}
+            dragDirectionLock
+            dragMomentum={false}
+            dragSnapToOrigin
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={
+              swipeDirection > 0 ? { left: 0, right: 1 } : { left: 1, right: 0 }
+            }
+            onPointerDown={(event) => {
+              // Touch only, so a mouse can still select text in the panel.
+              if (swipeDirection !== 0 && event.pointerType === "touch") {
+                dragControls.start(event);
+              }
+            }}
+            onDragEnd={(_, info) => {
+              const distance = info.offset.x * swipeDirection;
+              const velocity = info.velocity.x * swipeDirection;
+              if (
+                distance > SWIPE_CLOSE_DISTANCE_PX ||
+                velocity > SWIPE_CLOSE_VELOCITY
+              ) {
+                onClose();
+              }
+            }}
           >
             {children}
           </motion.div>
@@ -115,4 +156,9 @@ export function SideDrawer({
       ) : null}
     </AnimatePresence>
   );
+
+  // Portalled so a stacking context around the trigger can't trap the drawer.
+  return typeof document === "undefined"
+    ? drawer
+    : createPortal(drawer, document.body);
 }

@@ -2,10 +2,10 @@
 
 /* eslint-disable react-hooks/set-state-in-effect -- intentional dependent state resets for spot/weather eligibility */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent, KeyboardEvent } from "react";
+import { DrawerCloseButton } from "@/components/feedback/DrawerParts";
 import { Overlay } from "@/components/feedback/Overlay";
 import { GameTransitionLoader } from "@/components/feedback/GameTransitionLoader";
 import { useDistanceUnit } from "@/hooks/preferences/useDistanceUnit";
@@ -56,7 +56,13 @@ import {
   resolveGameDiscipline,
   type DisciplineSlug,
 } from "@/lib/games/discipline";
-import { loadOrCreateGuestToken, normalizeGuestName } from "@/lib/games/guest";
+import {
+  generateGuestName,
+  loadOrCreateGuestToken,
+  normalizeGuestName,
+} from "@/lib/games/guest";
+import { loadLastSetup, saveLastSetup } from "@/lib/games/last-setup";
+import { showToast } from "@/hooks/ui/useToast";
 import {
   computeLevelsForSpotAndCategories,
   countEligibleTricks,
@@ -213,6 +219,7 @@ export function GameCreateForm({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
+  const [queuedStart, setQueuedStart] = useState<"solo" | "friend" | null>(null);
   const submittingRef = useRef(false);
   const setupStepHeadingRef = useRef<HTMLHeadingElement>(null);
   const setupContentRef = useRef<HTMLDivElement>(null);
@@ -270,11 +277,29 @@ export function GameCreateForm({
 
   useEffect(() => {
     const timer = window.setTimeout(
-      () => setGuestNickname((current) => current || getStoredGuestName()),
+      () =>
+        setGuestNickname(
+          (current) => current || getStoredGuestName() || generateGuestName(),
+        ),
       0,
     );
     return () => window.clearTimeout(timer);
   }, []);
+
+  // Start from the last game played, unless a spot page prefilled this one.
+  const hasPrefilledSpotType = Boolean(initialPrefill?.spotType);
+  useEffect(() => {
+    if (!discipline || hasPrefilledSpotType) return;
+    const timer = window.setTimeout(() => {
+      const saved = loadLastSetup(discipline);
+      if (!saved) return;
+      setRuleMode(saved.ruleMode);
+      setLevel(saved.level);
+      setSpotType(saved.spotType);
+      setSelectedCategories(saved.categories);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [discipline, hasPrefilledSpotType]);
 
   // Prefill: apply mode from ?spotId&spotType&mode (Phase 1 contract)
   useEffect(() => {
@@ -597,6 +622,18 @@ export function GameCreateForm({
   const optionsLoading = Boolean(
     discipline && optionsDiscipline !== discipline,
   );
+  // A tap during loading still counts: on weak signal a rider shouldn't have to
+  // watch for the button to wake up and tap again.
+  useEffect(() => {
+    if (!queuedStart || optionsLoading) return;
+    const timer = window.setTimeout(() => {
+      setQueuedStart(null);
+      void quickStart(queuedStart);
+    }, 0);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs the quickStart of the render that finished loading
+  }, [queuedStart, optionsLoading]);
+
   const hasMissingOptions =
     optionsLoading ||
     !activeOptions ||
@@ -670,11 +707,12 @@ export function GameCreateForm({
   function handleModeChange(nextMode: GameMode) {
     setMode(nextMode);
     setSetupStep("settings");
-    // if (nextMode === "challenge") setChallengeDetailsOpen(true);
     if (nextMode === "training") {
       // keep spot state but do not auto-enable; user opts in
     } else {
       setTrainingSpotEnabled(false);
+      // Challenge can't start without a spot, so ask for location from this tap.
+      if (locationStatus !== "granted") void retryLocation();
     }
     setWeatherConfirmed(null);
     setWeatherObservedIcon(null);
@@ -1047,21 +1085,35 @@ export function GameCreateForm({
       }
       return;
     }
-    if (!discipline || busy || submittingRef.current) return;
+    const created = await createGame();
+    if (created && "error" in created) setError(created.error);
+    else if (created) openCreatedGame(created.id);
+  }
+
+  function openCreatedGame(gameId: string) {
+    // Reset the mobile setup wizard before leaving: the /games client tree
+    // is preserved in the router cache, so without this a return from the
+    // board would re-activate the landing with the dialog still open.
+    setSetupOpen(false);
+    setSetupStep("settings");
+    router.push(`/games/${gameId}`);
+  }
+
+  async function createGame() {
+    if (!discipline || busy || submittingRef.current) return null;
 
     submittingRef.current = true;
     if (mode === "training" && !signedIn) {
       const name = normalizeGuestName(guestNickname);
       if (!name) {
         submittingRef.current = false;
-        return;
+        return null;
       }
       try {
         sessionStorage.setItem(GUEST_NAME_STORAGE_KEY, name);
       } catch {
-        setError("Your rider name could not be stored in this browser.");
         submittingRef.current = false;
-        return;
+        return { error: "Your rider name could not be stored in this browser." };
       }
     }
 
@@ -1155,24 +1207,65 @@ export function GameCreateForm({
       });
       const rawData = await response.json().catch(() => null);
       if (!response.ok) {
-        setError(rawData?.error ?? "Game could not be created.");
-        return;
+        return { error: String(rawData?.error ?? "Game could not be created.") };
       }
       const data = gameMutationResponseSchema.parse(rawData);
-      // Reset the mobile setup wizard before leaving: the /games client tree
-      // is preserved in the router cache, so without this a return from the
-      // board would re-activate the landing with the dialog still open.
-      setSetupOpen(false);
-      setSetupStep("settings");
-      router.push(`/games/${data.id}`);
+      saveLastSetup(discipline, {
+        ruleMode,
+        level: effectiveLevel,
+        spotType: effectiveSpotType,
+        categories: selectedCategories,
+      });
+      return data;
     } catch {
-      setError(
-        "Game could not be created. Check your connection and try again.",
-      );
+      return {
+        error: "Game could not be created. Check your connection and try again.",
+      };
     } finally {
       submittingRef.current = false;
       setBusy(false);
     }
+  }
+
+  /** Creates with the current settings and heads straight to the game. */
+  async function quickStart(variant: "solo" | "friend") {
+    if (discipline && optionsLoading) {
+      setQueuedStart(variant);
+      return;
+    }
+    if (activeOptionsError) {
+      showToast(activeOptionsError, "error");
+      return;
+    }
+    const blocking = { ...getSettingsErrors(), ...getTrickErrors() };
+    if (!discipline || Object.keys(blocking).length > 0) {
+      openSetup();
+      return;
+    }
+    const created = await createGame();
+    if (!created) return;
+    if ("error" in created) {
+      showToast(created.error, "error");
+      return;
+    }
+    if (variant === "solo") {
+      // If this fails the rider lands in the lobby, where Ride Solo still works.
+      await fetchWithTimeout(`/api/games/${created.id}/train-alone`, {
+        method: "POST",
+        timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+        headers: {
+          "content-type": "application/json",
+          ...(signedIn
+            ? {}
+            : { "x-guest-token": loadOrCreateGuestToken() ?? "" }),
+        },
+        body: JSON.stringify({
+          expectedVersion: created.version,
+          idempotencyKey: crypto.randomUUID(),
+        }),
+      }).catch(() => undefined);
+    }
+    openCreatedGame(created.id);
   }
 
   const selectedSpotTypeLabel =
@@ -1205,10 +1298,19 @@ export function GameCreateForm({
     weather: summaryWeather,
   };
 
+  const canQuickStart = mode === "training" && !needsSpot;
+  const setupSummary = [
+    selectedSpotType?.name,
+    `Level ${effectiveLevel}`,
+    ruleMode === "flexible" ? "Flexible" : "Strict",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <section
       aria-labelledby="game-create-title"
-      className="pb-28 pt-2 sm:pb-28 sm:pt-10 lg:py-12"
+      className="pb-44 pt-2 sm:pt-10 lg:py-12"
     >
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-10">
@@ -1235,11 +1337,11 @@ export function GameCreateForm({
                 <div className="flex items-center justify-between gap-2">
                   <p
                     id="game-discipline-label"
-                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                    className="font-display text-sm font-bold uppercase tracking-[0.05em] text-secondary"
                   >
                     Sport
                   </p>
-                  <span className="font-display text-[10px] uppercase tracking-wide text-secondary">
+                  <span className="font-display text-sm uppercase tracking-wide text-secondary">
                     {discipline
                       ? DISCIPLINE_TO_SPORT[
                           discipline as keyof typeof DISCIPLINE_TO_SPORT
@@ -1248,7 +1350,7 @@ export function GameCreateForm({
                   </span>
                 </div>
                 <div
-                  className="mt-3 flex flex-nowrap gap-2"
+                  className="mt-3 flex flex-wrap gap-2"
                   role="radiogroup"
                   aria-labelledby="game-discipline-label"
                 >
@@ -1275,7 +1377,7 @@ export function GameCreateForm({
                     {fieldErrors.discipline}
                   </FieldError>
                 ) : !discipline ? (
-                  <p className="mt-3 text-xs leading-5 text-on-surface-variant">
+                  <p className="mt-3 text-sm leading-5 text-on-surface-variant">
                     {SPORT_REQUIRED_MESSAGE}
                   </p>
                 ) : null}
@@ -1288,7 +1390,7 @@ export function GameCreateForm({
             >
               <p
                 id="game-mode-label"
-                className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
+                className="font-display text-sm font-bold uppercase tracking-[0.05em] text-secondary"
               >
                 Game mode
               </p>
@@ -1340,7 +1442,7 @@ export function GameCreateForm({
                   }
                 />
               </div>
-              <p className="mt-3 text-xs leading-5 text-on-surface-variant">
+              <p className="mt-3 text-sm leading-5 text-on-surface-variant">
                 {mode === "training"
                   ? "Open play. No schedule or location check."
                   : "Scheduled play at a registered spot."}
@@ -1368,18 +1470,22 @@ export function GameCreateForm({
               </p>
             ) : null}
 
-            {/* Mobile: Active configuration summary & customize trigger */}
-            <div className="space-y-3 lg:hidden">
-              <ConfigurationSummary {...summaryProps} />
+            {/* Mobile: one line of settings. Defaults are the last game played. */}
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest pl-4 pr-2 lg:hidden">
+              <p className="min-w-0 truncate font-display text-sm font-bold text-on-surface">
+                {setupSummary}
+              </p>
               <button
+                ref={setupTriggerRef}
                 type="button"
                 onClick={openSetup}
                 disabled={busy}
                 aria-expanded={setupOpen}
                 aria-controls={GAME_SETUP_DIALOG_ID}
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50"
+                data-testid="mobile-review-trigger"
+                className="min-h-12 shrink-0 px-3 font-display text-sm font-bold text-on-surface underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed"
               >
-                Customize settings
+                Change
               </button>
             </div>
 
@@ -1593,23 +1699,40 @@ export function GameCreateForm({
         </div>
       </div>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-18 z-50 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
-        <button
-          ref={setupTriggerRef}
-          type="button"
-          onClick={openSetup}
-          disabled={busy}
-          aria-expanded={setupOpen}
-          aria-controls={GAME_SETUP_DIALOG_ID}
-          data-testid="mobile-review-trigger"
-          className="pointer-events-auto min-h-12 w-full rounded-full border border-primary bg-primary px-5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_8px_24px_rgba(18,18,18,0.12)] transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-not-allowed disabled:border-outline-variant disabled:bg-surface-container-high disabled:text-on-surface-variant disabled:shadow-none"
-        >
-          {busy
-            ? "Creating game..."
-            : mode === "training"
-              ? "Start Training"
-              : "Create Challenge"}
-        </button>
+      <div className="fixed inset-x-0 bottom-[var(--mobile-nav-h)] z-50 flex gap-3 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:bottom-0 lg:hidden">
+        {canQuickStart ? (
+          <>
+            <button
+              type="button"
+              onClick={() => void quickStart("friend")}
+              disabled={busy || Boolean(queuedStart)}
+              className="min-h-16 flex-1 rounded-lg border-[3px] border-on-surface bg-surface-container-lowest px-3 font-display text-base font-bold uppercase tracking-[0.04em] text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:border-outline"
+            >
+              Play A Friend
+            </button>
+            <button
+              type="button"
+              onClick={() => void quickStart("solo")}
+              disabled={busy || Boolean(queuedStart)}
+              className="min-h-16 flex-1 rounded-lg border-2 border-primary bg-primary px-3 font-display text-base font-bold uppercase tracking-[0.04em] text-on-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:border-outline disabled:bg-surface-container-high disabled:text-on-surface"
+            >
+              {busy || queuedStart ? "Starting…" : "Ride Solo"}
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={openSetup}
+            disabled={busy}
+            className="min-h-16 flex-1 rounded-lg border-2 border-primary bg-primary px-5 font-display text-base font-bold uppercase tracking-[0.04em] text-on-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:border-outline disabled:bg-surface-container-high disabled:text-on-surface"
+          >
+            {busy
+              ? "Creating game..."
+              : mode === "training"
+                ? "Start Training"
+                : "Create Challenge"}
+          </button>
+        )}
       </div>
 
       <Overlay
@@ -1619,7 +1742,7 @@ export function GameCreateForm({
         describedBy={GAME_SETUP_DESCRIPTION_ID}
         contentId={GAME_SETUP_DIALOG_ID}
         containerClassName="lg:hidden"
-        panelClassName="mx-4 my-4 flex max-h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
+        panelClassName="mx-4 my-4 flex h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
       >
         <div className="flex items-start justify-between gap-4 border-b border-outline-variant p-4 sm:p-6">
           <div className="min-w-0">
@@ -1642,15 +1765,11 @@ export function GameCreateForm({
               {setupStepDetails.title}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleSetupEdit}
+          <DrawerCloseButton
+            label="Back to game form"
+            onClose={handleSetupEdit}
             disabled={busy}
-            aria-label="Back to game form"
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant text-secondary transition-colors hover:bg-surface-container hover:text-on-surface"
-          >
-            <X size={16} aria-hidden="true" />
-          </button>
+          />
         </div>
         <SetupProgress
           currentStep={setupStep}

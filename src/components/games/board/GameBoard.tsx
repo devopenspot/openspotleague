@@ -1,13 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useParams, useRouter } from "next/navigation";
 import { GameTransitionLoader } from "@/components/feedback/GameTransitionLoader";
-import { GameBoardActionStatusModal } from "./GameBoardActionStatusModal";
 import { useGameAction } from "@/components/games/hooks/useGameAction";
 import { useGameRealtime } from "@/components/games/hooks/useGameRealtime";
 import { useLocationVerification } from "@/components/games/hooks/useLocationVerification";
-import { loadOrCreateGuestToken, normalizeGuestName } from "@/lib/games/guest";
+import {
+  RESULT_UNDO_MS,
+  resultWasApplied,
+  SOLO_RESULT_UNDO_MS,
+  usePendingResult,
+  type PendingResult,
+  type ResultSubmission,
+} from "@/components/games/hooks/usePendingResult";
+import { useWakeLock } from "@/hooks/ui/useWakeLock";
+import {
+  generateGuestName,
+  loadOrCreateGuestToken,
+  normalizeGuestName,
+} from "@/lib/games/guest";
 import { deriveGameCapabilities } from "@/lib/games/capabilities";
 import { showToast } from "@/hooks/ui/useToast";
 import { ChallengeGameBoard } from "./ChallengeGameBoard";
@@ -15,7 +33,9 @@ import { ChallengeSettingsModal } from "@/components/games/shared/ChallengeSetti
 import { AwardDialog } from "@/components/games/award/AwardDialog";
 import { PanelShell, PanelScreenBezel } from "./panel/PanelShell";
 import { GameBoardControls } from "./GameBoardControls";
-import type { TrickLevel } from "@/lib/schemas/game";
+import { GAME_SHEET_PEEK_PX } from "./sheet-state";
+import type { GameState, TrickLevel } from "@/lib/schemas/game";
+import type { Result } from "@/components/games/layout/header-state";
 
 const MAX_ALTERNATIVE_TRICKS = 3;
 
@@ -34,7 +54,7 @@ export function GameBoard({
   const authenticated = userId !== null;
   const [guestName, setGuestName] = useState(() => {
     if (typeof sessionStorage === "undefined") return "";
-    return sessionStorage.getItem("openspot-guest-name") ?? "";
+    return sessionStorage.getItem("openspot-guest-name") ?? generateGuestName();
   });
   const [guestJoinError, setGuestJoinError] = useState<string | null>(null);
   useEffect(() => {
@@ -56,6 +76,37 @@ export function GameBoard({
       action,
       setError,
     });
+  const submitResult = useCallback(
+    async (entry: PendingResult): Promise<ResultSubmission> => {
+      const applied = (state: GameState | null) =>
+        resultWasApplied(state ?? latestGameRef.current, entry);
+      const outcome = await action(
+        entry.kind === "challenge"
+          ? `/rounds/${entry.roundId}/challenger-result`
+          : `/rounds/${entry.roundId}/attempt`,
+        { result: entry.result },
+        { isSuperseded: applied },
+      );
+      // A rejection has a server answer, which the action already surfaced.
+      if (outcome?.ok || outcome?.data) return "sent";
+      if (!applied(latestGameRef.current)) return "unsent";
+      setError(null);
+      return "sent";
+    },
+    [action, latestGameRef, setError],
+  );
+  const {
+    pending: pendingResult,
+    mark: markResult,
+    undo: undoResult,
+    resend: resendResult,
+  } = usePendingResult({
+    roundId: game?.currentRound?.id ?? null,
+    submit: submitResult,
+    undoMs:
+      game?.trainingVariant === "solo" ? SOLO_RESULT_UNDO_MS : RESULT_UNDO_MS,
+  });
+  useWakeLock(game?.status === "lobby" || game?.status === "active");
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [alternativeTrickState, setAlternativeTrickState] = useState<{
     roundKey: string;
@@ -217,7 +268,7 @@ export function GameBoard({
             <div className="flex items-center justify-between gap-2 px-1 py-3">
               <span className="inline-flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-secondary">
                 <span
-                  className="h-1.5 w-1.5 -dot rounded-full bg-primary"
+                  className="h-1.5 w-1.5 rounded-full bg-primary"
                   aria-hidden
                 />
                 Control Deck — Syncing
@@ -351,26 +402,26 @@ export function GameBoard({
     current && capabilities.canSubmitChallenge
       ? {
           label: "How'd It Go?",
-          onSelect: (result: "landed" | "failed") => {
-            void action(`/rounds/${current.id}/challenger-result`, { result });
-          },
+          onSelect: (result: Result) => markResult(result, "challenge"),
         }
       : current && capabilities.canSubmitResponse
         ? {
             label: "Your Call",
-            onSelect: (result: "landed" | "failed") => {
-              void action(`/rounds/${current.id}/attempt`, { result });
-            },
+            onSelect: (result: Result) => markResult(result, "attempt"),
           }
         : null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-4 lg:px-10 lg:pb-4">
+    <div
+      style={{ "--game-sheet-peek": `${GAME_SHEET_PEEK_PX}px` } as CSSProperties}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background px-3 pb-[calc(var(--game-sheet-peek)+0.5rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-4 lg:px-10"
+    >
       <GameBoardControls
         game={game}
         connection={connection}
         authenticated={authenticated}
         busy={busy}
+        error={error}
         locationPending={locationPending}
         locationPermission={locationPermission}
         capabilities={capabilities}
@@ -381,18 +432,13 @@ export function GameBoard({
         onGuestNameChange={setGuestName}
         onGuestJoin={submitGuestJoin}
         onVerifyLocation={() => void verifyLocation()}
-        onChallengeResult={(result) => {
-          if (!current) return;
-          void action(`/rounds/${current.id}/challenger-result`, {
-            result,
-          });
-        }}
+        onChallengeResult={(result) => markResult(result, "challenge")}
         alternativeTricksRemaining={alternativeTricksRemaining}
+        pendingResult={pendingResult}
+        onUndoResult={undoResult}
+        onResendResult={() => void resendResult()}
         onNextTrick={() => void retrieveAlternativeTrick()}
-        onAttemptResult={(result) => {
-          if (!current) return;
-          void action(`/rounds/${current.id}/attempt`, { result });
-        }}
+        onAttemptResult={(result) => markResult(result, "attempt")}
         onJoinLobby={joinLobby}
         onStartLobby={() => void action("/start")}
         onStartNow={() => void action("/start", { startNow: true })}
@@ -401,15 +447,14 @@ export function GameBoard({
         onLeaveLobby={() => void action("/leave")}
         onCancelActive={() => void action("/cancel")}
         onOpenSettings={() => setSettingsModalOpen(true)}
+        onCategoriesVote={(accept) => void voteCategories(accept)}
         onBackToChallenges={() => router.push("/games")}
         onViewResults={() => setAwardOpen(true)}
       />
-      <div
-        className={`mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col overflow-hidden ${game.trainingVariant !== "solo" ? "mb-14 md:mb-0" : ""}`}
-      >
+      <div className="mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col overflow-hidden">
         <PanelShell className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {/* main CRT screen — mobile: full width stacked, desktop: inlaid — flex viewport */}
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-container-lowest p-1.5 sm:p-2">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-container-lowest md:p-2">
             <PanelScreenBezel className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
                 <ChallengeGameBoard
@@ -420,6 +465,9 @@ export function GameBoard({
                   alternativeTricksRemaining={alternativeTricksRemaining}
                   onNextTrick={() => void retrieveAlternativeTrick()}
                   busy={busy}
+                  pendingResult={pendingResult}
+                  onUndoResult={undoResult}
+                  onResendResult={() => void resendResult()}
                 />
               </div>
             </PanelScreenBezel>
@@ -427,13 +475,6 @@ export function GameBoard({
         </PanelShell>
 
         {/* overlays stay outside chassis so portals layer correctly */}
-        <GameBoardActionStatusModal
-          isOpen={locationPending}
-          busy={busy}
-          locationPending={locationPending}
-          settingsModalOpen={settingsModalOpen}
-          game={game}
-        />
         <ChallengeSettingsModal
           key={
             settingsModalOpen

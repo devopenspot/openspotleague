@@ -1,33 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import {
   DISCIPLINE_META,
   type DisciplineSlug,
 } from "@/lib/games/discipline";
-import { gameListResponseSchema, type GameListItem } from "@/lib/schemas/game";
+import type { GameListItem } from "@/lib/schemas/game";
 import { AwardDialog } from "@/components/games/award/AwardDialog";
 import { useAwardHistory } from "@/components/games/award/useAwardHistory";
+import {
+  useMyGames,
+  type MyGamesState,
+} from "@/components/games/hooks/useMyGames";
 
 export function MatchList({
   limit = 20,
   bare = false,
+  list,
 }: {
   limit?: number;
   bare?: boolean;
+  /** Games a parent already loaded, to avoid a second request. */
+  list?: MyGamesState;
 }) {
-  const [games, setGames] = useState<GameListItem[]>([]);
+  const ownList = useMyGames({ limit, enabled: list === undefined });
+  const { games, status } = list ?? ownList;
   const { state: awardState, openForGame, close: closeAward } = useAwardHistory();
-  useEffect(() => {
-    void fetch(`/api/games?limit=${limit}`)
-      .then(async (response) => response.ok ? gameListResponseSchema.parse(await response.json()) : [])
-      .then(setGames)
-      .catch(() => setGames([]));
-  }, [limit]);
-  const content = bare ? <ListBody games={games} onViewResults={openForGame} /> : (
+  const content = bare ? <ListBody games={games} status={status} onViewResults={openForGame} /> : (
     <>
-      <ListBody games={games} onViewResults={openForGame} />
+      <ListBody games={games} status={status} onViewResults={openForGame} />
       {awardState.game && (
         <AwardDialog
           isOpen={awardState.open}
@@ -96,11 +97,27 @@ export function MatchList({
 
 function ListBody({
   games,
+  status,
   onViewResults,
 }: {
   games: GameListItem[];
+  status: MyGamesState["status"];
   onViewResults: (gameId: string, opts?: { shareCode?: string }) => void;
 }) {
+  if (status === "loading") {
+    return (
+      <p role="status" className="py-8 text-sm text-on-surface-variant">
+        Loading your matches…
+      </p>
+    );
+  }
+  if (status === "error") {
+    return (
+      <p role="alert" className="py-8 text-sm text-on-surface">
+        Your matches couldn&apos;t load. Check your signal and try again.
+      </p>
+    );
+  }
   if (games.length === 0) {
     return (
       <p className="py-8 text-sm text-on-surface-variant">
@@ -159,17 +176,18 @@ function ListBody({
                 type="button"
                 aria-label={`View championship results for ${game.gameName} — ${game.disciplineSlug}`}
                 onClick={() => onViewResults(game.id, { shareCode: game.shareCode })}
-                className="inline-flex min-h-[2rem] items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-3 text-[11px] font-bold uppercase tracking-widest transition-colors hover:border-outline"
+                className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-on-surface bg-surface-container-lowest px-4 text-sm font-bold uppercase tracking-[0.05em] transition-colors hover:bg-surface-container"
               >
                 Results
               </button>
             ) : (
-              <span
-                aria-hidden="true"
-                className="inline-flex min-h-[2rem] items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-3 text-[11px] font-bold uppercase tracking-widest opacity-40"
+              <Link
+                href={`/games/${game.id}`}
+                aria-label={`Resume ${game.gameName}`}
+                className="inline-flex min-h-12 items-center justify-center rounded-full border-2 border-primary bg-primary px-4 text-sm font-bold uppercase tracking-[0.05em] text-on-primary transition-colors hover:bg-primary/90"
               >
-                Results
-              </span>
+                Resume
+              </Link>
             )}
           </div>
         );

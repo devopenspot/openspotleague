@@ -201,7 +201,7 @@
   --spacing-stack-md: 1.5rem;
   --spacing-margin-mobile: 1.25rem;
   --spacing-margin-desktop: 2.5rem;
-  --mobile-nav-h: 64px;
+  --mobile-nav-h: 77px;
 
   /* Radii — relaxed 16/full for interactive, 14 (inner) for rows/cards nested
    * inside a 16px parent or photo card, tight 4/8/12 only where listed. */
@@ -1035,19 +1035,13 @@
   position: relative;
 }
 
-/* faint CRT scanline — very subtle, monochrome, respects reduced-motion */
-.panel-screen-inner::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 2px,
-    var(--color-on-surface) 3px
-  );
+@keyframes undo-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .panel-deck {
@@ -1065,9 +1059,5 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-
-  .panel-screen-inner::after {
-    display: none;
   }
 }

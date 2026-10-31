@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams as useNextSearchParams } from "next/navigation";
-import { X } from "lucide-react";
 import { JoinWithCode } from "@/components/shell/JoinWithCode";
 import { parseGamePrefill } from "@/lib/games/prefill";
 import { RulesModal } from "@/components/games/shared/RulesModal";
@@ -14,12 +13,16 @@ import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
 import { ResponsibilityPolicyModal } from "@/components/games/shared/ResponsibilityPolicyModal";
 import { MatchList } from "@/components/games/matches/MatchList";
+import { ResumeGameCard } from "@/components/games/matches/ResumeGameCard";
+import {
+  useMyGames,
+  useResumableGame,
+} from "@/components/games/hooks/useMyGames";
 import {
   RiderActivityBoard,
   useRiderActivity,
   type RiderActivityData,
 } from "@/components/games/board/RiderActivityBoard";
-import { SideDrawer } from "@/components/feedback/SideDrawer";
 
 type Ranking = {
   totalPoints: number;
@@ -31,28 +34,17 @@ type Ranking = {
 
 // Centralized UI copy using template literals — single source for all user-visible strings
 const UI_COPY = {
-  joinWithCode: `Join with code`,
-  yourRecord: `record`,
+  yourGames: `Your games`,
+  yourRecord: `Your record`,
   setupTitle: `Set up your game`,
-  joinEyebrow: `Join a game`,
-  joinTitle: `Have a share code?`,
-  joinDescription: `Enter the code shared by the host to join their live training.`,
-  closeJoinGame: `Close join game`,
-  closeYourRecord: `Close your record`,
-  enterShareCodeLabel: `Enter a game share code`,
-  placeholder: `ENTER SHARE CODE`,
-  join: `Join`,
-  emptyShareCodeError: `Enter a share code to join a game.`,
-  shareCodeErrorId: `share-code-error`,
   challengeRecord: `Challenge record`,
-  viewMatches: `View your matches`,
+  gameNotFound: `That code didn't match a game. Check it with your friend and try again.`,
   loading: `Loading`,
   unavailable: `Unavailable`,
   newRider: `New Rider`,
   played: `Played`,
   won: `Won`,
   landed: `Landed`,
-  chooseRide: `Choose your ride`,
   setPreference: `Set preference`,
   gameRules: `Game rules`,
   riderPolicy: `Rider policy`,
@@ -68,10 +60,6 @@ const UI_COPY = {
 const UI_TEMPLATES = {
   eliminationWordAria: (word: string) => `Elimination word ${word}`,
   points: (totalPoints: number) => `${totalPoints} points`,
-  joinPath: (code: string) => `/games/join/${encodeURIComponent(code)}`,
-  describedByWithError: (baseId: string, errorId: string) =>
-    `${baseId} ${errorId}`,
-  headerHelp: (a: string, b: string) => `${a} · ${b}`,
 };
 
 export function GameLanding({ signedIn }: { signedIn: boolean }) {
@@ -86,10 +74,10 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   const [ranking, setRanking] = useState<Ranking | null>(null);
   const [rankingError, setRankingError] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
-  const [matchesOpen, setMatchesOpen] = useState(false);
+  const [gamesOpen, setGamesOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
-  const [progressOpen, setProgressOpen] = useState(false);
   const searchParams = useNextSearchParams();
+  const joinFailed = searchParams.get("error") === "game-not-found";
   const prefill = useMemo(() => parseGamePrefill(searchParams), [searchParams]);
   const preferredSport = usePreferencesStore((s) => s.preferredSport);
   const preferencesHydrationStatus = usePreferencesStore(
@@ -98,6 +86,8 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   const openPreferences = useUIStore((s) => s.openPreferences);
   const discipline = resolveGameDiscipline(preferredSport);
   const riderActivity = useRiderActivity(signedIn);
+  const myGames = useMyGames({ limit: 5, enabled: signedIn });
+  const resumableGame = useResumableGame({ signedIn, games: myGames.games });
 
   const definition: GameDefinition | null = discipline
     ? GAME_DEFINITIONS[discipline]
@@ -133,35 +123,38 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
     <>
       <div className="flex flex-1 flex-col bg-gradient-primary px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
-          <div className={`z-30 py-2`}>
-            <div className={`mx-auto flex justify-center max-w-6xl gap-2`}>
-              <JoinWithCode variant="games" />
-              {signedIn ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setMatchesOpen(true)}
-                    aria-expanded={matchesOpen}
-                    aria-controls="matches-drawer"
-                    className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
-                  >
-                    Matches
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setProgressOpen(true)}
-                    aria-expanded={progressOpen}
-                    aria-controls={`rider-progress-drawer`}
-                    className={`inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-lowest/95 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface shadow-[0_4px_16px_rgba(18,18,18,0.08)] backdrop-blur-sm transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
-                  >
-                    {UI_COPY.yourRecord}
-                  </button>
-                </>
-              ) : null}
+          <div className={`flex justify-center gap-2 py-2`}>
+            {/* One instance: pinned above the start buttons on phones. */}
+            <div className="fixed inset-x-3 bottom-[calc(var(--mobile-nav-h)+6rem+env(safe-area-inset-bottom))] z-50 md:bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:static">
+              <JoinWithCode variant="games" className="w-full lg:w-auto" />
             </div>
+            {signedIn ? (
+              <button
+                type="button"
+                onClick={() => setGamesOpen(true)}
+                aria-expanded={gamesOpen}
+                aria-controls="matches-drawer"
+                className="inline-flex min-h-12 items-center rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
+              >
+                {UI_COPY.yourGames}
+              </button>
+            ) : null}
           </div>
-          <div className="min-w-0 max-w-xl flex gap-2 items-center mt-4 justify-center">
-            <p className="text-xs leading-5 text-white/80">
+          {joinFailed ? (
+            <p
+              role="alert"
+              className="mt-2 rounded-lg border-2 border-error bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container"
+            >
+              {UI_COPY.gameNotFound}
+            </p>
+          ) : null}
+          {resumableGame ? (
+            <div className="mt-2">
+              <ResumeGameCard game={resumableGame} />
+            </div>
+          ) : null}
+          <div className="mt-3 flex items-center justify-center gap-3 rounded-lg bg-surface-container-lowest px-4 py-2.5 text-on-surface">
+            <p className="text-sm font-semibold leading-5">
               {discipline && eliminationWord ? (
                 <>{`${UI_COPY.disciplineWordDescription.prefix} `}</>
               ) : isAllDisciplines ? (
@@ -176,20 +169,15 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
             {discipline && eliminationWord ? (
               <span
                 aria-label={UI_TEMPLATES.eliminationWordAria(eliminationWord)}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 font-display text-xs font-bold uppercase tracking-[0.08em] text-white backdrop-blur-sm"
+                className="shrink-0 font-display text-base font-bold uppercase tracking-[0.18em]"
               >
-                <span className="tracking-[0.18em]">
-                  {eliminationWord.split("").join(".")}
-                </span>
-                <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] leading-none tracking-[0.05em] text-primary">
-                  {`${eliminationWord.length}`}
-                </span>
+                {eliminationWord.split("").join(".")}
               </span>
             ) : (
               <button
                 type="button"
                 onClick={openPreferences}
-                className="inline-flex min-h-9 shrink-0 items-center rounded-full border border-white/20 bg-white/10 px-4 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                className="inline-flex min-h-12 shrink-0 items-center rounded-lg border-2 border-on-surface px-4 font-display text-sm font-bold uppercase tracking-[0.04em] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
               >
                 {isAllDisciplines ? "Preferences" : UI_COPY.setPreference}
               </button>
@@ -225,13 +213,13 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setMatchesOpen(true)}
-                  className="inline-flex min-h-9 items-center rounded-full border border-outline-variant bg-surface-container px-3.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                  onClick={() => setGamesOpen(true)}
+                  className="inline-flex min-h-12 items-center rounded-lg border-2 border-on-surface px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
                 >
                   View all
                 </button>
               </div>
-              <MatchList bare limit={5} />
+              <MatchList bare limit={5} list={myGames} />
             </section>
           ) : null}
           <LandingInfo
@@ -246,61 +234,16 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
         onClose={() => setPolicyOpen(false)}
       />
       {signedIn ? (
-        <SideDrawer
-          isOpen={progressOpen}
-          onClose={() => setProgressOpen(false)}
-          labelledBy={`rider-progress-drawer-title`}
-          contentId={`rider-progress-drawer`}
-          testId={`rider-progress-drawer`}
-          side={`left`}
-          panelClassName={`w-[min(28rem,calc(100vw-1rem))] border-r border-outline-variant`}
-        >
-          <div
-            className={`flex items-start justify-between gap-4 border-b border-outline-variant p-5 sm:p-6`}
-          >
-            <div>
-              <p
-                className={`font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-secondary`}
-              >
-                {UI_COPY.challengeRecord}
-              </p>
-              <h2
-                id={`rider-progress-drawer-title`}
-                className={`mt-2 font-display text-3xl font-bold uppercase leading-none`}
-              >
-                {UI_COPY.yourRecord}
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => setProgressOpen(false)}
-              aria-label={UI_COPY.closeYourRecord}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] border border-outline-variant bg-surface-container-high text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2`}
-            >
-              <X size={14} aria-hidden="true" />
-            </button>
-          </div>
-          <div
-            className={`min-h-0 flex-1 space-y-6 overflow-y-auto p-4 sm:p-5`}
-          >
+        <MatchesDrawer isOpen={gamesOpen} onClose={() => setGamesOpen(false)}>
+          <div className="space-y-4 py-4">
             <RiderProgressContent
               ranking={ranking}
               rankingError={rankingError}
               activity={riderActivity}
               activityHeadingId={`rider-activity-title-mobile`}
-              onViewMatches={() => {
-                setProgressOpen(false);
-                setMatchesOpen(true);
-              }}
             />
           </div>
-        </SideDrawer>
-      ) : null}
-      {signedIn ? (
-        <MatchesDrawer
-          isOpen={matchesOpen}
-          onClose={() => setMatchesOpen(false)}
-        />
+        </MatchesDrawer>
       ) : null}
     </>
   );
@@ -320,18 +263,18 @@ function LandingInfo({
       className="mt-auto mx-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-nowrap items-center gap-1 sm:gap-2 mb-12">
+        <div className="mb-12 flex flex-wrap items-center justify-center gap-2">
           <button
             type="button"
             onClick={onOpenRules}
-            className="inline-flex min-h-9 items-center rounded-full border border-white/20 bg-white/10 px-3.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            className="inline-flex min-h-12 items-center rounded-lg bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
           >
             {UI_COPY.gameRules}
           </button>
           <button
             type="button"
             onClick={onOpenPolicy}
-            className="inline-flex min-h-9 items-center rounded-full border border-white/20 bg-white/10 px-3.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-white backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+            className="inline-flex min-h-12 items-center rounded-lg bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
           >
             {UI_COPY.riderPolicy}
           </button>
@@ -363,13 +306,11 @@ function RiderProgressContent({
   rankingError,
   activity,
   activityHeadingId,
-  onViewMatches,
 }: {
   ranking: Ranking | null;
   rankingError: boolean;
   activity: RiderActivityData;
   activityHeadingId: string;
-  onViewMatches: () => void;
 }) {
   return (
     <>
@@ -389,18 +330,8 @@ function RiderProgressContent({
           </span>
         </div>
 
-        <div className={`mt-3 flex w-full sm:mt-4`}>
-          <button
-            type="button"
-            onClick={onViewMatches}
-            className={`inline-flex min-h-11 w-full items-center justify-center rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px`}
-          >
-            {UI_COPY.viewMatches}
-          </button>
-        </div>
-
         <div
-          className={`mt-6 border-t border-outline-variant pt-5 sm:mt-8 sm:pt-6`}
+          className={`mt-4`}
         >
           <p
             className={`font-display text-4xl font-bold uppercase leading-none sm:text-5xl`}

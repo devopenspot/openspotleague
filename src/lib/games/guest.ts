@@ -37,6 +37,15 @@ export function normalizeGuestName(value: string): string | null {
   return trimmed
 }
 
+/**
+ * A ready-made name so a guest can join in one tap. It stays editable and is
+ * a display name only: identity comes from the guest token.
+ */
+export function generateGuestName(): string {
+  const [value = 0] = crypto.getRandomValues(new Uint16Array(1))
+  return `Rider ${1000 + (value % 9000)}`
+}
+
 function base64urlFromBytes(bytes: Uint8Array): string {
   let binary = ""
   for (const byte of bytes) binary += String.fromCharCode(byte)
