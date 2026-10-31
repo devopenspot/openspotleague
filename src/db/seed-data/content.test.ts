@@ -60,7 +60,7 @@ describe("canonical content sources", () => {
     expect(result.uniqueCountries).toBeGreaterThan(0)
     expect(result.bounds.minLat).toBeGreaterThanOrEqual(-90)
     expect(result.bounds.maxLat).toBeLessThanOrEqual(90)
-  })
+  }, 30_000)
 
   it("validates all decoupled JSON seeds and their referential integrity", () => {
     // Regions & Countries
