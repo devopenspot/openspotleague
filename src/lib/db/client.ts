@@ -11,7 +11,10 @@ import {
 import { getRequestCorrelationId } from "@/lib/db/request-context";
 import { runWithDeferredCacheInvalidation } from "@/lib/cache/deferred";
 import { collectErrorCodes, collectErrorMessages } from "./error-collect";
+import { TimeoutError } from "./errors";
 import { getPostgresOptions } from "./postgres-options";
+
+export { TimeoutError };
 
 type DbClient = ReturnType<typeof postgres>;
 type Db = ReturnType<typeof drizzle<typeof schema>>;
@@ -246,13 +249,6 @@ function poolSnapshot(): PoolSnapshot | null {
  * When the returned promise exposes postgres-js' `.cancel()` method, the
  * query is cancelled before the timeout is reported to the caller.
  */
-export class TimeoutError extends Error {
-  constructor(ms: number) {
-    super(`db operation timed out after ${ms}ms`);
-    this.name = "TimeoutError";
-  }
-}
-
 export async function withTimeout<T>(
   fn: () => DbOperationPromise<T>,
   ms: number,
@@ -287,84 +283,90 @@ export async function withRetry<T>(
   const retryOnConnectionError = opts.retryOnConnectionError ?? true;
   const allowUncancelableTimeout = opts.allowUncancelableTimeout ?? true;
 
-  return withGlobalDbConcurrency(CONCURRENCY_MAX, async () => {
-    const started = Date.now();
-    const deadline = timeoutMs ? started + timeoutMs : null;
-    const requestId = getRequestCorrelationId() ?? crypto.randomUUID();
-    let lastError: unknown;
+  // The deadline starts before the first slot wait, so time queued behind the
+  // global gate counts against the operation budget. Each attempt takes its
+  // own slot; the backoff sleep between attempts runs outside the gate.
+  const started = Date.now();
+  const deadline = timeoutMs ? started + timeoutMs : null;
+  const requestId = getRequestCorrelationId() ?? crypto.randomUUID();
+  let lastError: unknown;
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const attemptStarted = Date.now();
-      try {
-        const operation = fn();
-        const remaining = deadline === null ? null : deadline - Date.now();
-        if (remaining !== null && remaining <= 0) {
-          throw new TimeoutError(timeoutMs ?? 0);
-        }
-        const cancelable = typeof operation.cancel === "function";
-        const result =
-          remaining !== null && (cancelable || allowUncancelableTimeout)
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const attemptStarted = Date.now();
+    try {
+      const result = await withGlobalDbConcurrency(
+        CONCURRENCY_MAX,
+        async () => {
+          const remaining = deadline === null ? null : deadline - Date.now();
+          if (remaining !== null && remaining <= 0) {
+            throw new TimeoutError(timeoutMs ?? 0);
+          }
+          const operation = fn();
+          const cancelable = typeof operation.cancel === "function";
+          return remaining !== null && (cancelable || allowUncancelableTimeout)
             ? await withTimeout(() => operation, remaining)
             : await operation;
-        log.info("db.operation", {
+        },
+        { waitTimeoutMs: deadline === null ? undefined : deadline - Date.now() },
+      );
+      log.info("db.operation", {
+        label,
+        requestId,
+        ok: true,
+        attempt,
+        attempts: maxAttempts,
+        durationMs: Date.now() - started,
+        attemptDurationMs: Date.now() - attemptStarted,
+        errorClass: null,
+        poolCeiling: POOL_MAX,
+        pool: poolSnapshot(),
+      });
+      return result;
+    } catch (err) {
+      lastError = err;
+      const errorClass = classifyDatabaseError(err);
+      const retryable =
+        errorClass === "connection" && retryOnConnectionError;
+      const finalAttempt = attempt === maxAttempts;
+      const budgetExpired = deadline !== null && Date.now() >= deadline;
+      if (!retryable || finalAttempt || budgetExpired) {
+        log.warn("db.operation", {
           label,
           requestId,
-          ok: true,
+          ok: false,
           attempt,
           attempts: maxAttempts,
           durationMs: Date.now() - started,
           attemptDurationMs: Date.now() - attemptStarted,
-          errorClass: null,
-          poolCeiling: POOL_MAX,
-          pool: poolSnapshot(),
-        });
-        return result;
-      } catch (err) {
-        lastError = err;
-        const errorClass = classifyDatabaseError(err);
-        const retryable =
-          errorClass === "connection" && retryOnConnectionError;
-        const finalAttempt = attempt === maxAttempts;
-        const budgetExpired = deadline !== null && Date.now() >= deadline;
-        if (!retryable || finalAttempt || budgetExpired) {
-          log.warn("db.operation", {
-            label,
-            requestId,
-            ok: false,
-            attempt,
-            attempts: maxAttempts,
-            durationMs: Date.now() - started,
-            attemptDurationMs: Date.now() - attemptStarted,
-            timedOut: errorClass === "timeout",
-            retryable,
-            errorClass,
-            errorType: err instanceof Error ? err.name : typeof err,
-            poolCeiling: POOL_MAX,
-            pool: poolSnapshot(),
-          });
-          throw err;
-        }
-
-        const cap = baseDelayMs * 2 ** (attempt - 1);
-        const jitteredDelay = Math.floor(Math.random() * Math.max(1, cap));
-        const delay =
-          deadline === null
-            ? jitteredDelay
-            : Math.min(jitteredDelay, Math.max(0, deadline - Date.now()));
-        log.warn("db.retry", {
-          label,
-          requestId,
-          attempt,
-          delayMs: delay,
+          timedOut: errorClass === "timeout",
+          retryable,
           errorClass,
+          errorType: err instanceof Error ? err.name : typeof err,
           poolCeiling: POOL_MAX,
           pool: poolSnapshot(),
         });
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        throw err;
       }
+
+      const cap = baseDelayMs * 2 ** (attempt - 1);
+      const jitteredDelay = Math.floor(Math.random() * Math.max(1, cap));
+      const delay =
+        deadline === null
+          ? jitteredDelay
+          : Math.min(jitteredDelay, Math.max(0, deadline - Date.now()));
+      log.warn("db.retry", {
+        label,
+        requestId,
+        attempt,
+        delayMs: delay,
+        errorClass,
+        poolCeiling: POOL_MAX,
+        pool: poolSnapshot(),
+      });
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-    throw lastError;
-  });
+  }
+  throw lastError;
 }
 
 /**
@@ -407,61 +409,64 @@ export async function withPoolRetry<T>(
   const label = opts.label ?? "db.pool_checkout";
   const started = Date.now();
   const requestId = getRequestCorrelationId() ?? crypto.randomUUID();
-  return withGlobalDbConcurrency(CONCURRENCY_MAX, async () => {
-    let lastError: unknown;
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        const result = await withTimeout(fn, timeoutMs);
-        log.info("db.pool_checkout", {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // Per-attempt slot; the slot wait shares the per-attempt deadline.
+      const result = await withGlobalDbConcurrency(
+        CONCURRENCY_MAX,
+        () => withTimeout(fn, timeoutMs),
+        { waitTimeoutMs: timeoutMs },
+      );
+      log.info("db.pool_checkout", {
+        label,
+        requestId,
+        ok: true,
+        attempt,
+        attempts: maxAttempts,
+        durationMs: Date.now() - started,
+        errorClass: null,
+        poolCeiling: POOL_MAX,
+        pool: poolSnapshot(),
+      });
+      return result;
+    } catch (err) {
+      lastError = err;
+      const errorClass = classifyDatabaseError(err);
+      const retryable = errorClass === "connection";
+      const finalAttempt = attempt === maxAttempts;
+      if (!retryable || finalAttempt) {
+        log.warn("db.pool_checkout", {
           label,
           requestId,
-          ok: true,
+          ok: false,
           attempt,
           attempts: maxAttempts,
           durationMs: Date.now() - started,
-          errorClass: null,
-          poolCeiling: POOL_MAX,
-          pool: poolSnapshot(),
-        });
-        return result;
-      } catch (err) {
-        lastError = err;
-        const errorClass = classifyDatabaseError(err);
-        const retryable = errorClass === "connection";
-        const finalAttempt = attempt === maxAttempts;
-        if (!retryable || finalAttempt) {
-          log.warn("db.pool_checkout", {
-            label,
-            requestId,
-            ok: false,
-            attempt,
-            attempts: maxAttempts,
-            durationMs: Date.now() - started,
-            timedOut: errorClass === "timeout",
-            retryable,
-            errorClass,
-            errorType: err instanceof Error ? err.name : typeof err,
-            poolCeiling: POOL_MAX,
-            pool: poolSnapshot(),
-          });
-          throw err;
-        }
-        const cap = 100 * 2 ** (attempt - 1);
-        const delay = Math.floor(Math.random() * cap);
-        log.warn("db.pool_retry", {
-          label,
-          requestId,
-          attempt,
-          delayMs: delay,
+          timedOut: errorClass === "timeout",
+          retryable,
           errorClass,
+          errorType: err instanceof Error ? err.name : typeof err,
           poolCeiling: POOL_MAX,
           pool: poolSnapshot(),
         });
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        throw err;
       }
+      const cap = 100 * 2 ** (attempt - 1);
+      const delay = Math.floor(Math.random() * cap);
+      log.warn("db.pool_retry", {
+        label,
+        requestId,
+        attempt,
+        delayMs: delay,
+        errorClass,
+        poolCeiling: POOL_MAX,
+        pool: poolSnapshot(),
+      });
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-    throw lastError;
-  });
+  }
+  throw lastError;
 }
 
 export function getDbClient() {
@@ -509,9 +514,8 @@ export async function closeDb(): Promise<void> {
 
 /**
  * Pool ceiling for callers that want to bound the number of in-flight
- * DB operations in a single request to the pool size. Read by
- * `withDbConcurrency` and used directly by `RootDataProviders` to
- * keep checkout waits from cascading past the 15s client deadline.
+ * DB operations in a single request to the pool size (e.g. as a
+ * `withDbConcurrency` limit). Currently read by `src/db/pool-check-cli.ts`.
  */
 export function getDbPoolMax(): number {
   return POOL_MAX;

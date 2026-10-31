@@ -1,7 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { queueTagRevalidate } from "@/lib/cache/deferred";
+import { queueTagRevalidate, runWithDeferredCacheInvalidation } from "@/lib/cache/deferred";
 import { SHORT_LINK_CACHE_LIFE } from "@/lib/cache/lifetimes";
-import { withDbWrite } from "@/lib/db/client";
 import { getShortLinkRepositoryAsync } from "@/lib/repositories";
 import type { ShortLink } from "@/db/schema";
 import { generateShortCode, isValidShortCode, normalizeTargetUrl } from "@/lib/utils/short-code";
@@ -39,7 +38,7 @@ export async function resolveShortLink(code: string): Promise<ShortLink | null> 
  *
  * 1. Normalizes the target URL and enforces open redirect / anti-recursion guards.
  * 2. Checks if a short link already exists for the canonical destination (O(1) deduplication).
- * 3. In transactional write, inserts with collision retry (up to 3 attempts).
+ * 3. Inserts (each `create` is its own transaction) with collision retry (up to 3 attempts).
  * 4. Catches target_url concurrency races gracefully and returns the winner's record.
  */
 export async function createShortLink(
@@ -49,19 +48,17 @@ export async function createShortLink(
   const normalizedUrl = normalizeTargetUrl(input.targetUrl, appOrigin);
   const repo = await getShortLinkRepositoryAsync();
 
-  // Fast path: deduplicate before initiating a write transaction
+  // Deduplicate first. This read is not transactional; concurrent creates of
+  // the same target are resolved by the target_url unique index below.
   const existing = await repo.findByTargetUrl(normalizedUrl);
   if (existing) {
     return existing;
   }
 
-  return withDbWrite("short-link:create", async () => {
-    // Re-check target URL inside write boundary in case of concurrent creation
-    const existingInTx = await repo.findByTargetUrl(normalizedUrl);
-    if (existingInTx) {
-      return existingInTx;
-    }
-
+  // Each repository call takes its own DB gate slot (and `create` its own
+  // transaction), so this body must not be wrapped in `withDbWrite`. The
+  // deferred scope still flushes the cache tag only after the insert commits.
+  return runWithDeferredCacheInvalidation(async () => {
     let attempts = 0;
     while (attempts < 3) {
       attempts++;
@@ -87,7 +84,7 @@ export async function createShortLink(
             (err as { code: string }).code === "23505");
 
         if (isUniqueViolation) {
-          // If another transaction inserted the same target_url concurrently, return it
+          // If another request inserted the same target_url concurrently, return it
           const raceWinner = await repo.findByTargetUrl(normalizedUrl);
           if (raceWinner) {
             return raceWinner;

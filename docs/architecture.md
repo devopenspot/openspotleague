@@ -59,6 +59,9 @@ Resolve repositories with `get<Entity>RepositoryAsync()` or the exported proxies
 - `withDbRead`: transaction-free reads.
 - `withDbWrite`: writes. It also runs `runWithDeferredCacheInvalidation` (see `caching-and-egress.md`).
 - `withDbRetry`: retries, plus a global concurrency gate (`withGlobalDbConcurrency`, bounded by `CONCURRENCY_MAX ≤ POOL_MAX`). Do not add per-route connection gating.
+  - Each retry attempt takes its own slot, and the backoff sleep runs outside the gate.
+  - Waiting for a slot counts against the operation budget (`DB_OPERATION_TIMEOUT_MS`) and rejects with `TimeoutError`, which routes map to 503.
+  - The gate is reentrant: a DB call made while the same async context already holds a slot runs inside that slot instead of queueing behind itself. Even so, prefer calling proxied repositories outside `withDbRead`/`withDbWrite` bodies, as `short-links.ts` and `weather-verifications.ts` do.
 
 Pool settings come from environment variables, validated in `src/lib/config/env.ts`:
 

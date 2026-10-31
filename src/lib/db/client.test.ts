@@ -2,11 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { log } from "@/lib/utils/log"
 import {
   classifyDatabaseError,
+  dbRuntimeConfig,
   isConnectionError,
   TimeoutError,
   withRetry,
   withTimeout,
 } from "./client"
+import { getGlobalDbConcurrencySnapshot } from "./concurrency"
 
 describe("database observability wrappers", () => {
   afterEach(() => {
@@ -144,5 +146,49 @@ describe("database observability wrappers", () => {
       }),
     )
     random.mockRestore()
+  })
+
+  it("releases the global gate slot during retry backoff", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.99)
+    let attempts = 0
+    const operation = withRetry(
+      async () => {
+        attempts += 1
+        if (attempts < 2) throw new Error("ECONNRESET")
+        return "ok"
+      },
+      { baseDelayMs: 40, label: "test.backoff" },
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(attempts).toBe(1)
+    expect(getGlobalDbConcurrencySnapshot(dbRuntimeConfig.concurrencyMax).active).toBe(0)
+
+    await expect(operation).resolves.toBe("ok")
+    expect(attempts).toBe(2)
+  })
+
+  it("counts the wait for a gate slot against the operation deadline", async () => {
+    const limit = dbRuntimeConfig.concurrencyMax
+    const releases: Array<() => void> = []
+    const blockers = Array.from({ length: limit }, () =>
+      withRetry(
+        () => new Promise<void>((resolve) => {
+          releases.push(resolve)
+        }),
+        { label: "test.blocker" },
+      ),
+    )
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    const queuedFn = vi.fn(async () => "never")
+    await expect(
+      withRetry(queuedFn, { timeoutMs: 10, label: "test.queued" }),
+    ).rejects.toBeInstanceOf(TimeoutError)
+    expect(queuedFn).not.toHaveBeenCalled()
+
+    releases.forEach((release) => release())
+    await Promise.all(blockers)
+    expect(getGlobalDbConcurrencySnapshot(limit)).toMatchObject({ active: 0, queued: 0 })
   })
 })

@@ -12,7 +12,9 @@ vi.mock("@/lib/auth/server", () => ({
   getSessionUser: getSessionUserMock,
 }))
 
+import { TimeoutError } from "@/lib/db/client"
 import {
+  gameErrorResponse,
   identityErrorResponse,
   resolveAuthenticatedIdentity,
   resolveIdentity,
@@ -124,5 +126,31 @@ describe("identityErrorResponse", () => {
 
   it("maps unknown errors to 500", () => {
     expect(identityErrorResponse(new Error("boom")).status).toBe(500)
+  })
+})
+
+describe("gameErrorResponse", () => {
+  it("maps DB timeouts and connection errors to 503 without the internal-error hook", async () => {
+    const onInternalError = vi.fn()
+
+    const timeout = gameErrorResponse(new TimeoutError(15_000), onInternalError)
+    const connection = gameErrorResponse(new Error("ECONNRESET"), onInternalError)
+
+    expect(timeout.status).toBe(503)
+    expect(connection.status).toBe(503)
+    expect(await timeout.json()).toEqual({
+      error: "The games service is temporarily unavailable",
+      code: "SERVICE_UNAVAILABLE",
+    })
+    expect(onInternalError).not.toHaveBeenCalled()
+  })
+
+  it("keeps unknown errors as a generic 500", async () => {
+    const onInternalError = vi.fn()
+    const response = gameErrorResponse(new Error("boom"), onInternalError)
+
+    expect(response.status).toBe(500)
+    expect(await response.json()).toEqual({ error: "Internal error" })
+    expect(onInternalError).toHaveBeenCalledTimes(1)
   })
 })

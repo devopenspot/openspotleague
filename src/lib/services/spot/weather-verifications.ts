@@ -77,7 +77,7 @@ export async function verifySpotWithWeatherForUser(params: {
   const now = new Date()
   const expiresAt = new Date(now.getTime() + WEATHER_VERIFICATION_TTL_MS)
 
-  return withDbWrite("spot.verify_with_weather", async () => {
+  const verificationCount = await withDbWrite("spot.verify_with_weather", async () => {
     const { db } = getDbClient()
     let verificationCount = 0
 
@@ -97,14 +97,18 @@ export async function verifySpotWithWeatherForUser(params: {
       verificationCount = row?.x ?? 0
     })
 
-    const verifyRepo = await getWeatherVerificationRepositoryAsync()
-    const summary = await verifyRepo.getActiveSummary(spotId)
-
     // Queued cache invalidation executed post-commit
     queueTagRevalidate(weatherTag(spotId), REPORT_CACHE_LIFE)
     queueTagRevalidate(spotVerifiedTag(spotId), LIST_CACHE_LIFE)
     queueTagRevalidate(userVerifiedTag(userId), LIST_CACHE_LIFE)
 
-    return { verificationCount, summary, alreadyVerifiedSpot: true }
+    return verificationCount
   })
+
+  // Read after the write's gate slot is released; the proxied repository
+  // takes its own slot.
+  const verifyRepo = await getWeatherVerificationRepositoryAsync()
+  const summary = await verifyRepo.getActiveSummary(spotId)
+
+  return { verificationCount, summary, alreadyVerifiedSpot: true }
 }

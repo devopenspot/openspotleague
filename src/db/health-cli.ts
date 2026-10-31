@@ -8,11 +8,12 @@ async function main() {
     `db:health → ${status}  source=${result.source}  latencyMs=${result.latencyMs}` +
       (result.error ? `  error=${result.error}` : ""),
   )
-  if (result.statementTimeout && !result.statementTimeout.ok) {
+  if (result.statementTimeout && (!result.statementTimeout.ok || !result.statementTimeout.serverDefaultOk)) {
     console.log(
       `  statement_timeout: configured=${result.statementTimeout.configuredMs}ms ` +
         `effective=${result.statementTimeout.serverValue ?? "unknown"} ` +
-        `pooler_default=${result.statementTimeout.serverDefaultValue ?? "unknown"}`,
+        `pooler_default=${result.statementTimeout.serverDefaultValue ?? "unknown"} ` +
+        `pooler_default_ok=${result.statementTimeout.serverDefaultOk}`,
     )
   }
   if (result.migration && !result.migration.ok) {

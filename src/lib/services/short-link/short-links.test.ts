@@ -95,9 +95,8 @@ describe("short-links service", () => {
     it("recovers from concurrent race when target_url is created by another request", async () => {
       const raceWinner = mockRow("winner1", "/spots/race-spot");
 
-      // Initially findByTargetUrl returns null
+      // The dedupe read returns null
       vi.mocked(mockRepo.findByTargetUrl)
-        .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(null)
         // Race check inside catch returns the winner
         .mockResolvedValueOnce(raceWinner);
