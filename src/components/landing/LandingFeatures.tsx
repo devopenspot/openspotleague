@@ -30,8 +30,8 @@ const FEATURES: readonly FeatureCardProps[] = [
     description:
       "Interactive map with coordinates, obstacles, surface ratings, security bust index, and live weather at every spot.",
     bullets: [
-      "Filter by discipline: Skate, BMX, Roller & Scooter",
-      "Street ledges, handrails, stair sets, bowls & DIYs",
+      "Filter by Regions, Countries, and Cities",
+      "Skateparks, ledges, handrails, stair sets, bowls, verticals & DIYs",
       "Crowd-sourced verifications from local riders",
     ],
     ctaText: "Explore Spot Map",
@@ -39,16 +39,15 @@ const FEATURES: readonly FeatureCardProps[] = [
   },
   {
     icon: Trophy,
-    title: "Live Challenge Engine",
-    badge: "Battle Mode",
-    description:
-      "Play Game of S.K.A.T.E., B.I.K.E., B.L.A.D.E. or S.C.O.O.T. Turn-based referee rules, custom letter words, and live session sync.",
+    title: "Live Tricks-Game Engine",
+    badge: "Training/Challenge Mode",
+    description: "Play Game of S.K.A.T.E., B.I.K.E., B.L.A.D.E. or S.C.O.O.T.",
     bullets: [
-      "Customizable elimination word & offensive calls",
-      "Quick 6-character room codes to invite rivals",
-      "Trick catalogs with difficulty levels & capability matching",
+      "Elimination word games with friends or random opponents",
+      "Quick Share QR codes to challenge friends in person or online",
+      "Trick catalogs with difficulty levels & spot types to train at your local terrain",
     ],
-    ctaText: "Launch Training & Games",
+    ctaText: "Launch Training/Challenges Games",
     ctaHref: ROUTES.games,
   },
   {
@@ -56,11 +55,11 @@ const FEATURES: readonly FeatureCardProps[] = [
     title: "Open Spot TV",
     badge: "500+ Videos",
     description:
-      "Curated non-stop action sports cinema. Stream FISE world cups, street video parts, and athlete profile sessions without noise.",
+      "Curated non-stop action sports cinema. Watch FISE Tours, video parts, and athlete profile sessions without noise.",
     bullets: [
       "Zero-friction continuous autoplay across disciplines",
-      "Filter by Skate, BMX, Roller, and Scooter",
-      "Deep links directly into specific contest runs and parts",
+      "Filtered Options",
+      "Legendary video parts, contests, and athlete profiles from the past 20 years",
     ],
     ctaText: "Watch Open Spot TV",
     ctaHref: ROUTES.tv,
@@ -68,13 +67,13 @@ const FEATURES: readonly FeatureCardProps[] = [
   {
     icon: BookmarkCheck,
     title: "Rider Progression",
-    badge: "Free Account",
+    badge: "Activity Tracking",
     description:
       "Save your favorite training grounds, track your trick bag, and contribute new unmapped street spots to the community.",
     bullets: [
       "Bookmark spots to ride and access them on mobile",
       "Record match history and personal trick progression",
-      "Submit local gems with photos & obstacle tags",
+      "Submit new spots to the global map and earn curator status",
     ],
     ctaText: "Sign In / Join Free",
     ctaHref: ROUTES.login,
