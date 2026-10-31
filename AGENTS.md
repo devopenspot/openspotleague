@@ -17,7 +17,7 @@ pnpm lint && pnpm typecheck && pnpm test
 - `pnpm test`: `vitest run` in `happy-dom` with globals. It only picks up `src/**/*.{test,spec}.{ts,tsx}`, aliases `@` to `src`, and stubs `server-only`.
   - Single file: `pnpm test src/path/file.test.ts`. By name: add `-t "name"`. Watch mode: `pnpm test:watch`.
 - `pnpm build` must stay DB-free. See [Hard rules](#hard-rules).
-- `pnpm dev`: `vite dev`. `pnpm start`: `vite preview` (runs the production build in `workerd`). `pnpm deploy`: deploy to Cloudflare. `pnpm deploy:response-store`: deploy the cache Worker. Never point `.env.local` at the production pooler (see `docs/caching-and-egress.md`).
+- `pnpm dev`: `vite dev`. `pnpm start`: `vite preview` (runs the production build in `workerd`). `pnpm deploy`: deploy to Cloudflare. `pnpm deploy:secrets`: deploy and upload the declared secrets from `.env.local`; needed for the first deploy and whenever a value changes. Never pass `.env.local` to `cf deploy --secrets-file`: it uploads every key in the file, including `CLOUDFLARE_API_TOKEN` and the pooler URLs. `pnpm deploy:response-store`: deploy the cache Worker. Never point `.env.local` at the production pooler (see `docs/caching-and-egress.md`).
 - Database: `pnpm db:apply` (migrations), `pnpm db:fresh:seed` (reset, migrate, and seed everything), `pnpm db:health`, `pnpm db:check-pool`, `pnpm egress:snapshot`. Full list in `docs/database.md`.
 
 ## Map
@@ -26,7 +26,7 @@ pnpm lint && pnpm typecheck && pnpm test
 | --- | --- |
 | `src/proxy.ts` | Next 16 proxy (replaces `middleware.ts`). Handles request ids, per-IP rate limits, the seed cookie, Supabase session refresh, and security headers. |
 | `src/worker.ts` | Workers entry. Opens the request scope around vinext's handler. |
-| `cloudflare.config.ts` | Worker config. Every server env var must be declared here or the Worker never sees it. |
+| `cloudflare.config.ts` | Worker config. A server env var must be declared here or the Worker never sees it, and every declared name must have a value at deploy time. |
 | `src/app/**` | Pages and route handlers. They only call services. |
 | `src/lib/services/*` | Orchestration and the single writers. |
 | `src/lib/repositories/*` | Repository interfaces plus Drizzle implementations, resolved through `repositories/index.ts`. |
