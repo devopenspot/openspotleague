@@ -32,6 +32,7 @@
     "db:migrate-spots": "tsx scripts/migrate-spots.ts",
     "db:curate-cities": "tsx scripts/curate-cities.ts",
     "deploy": "vinext-cloudflare deploy --warm-cache",
+    "deploy:secrets": "vite build && tsx scripts/deploy-with-secrets.ts",
     "deploy:response-store": "cf deploy --prebuilt --mode production --worker open-spot-response-store"
   },
   "packageManager": "pnpm@12.16.1",
@@ -92,6 +93,7 @@
     "typescript-eslint": "^8.62.0",
     "unidecode": "^1.1.0",
     "vite": "8.3.0",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.9",
+    "wrangler": "^4.156.0"
   }
 }
