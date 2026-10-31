@@ -13,10 +13,7 @@
       "name": "dev-no-db",
       "runtimeExecutable": "env",
       "runtimeArgs": [
-        "SUPABASE_DATABASE_URL=",
-        "SUPABASE_DIRECT_URL=",
-        "DATABASE_URL=",
-        "DB_CONNECTION_STRING=",
+        "CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgres://no-db:no-db@127.0.0.1:1/no-db?sslmode=disable",
         "pnpm",
         "dev"
       ],

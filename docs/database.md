@@ -22,6 +22,7 @@ How each tool picks its connection string:
 - **Runtime.** `getDatabaseUrl()` (`src/lib/config/env.ts`) uses the Hyperdrive binding on Workers. On Node it tries `SUPABASE_DATABASE_URL` first, then `SUPABASE_DIRECT_URL`.
 - **`drizzle.config.ts`.** Tries `SUPABASE_DIRECT_URL`, then `DB_CONNECTION_STRING`, then `DATABASE_URL`. If it finds the misspelled `DB_CONNETION_STRING`, it throws.
 - **CLI scripts.** They import `src/db/load-env.ts`, which loads `.env.local` with `override: true` and then `.env` with `override: false`. As a result, `.env.local` wins even over variables exported in your shell.
+- **`dev-no-db` (`.claude/launch.json`).** Runs `pnpm dev` with `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` pointed at a closed local port, so every query fails fast and pages render their `EMPTY_*` fallbacks. The Vite plugin lets the process environment win over `.env.local`, so this holds whatever that file says. Don't blank the variable instead: `pnpm dev` then throws at startup. Blanking `SUPABASE_DATABASE_URL` and the other URLs does nothing here, because the Worker only connects through Hyperdrive. This stops Postgres only; Supabase Auth and Realtime keep their `.env.local` URLs.
 
 > Don't point `.env.local` at the production pooler while developing; see `caching-and-egress.md`.
 
