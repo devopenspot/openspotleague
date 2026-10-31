@@ -1,7 +1,8 @@
 "use client";
 
 import { useId } from "react";
-import { Search, X, ChevronDown, RotateCcw } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { formatTvCategory } from "@/components/tv/marquee/tv-marquee-data";
 
 export interface TvFilterBarProps {
@@ -10,11 +11,6 @@ export interface TvFilterBarProps {
   categories: readonly string[];
   selectedCategory: string;
   onSelectCategory: (cat: string) => void;
-  years: readonly number[];
-  selectedYear: number | null;
-  onSelectYear: (year: number | null) => void;
-  totalActiveFiltersCount: number;
-  onReset: () => void;
   children?: React.ReactNode;
 }
 
@@ -24,102 +20,87 @@ export function TvFilterBar({
   categories,
   selectedCategory,
   onSelectCategory,
-  totalActiveFiltersCount,
-  onReset,
   children,
 }: TvFilterBarProps) {
   const searchInputId = useId();
   const categorySelectId = useId();
-
-  const isFiltered = totalActiveFiltersCount > 0;
+  const hasCategory = selectedCategory !== "all";
 
   return (
     <div
       role="search"
-      aria-label="Filter TV videos"
-      className="flex flex-col gap-2.5 sm:gap-3 py-1"
+      aria-label="Search and filter videos"
+      className="flex items-center gap-2 py-1 sm:gap-2.5"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5">
-        {/* Text Input: Name / Title */}
-        <div className="relative flex-1 min-w-[200px]">
-          <label htmlFor={searchInputId} className="sr-only">
-            Search videos by name
-          </label>
-          <Search
-            size={16}
-            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40"
-            aria-hidden="true"
-          />
-          <input
-            id={searchInputId}
-            type="search"
-            value={query}
-            onChange={(e) => onQueryChange(e.target.value)}
-            placeholder="Search videos by name..."
-            autoComplete="off"
-            spellCheck="false"
-            className="w-full rounded-full border border-white/25 bg-white/[0.06] pl-9 pr-9 py-1.5 sm:py-2 min-h-[40px] text-base sm:text-sm font-medium text-white placeholder:text-white/40 focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => onQueryChange("")}
-              aria-label="Clear search text"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <X size={14} aria-hidden="true" />
-            </button>
-          ) : null}
-        </div>
-
-        {/* Filter Selects & Controls */}
-        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          {/* Category Dropdown */}
-          <div className="relative inline-flex items-center gap-2">
-            <label htmlFor={categorySelectId} className="sr-only">
-              Filter by category
-            </label>
-            <select
-              id={categorySelectId}
-              value={selectedCategory}
-              onChange={(e) => onSelectCategory(e.target.value)}
-              className="appearance-none rounded-full border border-white/25 bg-transparent pl-3.5 pr-8 py-1.5 sm:py-2 min-h-[40px] font-display text-base sm:text-[13px] font-medium text-white/90 hover:border-white/60 hover:text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white transition-colors cursor-pointer"
-            >
-              <option value="all" className="bg-[#121212] text-white">
-                All Categories
-              </option>
-              {categories.map((cat) => (
-                <option
-                  key={cat}
-                  value={cat}
-                  className="bg-[#121212] text-white"
-                >
-                  {formatTvCategory(cat)}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={13}
-              className="pointer-events-none absolute right-2.5 text-white/60"
-              aria-hidden="true"
-            />
-            {children}
-          </div>
-
-          {/* Reset Filters CTA */}
-          {isFiltered ? (
-            <button
-              type="button"
-              onClick={onReset}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3.5 py-1.5 sm:py-2 min-h-[40px] font-display text-[13px] font-medium text-white hover:bg-white/25 active:scale-[0.98] transition-all"
-              aria-label="Reset all search filters"
-            >
-              <RotateCcw size={12} aria-hidden="true" />
-              <span>Reset</span>
-            </button>
-          ) : null}
-        </div>
+      <div className="relative min-w-0 flex-1">
+        <label htmlFor={searchInputId} className="sr-only">
+          Search by rider, trick or event
+        </label>
+        <Search
+          size={16}
+          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-wire-muted"
+          aria-hidden="true"
+        />
+        <input
+          id={searchInputId}
+          type="search"
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
+          placeholder="Search riders or tricks"
+          autoComplete="off"
+          spellCheck="false"
+          className={cn(
+            "min-h-[40px] w-full text-ellipsis rounded-full [&::-webkit-search-cancel-button]:appearance-none border border-wire-border-strong bg-tv-overlay py-1.5 pl-9 text-base font-medium text-on-wire transition-colors placeholder:text-wire-muted focus:border-on-wire focus:outline-none focus:ring-1 focus:ring-white sm:py-2 sm:text-sm",
+            query ? "pr-9" : "pr-3",
+          )}
+        />
+        {query ? (
+          <button
+            type="button"
+            onClick={() => onQueryChange("")}
+            aria-label="Clear search text"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-wire-muted transition-colors hover:bg-wire-border hover:text-on-wire"
+          >
+            <X size={14} aria-hidden="true" />
+          </button>
+        ) : null}
       </div>
+
+      {/* Category: icon on phones (native select stretched over it), pill from sm */}
+      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-wire-border-strong text-on-wire transition-colors hover:border-wire-muted focus-within:border-on-wire focus-within:ring-1 focus-within:ring-white sm:w-auto">
+        <label htmlFor={categorySelectId} className="sr-only">
+          Filter by category
+        </label>
+        <SlidersHorizontal size={16} className="sm:hidden" aria-hidden="true" />
+        {hasCategory ? (
+          <span
+            aria-hidden="true"
+            className="absolute right-2 top-2 h-2 w-2 rounded-full bg-on-wire sm:hidden"
+          />
+        ) : null}
+        <select
+          id={categorySelectId}
+          value={selectedCategory}
+          onChange={(e) => onSelectCategory(e.target.value)}
+          className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full bg-transparent text-base opacity-0 focus:outline-none sm:static sm:w-auto sm:pl-3.5 sm:pr-8 sm:font-display sm:text-[13px] sm:font-medium sm:opacity-100"
+        >
+          <option value="all" className="bg-wire text-on-wire">
+            All categories
+          </option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat} className="bg-wire text-on-wire">
+              {formatTvCategory(cat)}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={13}
+          className="pointer-events-none absolute right-2.5 hidden text-wire-muted sm:block"
+          aria-hidden="true"
+        />
+      </div>
+
+      {children}
     </div>
   );
 }

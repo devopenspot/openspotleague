@@ -50,17 +50,26 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
   item,
   active,
   onSelect,
+  fluid = false,
+  progress,
 }: {
   item: TvMarqueeItem;
   active?: boolean;
   onSelect: (video: TvCard) => void;
+  /** Fill the parent (search grid) instead of the fixed row width. */
+  fluid?: boolean;
+  /** Watched fraction (0-1); only the Continue watching shelf passes it. */
+  progress?: number;
 }) {
   return (
     <button
       type="button"
       onClick={() => onSelect(item.video)}
-      aria-label={`${item.title} — ${item.disciplineSlug} · ${item.meta}`}
-      className="group/card flex w-[240px] sm:w-[270px] shrink-0 flex-col gap-2 text-left focus-visible:outline-none"
+      aria-label={`${item.title} — ${item.disciplineLabel} · ${item.meta}`}
+      className={cn(
+        "group/card flex shrink-0 flex-col gap-2 text-left focus-visible:outline-none",
+        fluid ? "w-full" : "w-[240px] sm:w-[270px]",
+      )}
     >
       <div
         className={cn(
@@ -79,6 +88,17 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
           </span>
         </span>
         <TvBrandMark />
+        {progress !== undefined ? (
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-1 bg-wire-border-strong"
+          >
+            <span
+              className="block h-full bg-on-wire"
+              style={{ width: `${Math.round(progress * 100)}%` }}
+            />
+          </span>
+        ) : null}
       </div>
 
       <div className="flex min-w-0 flex-col gap-0.5 px-0.5">
@@ -86,7 +106,7 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
           {item.title}
         </p>
         <p className="truncate text-xs text-white/50">
-          {item.isNew ? `${item.disciplineSlug} · ${item.meta}` : item.meta}
+          {item.isNew ? `${item.disciplineLabel} · ${item.meta}` : item.meta}
         </p>
       </div>
     </button>

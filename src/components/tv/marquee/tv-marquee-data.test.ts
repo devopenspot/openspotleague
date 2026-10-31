@@ -3,6 +3,8 @@ import {
   filterByDiscipline,
   isRecentTvPost,
   formatTvCategory,
+  formatTvDiscipline,
+  orderTvRows,
   resolveDisciplineParam,
   toTvMarqueeItem,
   toTvMarqueeItems,
@@ -99,6 +101,46 @@ describe("formatTvCategory", () => {
   it("capitalizes the category slug", () => {
     expect(formatTvCategory("music")).toBe("Music");
     expect(formatTvCategory("documentary")).toBe("Documentary");
+  });
+
+  it("uses rider-facing labels where the slug reads poorly", () => {
+    expect(formatTvCategory("profile")).toBe("Rider profiles");
+    expect(formatTvCategory("video part")).toBe("Video parts");
+    expect(formatTvCategory("Event")).toBe("Events");
+  });
+});
+
+describe("formatTvDiscipline", () => {
+  it("keeps BMX uppercase and capitalizes the rest", () => {
+    expect(formatTvDiscipline("bmx")).toBe("BMX");
+    expect(formatTvDiscipline("skateboard")).toBe("Skateboard");
+  });
+});
+
+describe("orderTvRows", () => {
+  const rows = (...categories: string[]) => categories.map((category) => ({ category }));
+  const order = (...categories: string[]) =>
+    orderTvRows(rows(...categories)).map((r) => r.category);
+
+  it("sorts rows by rider moment", () => {
+    expect(order("documentary", "learning", "epic tricks")).toEqual([
+      "epic tricks",
+      "learning",
+      "documentary",
+    ]);
+  });
+
+  it("groups every game-of row together, keeping their order", () => {
+    expect(order("profile", "game of skate", "game of bike", "learning")).toEqual([
+      "learning",
+      "game of skate",
+      "game of bike",
+      "profile",
+    ]);
+  });
+
+  it("keeps unlisted categories after the priority list, in server order", () => {
+    expect(order("zebra", "bladies", "tour")).toEqual(["tour", "zebra", "bladies"]);
   });
 });
 

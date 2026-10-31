@@ -5,9 +5,15 @@
  */
 export function toAutoplayEmbedUrl(
   embedUrl: string,
-  opts: { autoplay?: boolean; muted?: boolean; enableJsApi?: boolean } = {},
+  opts: {
+    autoplay?: boolean;
+    muted?: boolean;
+    enableJsApi?: boolean;
+    /** Resume position; omitted or 0 starts from the beginning. */
+    startSeconds?: number;
+  } = {},
 ): string {
-  const { autoplay = true, muted, enableJsApi } = opts;
+  const { autoplay = true, muted, enableJsApi, startSeconds } = opts;
   const isMuted = muted ?? (autoplay ? true : false);
   const shouldEnableJsApi = enableJsApi ?? autoplay;
   try {
@@ -15,6 +21,8 @@ export function toAutoplayEmbedUrl(
     url.searchParams.set("autoplay", autoplay ? "1" : "0");
     if (isMuted) url.searchParams.set("mute", "1");
     else url.searchParams.delete("mute");
+    if (startSeconds) url.searchParams.set("start", String(Math.floor(startSeconds)));
+    else url.searchParams.delete("start");
     url.searchParams.set("controls", "1");
     // Inline playback on iOS (no fullscreen takeover) + minimal related UI for queue flow
     url.searchParams.set("playsinline", "1");

@@ -42,19 +42,22 @@ export function parseYouTubeVideoUrl(
   }
 }
 
+export function youtubeVideoId(url: string): string | null {
+  const parsed = parseYouTubeVideoUrl(url)
+  if (!parsed) return null
+  try {
+    return new URL(parsed.canonicalUrl).searchParams.get("v")
+  } catch {
+    return null
+  }
+}
+
 export function youtubeThumbUrl(
   url: string,
   variant: "mq" | "hq" = "mq",
 ): string | null {
-  const parsed = parseYouTubeVideoUrl(url)
-  if (!parsed) return null
-  try {
-    const u = new URL(parsed.canonicalUrl)
-    const id = u.searchParams.get("v")
-    if (!id) return null
-    const filename = variant === "hq" ? "hqdefault.jpg" : "mqdefault.jpg"
-    return `https://i.ytimg.com/vi/${id}/${filename}`
-  } catch {
-    return null
-  }
+  const id = youtubeVideoId(url)
+  if (!id) return null
+  const filename = variant === "hq" ? "hqdefault.jpg" : "mqdefault.jpg"
+  return `https://i.ytimg.com/vi/${id}/${filename}`
 }

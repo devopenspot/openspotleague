@@ -127,7 +127,7 @@ pages:
   tv:
     shell: "inverse-surface"
     overlay: "tv-overlay"
-    note: "Dark page (near-black / inverse-surface). Cards use translucent white overlay (white/4-10, border white/10) — documented inverse exception, not ad-hoc white literals."
+    note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Text uses on-wire and wire-muted only. Panels use tv-overlay. All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
   sport-events:
     shell: "surface"
     hero: "on-surface"

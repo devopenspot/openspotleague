@@ -25,7 +25,17 @@ export interface TvMarqueeItem {
   /** Posted within `TV_NEW_WINDOW_DAYS` (computed when the item is built). */
   isNew: boolean;
   disciplineSlug: string;
+  disciplineLabel: string;
   categories: readonly TvCategory[];
+}
+
+function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/** Display name for a discipline slug ("bmx" → "BMX"). */
+export function formatTvDiscipline(slug: string): string {
+  return slug.toLowerCase() === "bmx" ? "BMX" : capitalize(slug);
 }
 
 const marqueeItemCache = new WeakMap<TvCard, TvMarqueeItem>();
@@ -40,6 +50,7 @@ export function toTvMarqueeItem(video: TvCard): TvMarqueeItem {
     meta: formatTvPostDate(video.postDate),
     isNew: isRecentTvPost(video.postDate),
     disciplineSlug: video.disciplineSlug,
+    disciplineLabel: formatTvDiscipline(video.disciplineSlug),
     categories: video.categories,
   };
   marqueeItemCache.set(video, item);
@@ -63,11 +74,51 @@ export function filterByDiscipline(
   );
 }
 
+const TV_CATEGORY_LABELS: Readonly<Record<string, string>> = {
+  profile: "Rider profiles",
+  event: "Events",
+  tour: "Tours",
+  "video part": "Video parts",
+};
+
 /** Display label for a category slug ("music" → "Music"). */
 export function formatTvCategory(category: TvCategory): string {
   const trimmed = category.trim();
   if (!trimmed) return "";
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+  return TV_CATEGORY_LABELS[trimmed.toLowerCase()] ?? capitalize(trimmed);
+}
+
+/**
+ * Row order by rider moment: hype first, then learning, then longer
+ * watches. Anything unlisted keeps its server order after these.
+ */
+export const TV_ROW_PRIORITY: readonly string[] = [
+  "epic tricks",
+  "trick",
+  "video part",
+  "music",
+  "learning",
+  "game of",
+  "profile",
+  "event",
+  "documentary",
+  "tour",
+  "lifestyle",
+];
+
+function tvRowRank(category: TvCategory): number {
+  const normalized = category.trim().toLowerCase();
+  const key = normalized.startsWith("game of") ? "game of" : normalized;
+  const rank = TV_ROW_PRIORITY.indexOf(key);
+  return rank === -1 ? TV_ROW_PRIORITY.length : rank;
+}
+
+export function orderTvRows<T extends { category: TvCategory }>(
+  rows: readonly T[],
+): T[] {
+  return [...rows].sort(
+    (a, b) => tvRowRank(a.category) - tvRowRank(b.category),
+  );
 }
 
 /**

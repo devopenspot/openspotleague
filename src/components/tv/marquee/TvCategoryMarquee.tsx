@@ -4,10 +4,41 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { TvCard, TvCategory } from "@/types/tv";
 import { cn } from "@/lib/utils/cn";
+import { TvCardSkeleton } from "@/components/tv/grid/TvCatalogSkeleton";
 import { TvMarqueeCard } from "./TvMarqueeCard";
-import { toTvMarqueeItems } from "./tv-marquee-data";
+import { formatTvCategory, toTvMarqueeItems } from "./tv-marquee-data";
 
 const ROW_PAGE_LIMIT = 12;
+const CARD_GAP = 12; // gap-3
+
+/** Small text action at the end of a row heading ("See all", "Clear"). */
+export const TV_ROW_ACTION_CLASS =
+  "-my-2 px-1 py-2 text-xs font-medium text-wire-muted transition-colors hover:text-on-wire";
+
+function RowArrow({
+  direction,
+  label,
+  onClick,
+}: {
+  direction: "left" | "right";
+  label: string;
+  onClick: () => void;
+}) {
+  const Icon = direction === "left" ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        "absolute top-[84px] z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-wire-border-strong bg-wire text-on-wire shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out hover:border-wire-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:top-[92px] sm:flex [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/wire:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100",
+        direction === "left" ? "left-1" : "right-1",
+      )}
+    >
+      <Icon size={16} aria-hidden="true" />
+    </button>
+  );
+}
 
 interface TvCategoryMarqueeProps {
   category: TvCategory;
@@ -26,6 +57,10 @@ interface TvCategoryMarqueeProps {
   ) => void;
   /** Optional control rendered at the end of the row heading (e.g. "Clear"). */
   headerAction?: React.ReactNode;
+  /** Adds a "See all" action that opens this category as a full grid. */
+  onSeeAll?: (category: TvCategory) => void;
+  /** Watched fraction per video id; draws the card progress bar. */
+  progressById?: ReadonlyMap<string, number>;
 }
 
 export const TvCategoryMarquee = memo(function TvCategoryMarquee({
@@ -37,6 +72,8 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
   onSelect,
   onAppend,
   headerAction,
+  onSeeAll,
+  progressById,
 }: TvCategoryMarqueeProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -61,11 +98,19 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
     inFlightAbortRef.current?.abort();
     inFlightAbortRef.current = null;
     loadingRef.current = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- adopting a fresh server row is intentional
     setVideos(initialVideos);
     setCursor(initialCursor);
   }, [initialVideos, initialCursor]);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // A reorder (shelf shuffle, a new watch) makes scroll snapping chase the
+  // old first card mid-row, so always return to the front.
+  const firstId = videos[0]?.id;
+  useEffect(() => {
+    scrollerRef.current?.scrollTo?.({ left: 0, behavior: "instant" });
+  }, [firstId]);
 
   const updateScrollState = useCallback(() => {
     const el = scrollerRef.current;
@@ -173,9 +218,18 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
     const el = scrollerRef.current;
     if (!el) return;
     const card = el.querySelector<HTMLElement>("[data-marquee-card]");
-    const gap = 12; // gap-3
-    const amount = card ? card.offsetWidth + gap : 280;
+    const amount = card ? card.offsetWidth + CARD_GAP : 280;
     el.scrollBy({ left: dir * amount, behavior: "smooth" });
+  }, []);
+
+  // Arrows page by whole visible cards so nothing is skipped or half-cut.
+  const pageBy = useCallback((dir: -1 | 1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>("[data-marquee-card]");
+    const step = card ? card.offsetWidth + CARD_GAP : 280;
+    const cards = Math.max(1, Math.floor(el.clientWidth / step));
+    el.scrollBy({ left: dir * cards * step, behavior: "smooth" });
   }, []);
 
   const handleKeyDown = useCallback(
@@ -209,16 +263,25 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
 
   if (displayItems.length === 0) return null;
 
+  const label = formatTvCategory(category);
+
   return (
-    <section
-      aria-label={`${category} sessions`}
-      className="shrink-0 bg-wire pt-3 sm:pt-4"
-    >
+    <section aria-label={label} className="shrink-0 bg-wire pt-3 sm:pt-4">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="px-0 text-base sm:text-lg font-medium capitalize leading-tight text-white/70">
-          {category}
+        <h2 className="px-0 text-base sm:text-lg font-semibold leading-tight text-on-wire">
+          {label}
         </h2>
         {headerAction}
+        {onSeeAll ? (
+          <button
+            type="button"
+            onClick={() => onSeeAll(category)}
+            aria-label={`See all ${label}`}
+            className={TV_ROW_ACTION_CLASS}
+          >
+            See all
+          </button>
+        ) : null}
       </div>
 
       <div className="group/wire relative bg-wire py-2 sm:py-3">
@@ -237,39 +300,25 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
           )}
         />
 
-        <button
-          type="button"
-          aria-label={`Scroll ${category} sessions left`}
-          onClick={() => scrollBy(-1)}
-          disabled={!canScrollLeft}
-          className={cn(
-            "absolute left-1 top-[84px] sm:top-[92px] z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
-            canScrollLeft
-              ? "border-white/15 opacity-100 hover:bg-white/15 hover:border-white/25 active:bg-white/20 active:scale-[0.98]"
-              : "pointer-events-none border-white/10 opacity-30",
-          )}
-        >
-          <ChevronLeft size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          aria-label={`Scroll ${category} sessions right`}
-          onClick={() => scrollBy(1)}
-          disabled={!canScrollRight}
-          className={cn(
-            "absolute right-1 top-[84px] sm:top-[92px] z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
-            canScrollRight
-              ? "border-white/15 opacity-100 hover:bg-white/15 hover:border-white/25 active:bg-white/20 active:scale-[0.98]"
-              : "pointer-events-none border-white/10 opacity-30",
-          )}
-        >
-          <ChevronRight size={16} aria-hidden="true" />
-        </button>
+        {canScrollLeft ? (
+          <RowArrow
+            direction="left"
+            label={`Scroll ${label} left`}
+            onClick={() => pageBy(-1)}
+          />
+        ) : null}
+        {canScrollRight ? (
+          <RowArrow
+            direction="right"
+            label={`Scroll ${label} right`}
+            onClick={() => pageBy(1)}
+          />
+        ) : null}
 
         <div
           ref={scrollerRef}
           role="region"
-          aria-label={`${category} sessions`}
+          aria-label={label}
           aria-roledescription="carousel"
           aria-busy={loadingMore}
           tabIndex={0}
@@ -289,9 +338,16 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
                 item={item}
                 active={item.video.id === activeId}
                 onSelect={handleCardSelect}
+                progress={progressById?.get(item.video.id)}
               />
             </div>
           ))}
+          {/* Next page arriving — ghost card at the row tail */}
+          {loadingMore ? (
+            <div aria-hidden="true" className="shrink-0 snap-start">
+              <TvCardSkeleton />
+            </div>
+          ) : null}
           {/* Sentinel for row pagination — at end of scrollable row */}
           {cursor ? (
             <div
@@ -301,13 +357,6 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
             />
           ) : null}
         </div>
-        {/* Transparent loading veil — no layout shift, no message */}
-        {loadingMore ? (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-10 bg-wire/20"
-          />
-        ) : null}
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { TvCard } from "@/types/tv";
 import type { TvCardPageResult } from "@/lib/repositories/tv/tv-repository";
 import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
@@ -310,14 +310,6 @@ export function useTvSearchState({
     setSelectedYear(null);
   }, []);
 
-  const totalActiveFiltersCount = useMemo(() => {
-    let count = 0;
-    if (debouncedQuery.trim()) count++;
-    if (selectedCategory && selectedCategory !== "all") count++;
-    if (selectedYear !== null) count++;
-    return count;
-  }, [debouncedQuery, selectedCategory, selectedYear]);
-
   return {
     query,
     setQuery,
@@ -334,6 +326,5 @@ export function useTvSearchState({
     hasMore: Boolean(nextCursor),
     loadMore,
     resetFilters,
-    totalActiveFiltersCount,
   };
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import type { TvCard, TvCategory } from "@/types/tv";
 import type { TvCategoryRow } from "@/lib/services/tv/tv";
+import { orderTvRows } from "@/components/tv/marquee/tv-marquee-data";
 
 export function useTvCatalogState({
   rows,
@@ -87,7 +88,7 @@ export function useTvCatalogState({
     const matches = (v: TvCard) =>
       !needle || v.disciplineSlug.toLowerCase() === needle;
 
-    return activeRows.map((row) => {
+    return orderTvRows(activeRows).map((row) => {
       const base = row.videos.filter(matches);
       const appended = (appendedByCategory[row.category] ?? []).filter(matches);
       const effectiveCursor =
