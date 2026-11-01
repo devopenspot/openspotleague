@@ -41,7 +41,7 @@ export function NearbyCtaButton() {
       disabled={isRequesting}
       aria-busy={isRequesting}
       aria-describedby={`${NEARBY_BUTTON_ID}-status`}
-      className="group flex min-h-9 items-center gap-1.5 rounded-full border border-on-primary-container bg-on-primary-container px-5 py-2 font-display text-[11px] font-bold uppercase tracking-[0.08em] leading-none text-on-primary transition-colors duration-150 ease-out hover:bg-on-primary-container/90 active:bg-on-primary-container/85 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:cursor-wait disabled:opacity-60"
+      className="group flex min-h-12 items-center gap-2 rounded-lg border-2 border-on-primary-container bg-on-primary-container px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-on-primary-container/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-60"
     >
       <MapPin
         size={14}

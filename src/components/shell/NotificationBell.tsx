@@ -19,13 +19,13 @@ export function NotificationBell() {
           ? `Notifications, ${unreadCount} unread`
           : "Notifications"
       }
-      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant bg-surface-container-high text-secondary transition-colors hover:border-outline hover:bg-surface-container-highest hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="relative flex h-12 w-12 items-center justify-center rounded-lg border-2 border-wire-border bg-wire-border text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
     >
       <Bell size={16} aria-hidden="true" />
       {badge && (
         <span
           data-notification-badge
-          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 font-display text-[10px] font-bold leading-none text-on-primary"
+          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-on-wire px-1 font-display text-[10px] font-bold leading-none text-primary"
         >
           {badge}
         </span>

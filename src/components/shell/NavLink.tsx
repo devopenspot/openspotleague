@@ -24,9 +24,9 @@ const VARIANT_STYLES: Record<
   { base: string; active: string; inactive: string }
 > = {
   desktop: {
-    base: "flex min-h-11 items-center space-x-2 px-3 text-sm font-medium transition-colors",
-    active: "border-b-2 border-primary text-primary",
-    inactive: "text-secondary hover:text-on-surface",
+    base: "flex min-h-12 items-center space-x-2 rounded-lg px-3 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,color,transform] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
+    active: "border-b-2 border-on-wire bg-wire-border/50 text-on-wire",
+    inactive: "text-wire-muted hover:bg-wire-border hover:text-on-wire",
   },
   // radius-lg 16px per DESIGN.md — interactive controls are 16px or full.
   "mobile-tab": {
@@ -35,7 +35,7 @@ const VARIANT_STYLES: Record<
     inactive: "text-secondary",
   },
   "mobile-drawer": {
-    base: "flex min-h-14 w-full items-center justify-between border-b-1 px-4 text-xs font-semibold uppercase tracking-wider transition-colors",
+    base: "flex min-h-12 w-full items-center justify-between border-b-1 px-4 font-display text-sm font-bold uppercase tracking-[0.04em] transition-colors",
     active: "bg-primary text-on-primary border-primary",
     inactive:
       "border-outline-variant/60 bg-surface-container-low hover:border-outline text-secondary hover:text-on-surface",

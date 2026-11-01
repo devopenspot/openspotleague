@@ -195,7 +195,7 @@ spacing:
   stack-sm: 8px
   stack-md: 24px
   mobile-nav-h: 64px
-  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is fixed 77px (var(--mobile-nav-h)); Header is content-height (py-3.5), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
+  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is fixed 77px (var(--mobile-nav-h)); Header is content-height (py-3), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
   durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
   easings: "ease-out default, linear for radar sweep (3.5s), cubic-bezier(0, 0, 0.2, 1) for ping"
@@ -255,7 +255,7 @@ components:
       timing: "Only ever opened by a tap: side-drawers never auto-open."
       backdrop: "absolute inset-0 bg-on-surface opacity 0.5"
       header: "DrawerHeader: eyebrow, title, and one circular h-12 w-12 rounded-full close button with an X at 20 (border-outline-variant, never border-on-surface). MobileDrawer swaps the title for BrandLogo."
-      footer: "border-t border-outline-variant bg-surface-container-low px-5 py-5; Preferences full-width pill; profile card radius-lg"
+      footer: "border-t border-outline-variant bg-surface-container-low px-5 py-5; Preferences full-width button; profile card radius-lg"
       rule: "NavLink variants own their own styles — never restyle [data-nav-tab] from the drawer/header parent."
   scrim-pills:
     note: "Pills floating over photography (MarqueeCard kind/meta/title, spot heroes). Blessed exception to monochrome: translucent dark pills on image."

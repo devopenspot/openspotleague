@@ -42,7 +42,7 @@ interface JoinWithCodeProps {
 
 const VARIANT_TRIGGER_CLASSES: Record<JoinWithCodeVariant, string> = {
   landing:
-    "inline-flex min-h-9 text-[10px] items-center gap-1.5 rounded-full border border-primary-container bg-on-primary px-5 py-2 font-display font-bold uppercase tracking-[0.08em] leading-none text-on-primary-container transition-colors duration-150 ease-out hover:bg-primary-fixed hover:border-primary-fixed-dim active:bg-primary-fixed-dim active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+    "inline-flex min-h-12 items-center gap-2 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
   games:
     "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px",
 };

@@ -35,7 +35,7 @@ export function SignOutButton({ variant = 'icon', className }: SignOutButtonProp
       className={cn(BASE_CLASSES, VARIANT_CLASSES[variant], className)}
     >
       <LogOut
-        size={variant === 'icon' ? 14 : 12}
+        size={14}
         aria-hidden="true"
         className={variant === 'drawer' ? '-ml-1' : undefined}
       />

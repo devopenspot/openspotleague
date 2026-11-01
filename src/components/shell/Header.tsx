@@ -33,13 +33,13 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
   return (
     <header
       id="app-header"
-      className="sticky top-0 z-40 w-full border-b border-wire-border bg-primary px-5 md:px-10 py-3.5 [&_[data-nav-tab]]:rounded-[16px] [&_[data-nav-tab]]:text-xs [&_[data-nav-tab]]:font-semibold [&_[data-nav-tab]]:text-wire-muted hover:[&_[data-nav-tab]]:text-on-wire hover:[&_[data-nav-tab]]:bg-wire-border focus-visible:[&_[data-nav-tab]]:ring-white focus-visible:[&_[data-nav-tab]]:ring-offset-wire [&_[data-nav-tab][aria-selected=true]]:border-b-2 [&_[data-nav-tab][aria-selected=true]]:border-b-on-wire [&_[data-nav-tab][aria-selected=true]]:text-on-wire [&_[data-nav-tab][aria-selected=true]]:bg-wire-border/50 [&_a[href='/notifications']]:border-wire-border [&_a[href='/notifications']]:bg-wire-border [&_a[href='/notifications']]:text-on-wire hover:[&_a[href='/notifications']]:border-wire-border-strong hover:[&_a[href='/notifications']]:bg-wire-border-strong hover:[&_a[href='/notifications']]:text-on-wire focus-visible:[&_a[href='/notifications']]:ring-white focus-visible:[&_a[href='/notifications']]:ring-offset-wire [&_[data-notification-badge]]:bg-on-wire [&_[data-notification-badge]]:text-primary [&_#mobile-hamburger-btn]:border-wire-border [&_#mobile-hamburger-btn]:bg-wire-border [&_#mobile-hamburger-btn]:text-on-wire hover:[&_#mobile-hamburger-btn]:border-wire-border-strong hover:[&_#mobile-hamburger-btn]:bg-wire-border-strong hover:[&_#mobile-hamburger-btn]:text-on-wire focus-visible:[&_#mobile-hamburger-btn]:ring-white focus-visible:[&_#mobile-hamburger-btn]:ring-offset-wire"
+      className="sticky top-0 z-40 w-full border-b border-wire-border bg-primary px-5 md:px-10 py-3"
     >
       <div className="flex items-center justify-between gap-4">
         <BrandLogo
           image={resolvedImage}
           alt={imageAlt}
-          className="rounded-[16px] transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+          className="rounded-lg transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         />
 
         {/* Primary discovery + play — 4 items max (Explore, Map, Events, League).
@@ -59,14 +59,14 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
             type="button"
             aria-label="Search spots"
             onClick={tryOpenSearch}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-wire-border bg-wire-border text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+            className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-wire-border bg-wire-border text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
           >
             <Search size={16} aria-hidden="true" />
           </button>
 
           {/* Personal cluster: only for signed-in riders. Anonymous sees Sign in CTA instead of ghost tabs. */}
           {user ? (
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-2 lg:flex">
               <AppNavList
                 variant="desktop"
                 groups={["you"]}
@@ -79,7 +79,7 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
           ) : (
             <SignInLink
               variant="header"
-              className="hidden md:inline-flex !rounded-full !border-on-primary !bg-on-primary !px-5 !py-2.5 !text-xs !normal-case !tracking-widest !text-primary font-bold hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire"
+              className="hidden md:inline-flex min-h-12 !rounded-lg !border-2 !border-on-primary !bg-on-primary !px-4 !py-0 !text-sm !tracking-[0.04em] !text-primary hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
             />
           )}
 

@@ -66,8 +66,8 @@ export function MobileDrawer() {
       panelClassName={`${SIDE_DRAWER_PANEL} justify-between bg-primary text-on-primary`}
     >
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex items-center justify-between border-b border-wire-border bg-primary px-5 py-3.5">
-          <BrandLogo className="rounded-[16px] transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire" />
+        <div className="flex items-center justify-between border-b border-wire-border bg-primary px-5 py-3">
+          <BrandLogo className="rounded-lg transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" />
           <button
             id="close-hamburger-btn"
             type="button"
@@ -110,8 +110,8 @@ export function MobileDrawer() {
                           onClick={handleClick}
                           className={
                             isActive
-                              ? "!border-b !border-wire-border-strong !border-l-2 !border-l-on-wire !bg-wire-border-strong !text-on-primary focus-visible:!ring-white focus-visible:!ring-offset-wire"
-                              : "!border-b !border-wire-border !bg-primary !text-wire-muted hover:!border-wire-border-strong hover:!bg-wire-border hover:!text-on-wire focus-visible:!ring-white focus-visible:!ring-offset-wire"
+                              ? "!border-b !border-wire-border-strong !border-l-2 !border-l-on-wire !bg-wire-border-strong !text-on-primary focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2"
+                              : "!border-b !border-wire-border !bg-primary !text-wire-muted hover:!border-wire-border-strong hover:!bg-wire-border hover:!text-on-wire focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2"
                           }
                           badge={
                             showBadge ? (
@@ -132,7 +132,7 @@ export function MobileDrawer() {
             })}
           </nav>
 
-          <p className="p-4 font-display text-[10px] leading-relaxed tracking-wide text-wire-muted">
+          <p className="p-4 font-display text-xs font-semibold leading-5 text-wire-muted">
             “I've missed more than 9000 shots in my career. I've lost almost 300
             games. 26 times, I've been trusted to take the game winning shot and
             missed. I've failed over and over and over again in my life. And
@@ -146,7 +146,7 @@ export function MobileDrawer() {
           id="preferences-btn"
           type="button"
           onClick={handleOpenPreferences}
-          className="flex min-h-11 w-full items-center justify-between rounded-xl border border-wire-border bg-wire-border px-4 text-left text-xs font-sans font-semibold tracking-[0.05em] uppercase text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+          className="flex min-h-12 w-full items-center justify-between rounded-lg border-2 border-wire-border bg-wire-border px-4 text-left font-display text-sm font-bold uppercase tracking-[0.04em] text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
         >
           <span className="flex items-center gap-2">
             <Settings size={14} aria-hidden="true" />
@@ -158,31 +158,31 @@ export function MobileDrawer() {
             <Link
               href="/profile"
               onClick={closeDrawer}
-              className="flex items-center gap-3 rounded-[16px] border border-wire-border bg-wire-border p-3 transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+              className="flex items-center gap-3 rounded-lg border-2 border-wire-border bg-wire-border p-3 transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
             >
               <UserAvatar user={user} size="md" />
               <div className="min-w-0 flex-1">
-                <span className="block text-xs font-sans font-semibold uppercase text-wire-muted">
+                <span className="block font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-wire-muted">
                   Signed in — View profile
                 </span>
-                <span className="block truncate text-xs font-semibold text-on-wire">
+                <span className="block truncate text-sm font-semibold text-on-wire">
                   {user.email}
                 </span>
               </div>
             </Link>
             <SignOutButton
               variant="drawer"
-              className="!rounded-[9999px] !border-wire-border !bg-wire-border !text-on-wire hover:!border-wire-border-strong hover:!bg-wire-border-strong focus-visible:!ring-white focus-visible:!ring-offset-wire"
+              className="min-h-12 !rounded-lg !border-2 !border-wire-border !bg-wire-border !px-4 !py-0 !text-sm !tracking-[0.04em] !text-on-wire hover:!border-wire-border-strong hover:!bg-wire-border-strong focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
             />
           </>
         ) : (
           <SignInLink
             variant="drawer"
-            className="!mt-0 !rounded-[9999px] !border-on-primary !bg-on-primary !px-6 !py-3 !text-primary font-bold transition-opacity hover:!bg-on-primary hover:!opacity-90 focus-visible:!ring-white focus-visible:!ring-offset-wire"
+            className="!mt-0 min-h-12 !rounded-lg !border-2 !border-on-primary !bg-on-primary !px-4 !py-0 !text-sm !tracking-[0.04em] !text-primary hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
             onClick={closeDrawer}
           />
         )}
-        <div className="flex items-center justify-center gap-3 pt-2 text-[11px] text-wire-muted">
+        <div className="flex items-center justify-center gap-3 pt-2 text-xs font-semibold text-wire-muted">
           <Link
             href="/terms"
             onClick={closeDrawer}
