@@ -52,14 +52,14 @@ export function EventPanel({
 
         <div className="absolute inset-0 flex flex-col justify-between p-4 md:p-5">
           <div className="flex items-start justify-between gap-3">
-            <span className="inline-block border border-surface/50 bg-on-surface/30 px-2.5 py-1 font-display text-[9px] font-bold tracking-widest text-surface uppercase">
+            <span className="inline-block rounded-md border border-surface/50 bg-on-surface/30 px-2 py-1 font-display text-xs font-semibold tracking-[0.05em] text-surface uppercase">
               {event.categoryName}
             </span>
             <button
               type="button"
               onClick={onClose}
               aria-label="Close event details"
-              className="-mr-2 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-surface/40 text-surface transition-colors hover:bg-surface/10"
+              className="-mr-2 -mt-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-surface/40 text-surface transition-[background-color,transform] hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
             >
               <X size={14} aria-hidden="true" />
             </button>
@@ -68,13 +68,13 @@ export function EventPanel({
           <div className="max-w-[90%] space-y-2">
             <h4
               id={titleId}
-              className="font-display text-3xl font-bold leading-[0.95] tracking-tight text-surface uppercase"
+              className="font-display text-3xl font-bold leading-[1.15] tracking-[-0.02em] text-surface uppercase"
             >
               {event.name}
             </h4>
             <p
               aria-label={`Status: ${event.status}`}
-              className="flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-widest text-surface/70"
+              className="flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-[0.05em] text-surface/70"
             >
               <span
                 aria-hidden="true"
@@ -101,7 +101,7 @@ export function EventPanel({
               aria-hidden="true"
             />
             <dt className="sr-only">Date</dt>
-            <dd className="font-display text-[10px] font-semibold tracking-wider uppercase">
+            <dd className="font-display text-xs font-semibold tracking-[0.05em] uppercase">
               {event.dateRangeLabel}
             </dd>
           </div>
@@ -113,7 +113,7 @@ export function EventPanel({
                 aria-hidden="true"
               />
               <dt className="sr-only">Starts in</dt>
-              <dd className="font-display text-[10px] font-semibold tracking-wider uppercase">
+              <dd className="font-display text-xs font-semibold tracking-[0.05em] uppercase">
                 Starts in{" "}
                 <Countdown
                   target={event.startDate}
@@ -129,8 +129,8 @@ export function EventPanel({
               aria-hidden="true"
             />
             <dt className="sr-only">Location</dt>
-            <dd className="text-secondary">
-              <span className="font-semibold text-on-surface">
+            <dd className="text-sm font-semibold leading-5 text-secondary">
+              <span className="text-on-surface">
                 {event.city}
               </span>
               {event.country ? `, ${event.country}` : ""}
@@ -144,7 +144,7 @@ export function EventPanel({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open ${event.name} website (opens in a new tab)`}
-            className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full border border-on-surface text-xs font-bold tracking-widest text-on-surface uppercase transition-colors hover:bg-surface-container"
+            className="flex min-h-12 w-full items-center justify-center gap-1.5 rounded-lg border-2 border-on-surface font-display text-sm font-bold tracking-[0.04em] text-on-surface uppercase transition-[background-color,transform] hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
           >
             <span>Event website</span>
             <ExternalLink size={11} aria-hidden="true" />
@@ -155,7 +155,7 @@ export function EventPanel({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${event.name} in Google Maps (opens in a new tab)`}
-          className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-full bg-on-surface text-xs font-bold tracking-widest text-surface uppercase transition-colors hover:bg-on-surface/90"
+          className="flex min-h-12 w-full items-center justify-center gap-1.5 rounded-lg border-2 border-on-surface bg-on-surface font-display text-sm font-bold tracking-[0.04em] text-surface uppercase transition-[background-color,transform] hover:bg-on-surface/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
         >
           <span>Directions</span>
           <ExternalLink size={11} aria-hidden="true" />

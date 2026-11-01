@@ -22,13 +22,13 @@ export function RegionList({ regions, region, onPick }: RegionListProps) {
   return (
     <div className="space-y-4">
       <header className="flex items-center justify-between border-b border-outline-variant pb-4">
-        <h3 className="flex items-center gap-2 font-display text-xs font-bold tracking-widest text-secondary uppercase">
+        <h3 className="flex items-center gap-2 font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
           <Globe size={12} aria-hidden="true" />
           Browse by region
         </h3>
         <span
           aria-hidden="true"
-          className="font-display text-xs font-bold tracking-widest text-secondary uppercase"
+          className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase"
         >
           Step 01 / 03
         </span>
@@ -44,7 +44,7 @@ export function RegionList({ regions, region, onPick }: RegionListProps) {
                 onClick={() => onPick(r.name)}
                 aria-pressed={active}
                 className={cn(
-                  "group flex min-h-20 w-full items-stretch overflow-hidden rounded-[16px] border text-left transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
+                  "group flex min-h-20 w-full items-stretch overflow-hidden rounded-lg border-2 text-left transition-[background-color,border-color,color,transform] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
                   active
                     ? "border-primary bg-primary text-on-primary"
                     : "border-outline-variant bg-surface-container-lowest hover:border-outline hover:bg-surface-container-highest",
@@ -53,7 +53,7 @@ export function RegionList({ regions, region, onPick }: RegionListProps) {
                 {r.image ? (
                   <span
                     aria-hidden="true"
-                    className="relative h-20 w-20 shrink-0 overflow-hidden border-r border-outline-variant bg-on-surface"
+                    className="relative w-20 shrink-0 overflow-hidden border-r border-outline-variant bg-on-surface"
                   >
                     <AppImage
                       src={r.image}
@@ -74,16 +74,16 @@ export function RegionList({ regions, region, onPick }: RegionListProps) {
 
                 <span className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-3">
                   <span className="flex items-center justify-between gap-3">
-                    <span className="font-display text-sm font-bold tracking-wide uppercase truncate">
+                    <span className="font-display text-sm font-bold tracking-[0.04em] uppercase truncate">
                       {r.name}
                     </span>
-                    <span className="shrink-0 font-display text-xs font-bold tracking-widest uppercase opacity-70">
+                    <span className="shrink-0 font-display text-xs font-bold tracking-[0.05em] uppercase opacity-70">
                       {r.count}
                     </span>
                   </span>
                   <span
                     className={cn(
-                      "text-sm leading-6 line-clamp-2",
+                      "text-sm font-semibold leading-5 line-clamp-2",
                       active
                         ? "text-surface/80"
                         : "text-secondary group-hover:text-surface/80",
@@ -139,29 +139,29 @@ export function CountryDrillDown({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex min-h-11 items-center gap-1 rounded-[9999px] px-3 py-2 font-display text-xs font-bold tracking-widest text-secondary uppercase hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-offset-2"
+            className="inline-flex min-h-12 items-center gap-1 rounded-lg px-3 font-display text-sm font-bold uppercase tracking-[0.04em] text-wire-muted transition-[background-color,color,transform] hover:bg-wire-border hover:text-on-wire focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
           >
             <ArrowLeft size={12} aria-hidden="true" />
             All regions
           </button>
         ) : (
-          <span className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+          <span className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
             Filter by country
           </span>
         )}
         <span
           aria-hidden="true"
-          className="font-display text-xs font-bold tracking-widest text-secondary uppercase"
+          className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase"
         >
           Step 02 / 03
         </span>
       </header>
 
       <div className="space-y-1">
-        <h3 className="font-display text-2xl font-bold tracking-wide uppercase text-on-surface">
+        <h3 className="font-display text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em] text-on-surface">
           {region.name}
         </h3>
-        <p className="max-w-prose text-sm leading-6 text-secondary">
+        <p className="max-w-prose text-sm font-semibold leading-5 text-secondary">
           {region.desc}
         </p>
       </div>
@@ -170,9 +170,9 @@ export function CountryDrillDown({
         <button
           type="button"
           onClick={() => onViewAll("region")}
-          className="group flex min-h-11 w-full items-center justify-between gap-3 rounded-[9999px] border border-primary bg-primary p-3 text-left text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-2 active:translate-y-px"
+          className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-on-primary bg-on-primary px-4 text-left text-primary transition-[background-color,transform] hover:bg-on-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
         >
-          <span className="font-display text-sm font-bold tracking-wide uppercase">
+          <span className="font-display text-sm font-bold tracking-[0.04em] uppercase">
             View all {region.name} spots
           </span>
           <ArrowRight
@@ -208,19 +208,19 @@ export function CountryDrillDown({
                   disabled={!isPicker && active}
                   aria-pressed={active}
                   className={cn(
-                    "group flex min-h-11 w-full items-center justify-between gap-3 rounded-[16px] border p-3 text-left transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
+                    "group flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border-2 p-3 text-left transition-[background-color,border-color,color,transform] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
                     active
                       ? "border-primary bg-primary text-on-primary"
                       : "border-outline-variant bg-surface-container-lowest hover:border-outline hover:bg-surface-container-highest",
                   )}
                 >
-                  <span className="font-display text-sm font-bold tracking-wide uppercase truncate">
+                  <span className="font-display text-sm font-bold tracking-[0.04em] uppercase truncate">
                     {c}
                   </span>
                   <span className="flex items-center gap-3 shrink-0">
                     <span
                       className={cn(
-                        "font-display text-xs font-bold tracking-widest uppercase",
+                        "font-display text-xs font-bold tracking-[0.05em] uppercase",
                         active
                           ? "text-surface/80"
                           : "text-secondary group-hover:text-surface/80",
@@ -241,7 +241,7 @@ export function CountryDrillDown({
           })}
         </ul>
       ) : (
-        <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">
+        <p className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
           No countries in this region yet
         </p>
       )}
@@ -322,33 +322,33 @@ export function CityDrillDown({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex min-h-11 items-center gap-1 rounded-[9999px] px-3 py-2 font-display text-xs font-bold tracking-widest text-secondary uppercase hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-offset-2"
+            className="inline-flex min-h-12 items-center gap-1 rounded-lg px-3 font-display text-sm font-bold uppercase tracking-[0.04em] text-wire-muted transition-[background-color,color,transform] hover:bg-wire-border hover:text-on-wire focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
           >
             <ArrowLeft size={12} aria-hidden="true" />
             All countries
           </button>
         ) : (
-          <span className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+          <span className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
             Filter by city
           </span>
         )}
         <span
           aria-hidden="true"
-          className="font-display text-xs font-bold tracking-widest text-secondary uppercase"
+          className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase"
         >
           Step 03 / 03
         </span>
       </header>
 
-      <h3 className="font-display text-2xl font-bold tracking-wide uppercase text-on-surface">
+      <h3 className="font-display text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em] text-on-surface">
         {country}
       </h3>
 
       {!citiesPending && cities.length > 8 && (
-        <div className="flex items-center gap-2.5 rounded-[16px] border border-outline-variant bg-surface-container-lowest px-3.5 py-2">
+        <div className="flex min-h-12 items-center gap-3 rounded-lg border-2 border-wire-border bg-wire-border px-4 focus-within:outline-2 focus-within:outline-white focus-within:outline-offset-2">
           <Search
-            size={15}
-            className="shrink-0 text-secondary"
+            size={18}
+            className="shrink-0 text-wire-muted"
             aria-hidden="true"
           />
           <input
@@ -358,14 +358,14 @@ export function CityDrillDown({
             placeholder={`Filter cities in ${country}...`}
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
-            className="w-full bg-transparent text-base text-on-surface outline-none placeholder:text-secondary sm:text-sm"
+            className="w-full bg-transparent text-base sm:text-sm font-semibold text-on-wire outline-none placeholder:text-wire-muted"
           />
           {cityFilter && (
             <button
               type="button"
               onClick={() => setCityFilter("")}
               aria-label="Clear city filter"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-secondary hover:bg-surface-container-high hover:text-on-surface"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-wire-muted transition-colors hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2"
             >
               <X size={14} aria-hidden="true" />
             </button>
@@ -374,7 +374,7 @@ export function CityDrillDown({
       )}
 
       {citiesPending ? (
-        <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">
+        <p className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
           Loading cities&hellip;
         </p>
       ) : visibleCities.length > 0 ? (
@@ -396,20 +396,20 @@ export function CityDrillDown({
                   disabled={active}
                   aria-pressed={active}
                   className={cn(
-                    "group flex min-h-11 w-full items-center justify-between gap-3 rounded-[16px] border p-3 text-left transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
+                    "group flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border-2 p-3 text-left transition-[background-color,border-color,color,transform] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
                     active
                       ? "border-primary bg-primary text-on-primary"
                       : "border-outline-variant bg-surface-container-lowest hover:border-outline hover:bg-surface-container-highest",
                   )}
                 >
-                  <span className="font-display text-sm font-bold tracking-wide uppercase truncate">
+                  <span className="font-display text-sm font-bold tracking-[0.04em] uppercase truncate">
                     {displayLabel}
                   </span>
                   <span className="flex items-center gap-3 shrink-0">
                     {spotCount !== null && (
                       <span
                         className={cn(
-                          "font-display text-xs font-bold tracking-widest uppercase",
+                          "font-display text-xs font-bold tracking-[0.05em] uppercase",
                           active
                             ? "text-surface/80"
                             : "text-secondary group-hover:text-surface/80",
@@ -433,21 +433,21 @@ export function CityDrillDown({
           )}
         </ul>
       ) : cities.length > 0 ? (
-        <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">
+        <p className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
           No matching cities in {country}
         </p>
       ) : (
         <div className="space-y-3">
-          <p className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-bold tracking-widest text-secondary uppercase">
+          <p className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-4 text-center font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
             No cities in this country yet
           </p>
           {isPicker && (
             <button
               type="button"
               onClick={onCommitCountryAll}
-              className="group flex min-h-11 w-full items-center justify-between gap-3 rounded-[9999px] border border-primary bg-primary p-3 text-left text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-2 active:translate-y-px"
+              className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border-2 border-on-primary bg-on-primary px-4 text-left text-primary transition-[background-color,transform] hover:bg-on-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
             >
-              <span className="font-display text-sm font-bold tracking-wide uppercase">
+              <span className="font-display text-sm font-bold tracking-[0.04em] uppercase">
                 View all {country} spots
               </span>
               <ArrowRight

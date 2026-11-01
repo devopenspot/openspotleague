@@ -78,7 +78,7 @@ export function SwitchFilteredNearby() {
   return (
     <div
       id="map-mode-switcher"
-      className="pointer-events-auto flex min-w-64 items-stretch overflow-hidden rounded-full border border-outline-variant bg-surface/95"
+      className="pointer-events-auto flex min-w-64 items-stretch overflow-hidden rounded-lg border-2 border-outline-variant bg-surface/95"
     >
       <div
         role="radiogroup"
@@ -96,7 +96,7 @@ export function SwitchFilteredNearby() {
           onClick={handleFilteredClick}
           onKeyDown={handleModeKeyDown}
           className={cn(
-            "flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 px-2 text-[10px] font-semibold tracking-[0.05em] uppercase transition-colors sm:px-3 md:h-11",
+            "flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 px-2 font-display text-sm font-bold tracking-[0.04em] uppercase transition-colors sm:px-3",
             "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
             mapMode === "filtered"
               ? "bg-primary text-on-primary"
@@ -123,7 +123,7 @@ export function SwitchFilteredNearby() {
           aria-busy={isRequesting}
           onKeyDown={handleModeKeyDown}
           className={cn(
-            "flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 border-l border-outline-variant px-2 text-[10px] font-semibold tracking-[0.05em] uppercase transition-colors sm:px-3 md:h-11",
+            "flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 border-l border-outline-variant px-2 font-display text-sm font-bold tracking-[0.04em] uppercase transition-colors sm:px-3",
             "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
             mapMode === "nearby"
               ? "bg-primary text-on-primary"

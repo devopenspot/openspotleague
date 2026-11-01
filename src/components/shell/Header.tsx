@@ -79,7 +79,7 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
           ) : (
             <SignInLink
               variant="header"
-              className="hidden md:inline-flex min-h-12 !rounded-lg !border-2 !border-on-primary !bg-on-primary !px-4 !py-0 !text-sm !tracking-[0.04em] !text-primary hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
+              className="hidden md:inline-flex min-h-12 whitespace-nowrap !rounded-lg !border-2 !border-on-primary !bg-on-primary !px-3 sm:!px-4 !py-0 !text-sm !tracking-[0.04em] !text-primary hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
             />
           )}
 

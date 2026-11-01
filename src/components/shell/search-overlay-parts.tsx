@@ -16,12 +16,12 @@ export function GateNotice({ id }: { id: string }) {
     <div
       id={id}
       role="alert"
-      className="mx-auto mb-4 w-full max-w-3xl rounded-[12px] border border-primary/20 bg-primary/10 px-4 py-3 text-sm leading-6 text-on-surface"
+      className="mx-auto mb-4 w-full max-w-3xl rounded-lg border-2 border-wire-border bg-wire-border px-4 py-3 text-sm font-semibold leading-5 text-wire-muted"
     >
-      <p className="font-display text-xs font-bold uppercase tracking-widest text-primary">
+      <p className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-wire">
         Region, country &amp; city required
       </p>
-      <p className="mt-1 text-secondary">
+      <p className="mt-1">
         Filtered map is gated until you pick a region, a country and a city.
         Search for a city or spot above, or choose a region below to load the
         map.
@@ -48,7 +48,7 @@ export function MatchedCities({ cities, onPickCity }: MatchedCitiesProps) {
   if (cities.length === 0) return null;
   return (
     <div className="mb-6 space-y-3">
-      <h3 className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+      <h3 className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
         Matched cities ({cities.length})
       </h3>
       <ul className="space-y-2" aria-label="Matched cities">
@@ -68,18 +68,18 @@ export function MatchedCities({ cities, onPickCity }: MatchedCitiesProps) {
               <button
                 type="button"
                 onClick={() => onPickCity(city)}
-                className="group flex min-h-14 w-full items-center justify-between gap-3 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-3 text-left transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+                className="group flex min-h-14 w-full items-center justify-between gap-3 rounded-lg border-2 border-outline-variant bg-surface-container-lowest p-3 text-left transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
               >
                 <span className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-low text-secondary">
                     <MapPin size={15} aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-sm font-bold tracking-wide uppercase">
+                    <span className="block truncate font-display text-sm font-bold tracking-[0.04em] uppercase">
                       {title}
                     </span>
                     {subtitle ? (
-                      <span className="block truncate text-xs text-secondary">
+                      <span className="block truncate text-xs font-semibold text-secondary">
                         {subtitle}
                       </span>
                     ) : null}
@@ -87,7 +87,7 @@ export function MatchedCities({ cities, onPickCity }: MatchedCitiesProps) {
                 </span>
                 <span className="flex shrink-0 items-center gap-3">
                   {spotCount !== null && (
-                    <span className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+                    <span className="font-display text-xs font-bold tracking-[0.05em] text-secondary uppercase">
                       {spotCount} {spotCount === 1 ? "spot" : "spots"}
                     </span>
                   )}
@@ -137,7 +137,7 @@ export function MatchedSpots({
       <h3
         aria-live="polite"
         aria-atomic="true"
-        className="mb-3 font-display text-xs font-bold tracking-widest text-secondary uppercase"
+        className="mb-3 font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase"
       >
         {searching
           ? "Searching…"
@@ -153,7 +153,7 @@ export function MatchedSpots({
                 <button
                   type="button"
                   onClick={() => onPick(spot)}
-                  className="flex min-h-20 w-full items-center gap-4 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-3 text-left transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+                  className="flex min-h-20 w-full items-center gap-4 rounded-lg border-2 border-outline-variant bg-surface-container-lowest p-3 text-left transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
                 >
                   <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[8px] bg-on-surface">
                     {spot.image?.trim() ? (
@@ -182,15 +182,15 @@ export function MatchedSpots({
                         <TypeBadges
                           types={spot.types}
                           variant="surface"
-                          className="[&_span]:rounded-[8px] [&_span]:px-2 [&_span]:py-1 [&_span]:text-xs"
+                          className="[&_span]:rounded-[8px] [&_span]:bg-wire-border-strong [&_span]:px-2 [&_span]:py-1 [&_span]:text-xs [&_span]:text-on-wire"
                         />
                       ) : null}
                       {distance ? <span>{distance}</span> : null}
                     </span>
-                    <span className="block truncate font-display text-lg font-bold tracking-wide uppercase">
+                    <span className="block truncate font-display text-lg font-bold tracking-[0.04em] uppercase">
                       {spot.name}
                     </span>
-                    <span className="mt-1 flex items-center text-xs text-on-surface-variant">
+                    <span className="mt-1 flex items-center text-xs font-semibold text-on-surface-variant">
                       <MapPin
                         size={11}
                         className="mr-0.5 shrink-0"
@@ -210,7 +210,7 @@ export function MatchedSpots({
           )}
         </ul>
       ) : (
-        <div className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low p-8 text-center font-display text-sm text-secondary">
+        <div className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-8 text-center font-display text-sm font-semibold text-secondary">
           No spots found for &ldquo;
           {query.toUpperCase()}&rdquo;
         </div>

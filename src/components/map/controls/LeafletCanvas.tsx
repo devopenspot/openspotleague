@@ -287,7 +287,7 @@ class LeafletErrorBoundary extends Component<
         <button
           type="button"
           onClick={this.props.onRetry}
-          className="flex h-full w-full items-center justify-center bg-map-surface font-display text-xs font-bold uppercase tracking-wider text-map-on-surface hover:bg-map-surface-container transition-colors"
+          className="flex h-full w-full items-center justify-center bg-map-surface font-display text-sm font-bold uppercase tracking-[0.04em] text-map-on-surface hover:bg-map-surface-container transition-colors"
         >
           Map paused — click to retry
         </button>

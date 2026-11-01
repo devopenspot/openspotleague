@@ -18,7 +18,7 @@ export function WeatherAccuracyNote({
         role="note"
         data-testid="weather-accuracy-note-block"
         className={cn(
-          "flex items-center gap-1.5 font-display text-[9px] font-bold tracking-widest text-secondary uppercase pb-2",
+          "flex items-center gap-1.5 font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase pb-2",
           className,
         )}
       >

@@ -99,7 +99,7 @@ export function MapCityLoader({
           />
         </div>
 
-        <p className="mt-6 font-display text-xs font-bold uppercase tracking-[0.14em] text-secondary">
+        <p className="mt-6 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
           Hang Tight
         </p>
 
@@ -122,7 +122,7 @@ export function MapCityLoader({
           </AnimatePresence>
         </div>
 
-        <p className="mt-3 max-w-[20rem] text-center text-sm leading-5 text-on-surface-variant sm:max-w-[24rem]">
+        <p className="mt-3 max-w-[20rem] text-center text-sm font-semibold leading-5 text-on-surface-variant sm:max-w-[24rem]">
           Keep the map open — we’re syncing the city grid.
         </p>
 

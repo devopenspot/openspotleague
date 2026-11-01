@@ -42,6 +42,14 @@ import { SpotWeatherVerificationDialog } from "@/components/spots/verification/S
 import { isWeatherIconName } from "@/lib/weather/isWeatherIcon";
 import { CloudSun } from "lucide-react";
 
+const PHOTO_ICON_BUTTON_CLASS =
+  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-surface/25 bg-on-surface/40 text-surface backdrop-blur-md transition-colors hover:bg-on-surface/60 hover:text-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2";
+const PHOTO_META_CLASS =
+  "inline-flex items-center gap-1 rounded-md border border-surface/20 bg-on-surface/40 px-2 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-surface backdrop-blur-sm min-[380px]:text-xs";
+const ACTION_BASE_CLASS =
+  "flex min-h-12 flex-1 items-center justify-center gap-1 rounded-lg border-2 px-1 font-display text-xs font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px md:px-2";
+const ACTION_SECONDARY_CLASS = `${ACTION_BASE_CLASS} border-outline-variant bg-surface text-on-surface hover:bg-surface-container-high`;
+
 function verificationCountLabel(count: number): string {
   if (count === 0) return "No verifications yet";
   if (count === 1) return "Verified by 1 rider";
@@ -206,7 +214,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
       >
         {/* --- Image header: capped height so mobile map stays visible --- */}
         <div
-          className={`group relative h-[100px] w-full shrink-0 overflow-hidden text-surface min-[380px]:h-[164px] md:h-[220px] ${
+          className={`group relative h-[148px] w-full shrink-0 overflow-hidden text-surface min-[380px]:h-[164px] md:h-[220px] ${
             spot.image ? "bg-on-surface" : "map-theme-lighter bg-map-surface"
           }`}
         >
@@ -255,14 +263,14 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
           />
 
           {/* Top bar: badges + close */}
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3 pt-5 md:p-3.5 md:pt-3.5">
+          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3 md:p-3.5">
             <div className="min-w-0 flex-1 pt-0.5"></div>
 
             <button
               type="button"
               onClick={clearActivePin}
               aria-label="Close spot details"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-surface/25 bg-on-surface/40 text-surface backdrop-blur-md transition-colors hover:bg-on-surface/60 hover:text-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:h-9 md:w-9"
+              className={PHOTO_ICON_BUTTON_CLASS}
             >
               <X size={14} aria-hidden="true" />
             </button>
@@ -276,7 +284,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
               onClick={() => setVerifyOpen(true)}
               aria-label="Confirm on-site weather condition"
               title="Confirm on-site weather (requires GPS proximity within 250m)"
-              className="absolute left-3 top-14 flex items-center gap-1 rounded-full border border-primary bg-primary px-2.5 py-1 shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-3.5 md:top-12"
+              className="absolute left-3 top-3 flex min-h-11 items-center gap-1 rounded-lg border-2 border-primary bg-primary px-2.5 shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-3.5 md:top-12"
             >
               <VerifiedWeatherDualIcons
                 apiIcon={forecastWeather?.icon}
@@ -293,7 +301,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
               onClick={() => setVerifyOpen(true)}
               aria-label="Confirm on-site weather condition"
               title="Confirm on-site weather (requires GPS proximity within 250m)"
-              className="absolute right-12 top-5 flex h-8 w-8 items-center justify-center rounded-full border border-surface/30 bg-on-surface/40 text-surface backdrop-blur-md hover:bg-on-surface/60 md:left-3.5 md:top-12"
+              className={`${PHOTO_ICON_BUTTON_CLASS} absolute right-[60px] top-3 md:left-3.5 md:top-12`}
             >
               <CloudSun size={14} aria-hidden="true" />
             </button>
@@ -303,7 +311,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
           <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 md:p-3.5">
             <h4
               id={titleId}
-              className="line-clamp-2 max-w-[92%] text-pretty font-display text-[18px] font-bold uppercase leading-[0.95] tracking-tight text-surface [text-shadow:0_1px_16px_rgba(0,0,0,0.55)] md:max-w-[90%] md:text-[20px]"
+              className="line-clamp-2 max-w-[92%] text-pretty font-display text-lg font-bold uppercase leading-[1.2] tracking-[-0.02em] text-surface [text-shadow:0_1px_16px_rgba(0,0,0,0.55)] md:max-w-[90%] md:text-xl"
               title={spot.name}
             >
               {spot.name}
@@ -311,14 +319,14 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
 
             {/* Meta row: city + verification + instagram — compact pills that stay readable on photo */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 rounded-full border border-surface/20 bg-on-surface/40 px-2 py-1 font-display text-[10px] font-bold uppercase tracking-wider text-surface backdrop-blur-sm">
+              <span className={PHOTO_META_CLASS}>
                 <MapPin size={10} aria-hidden="true" className="shrink-0" />
                 <span className="max-w-[18ch] truncate">{spot.city}</span>
               </span>
 
               <span
                 aria-label={verificationLabel}
-                className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-on-surface/40 px-2 py-1 font-display text-[10px] font-bold uppercase tracking-wider text-surface backdrop-blur-sm"
+                className={PHOTO_META_CLASS}
                 title={verificationLabel}
               >
                 <ShieldCheck
@@ -336,7 +344,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   aria-label={`${spot.name} on Instagram (opens in a new tab)`}
-                  className="inline-flex items-center gap-1 rounded-full border border-surface/20 bg-on-surface/40 px-2 py-1 font-display text-[10px] font-bold uppercase tracking-wider text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/60 hover:text-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+                  className={`${PHOTO_META_CLASS} transition-colors hover:bg-on-surface/60 hover:text-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2`}
                 >
                   <Instagram
                     size={10}
@@ -356,7 +364,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
             type="button"
             onClick={() => void handleShare()}
             aria-label={`Share ${spot.name}`}
-            className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface px-2 text-[10px] font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:px-3 md:text-[11px]"
+            className={ACTION_SECONDARY_CLASS}
           >
             <Share2 size={12} aria-hidden="true" className="shrink-0" />
             <span>Share</span>
@@ -365,7 +373,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
           <Link
             href={`/spots/${spot.id}`}
             aria-label={`Open ${spot.name} details`}
-            className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface px-2 text-[10px] font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:px-3 md:text-[11px]"
+            className={ACTION_SECONDARY_CLASS}
           >
             <span>Details</span>
             <ArrowUpRight size={12} aria-hidden="true" className="shrink-0" />
@@ -375,7 +383,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
             href={gamePrefillHref}
             onClick={() => clearActivePin()}
             aria-label={`Train or challenge at ${spot.name}`}
-            className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-full border border-primary bg-primary px-2 text-[10px] font-bold uppercase tracking-widest text-on-primary transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:px-3 md:text-[11px]"
+            className={`${ACTION_BASE_CLASS} border-primary bg-primary text-on-primary hover:bg-primary/90`}
           >
             <Swords size={12} aria-hidden="true" className="shrink-0" />
             <span className="hidden sm:inline">Train</span>
@@ -387,7 +395,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open directions to ${spot.name} in Waze (opens in a new tab)`}
-            className="flex min-h-11 flex-1 items-center justify-center gap-1 rounded-full border border-outline-variant bg-surface px-2 text-[10px] font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 md:px-3 md:text-[11px]"
+            className={ACTION_SECONDARY_CLASS}
           >
             <Navigation size={12} aria-hidden="true" className="shrink-0" />
             <span>Waze</span>

@@ -17,6 +17,9 @@ import {
 import { cn } from "@/lib/utils/cn";
 import type { Spot } from "@/lib/types";
 
+const FILTER_CHIP_CLASS =
+  "inline-flex min-h-12 items-center gap-1 rounded-lg border-2 px-4 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px";
+
 interface SuggestedSpotsProps {
   spot: Spot;
   /**
@@ -101,7 +104,7 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
               aria-selected={selectedType === "all"}
               onClick={() => setSelectedType("all")}
               className={cn(
-                "inline-flex min-h-8 items-center gap-1 rounded-full border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors",
+                FILTER_CHIP_CLASS,
                 selectedType === "all"
                   ? "border-primary bg-primary text-on-primary"
                   : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
@@ -118,7 +121,7 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
                 aria-selected={selectedType === cat.slug}
                 onClick={() => setSelectedType(cat.slug)}
                 className={cn(
-                  "inline-flex min-h-8 items-center gap-1 rounded-full border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors",
+                  FILTER_CHIP_CLASS,
                   selectedType === cat.slug
                     ? "border-primary bg-primary text-on-primary"
                     : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",

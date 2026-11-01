@@ -5,6 +5,10 @@ import { Map, MapPin, Navigation, Swords } from "lucide-react";
 import { setMapPreserveLocation } from "@/lib/map/preserve";
 import type { Spot } from "@/lib/types";
 
+const LOCATION_LINK_CLASS =
+  "flex min-h-12 items-center justify-center gap-1.5 rounded-lg border-2 px-3 text-center font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px";
+const LOCATION_EXTERNAL_LINK_CLASS = `${LOCATION_LINK_CLASS} border-outline-variant bg-surface text-on-surface hover:bg-surface-container`;
+
 interface SpotDetailsLocationProps {
   spot: Spot;
   gamePrefillHref: string;
@@ -23,10 +27,10 @@ export function SpotDetailsLocation({
   return (
     <>
       <address className="py-4 not-italic">
-        <span className="block font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+        <span className="block font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
           Address
         </span>
-        <span className="mt-2 flex items-start gap-2 text-sm leading-relaxed text-on-surface">
+        <span className="mt-2 flex items-start gap-2 text-sm font-semibold leading-5 text-on-surface">
           <MapPin size={15} className="mt-0.5 shrink-0 text-secondary" aria-hidden="true" />
           <span>{spot.address}</span>
         </span>
@@ -36,10 +40,10 @@ export function SpotDetailsLocation({
         <Link
           href={gamePrefillHref}
           aria-label={`Start training or challenge at ${spot.name}`}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-primary bg-primary px-5 text-xs font-bold uppercase tracking-widest text-on-primary transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          className={`${LOCATION_LINK_CLASS} border-primary bg-primary text-on-primary hover:bg-primary/90`}
         >
           <span>Train / Challenge at this spot</span>
-          <Swords size={12} aria-hidden="true" />
+          <Swords size={14} aria-hidden="true" className="shrink-0" />
         </Link>
         <Link
           href={viewOnMapUrl}
@@ -47,10 +51,10 @@ export function SpotDetailsLocation({
             setMapPreserveLocation();
           }}
           aria-label={`View ${spot.name} on the map`}
-          className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-5 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          className={`${LOCATION_LINK_CLASS} border-outline-variant bg-surface-container-high text-on-surface hover:bg-surface-container-highest`}
         >
           <span>View on map</span>
-          <Map size={12} aria-hidden="true" />
+          <Map size={14} aria-hidden="true" className="shrink-0" />
         </Link>
         <div className="grid grid-cols-2 gap-2">
           <a
@@ -58,20 +62,20 @@ export function SpotDetailsLocation({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open ${spot.name} in Google Maps (opens in a new tab)`}
-            className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+            className={LOCATION_EXTERNAL_LINK_CLASS}
           >
             <span>Google Maps</span>
-            <MapPin size={12} aria-hidden="true" />
+            <MapPin size={14} aria-hidden="true" className="shrink-0" />
           </a>
           <a
             href={wazeUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open directions to ${spot.name} in Waze (opens in a new tab)`}
-            className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+            className={LOCATION_EXTERNAL_LINK_CLASS}
           >
             <span>Waze</span>
-            <Navigation size={12} aria-hidden="true" />
+            <Navigation size={14} aria-hidden="true" className="shrink-0" />
           </a>
         </div>
       </div>

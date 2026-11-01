@@ -64,7 +64,7 @@ function RadiusDistanceBase() {
   return (
     <div
       id="map-controls"
-      className="pointer-events-auto min-w-0 max-w-full overflow-x-auto rounded-full border border-outline-variant bg-surface/95"
+      className="pointer-events-auto min-w-0 max-w-full overflow-x-auto rounded-lg border-2 border-outline-variant bg-surface/95"
     >
       <div
         role="radiogroup"
@@ -87,7 +87,7 @@ function RadiusDistanceBase() {
               onClick={() => handleRadiusChip(miles)}
               onKeyDown={handleRadiusKeyDown}
               className={cn(
-                "inline-flex h-11 shrink-0 items-center gap-1.5 px-3 font-display text-[10px] font-bold tracking-widest uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
+                "inline-flex h-11 shrink-0 items-center gap-1.5 px-3 font-display text-xs font-bold tracking-[0.04em] uppercase transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
                 idx > 0 && "border-l border-outline-variant",
                 active
                   ? "bg-primary text-on-primary"

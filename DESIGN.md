@@ -138,7 +138,7 @@ pages:
   spot-detail:
     shell: "surface"
     hero: "on-surface"
-    note: "Large photo hero with on-surface scrim + white pills (see components.scrim-pills) — keeps spot photo hero, not a gradient wash."
+    note: "Large photo hero with on-surface scrim + white labels and controls (see components.scrim-pills) — keeps spot photo hero, not a gradient wash."
   chrome:
     note: "Overlays and drawers are chrome, not washes — they never take a pages.* gradient. SearchOverlay top-sheet and MobileDrawer side-drawer both sit on monochrome panels (see components.overlays)."
 typography:
@@ -176,10 +176,10 @@ shape:
   radius-full: 9999px
   usage:
     - "4px (sm) — pins + cluster tight surfaces + event tier pill only (leaflet-pin 4px)"
-    - "8px (md) — badges, map controls h-11, search thumbs 8px"
+    - "8px (md) — badges, labels on spot photos, search thumbs 8px"
     - "12px (card) — ProfileStats compact stats, GameBoardControls dek, gate alerts"
     - "14px (inner) — rows/cards NESTED inside a 16px parent or photo card: Hero inner panels + numbered rows, MarqueeCard, skeleton inner blocks. Never top-level on a page section."
-    - "16px (lg) — default card radius: SpotCard, EventCard, SurfaceCard, search rows, toasts, overlay panels, drawer footer cards (relaxed)"
+    - "16px (lg) — default card radius: SpotCard, EventCard, SurfaceCard, search rows, toasts, overlay panels, drawer footer cards (relaxed); map controls h-12"
     - "20px (chassis) / 24px (xl) — game PanelShell chassis (20-24) only"
     - "full — all pills, CTAs, tabs, primary buttons, toast action/dismiss"
   literal-map: "rounded-[4px]→rounded-sm · rounded-[8px]→rounded-md · rounded-[12px]→rounded-card · rounded-[14px]→rounded-inner (nested only) · rounded-[16px]→rounded-lg · rounded-[9999px]→rounded-full — no new rounded-[*] literals"
@@ -246,7 +246,7 @@ components:
       container: "z-[1300], flush full-bleed column"
       panel: "bg-surface-container-lowest, content max-w-3xl mx-auto p-5 sm:p-6 md:p-8"
       backdrop: "fixed inset-0 bg-on-surface opacity 0.5 — click closes unless gate forced (closeOnBackdrop=false + role=alertdialog)"
-      header-row: "search field row radius-lg border-outline-variant bg-surface-container-low; step label (eyebrow) + Close pill (secondary button pattern) right"
+      header-row: "search field row radius-lg border-outline-variant bg-surface-container-low; step label (eyebrow) + Close button (secondary button pattern) right"
     side-drawer:
       component: "SideDrawer side=right (MobileDrawer, MatchesDrawer, GameShareDrawer, ChallengeSettingsModal) with DrawerHeader / DrawerFooter from DrawerParts"
       container: "z-[1200], portalled to body"
@@ -260,6 +260,7 @@ components:
   scrim-pills:
     note: "Pills floating over photography (MarqueeCard kind/meta/title, spot heroes). Blessed exception to monochrome: translucent dark pills on image."
     pill: "rounded-full border border-white/15 bg-on-surface/55 text-surface backdrop-blur-md, micro 9px bold uppercase 0.08em"
+    spot-photos: "On the spot hero and map popup, controls are rounded-lg border-2, 44-48px, text-xs semibold 0.05em, white focus outline. Non-interactive labels are rounded-md."
     wash: "bg-gradient-to-t from-on-surface/45 via-transparent to-transparent over the image bottom"
     rule: "Scrim pills live on photos only — never on flat surfaces (use badges there)."
   skeleton:

@@ -63,6 +63,17 @@ const LeafletCanvas = dynamic(
 const NEAR_YOU_INITIAL_ZOOM = 10;
 const NO_SPOTS: readonly MapSpot[] = [];
 
+const MAP_NOTICE_CLASS =
+  "pointer-events-auto flex gap-3 rounded-lg border-2 border-outline-variant bg-surface/95 p-4 text-on-surface";
+const MAP_NOTICE_ROW_CLASS = `${MAP_NOTICE_CLASS} flex-wrap items-center justify-between`;
+const MAP_NOTICE_TITLE_CLASS =
+  "font-display text-xs font-semibold uppercase tracking-[0.05em]";
+const MAP_NOTICE_BODY_CLASS =
+  "text-sm font-semibold leading-5 text-secondary";
+const MAP_ACTION_BASE_CLASS =
+  "inline-flex min-h-12 shrink-0 items-center justify-center rounded-lg border-2 px-4 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px";
+const MAP_ACTION_PRIMARY_CLASS = `${MAP_ACTION_BASE_CLASS} border-primary bg-primary text-on-primary hover:bg-primary/90`;
+
 function nearbyNoticeMessage(
   status: UserLocationStatus,
   error: UserLocationError | null,
@@ -500,12 +511,12 @@ export default function MapTab({ searchParams }: MapTabProps) {
         {!baseNeeds && <MapControls />}
 
         {/* Stacked status banners: gate (status), nearby (status), degraded (alert) */}
-        <div className="pointer-events-none absolute left-3 right-3 top-28 z-[1120] flex flex-col gap-2 sm:right-auto sm:max-w-lg">
+        <div className="pointer-events-none absolute left-3 right-3 top-30 z-[1120] flex flex-col gap-2 sm:right-auto sm:max-w-lg">
           {needsFilteredGeoSelection && (
             <div
               role="status"
               aria-live="polite"
-              className="pointer-events-auto flex flex-col gap-3 border border-primary/30 bg-surface/95 px-4 py-4 text-xs text-on-surface sm:flex-row sm:items-center sm:justify-between"
+              className={`${MAP_NOTICE_CLASS} flex-col sm:flex-row sm:items-center sm:justify-between`}
             >
               <div className="flex min-w-0 items-start gap-2">
                 <span
@@ -513,10 +524,10 @@ export default function MapTab({ searchParams }: MapTabProps) {
                   className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
                 />
                 <div className="min-w-0">
-                  <p className="font-display text-xs font-bold uppercase tracking-wide">
+                  <p className={MAP_NOTICE_TITLE_CLASS}>
                     Region &amp; country required
                   </p>
-                  <p className="mt-1 leading-5 text-secondary">
+                  <p className={`mt-1 ${MAP_NOTICE_BODY_CLASS}`}>
                     Filtered mode needs both a region and a country. Choose your
                     area to load the map. You can also switch to Nearby or
                     Saved.
@@ -526,7 +537,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
               <button
                 type="button"
                 onClick={() => useUIStore.getState().openSearch()}
-                className="min-h-11 shrink-0 rounded-full border border-primary bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-widest text-on-primary transition-opacity hover:opacity-90"
+                className={MAP_ACTION_PRIMARY_CLASS}
               >
                 Choose area
               </button>
@@ -540,21 +551,21 @@ export default function MapTab({ searchParams }: MapTabProps) {
                   <LocationBlockedCallout
                     variant="banner"
                     onRetry={() => void requestLocation()}
-                    className="border border-outline-variant bg-surface/95"
+                    className="!border-outline-variant !bg-surface/95"
                   />
                 </div>
               ) : (
                 <div
                   role="status"
                   aria-live="polite"
-                  className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface/95 px-3 py-3 text-xs text-on-surface"
+                  className={MAP_NOTICE_ROW_CLASS}
                 >
                   <div className="flex min-w-0 items-start gap-2">
                     <span
                       aria-hidden="true"
                       className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
                     />
-                    <p className="min-w-0 leading-5 text-secondary">
+                    <p className={`min-w-0 ${MAP_NOTICE_BODY_CLASS}`}>
                       {nearbyNoticeMessage(status, error)}
                     </p>
                   </div>
@@ -562,7 +573,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
                     type="button"
                     onClick={() => void requestLocation()}
                     disabled={status === "requesting"}
-                    className="min-h-11 shrink-0 rounded-full border border-primary bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-widest text-on-primary transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                    className={`${MAP_ACTION_PRIMARY_CLASS} disabled:cursor-wait disabled:opacity-60`}
                   >
                     {nearbyNoticeActionLabel(status)}
                   </button>
@@ -577,7 +588,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
               <div
                 role="status"
                 aria-live="polite"
-                className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface/95 px-3 py-3 text-xs text-on-surface"
+                className={MAP_NOTICE_ROW_CLASS}
               >
                 <div className="flex min-w-0 items-start gap-2">
                   <span
@@ -585,22 +596,25 @@ export default function MapTab({ searchParams }: MapTabProps) {
                     className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
                   />
                   <div className="min-w-0">
-                    <p className="font-display text-xs font-bold uppercase tracking-wide">
+                    <p className={MAP_NOTICE_TITLE_CLASS}>
                       Sign in to view saved spots
                     </p>
-                    <p className="mt-1 leading-5 text-secondary">
+                    <p className={`mt-1 ${MAP_NOTICE_BODY_CLASS}`}>
                       Your saved skate spots sync across devices when you're
                       signed in.
                     </p>
                   </div>
                 </div>
-                <SignInLink variant="header" />
+                <SignInLink
+                  variant="header"
+                  className="min-h-12 shrink-0 whitespace-nowrap !rounded-lg !border-2 !border-primary !bg-primary !px-4 !py-0 !text-sm !tracking-[0.04em] !text-on-primary hover:!bg-primary/90 active:translate-y-px"
+                />
               </div>
             ) : spotView.spots.length === 0 ? (
               <div
                 role="status"
                 aria-live="polite"
-                className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface/95 px-3 py-3 text-xs text-on-surface"
+                className={MAP_NOTICE_ROW_CLASS}
               >
                 <div className="flex min-w-0 items-start gap-2">
                   <span
@@ -608,10 +622,8 @@ export default function MapTab({ searchParams }: MapTabProps) {
                     className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
                   />
                   <div className="min-w-0">
-                    <p className="font-display text-xs font-bold uppercase tracking-wide">
-                      No saved spots yet
-                    </p>
-                    <p className="mt-1 leading-5 text-secondary">
+                    <p className={MAP_NOTICE_TITLE_CLASS}>No saved spots yet</p>
+                    <p className={`mt-1 ${MAP_NOTICE_BODY_CLASS}`}>
                       Save spots while browsing the map or exploring spots to
                       quickly access them here.
                     </p>
@@ -620,7 +632,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
                 <button
                   type="button"
                   onClick={dismissSaved}
-                  className="min-h-11 shrink-0 rounded-full border border-primary bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-widest text-on-primary transition-opacity hover:opacity-90"
+                  className={MAP_ACTION_PRIMARY_CLASS}
                 >
                   Explore map
                 </button>
@@ -628,20 +640,15 @@ export default function MapTab({ searchParams }: MapTabProps) {
             ) : null)}
 
           {(spotsDegraded || eventsDegraded) && (
-            <div
-              role="alert"
-              className="pointer-events-auto flex flex-wrap items-center justify-between gap-3 border border-outline-variant bg-surface/95 px-3 py-2 text-xs text-on-surface"
-            >
+            <div role="alert" className={MAP_NOTICE_ROW_CLASS}>
               <div className="flex min-w-0 items-start gap-2">
                 <span
                   aria-hidden="true"
                   className="mt-1 h-2 w-2 shrink-0 rounded-full bg-error"
                 />
                 <div className="min-w-0">
-                  <p className="font-display text-xs font-bold uppercase tracking-wide">
-                    Map data limited
-                  </p>
-                  <ul className="mt-1 space-y-0.5 text-secondary">
+                  <p className={MAP_NOTICE_TITLE_CLASS}>Map data limited</p>
+                  <ul className={`mt-1 space-y-0.5 ${MAP_NOTICE_BODY_CLASS}`}>
                     {spotsDegraded && (
                       <li>Spot data is temporarily unavailable.</li>
                     )}
@@ -654,7 +661,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
               <button
                 type="button"
                 onClick={() => router.refresh()}
-                className="min-h-11 shrink-0 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-surface-container"
+                className={`${MAP_ACTION_BASE_CLASS} border-outline-variant hover:bg-surface-container`}
               >
                 Try again
               </button>
@@ -689,7 +696,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
             aria-describedby="map-gate-desc"
             className="flex flex-1 flex-col items-center justify-center gap-4 bg-surface-container-low px-6 py-12 text-center"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-[8px] border border-outline-variant bg-surface-container-high text-secondary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-outline-variant bg-surface-container-high text-secondary">
               <span
                 aria-hidden="true"
                 className="font-display text-xs font-bold"
@@ -700,13 +707,13 @@ export default function MapTab({ searchParams }: MapTabProps) {
             <div className="max-w-sm space-y-2">
               <h2
                 id="map-gate-title"
-                className="font-display text-lg font-bold uppercase tracking-tight"
+                className="font-display text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em]"
               >
                 Choose region &amp; country
               </h2>
               <p
                 id="map-gate-desc"
-                className="text-sm leading-6 text-secondary"
+                className="text-sm font-semibold leading-5 text-secondary"
               >
                 Filtered map requires both a region and a country. Open the
                 search and pick your area to load spots. Or switch to Nearby or
@@ -716,7 +723,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
             <button
               type="button"
               onClick={() => useUIStore.getState().openSearch()}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-6 font-display text-[10px] font-bold uppercase tracking-widest text-on-primary transition-opacity hover:opacity-90"
+              className={MAP_ACTION_PRIMARY_CLASS}
             >
               Open search
             </button>
@@ -736,7 +743,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
             {scopeLabel && (
               <div
                 className={cn(
-                  "pointer-events-none absolute left-3 bottom-8 z-[1120] max-w-[calc(100%-24px)] truncate rounded-[8px] border border-outline-variant bg-surface/95 px-3 py-2 font-display text-[10px] font-bold uppercase tracking-widest text-secondary",
+                  "pointer-events-none absolute left-3 bottom-8 z-[1120] max-w-[calc(100%-24px)] truncate rounded-lg border-2 border-outline-variant bg-surface/95 px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary",
                   (activePinId !== null || activeEventId !== null) &&
                     "hidden md:block",
                 )}

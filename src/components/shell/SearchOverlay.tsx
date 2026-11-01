@@ -479,12 +479,12 @@ export function SearchOverlay({
           <h2 id={titleId} className="visually-hidden">
             Search spots
           </h2>
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-full border border-wire-border bg-wire-border p-2 px-5">
+          <div className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-lg border-2 border-wire-border bg-wire-border px-4 focus-within:outline-2 focus-within:outline-white focus-within:outline-offset-2">
             <label htmlFor={inputId} className="visually-hidden">
               Search spots by name, city, or type
             </label>
             <Search
-              size={20}
+              size={18}
               className="shrink-0 text-wire-muted"
               aria-hidden="true"
             />
@@ -502,14 +502,14 @@ export function SearchOverlay({
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-[16px] bg-transparent text-base font-medium text-on-wire outline-none placeholder:text-wire-muted focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              className="w-full bg-transparent text-base sm:text-sm font-semibold text-on-wire outline-none placeholder:text-wire-muted [&::-webkit-search-cancel-button]:appearance-none"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label="Clear search"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[9999px] text-wire-muted transition-colors hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-wire"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-wire-muted transition-colors hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2"
               >
                 <X size={16} aria-hidden="true" />
               </button>
@@ -519,19 +519,19 @@ export function SearchOverlay({
           <div className="flex shrink-0 items-center gap-2">
             <span
               aria-hidden="true"
-              className="hidden font-display text-xs font-bold tracking-widest text-wire-muted uppercase md:inline"
+              className="hidden font-display text-xs font-semibold tracking-[0.05em] text-wire-muted uppercase md:inline"
             >
               {stepLabel}
             </span>
             {isForcedGate ? (
-              <span className="hidden md:inline-flex min-h-11 items-center rounded-full bg-on-wire px-4 font-display text-[10px] font-bold uppercase tracking-widest text-primary">
+              <span className="hidden md:inline-flex min-h-12 items-center rounded-lg bg-on-wire px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-primary">
                 Required
               </span>
             ) : (
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex min-h-11 items-center gap-1 rounded-[9999px] border border-wire-border bg-wire-border px-4 text-xs font-bold tracking-widest uppercase text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-offset-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-wire"
+                className="flex min-h-12 items-center gap-1 rounded-lg border-2 border-wire-border bg-wire-border px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
               >
                 <span>Close</span>
                 <kbd
@@ -547,7 +547,7 @@ export function SearchOverlay({
 
         {isForcedGate && <GateNotice id={gateAlertId} />}
 
-        <div className="mx-auto w-full max-w-3xl flex-1 [&_header]:border-wire-border [&_header_h3]:text-wire-muted [&_header_span]:text-wire-muted [&_h3]:text-wire-muted [&_button.border-outline-variant]:border-wire-border [&_button.bg-surface-container-lowest]:bg-wire-border [&_button.hover\:bg-surface-container-highest:hover]:bg-wire-border-strong [&_button.hover\:border-outline:hover]:border-wire-border-strong [&_.border-outline-variant]:border-wire-border [&_.bg-surface-container-low]:bg-wire-border [&_.text-secondary]:text-wire-muted [&_.text-on-surface-variant]:text-wire-muted [&_.bg-surface-container-high]:bg-wire-border-strong [&_button[aria-pressed=true]]:border-on-wire [&_button[aria-pressed=true]]:bg-wire-border-strong [&_button[aria-pressed=true]]:text-on-primary focus-visible:[&_button]:ring-white focus-visible:[&_button]:ring-offset-wire">
+        <div className="mx-auto w-full max-w-3xl flex-1 [&_header]:border-wire-border [&_header_h3]:text-wire-muted [&_header_span]:text-wire-muted [&_h3]:text-wire-muted [&_button.border-outline-variant]:border-wire-border [&_button.bg-surface-container-lowest]:bg-wire-border [&_button.hover\:bg-surface-container-highest:hover]:bg-wire-border-strong [&_button.hover\:border-outline:hover]:border-wire-border-strong [&_.border-outline-variant]:border-wire-border [&_.bg-surface-container-low]:bg-wire-border [&_.text-secondary]:text-wire-muted [&_.text-on-surface-variant]:text-wire-muted [&_.bg-surface-container-high]:bg-wire-border-strong [&_button[aria-pressed=true]]:border-on-wire [&_button[aria-pressed=true]]:bg-wire-border-strong [&_button[aria-pressed=true]]:text-on-primary">
           {showCityScopeLoader ? (
             <MapCityLoader
               isOpen

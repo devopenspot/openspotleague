@@ -8,6 +8,13 @@ import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import type { Spot } from "@/lib/types";
 
+const ACTION_CLASS =
+  "flex min-h-12 items-center gap-1.5 rounded-lg border-2 px-3 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px sm:px-4";
+const ACTION_OFF_CLASS =
+  "border-outline-variant bg-surface text-on-surface hover:bg-surface-container";
+const ACTION_ON_CLASS =
+  "border-primary bg-primary text-on-primary hover:bg-primary/95";
+
 interface SpotDetailsActionsProps {
   spot: Spot;
   isSaved: boolean;
@@ -59,10 +66,8 @@ export function SpotDetailsActions({
               : `Verify ${spot.name} — confirm this spot is legit`
           }
           className={cn(
-            "flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold uppercase tracking-wider transition-colors sm:px-4",
-            isVerified
-              ? "border-primary bg-primary text-on-primary hover:bg-primary/95"
-              : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
+            ACTION_CLASS,
+            isVerified ? ACTION_ON_CLASS : ACTION_OFF_CLASS,
           )}
         >
           <ShieldCheck
@@ -77,12 +82,7 @@ export function SpotDetailsActions({
           onClick={() => onToggleSave(spot.id, { name: spot.name })}
           aria-pressed={isSaved}
           aria-label={isSaved ? `Unsave ${spot.name}` : `Save ${spot.name}`}
-          className={cn(
-            "flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold uppercase tracking-wider transition-colors sm:px-4",
-            isSaved
-              ? "border-primary bg-primary text-on-primary hover:bg-primary/95"
-              : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
-          )}
+          className={cn(ACTION_CLASS, isSaved ? ACTION_ON_CLASS : ACTION_OFF_CLASS)}
         >
           <span key={burstKey} aria-hidden="true" className="inline-flex">
             <Heart
@@ -97,7 +97,7 @@ export function SpotDetailsActions({
           type="button"
           onClick={handleShare}
           aria-label={`Share ${spot.name}`}
-          className="flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 text-xs font-semibold uppercase tracking-wider text-on-surface transition-colors hover:bg-surface-container sm:px-4"
+          className={cn(ACTION_CLASS, ACTION_OFF_CLASS)}
         >
           <Share2 size={14} aria-hidden="true" />
           <span>Share</span>

@@ -105,18 +105,18 @@ export function SpotWeatherVerificationDialog({
     >
       <div className="flex items-start justify-between gap-3 border-b border-outline-variant px-5 py-4 sm:px-6">
         <div className="min-w-0">
-          <h2 id="weather-verify-title" className="font-display text-sm font-bold uppercase tracking-tight flex items-center gap-1.5">
+          <h2 id="weather-verify-title" className="font-display text-base font-bold uppercase tracking-[-0.02em] flex items-center gap-1.5">
             <CloudSun size={16} aria-hidden="true" className="text-primary" />
             Verify weather
           </h2>
-          <p className="mt-1 truncate font-display text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{spot.name}</p>
+          <p className="mt-1 truncate font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-variant">{spot.name}</p>
           <p id="weather-verify-description" className="sr-only">Confirm current weather for this spot</p>
         </div>
         <button
           type="button"
           onClick={handleClose}
           aria-label="Close verification dialog"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface text-on-surface transition-colors hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-outline-variant bg-surface text-on-surface transition-[background-color,transform] hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
         >
           <X size={16} aria-hidden="true" />
         </button>
@@ -124,12 +124,12 @@ export function SpotWeatherVerificationDialog({
 
       <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6 space-y-4 no-scrollbar">
         {hasActiveSummary && summary?.leader && isWeatherIconName(summary.leader) ? (
-          <div className="flex items-center justify-between rounded-[16px] border border-outline-variant bg-surface-container-lowest p-3 sm:px-4">
+          <div className="flex items-center justify-between rounded-lg border-2 border-outline-variant bg-surface-container-lowest p-3 sm:px-4">
             <div className="min-w-0">
-              <p className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+              <p className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
                 Community status
               </p>
-              <p className="text-xs text-on-surface-variant">
+              <p className="text-sm font-semibold leading-5 text-on-surface-variant">
                 Forecast vs. most voted live condition
               </p>
             </div>
@@ -143,7 +143,7 @@ export function SpotWeatherVerificationDialog({
         ) : null}
 
         {!signedIn ? (
-          <p className="rounded-md border border-outline-variant bg-surface-container px-3 py-3 text-sm">
+          <p className="rounded-lg border-2 border-outline-variant bg-surface-container px-3 py-3 text-sm font-semibold leading-5">
             <Link href={`/login?next=/spots/${spot.id}`} className="font-bold underline">Sign in</Link> to verify weather.
           </p>
         ) : (
@@ -160,7 +160,7 @@ export function SpotWeatherVerificationDialog({
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-outline-variant bg-surface-container-lowest px-5 py-4 sm:px-6">
-        <button type="button" onClick={handleClose} disabled={verifying} className="min-h-11 rounded-full border border-outline-variant bg-surface px-4 font-display text-xs font-bold uppercase tracking-[0.05em] disabled:opacity-50">
+        <button type="button" onClick={handleClose} disabled={verifying} className="min-h-12 rounded-lg border-2 border-outline-variant bg-surface px-4 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:opacity-50">
           Cancel
         </button>
         {signedIn ? (
@@ -168,7 +168,7 @@ export function SpotWeatherVerificationDialog({
             type="button"
             onClick={() => void handleVerify()}
             disabled={!canVerify}
-            className="min-h-11 rounded-full border border-primary bg-primary px-5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary hover:bg-primary/90 disabled:opacity-50"
+            className="min-h-12 rounded-lg border-2 border-primary bg-primary px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:opacity-50"
           >
             {verifying ? "Verifying..." : "Verify"}
           </button>

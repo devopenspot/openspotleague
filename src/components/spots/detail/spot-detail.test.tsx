@@ -44,7 +44,7 @@ const mockSpot: Spot = {
 };
 
 describe("SpotDetailsHero", () => {
-  it("renders 44px min-height verify weather button with uppercase text", () => {
+  it("renders 48px min-height verify weather button with uppercase text", () => {
     const onVerifyClick = vi.fn();
     render(
       <SpotDetailsHero
@@ -57,7 +57,7 @@ describe("SpotDetailsHero", () => {
     );
 
     const btn = screen.getByRole("button", { name: "Verify weather" });
-    expect(btn.className).toContain("min-h-11");
+    expect(btn.className).toContain("min-h-12");
     expect(btn.className).toContain("uppercase");
     expect(btn.className).toContain("text-surface");
     expect(btn.className).not.toContain("text-on-surface");
@@ -91,7 +91,7 @@ describe("SpotDetailsHero", () => {
     expect(screen.getByText("5")).toBeTruthy();
 
     const btn = screen.getByRole("button", { name: /verify weather/i });
-    expect(btn.className).toContain("min-h-11");
+    expect(btn.className).toContain("min-h-12");
     fireEvent.click(btn);
     expect(onVerifyClick).toHaveBeenCalledTimes(1);
   });
@@ -156,7 +156,7 @@ describe("SpotDetailsWeather", () => {
 });
 
 describe("SpotDetailsActions", () => {
-  it("renders 44px min-height action buttons with proper state and fills", () => {
+  it("renders 48px min-height action buttons with proper state and fills", () => {
     const onToggleVerify = vi.fn();
     const onToggleSave = vi.fn();
     render(
@@ -173,17 +173,17 @@ describe("SpotDetailsActions", () => {
     );
 
     const verifyBtn = screen.getByRole("button", { name: /remove your verification/i });
-    expect(verifyBtn.className).toContain("min-h-11");
+    expect(verifyBtn.className).toContain("min-h-12");
     expect(verifyBtn.className).toContain("bg-primary");
     expect(screen.getByText("Verified")).toBeTruthy();
 
     const saveBtn = screen.getByRole("button", { name: /unsave/i });
-    expect(saveBtn.className).toContain("min-h-11");
+    expect(saveBtn.className).toContain("min-h-12");
     expect(saveBtn.className).toContain("bg-primary");
     expect(screen.getByText("Saved")).toBeTruthy();
 
     const shareBtn = screen.getByRole("button", { name: /share/i });
-    expect(shareBtn.className).toContain("min-h-11");
+    expect(shareBtn.className).toContain("min-h-12");
     expect(screen.getByText("Share")).toBeTruthy();
   });
 });

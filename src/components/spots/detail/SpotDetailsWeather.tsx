@@ -45,17 +45,17 @@ export function SpotDetailsWeather({
         <div className="flex flex-wrap items-center gap-2">
           <h2
             id="weather-status-heading"
-            className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary"
+            className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary"
           >
             Weather status
             <WeatherAccuracyNote variant="block" />
           </h2>
           {isVerifiedActive && weatherSummary?.leader && isWeatherIconName(weatherSummary.leader) ? (
             <span
-              className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-2.5 py-1 text-[11px] font-semibold text-on-surface"
+              className="inline-flex items-center gap-1.5 rounded-md border border-outline-variant bg-surface px-2 py-1 text-xs font-semibold text-on-surface"
               data-testid="weather-status-community-badge"
             >
-              <span className="font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+              <span className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
                 Verified
               </span>
               <VerifiedWeatherDualIcons
@@ -72,41 +72,41 @@ export function SpotDetailsWeather({
           target="_blank"
           rel="noopener noreferrer"
           aria-label="View live precipitation on zoom.earth (opens in a new tab)"
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-3 font-display text-[10px] font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container"
+          className="inline-flex min-h-12 items-center gap-1.5 rounded-lg border-2 border-outline-variant bg-surface px-3 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
         >
           <span>Live weather</span>
-          <Radio size={11} aria-hidden="true" />
+          <Radio size={14} aria-hidden="true" />
         </a>
       </div>
 
-      <div className="flex min-w-0 flex-nowrap items-center gap-3 sm:gap-4">
+      <div className="flex min-w-0 flex-nowrap items-center gap-2 sm:gap-4">
         {weather?.icon && isWeatherIconName(weather.icon) ? (
-          <WeatherIcon name={weather.icon} size={64} className="shrink-0" />
+          <WeatherIcon name={weather.icon} size={64} className="size-12 shrink-0 sm:size-16" />
         ) : (
-          <CloudOff size={56} aria-hidden="true" className="shrink-0 text-secondary" />
+          <CloudOff size={56} aria-hidden="true" className="size-12 shrink-0 text-secondary sm:size-14" />
         )}
-        <div className="flex min-w-[6rem] flex-col justify-center">
+        <div className="flex min-w-0 flex-1 flex-col justify-center">
           <span className="block whitespace-nowrap font-display text-3xl font-bold leading-none tracking-tight text-on-surface">
             {formatTemp(weather?.current ?? null, temperatureUnit)}
           </span>
-          <span className="mt-1 block max-w-[140px] truncate font-display text-xs font-medium text-secondary capitalize">
+          <span className="mt-1 block max-w-[140px] truncate font-display text-xs font-semibold text-secondary capitalize">
             {weather?.description ?? "Weather unavailable"}
           </span>
         </div>
-        <dl className="ml-auto flex shrink-0 items-center gap-3 divide-x divide-outline-variant/60 text-right">
-          <div className="flex flex-col items-end gap-0.5 pl-3 first:pl-0">
-            <dt className="whitespace-nowrap font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+        <dl className="ml-auto flex shrink-0 items-center gap-2 divide-x divide-outline-variant/60 text-right sm:gap-3">
+          <div className="flex flex-col items-end gap-0.5 pl-2 first:pl-0 sm:pl-3">
+            <dt className="whitespace-nowrap font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
               Wind
             </dt>
-            <dd className="whitespace-nowrap font-display text-xs font-semibold text-on-surface">
+            <dd className="whitespace-nowrap font-display text-sm font-semibold text-on-surface">
               {windKmh !== null ? `${windKmh} km/h` : "—"}
             </dd>
           </div>
-          <div className="flex flex-col items-end gap-0.5 pl-3">
-            <dt className="whitespace-nowrap font-display text-[10px] font-bold uppercase tracking-wider text-secondary">
+          <div className="flex flex-col items-end gap-0.5 pl-2 sm:pl-3">
+            <dt className="whitespace-nowrap font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
               Humidity
             </dt>
-            <dd className="whitespace-nowrap font-display text-xs font-semibold text-on-surface">
+            <dd className="whitespace-nowrap font-display text-sm font-semibold text-on-surface">
               {weather?.humidity != null ? `${weather.humidity}%` : "—"}
             </dd>
           </div>

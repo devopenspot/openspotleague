@@ -80,7 +80,7 @@ export function SpotDetailsHero({
             onClick={onVerifyClick}
             aria-label={`Verify weather — forecast ${weatherIcon ?? "unknown"}, community ${weatherSummary.leader} (${weatherSummary.count} votes)`}
             title="Confirm on-site weather condition"
-            className="absolute left-4 top-4 flex min-h-11 items-center gap-2 rounded-full border border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/80 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-6 md:top-6"
+            className="absolute left-4 top-4 flex min-h-12 items-center gap-2 rounded-lg border-2 border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm transition-[background-color,transform] hover:bg-on-surface/80 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px md:left-6 md:top-6"
           >
             <VerifiedWeatherDualIcons
               apiIcon={weatherIcon}
@@ -90,12 +90,12 @@ export function SpotDetailsHero({
               iconClassName="shrink-0 text-surface"
               badgeClassName="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface"
             />
-            <span className="font-display text-xs font-semibold uppercase tracking-wider text-surface">
+            <span className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-surface">
               Weather verified
             </span>
           </button>
         ) : (
-          <div className="absolute left-4 top-4 flex min-h-11 items-center gap-2 rounded-full border border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm md:left-6 md:top-6">
+          <div className="absolute left-4 top-4 flex min-h-12 items-center gap-2 rounded-lg border-2 border-surface/50 bg-on-surface/60 px-3 text-surface backdrop-blur-sm md:left-6 md:top-6">
             <VerifiedWeatherDualIcons
               apiIcon={weatherIcon}
               leaderIcon={weatherSummary.leader}
@@ -104,7 +104,7 @@ export function SpotDetailsHero({
               iconClassName="shrink-0 text-surface"
               badgeClassName="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest px-1.5 text-center text-[10px] font-bold leading-none tracking-[0.05em] text-on-surface"
             />
-            <span className="font-display text-xs font-semibold uppercase tracking-wider text-surface">
+            <span className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-surface">
               Weather verified
             </span>
           </div>
@@ -114,7 +114,7 @@ export function SpotDetailsHero({
           type="button"
           onClick={onVerifyClick}
           aria-label="Verify weather"
-          className="absolute left-4 top-4 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold uppercase tracking-wider text-surface backdrop-blur-sm transition-colors hover:bg-on-surface/60 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-6 md:top-6"
+          className="absolute left-4 top-4 inline-flex min-h-12 items-center gap-1.5 rounded-lg border-2 border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold uppercase tracking-[0.05em] text-surface backdrop-blur-sm transition-[background-color,transform] hover:bg-on-surface/60 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px md:left-6 md:top-6"
         >
           <CheckCheck size={14} aria-hidden="true" className="shrink-0" />
           <span>Verify Weather</span>
@@ -123,7 +123,7 @@ export function SpotDetailsHero({
 
       <div className="absolute right-4 top-4 md:right-6 md:top-6">
         {distanceInfo.kind === "distance" ? (
-          <span className="inline-flex min-h-11 items-center rounded-full border border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold tracking-wider text-surface uppercase backdrop-blur-sm">
+          <span className="inline-flex min-h-12 items-center rounded-lg border-2 border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold tracking-[0.05em] text-surface uppercase backdrop-blur-sm">
             {distanceInfo.label}
           </span>
         ) : (
@@ -133,7 +133,7 @@ export function SpotDetailsHero({
             disabled={isRequestingLocation}
             aria-busy={isRequestingLocation}
             aria-label="Share your location to see distance from this spot"
-            className="group inline-flex min-h-11 items-center gap-1.5 rounded-full border border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold tracking-wider text-surface uppercase backdrop-blur-sm transition-colors hover:bg-on-surface/60 hover:underline disabled:cursor-wait disabled:opacity-60 disabled:no-underline"
+            className="group inline-flex min-h-12 items-center gap-1.5 rounded-lg border-2 border-surface/50 bg-on-surface/40 px-3 font-display text-xs font-semibold tracking-[0.05em] text-surface uppercase backdrop-blur-sm transition-[background-color,transform] hover:bg-on-surface/60 hover:underline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-60 disabled:no-underline"
           >
             {isRequestingLocation ? (
               <Loader2 size={12} aria-hidden="true" className="animate-spin" />
@@ -154,25 +154,29 @@ export function SpotDetailsHero({
       <div className="absolute bottom-4 left-4 right-4 text-surface md:bottom-6 md:left-6 md:right-6">
         {spot.types.length > 0 ? (
           <div className="mb-2">
-            <TypeBadges types={spot.types} variant="overlay" />
+            <TypeBadges
+              types={spot.types}
+              variant="overlay"
+              className="[&_span]:rounded-md [&_span]:px-2 [&_span]:py-1 [&_span]:text-xs"
+            />
           </div>
         ) : null}
         {(spot.types.length > 0 || spot.sports.length > 0) && (
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             {spot.sports.length > 0 && (
               <div className="flex items-center gap-2">
-                <dd className="font-display text-[10px] font-bold uppercase tracking-widest text-surface/75">
+                <dd className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-surface/75">
                   {spot.sports.join(", ")}
                 </dd>
               </div>
             )}
           </dl>
         )}
-        <h1 className="mt-4 border-t border-surface/30 pt-4 font-display text-3xl font-bold uppercase leading-tight tracking-tight sm:text-4xl">
+        <h1 className="mt-4 border-t border-surface/30 pt-4 font-display text-3xl font-bold uppercase leading-[1.15] tracking-[-0.02em] sm:text-4xl">
           {spot.name}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p className="flex items-center text-xs text-surface/80">
+          <p className="flex items-center text-sm font-semibold leading-5 text-surface/80">
             <MapPin size={12} className="mr-1 shrink-0" aria-hidden="true" />
             {`${spot.city} · ${spot.country}`}
           </p>
@@ -182,7 +186,7 @@ export function SpotDetailsHero({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${spot.name} on Instagram (opens in a new tab)`}
-              className="inline-flex items-center text-xs text-surface/80 transition-colors hover:text-surface"
+              className="inline-flex items-center text-sm font-semibold leading-5 text-surface/80 transition-colors hover:text-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
               <Instagram
                 size={12}
@@ -194,7 +198,7 @@ export function SpotDetailsHero({
           )}
         </div>
         <p
-          className="mt-2 flex items-center font-display text-[10px] font-bold uppercase tracking-widest text-surface/75"
+          className="mt-2 flex items-center font-display text-xs font-semibold uppercase tracking-[0.05em] text-surface/75"
           aria-label={verificationCountLabel(spot.verificationCount)}
         >
           <ShieldCheck size={11} className="mr-1 shrink-0" aria-hidden="true" />
