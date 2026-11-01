@@ -11,13 +11,13 @@ export const securityHeaders = [
 
 export function cspValue(nonce?: string): string {
   const scriptSrc = nonce
-    ? `'self' 'nonce-${nonce}' https://static.cloudflareinsights.com https://va.vercel-scripts.com`
-    : `'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com https://va.vercel-scripts.com`
+    ? `'self' 'nonce-${nonce}' https://static.cloudflareinsights.com`
+    : `'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com`
   return [
     `default-src 'self'`,
     `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline'`,
-    `connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com https://cloudflareinsights.com https://vitals.vercel-insights.com`,
+    `connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com https://cloudflareinsights.com`,
     `img-src 'self' data: blob: https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://i.ytimg.com https://spots.cdn.openspotleague.com https://events.cdn.openspotleague.com`,
     `font-src 'self' data:`,
     `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com`,

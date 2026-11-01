@@ -15,8 +15,8 @@ const QuerySchema = z.object({
  * must not bounce on a session refresh.
  *
  * The cached service in `getEmergencyNumbers` absorbs >99% of
- * calls per Vercel instance, so the upstream's 5 req/sec ceiling
- * is well above any realistic cold-cache stampede.
+ * calls, so the upstream's 5 req/sec ceiling is well above any
+ * realistic cold-cache stampede.
  */
 export async function GET(request: NextRequest) {
 	const url = new URL(request.url)

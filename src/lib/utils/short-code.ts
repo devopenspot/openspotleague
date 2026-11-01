@@ -60,7 +60,6 @@ function isAllowedInternalHost(hostname: string, appHost?: string): boolean {
   if (appHost && host === appHost.toLowerCase()) return true;
   if (host === "localhost" || host === "127.0.0.1") return true;
   if (host === "openspotleague.com" || host.endsWith(".openspotleague.com")) return true;
-  if (host.endsWith(".vercel.app")) return true;
   return false;
 }
 

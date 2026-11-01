@@ -131,7 +131,7 @@ function applySecurityHeaders(response: NextResponse, request?: NextRequest): vo
   } else {
     response.headers.set("Content-Security-Policy-Report-Only", cachedCspReportOnly)
   }
-  // HSTS only in production – Vercel terminates TLS, so safe to send always in prod
+  // HSTS only in production – Cloudflare terminates TLS, so safe to send always in prod
   if (process.env.NODE_ENV === "production") {
     response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
   }

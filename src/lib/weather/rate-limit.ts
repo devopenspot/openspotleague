@@ -9,7 +9,7 @@
 //   1. Leaky bucket at 1 token / 1.2s (≈ 50/min, 10% under the
 //      upstream ceiling). The leak is a true smooth drain — `scheduleRefill`
 //      adds 1 token per tick — so a single instance cannot burst past
-//      the per-minute budget. Multiple Vercel instances still multiply
+//      the per-minute budget. Multiple Worker isolates still multiply
 //      the effective rate, so the leak alone is not enough.
 //
 //   2. 429 circuit breaker. On a 429 we read `Retry-After` (or
@@ -19,13 +19,13 @@
 //      catches it and returns the empty `SpotWeather` fallback. This
 //      converts a 429 storm into a single pause window: the upstream
 //      gets a real chance to recover its quota before we try again, and
-//      every concurrent Vercel instance is paused simultaneously (the
-//      circuit lives in this module — each function instance has its
+//      every concurrent Worker isolate is paused simultaneously (the
+//      circuit lives in this module — each isolate has its
 //      own, but every instance that hits a 429 enters the same paused
 //      state, so the effective cross-instance rate is bounded by the
 //      upstream's own recovery time).
 //
-// Bucket state lives at module scope so a warm Vercel function instance
+// Bucket state lives at module scope so a warm Worker isolate
 // remembers its consumption across requests. A cold start resets the
 // bucket — which is fine, because the per-spot cache is also cold at
 // that moment, and the bucket only ever caps the rate at the upstream
@@ -34,7 +34,7 @@
 // The per-spot `"use cache"` boundary in `weather-cached.ts` is the
 // third (and primary) defense — under steady load it absorbs >95% of
 // requests. The bucket + circuit here handle the cold-cache stampede
-// right after a deploy, after `expire`, or after a Vercel cold start.
+// right after a deploy, after `expire`, or after a Worker cold start.
 
 import { OpenWeatherRateLimitError } from "./types"
 

@@ -18,30 +18,11 @@ export function clientIp(request: Request): string {
   // come first: on Workers the other headers below are client-controlled.
   const cloudflareIp = request.headers.get("cf-connecting-ip")?.trim()
   if (cloudflareIp) return cloudflareIp
-  // x-vercel-forwarded-for is set by Vercel edge.
-  const vercelForwarded = request.headers.get("x-vercel-forwarded-for")
-  if (vercelForwarded) {
-    const first = vercelForwarded.split(",")[0]?.trim()
-    if (first) return first
-  }
   const realIp = request.headers.get("x-real-ip")?.trim()
   if (realIp) return realIp
-  // Only trust x-forwarded-for first entry if Vercel proof headers present
-  const fwd = request.headers.get("x-forwarded-for")
-  const vercelIp = request.headers.get("x-vercel-ip-city") ?? request.headers.get("x-vercel-id")
-  if (fwd && vercelIp) {
-    const first = fwd.split(",")[0]?.trim()
-    if (first) return first
-  }
-  if (fwd && request.headers.get("x-vercel-id")) {
-    const first = fwd.split(",")[0]?.trim()
-    if (first) return first
-  }
-  // Fallback: still use first entry but log — do not return unknown to avoid bypass
-  if (fwd) {
-    const first = fwd.split(",")[0]?.trim()
-    if (first) return first
-  }
+  // Use the first entry rather than "unknown", which would share one bucket.
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+  if (forwarded) return forwarded
   return "unknown"
 }
 

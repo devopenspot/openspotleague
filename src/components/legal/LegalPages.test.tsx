@@ -124,10 +124,10 @@ describe("Privacy Policy Content & Regulatory Compliance", () => {
     expect(cookieNames).toContain("openspot-guest-token");
   });
 
-  it("lists key third-party processors including Supabase, Vercel, and Cloudflare R2", () => {
+  it("lists key third-party processors including Supabase and Cloudflare", () => {
     const processorNames = THIRD_PARTY_PROCESSORS.map((p) => p.name);
     expect(processorNames.some((n) => n.includes("Supabase"))).toBe(true);
-    expect(processorNames.some((n) => n.includes("Vercel"))).toBe(true);
+    expect(processorNames.some((n) => n.includes("Vercel"))).toBe(false);
     expect(processorNames.some((n) => n.includes("Cloudflare"))).toBe(true);
     expect(processorNames.some((n) => n.includes("OpenWeather"))).toBe(true);
     expect(processorNames.some((n) => n.includes("Google") || n.includes("YouTube"))).toBe(true);

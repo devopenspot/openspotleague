@@ -32,8 +32,8 @@ const EMERGENCY_CACHE_LIFE = {
  * boundary itself does not start an `AbortController`; the 8s
  * timer lives in the fetcher.
  *
- * `"use cache"` is per-`iso2` so the upstream is hit at most once
- * per Vercel instance per 24h per country.
+ * `"use cache"` is per-`iso2` so the upstream is hit about once
+ * per 24h per country.
  */
 export async function getEmergencyNumbers(
 	iso2: string,

@@ -17,21 +17,6 @@ const optionalInteger = (min: number, max: number) =>
 
 function resolveAppUrl(value: unknown): unknown {
   if (typeof value === "string" && value.trim() !== "") return value.trim();
-  // Fallback to Vercel-provided host when APP_URL is not explicitly set.
-  // VERCEL_URL is the deployment URL (e.g. openspotleague-xyz.vercel.app),
-  // VERCEL_PROJECT_PRODUCTION_URL is the production domain (e.g. openspotleague.com).
-  const vercelHost =
-    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() || process.env.VERCEL_URL?.trim();
-  if (vercelHost) {
-    const withScheme = vercelHost.startsWith("http") ? vercelHost : `https://${vercelHost}`;
-    try {
-      // Validate it parses as URL before returning
-      new URL(withScheme);
-      return withScheme;
-    } catch {
-      return undefined;
-    }
-  }
   return undefined;
 }
 
@@ -116,8 +101,7 @@ const EnvSchema = z
     // the proxy.
     SUPABASE_URL: optionalUrl(),
     SUPABASE_SECRET_KEY: z.preprocess(emptyToUndefined, z.string().optional()).superRefine((v, ctx) => {
-      const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production"
-      if (isProd && !v) {
+      if (process.env.NODE_ENV === "production" && !v) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: "SUPABASE_SECRET_KEY required in production" })
       }
       if (v && v.length < 32) {
@@ -134,20 +118,16 @@ const EnvSchema = z
     NEXT_PUBLIC_SUPABASE_URL: optionalUrl(),
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: optionalString(),
 
-    // Supabase Postgres.
+    // Supabase Postgres, for Node scripts only. The Worker connects through
+    // its HYPERDRIVE binding, so never set these on the Worker.
     //   SUPABASE_DATABASE_URL — pgBouncer Transaction pooler (port 6543).
-    //     The runtime reads this first. IPv4-only, designed for serverless,
-    //     and DNS-resolvable from Vercel. Required on Vercel.
-    //   SUPABASE_DIRECT_URL — direct connection (port 5432). Local-only,
-    //     used by drizzle-kit for DDL (the pooler is unsafe for migrations).
-    //     Not reachable from the Vercel function network — do not set on
-    //     Vercel.
+    //   SUPABASE_DIRECT_URL — direct connection (port 5432). Used by
+    //     drizzle-kit for DDL (the pooler is unsafe for migrations).
     SUPABASE_DIRECT_URL: optionalString(),
     SUPABASE_DATABASE_URL: optionalString(),
 
-    // Runtime database pool controls. Keep the production pool small when
-    // Vercel scales warm Fluid Compute instances; the application applies
-    // bounded defaults when these are omitted.
+    // Runtime database pool controls. On Workers the pool is per request; the
+    // application applies bounded defaults when these are omitted.
     DB_POOL_MAX: optionalInteger(1, 5),
     DB_IDLE_TIMEOUT_SECONDS: optionalInteger(1, 300),
     DB_CONNECT_TIMEOUT_SECONDS: optionalInteger(1, 30),
@@ -201,8 +181,7 @@ const EnvSchema = z
     // Integrity (Phase 5) — cursor HMAC secret defaults to SUPABASE_SECRET_KEY via code, but allow dedicated rotation.
     CURSOR_HMAC_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
 
-    // Observability & legacy (Phase 6)
-    SENTRY_DSN: z.preprocess(emptyToUndefined, z.string().url().optional()),
+    // Legacy (Phase 6)
     LEGACY_CURATOR_BYPASS: z.preprocess(emptyToUndefined, z.coerce.boolean().optional()).default(false),
 
     NODE_ENV: z
@@ -237,17 +216,11 @@ export function resolveDatabaseUrl(
  * Postgres URL used by the runtime Drizzle client + the dev-console scripts
  * (`db:seed`, `db:apply`, `db:health`).
  *
- * Single source of connection: `SUPABASE_DATABASE_URL` is the pgBouncer
- * Transaction pooler (port 6543), set in both local dev and Vercel to the
- * same value. The pooler is IPv4-only and DNS-resolves from the Vercel
- * function network; the direct hostname (`db.<project>.supabase.co`,
- * port 5432) is not reachable from Vercel.
- *
  * The build is DB-free and never calls this.
  *
  * Resolution order:
  *   1. The Hyperdrive binding (Workers only, see `setHyperdriveUrl`)
- *   2. SUPABASE_DATABASE_URL (port 6543, pgBouncer pooler — runtime default)
+ *   2. SUPABASE_DATABASE_URL (port 6543, pgBouncer pooler — Node default)
  *   3. SUPABASE_DIRECT_URL   (port 5432, direct — local DDL only)
  */
 export function getDatabaseUrl(): string | null {

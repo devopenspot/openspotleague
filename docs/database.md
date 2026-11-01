@@ -82,6 +82,6 @@ The `supabase_realtime` publication includes `user_notifications`, `game_realtim
 ## Storage
 
 - Cloudflare R2 is the object store (`STORAGE_PROVIDER=r2`). The buckets are `R2_BUCKET_SPOTS` and `R2_BUCKET_EVENTS`.
-- Uploads go through `src/lib/storage/index.ts`, which uses Sharp to write 128, 400, and 800 px WebP variants.
+- Uploads go through `src/lib/storage/index.ts`. Where Sharp loads, `processImageBuffer` (`src/lib/storage/process.ts`) writes 128, 400, and 800 px WebP variants. Sharp does not load on Workers, so there it stores the original file and points every variant path at it.
 - Images are served directly from `spots.cdn.openspotleague.com` and `events.cdn.openspotleague.com`, so image traffic adds nothing to database egress.
 - `src/lib/supabase/storage.ts` is a deprecated shim; import `@/lib/storage` instead.

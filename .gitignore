@@ -8,7 +8,6 @@ coverage/
 !.env.example
 .next/
 .agents/skills/
-.codex/
 tsconfig.tsbuildinfo
 next-env.d.ts
 src/data-backup/*

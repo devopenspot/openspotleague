@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { Analytics } from "@vercel/analytics/next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { cn } from "@/lib/utils/cn";
 import { env } from "@/lib/config/env";
@@ -103,7 +102,6 @@ export default function RootLayout({
         <Suspense fallback={<div className="min-h-screen bg-background" aria-hidden="true" />}>
           <RootDataProviders>{children}</RootDataProviders>
         </Suspense>
-        <Analytics />
       </body>
     </html>
   );

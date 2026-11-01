@@ -14,7 +14,7 @@ type AppImageProps = Omit<
 
 /**
  * Free, private-bucket aware image wrapper.
- * - Keeps `unoptimized` (no Vercel/Supabase paid transform) — variants are pre-generated at upload (128/400/800 WebP)
+ * - Keeps `unoptimized` (no paid image transform) — variants are pre-generated at upload (128/400/800 WebP)
  * - Handles `onError` fallback to `/opengraph.png` instead of black box
  * - Enforces meaningful `alt` (caller must provide spot/event name, not "")
  * - Supports `priority`/`loading`/`fetchPriority` for LCP control

@@ -85,7 +85,6 @@ describe("normalizeTargetUrl", () => {
   it("strips application origins to canonical relative paths", () => {
     expect(normalizeTargetUrl("https://openspotleague.com/spots/spot-123")).toBe("/spots/spot-123");
     expect(normalizeTargetUrl("http://localhost:3000/tv?play=clip-1")).toBe("/tv?play=clip-1");
-    expect(normalizeTargetUrl("https://preview.vercel.app/games/join/crew42")).toBe("/games/join/crew42");
     expect(normalizeTargetUrl("https://custom.app/spots/1", "https://custom.app")).toBe("/spots/1");
   });
 

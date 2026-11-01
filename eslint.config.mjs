@@ -39,7 +39,7 @@ function sanitizeNextConfig(configs) {
 
 export default [
   {
-    ignores: ['.next/**', 'dist/**', 'node_modules/**', 'coverage/**', 'supabase/migrations/**', '.vercel/**'],
+    ignores: ['.next/**', 'dist/**', 'node_modules/**', 'coverage/**', 'supabase/migrations/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

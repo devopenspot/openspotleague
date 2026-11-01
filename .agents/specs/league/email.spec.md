@@ -1,6 +1,6 @@
 # League email spec — Phase 5 (Resend + pg_cron)
 
-Decisions fixed in `plan.league.spec.md`: provider = **Resend**, daily **`pg_cron` sweep** (no resident worker on Vercel+Supabase, no PGMQ), **in-app notifications remain the source of truth** — the sweep reuses `user_notifications` rows instead of duplicating fan-out logic. Web push (VAPID) and one-click unsubscribe links are out of scope for v1.
+Decisions fixed in `plan.league.spec.md`: provider = **Resend**, daily **`pg_cron` sweep** (no resident worker on Cloudflare Workers+Supabase, no PGMQ), **in-app notifications remain the source of truth** — the sweep reuses `user_notifications` rows instead of duplicating fan-out logic. Web push (VAPID) and one-click unsubscribe links are out of scope for v1.
 
 ## Shipped architecture
 

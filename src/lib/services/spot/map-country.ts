@@ -75,13 +75,11 @@ export async function runListMapScopePage(
 /**
  * One cached page (<= SPOT_LIST_HARD_CAP rows, ~250 KB) of a map scope.
  *
- * `"use cache: remote"`: plain `"use cache"` is a per-instance in-memory
- * LRU, so on Vercel serverless nearly every request missed and re-read the
- * whole country (up to 20 pages) through the Supavisor shared pooler —
- * the dominant Shared Pooler Egress cost. Remote entries are shared across
- * instances (Vercel Runtime Cache). Caching per PAGE (not per country)
- * keeps each entry far below the 2 MB runtime-cache item limit; the US
- * scope alone serialises to well over 2 MB.
+ * `"use cache: remote"`: entries live in the Workers Response Store, shared
+ * across isolates, so a miss does not re-read the whole country (up to 20
+ * pages) from Postgres on every isolate. Caching per PAGE (not per country)
+ * keeps each entry far below the 2 MB item limit; the US scope alone
+ * serialises to well over 2 MB.
  */
 async function listMapScopePage(
   country: string,

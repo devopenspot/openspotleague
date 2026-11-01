@@ -10,7 +10,7 @@ const RUNTIME_MAX_LIFETIME_SECONDS = env.DB_MAX_LIFETIME_SECONDS ?? 240;
 export type PostgresPurpose = "runtime" | "ddl" | "script";
 
 function jitteredLifetime(baseSeconds: number): number {
-  // ±12.5% jitter (30s on 240s) desyncs warm Vercel isolates rotating at same instant
+  // ±12.5% jitter (30s on 240s) desyncs connections rotating at same instant
   const jitter = Math.floor(Math.random() * 61) - 30;
   return Math.max(30, baseSeconds + jitter);
 }

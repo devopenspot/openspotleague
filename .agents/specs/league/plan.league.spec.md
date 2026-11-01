@@ -18,7 +18,7 @@ Business rules (added 2026-09-14):
 
 Decisions (2026-09-14, notifications & infra):
 
-- **No PGMQ / no worker**: the app has no resident consumer process (Vercel + Supabase serverless) and all work fits in-transaction. Revisit triggers: a real payment provider (webhook ingestion), notification fanout beyond in-app, heavy async recomputation.
+- **No PGMQ / no worker**: the app has no resident consumer process (Cloudflare Workers + Supabase) and all work fits in-transaction. Revisit triggers: a real payment provider (webhook ingestion), notification fanout beyond in-app, heavy async recomputation.
 - **User notifications v1 = in-app only**: a `user_notifications` table (migration `0028`), rows written **inside the same DB transaction** as each league mutation (next to the realtime signal insert — no queue). Bell + unread badge in the shell, `/notifications` page, realtime via `supabase_realtime` channel `user:<uid>` (insert-trigger broadcast, same pattern as `event_realtime_signals`), poll-on-focus fallback.
 - **Email phase (deferred)**: provider = **Resend**; a **`pg_cron` daily sweep** (approved) computes payment-gate states read-only and fans out day-2/3/6 reminders + results/invite emails; per-user email preferences ship with it; web push (VAPID) later still.
 - Gate states `locked`/`disabled` are derived in-app (`PaymentGateNotice`) for v1 — the sweep only matters once delivery pushes exist.

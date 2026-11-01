@@ -4,13 +4,7 @@ import { log } from "@/lib/utils/log"
 function isAllowedOrigin(origin: string): boolean {
   try {
     const u = new URL(origin)
-    const allow = new Set<string>([
-      env.APP_URL,
-      process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null,
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-    ].filter(Boolean) as string[])
+    const allow = new Set<string>([env.APP_URL, "http://localhost:3000", "http://127.0.0.1:3000"])
     if (allow.has(u.origin)) return true
     if (process.env.NODE_ENV === "development" && u.hostname === "localhost") return true
     return false

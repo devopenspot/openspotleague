@@ -13,7 +13,7 @@ import type { WeatherItem } from "@/types/weather"
 const ENDPOINT_CURRENT = "data/2.5/weather" as const
 
 // Per-call fetch timeout. A hung upstream socket would otherwise hold a
-// rate-limit token until the Vercel function runtime kills the function,
+// rate-limit token until the Workers runtime ends the request,
 // starving the 6-concurrent fan-out behind it. 5s is a generous ceiling
 // for OpenWeather's `data/2.5/weather` (normally <500ms) that catches
 // real network failures without false-positives on slow responses.

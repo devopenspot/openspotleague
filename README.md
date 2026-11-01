@@ -6,7 +6,7 @@ OpenSpot is an interactive map of action-sports spots (skateboard, BMX, scooter,
 - multiplayer trick-challenge games
 - curated action sports TV
 
-Stack: Next.js 16 (App Router, Cache Components) and React 19, Supabase (Postgres + PostGIS, Auth, Realtime), Drizzle ORM, Cloudflare R2 for media, Tailwind CSS 4, Leaflet, and Vitest.
+Stack: Next.js 16 (App Router, Cache Components) and React 19 on vinext (Vite), deployed to Cloudflare Workers; Supabase (Postgres + PostGIS, Auth, Realtime) through Hyperdrive, Drizzle ORM, Cloudflare R2 for media, Tailwind CSS 4, Leaflet, and Vitest.
 
 ## Getting started
 
@@ -25,7 +25,8 @@ pnpm dev
 
 | Command | Purpose |
 | --- | --- |
-| `pnpm dev` / `pnpm build` / `pnpm start` | Next.js dev server, production build (needs no DB), and production server |
+| `pnpm dev` / `pnpm build` / `pnpm start` | Vite dev server, production build (needs no DB), and production preview in `workerd` |
+| `pnpm deploy` / `pnpm deploy:secrets` | Deploy to Cloudflare; the second also uploads the declared secrets from `.env.local` |
 | `pnpm lint` | ESLint on `src` |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` / `pnpm test:watch` | Vitest |

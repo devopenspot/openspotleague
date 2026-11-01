@@ -26,8 +26,8 @@ export interface PrivacySection {
   }[];
 }
 
-export const PRIVACY_LAST_UPDATED = "October 21, 2026";
-export const PRIVACY_EFFECTIVE_DATE = "October 21, 2026";
+export const PRIVACY_LAST_UPDATED = "October 31, 2026";
+export const PRIVACY_EFFECTIVE_DATE = "October 31, 2026";
 export const PRIVACY_VERSION = "1.0";
 
 export const COOKIE_INVENTORY: readonly CookieItem[] = [
@@ -84,17 +84,10 @@ export const THIRD_PARTY_PROCESSORS: readonly ProcessorItem[] = [
     privacyUrl: "https://supabase.com/privacy",
   },
   {
-    name: "Vercel, Inc.",
-    role: "Hosting & Serverless Compute",
+    name: "Cloudflare, Inc.",
+    role: "Hosting, Object Storage & CDN",
     country: "United States",
-    purpose: "Application hosting, global edge CDN delivery, and API routing.",
-    privacyUrl: "https://vercel.com/legal/privacy-policy",
-  },
-  {
-    name: "Cloudflare, Inc. (R2)",
-    role: "Object Storage & CDN",
-    country: "United States",
-    purpose: "High-speed storage and delivery of compressed user-submitted spot photos and media assets.",
+    purpose: "Application hosting, global edge CDN delivery, API routing, and storage and delivery of user-submitted spot photos and media assets.",
     privacyUrl: "https://www.cloudflare.com/privacypolicy/",
   },
   {
@@ -187,7 +180,7 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
         title: "2.3 Automated Technical & Telemetry Data",
         content: [
           "• IP Address & Hashing: For anti-abuse protection and rate-limiting (e.g., preventing automated spam lobby creation in training games), our servers compute a one-way cryptographic hash of your IP address (creatorIpHash). Raw IP addresses may appear in transient edge server access logs for DDoS prevention.",
-          "• Device & Browser Diagnostics: Browser type, operating system, referrer URL, timestamps, and error diagnostics (via Sentry if active) to maintain uptime and troubleshoot crashes.",
+          "• Device & Browser Diagnostics: Browser type, operating system, referrer URL, timestamps, and error diagnostics to maintain uptime and troubleshoot crashes.",
         ],
       },
     ],
@@ -231,7 +224,7 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
     number: "05",
     title: "Third-Party Service Providers (Sub-Processors)",
     plainEnglishSummary:
-      "We rely on trusted cloud infrastructure providers to host OpenSpot (like Supabase for database, Vercel for hosting, and Cloudflare for images). We share data only to make the app work, under strict security agreements.",
+      "We rely on trusted cloud infrastructure providers to host OpenSpot (like Supabase for database and Cloudflare for hosting and images). We share data only to make the app work, under strict security agreements.",
     subsections: [
       {
         title: "5.1 Infrastructure & Sub-Processor Overview",
@@ -250,7 +243,7 @@ export const PRIVACY_SECTIONS: readonly PrivacySection[] = [
       {
         title: "6.1 Cross-Border Data Transfers",
         content:
-          "Because OpenSpot is accessible worldwide and utilizes cloud infrastructure primarily located in the United States (Supabase, Vercel, Cloudflare), your information may be transferred across international borders. For transfers of data originating in the European Economic Area (EEA), United Kingdom, or Colombia to countries without an adequacy finding, we rely on Standard Contractual Clauses (SCCs) and robust organizational safeguards.",
+          "Because OpenSpot is accessible worldwide and utilizes cloud infrastructure primarily located in the United States (Supabase, Cloudflare), your information may be transferred across international borders. For transfers of data originating in the European Economic Area (EEA), United Kingdom, or Colombia to countries without an adequacy finding, we rely on Standard Contractual Clauses (SCCs) and robust organizational safeguards.",
       },
       {
         title: "6.2 Technical & Organizational Security Measures",
