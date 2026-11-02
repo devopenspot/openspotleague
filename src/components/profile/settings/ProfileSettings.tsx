@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { showToast } from "@/hooks/ui/useToast";
+import {
+  PROFILE_BODY_CLASS,
+  PROFILE_CARD_TITLE_CLASS,
+} from "@/components/profile/profile-styles";
 import type { Preferences } from "@/lib/schemas/preferences";
 import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
 
@@ -79,10 +83,8 @@ export function ProfileSettings() {
   return (
     <div className="space-y-3">
       <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-        <h3 className="font-display text-[13px] font-bold uppercase tracking-tight">
-          Preferences
-        </h3>
-        <p className="mt-1 font-display text-[11px] uppercase tracking-widest text-secondary">
+        <h3 className={PROFILE_CARD_TITLE_CLASS}>Preferences</h3>
+        <p className={`mt-1 ${PROFILE_BODY_CLASS}`}>
           Units & sport — saved instantly, syncs to weather & distances
         </p>
 
@@ -112,11 +114,11 @@ export function ProfileSettings() {
           <div>
             <label
               htmlFor="pref-sport"
-              className="block font-display text-[13px] font-semibold"
+              className="block font-display text-sm font-semibold"
             >
               Main sport
             </label>
-            <p className="font-display text-[11px] uppercase tracking-widest text-secondary">
+            <p className={PROFILE_BODY_CLASS}>
               Used for League and spot suggestions
             </p>
             <select
@@ -130,7 +132,7 @@ export function ProfileSettings() {
                 })
               }
               disabled={saving}
-              className="mt-2 w-full rounded-full border border-outline-variant bg-surface-container px-3 py-2.5 font-display text-[13px] font-semibold text-on-surface focus:outline-2 focus:outline-primary sm:rounded-[12px]"
+              className="mt-2 min-h-12 w-full rounded-lg border-2 border-outline-variant bg-surface-container px-3 font-display text-base font-semibold text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
             >
               <option value="">No preference</option>
               {SPORTS.map((s) => (
@@ -143,8 +145,8 @@ export function ProfileSettings() {
         </div>
       </div>
 
-      <div className="rounded-[12px] border border-outline-variant bg-surface-container p-3">
-        <p className="font-display text-[11px] uppercase tracking-widest text-secondary">
+      <div className="rounded-lg border border-outline-variant bg-surface-container p-3">
+        <p className={PROFILE_BODY_CLASS}>
           Tip: preferences apply everywhere — map distances, weather header, and
           game suggestions update right away.
         </p>
@@ -157,19 +159,19 @@ export function ProfileSettingsSkeleton() {
   return (
     <div aria-hidden="true" className="space-y-3 ">
       <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-        <div className="h-4 w-24 rounded bg-surface-container-high" />
-        <div className="mt-2 h-3 w-64 rounded bg-surface-container-high" />
+        <div className="h-7 w-40 rounded bg-surface-container-high" />
+        <div className="mt-1 h-5 w-64 max-w-full rounded bg-surface-container-high" />
         <div className="mt-4 space-y-3">
-          <div className="h-[68px] rounded-[12px] border border-outline-variant bg-surface-container-high" />
-          <div className="h-[68px] rounded-[12px] border border-outline-variant bg-surface-container-high" />
-          <div className="space-y-2">
-            <div className="h-4 w-20 rounded bg-surface-container-high" />
-            <div className="h-3 w-48 rounded bg-surface-container-high" />
-            <div className="mt-2 h-11 rounded-full border border-outline-variant bg-surface-container-high sm:rounded-[12px]" />
+          <div className="h-[86px] rounded-lg border-2 border-outline-variant bg-surface-container-high sm:h-[66px]" />
+          <div className="h-[86px] rounded-lg border-2 border-outline-variant bg-surface-container-high sm:h-[66px]" />
+          <div>
+            <div className="h-5 w-20 rounded bg-surface-container-high" />
+            <div className="h-5 w-56 max-w-full rounded bg-surface-container-high" />
+            <div className="mt-2 h-12 rounded-lg border-2 border-outline-variant bg-surface-container-high" />
           </div>
         </div>
       </div>
-      <div className="h-[52px] rounded-[12px] border border-outline-variant bg-surface-container-high" />
+      <div className="h-[86px] rounded-lg border border-outline-variant bg-surface-container-high sm:h-[46px]" />
     </div>
   );
 }

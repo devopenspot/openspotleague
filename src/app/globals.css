@@ -201,7 +201,7 @@
   --spacing-stack-md: 1.5rem;
   --spacing-margin-mobile: 1.25rem;
   --spacing-margin-desktop: 2.5rem;
-  --mobile-nav-h: 77px;
+  --mobile-nav-h: calc(77px + env(safe-area-inset-bottom));
 
   /* Radii — relaxed 16/full for interactive, 14 (inner) for rows/cards nested
    * inside a 16px parent or photo card, tight 4/8/12 only where listed. */

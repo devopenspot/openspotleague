@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEventHandler } from "react";
 import { useRouter } from "next/navigation";
 import { X, Settings } from "lucide-react";
 import Link from "next/link";
@@ -46,14 +47,7 @@ export function MobileDrawer() {
     openPreferences();
   };
 
-  const {
-    pathname,
-    navItems,
-    handleSelect: navHandleSelect,
-  } = useNavList({
-    variant: "mobile-drawer",
-    onSelect: handleSelect,
-  });
+  const { pathname, navItems } = useNavList("mobile-drawer");
 
   return (
     <SideDrawer
@@ -96,13 +90,18 @@ export function MobileDrawer() {
                       const showBadge = item.id === "saved" && savedCount > 0;
                       const Icon = item.Icon;
                       const requiresOnboarding = item.id === "saved";
-                      const handleClick = requiresOnboarding
-                        ? () => tryRun(() => handleSelect(item.path), item.path)
-                        : navHandleSelect(item.path);
+                      const handleClick: MouseEventHandler<HTMLAnchorElement> =
+                        requiresOnboarding
+                          ? (event) => {
+                              event.preventDefault();
+                              tryRun(() => handleSelect(item.path), item.path);
+                            }
+                          : closeDrawer;
                       return (
                         <NavLink
                           key={item.id}
                           tab={item.id}
+                          href={item.path}
                           label={navLabelFor(item, "mobile-drawer")}
                           icon={<Icon size={16} aria-hidden="true" />}
                           active={isActive}

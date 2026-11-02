@@ -177,7 +177,7 @@ shape:
   usage:
     - "4px (sm) — pins + cluster tight surfaces + event tier pill only (leaflet-pin 4px)"
     - "8px (md) — badges, labels on spot photos, search thumbs 8px"
-    - "12px (card) — ProfileStats compact stats, GameBoardControls dek, gate alerts"
+    - "12px (card) — ProfileStats and glance info tiles, GameBoardControls dek, gate alerts"
     - "14px (inner) — rows/cards NESTED inside a 16px parent or photo card: Hero inner panels + numbered rows, MarqueeCard, skeleton inner blocks. Never top-level on a page section."
     - "16px (lg) — default card radius: SpotCard, EventCard, SurfaceCard, search rows, toasts, overlay panels, drawer footer cards (relaxed); map controls h-12"
     - "20px (chassis) / 24px (xl) — game PanelShell chassis (20-24) only"
@@ -194,8 +194,8 @@ spacing:
   section: 80px
   stack-sm: 8px
   stack-md: 24px
-  mobile-nav-h: 64px
-  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is fixed 77px (var(--mobile-nav-h)); Header is content-height (py-3), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
+  mobile-nav-h: "calc(77px + env(safe-area-inset-bottom))"
+  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is 77px plus the safe area (var(--mobile-nav-h)), and main content pads by the same variable; Header is content-height (py-3), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
   durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
   easings: "ease-out default, linear for radar sweep (3.5s), cubic-bezier(0, 0, 0.2, 1) for ping"

@@ -265,6 +265,14 @@ export function SearchOverlay({
     onClose();
   };
 
+  // The forced gate can't be dismissed back onto the gated map, so its way out
+  // leaves the map entirely.
+  const handleExitGate = () => {
+    cancelPending();
+    onClose();
+    router.push(ROUTES.home);
+  };
+
   const handleAfterRegionFilterChange = isForcedGate
     ? handleCloseForce
     : handleClose;
@@ -524,9 +532,18 @@ export function SearchOverlay({
               {stepLabel}
             </span>
             {isForcedGate ? (
-              <span className="hidden md:inline-flex min-h-12 items-center rounded-lg bg-on-wire px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-primary">
-                Required
-              </span>
+              <>
+                <span className="hidden md:inline-flex min-h-12 items-center rounded-lg bg-on-wire px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-primary">
+                  Required
+                </span>
+                <button
+                  type="button"
+                  onClick={handleExitGate}
+                  className="flex min-h-12 items-center rounded-lg border-2 border-wire-border bg-wire-border px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
+                >
+                  Exit
+                </button>
+              </>
             ) : (
               <button
                 type="button"

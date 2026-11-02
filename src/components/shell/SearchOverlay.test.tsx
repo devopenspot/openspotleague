@@ -50,6 +50,7 @@ const mocks = vi.hoisted(() => {
     openSearch: vi.fn(),
     replace: vi.fn(),
     onClose: vi.fn(),
+    push: vi.fn(),
     searchParams,
     storeState,
     filterState,
@@ -66,7 +67,7 @@ vi.mock("@/hooks/map/useCityList", async (importOriginal) => {
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => mocks.searchParams,
-  useRouter: () => ({ replace: mocks.replace }),
+  useRouter: () => ({ push: mocks.push, replace: mocks.replace }),
   usePathname: () => mocks.pathname.value,
 }));
 
@@ -162,6 +163,7 @@ function resetFilterState() {
   mocks.filterState.commit.mockClear();
   mocks.filterState.commitCountryAll.mockClear();
   mocks.onClose.mockClear();
+  mocks.push.mockClear();
   mocks.fetchMock.mockReset();
   mocks.cityList.useCityList.mockReset();
   mocks.pathname.value = "/";
@@ -363,6 +365,22 @@ describe("SearchOverlay country pick across routes", () => {
 
     // Fresh country switch: the client dataset is a sliver — server truth upgrades it.
     expect(mocks.cityList.useCityList).toHaveBeenCalledWith("Colombia", true);
+  });
+
+  it("offers a way off the map while the gate is forced", () => {
+    mocks.pathname.value = "/map";
+    mocks.storeState.regions = [latAmRegion];
+
+    render(<SearchOverlayHarness />);
+
+    expect(screen.queryByRole("button", { name: /Close/ })).toBeNull();
+
+    act(() => {
+      screen.getByRole("button", { name: "Exit" }).click();
+    });
+
+    expect(mocks.onClose).toHaveBeenCalledTimes(1);
+    expect(mocks.push).toHaveBeenCalledWith("/");
   });
 
   it("advances to the city step on /map when a country is picked, without committing", () => {

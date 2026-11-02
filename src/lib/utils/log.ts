@@ -56,6 +56,23 @@ function emit(level: "error" | "warn" | "info", ...args: unknown[]): void {
     );
     return;
   }
+  // `log.warn(label, error)`: an Error's message and stack are not enumerable,
+  // so it must not fall through to the field spread below.
+  if (typeof event === "string" && fields instanceof Error && args.length === 2) {
+    const e = fields as Error & { digest?: string; code?: string };
+    fn(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level,
+        event,
+        message: e.message,
+        stack: e.stack,
+        digest: e.digest,
+        code: e.code,
+      }),
+    );
+    return;
+  }
   if (typeof event === "string" && isRecord(fields) && args.length === 2) {
     const sanitized = sanitizeFields(fields as Record<string, unknown>)
     fn(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, type KeyboardEvent } from "react";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS, type NavPlacement, type NavGroup } from "@/lib/navigation/nav";
 import { useUser } from "@/lib/contexts/user-context";
@@ -28,14 +28,8 @@ function placementForVariant(variant: NavVariant): NavPlacement {
   return "drawer";
 }
 
-interface UseNavListOptions {
-  variant: NavVariant;
-  onSelect: (path: string) => void;
-}
-
-export function useNavList({ variant, onSelect }: UseNavListOptions) {
+export function useNavList(variant: NavVariant) {
   const pathname = usePathname();
-  const listRef = useRef<HTMLDivElement>(null);
   const user = useUser();
 
   // Placement + auth/curator filtering. Placement is the primary distribution
@@ -51,41 +45,7 @@ export function useNavList({ variant, onSelect }: UseNavListOptions) {
     );
   }, [user, variant]);
 
-  const handleSelect = useCallback(
-    (path: string) => () => onSelect(path),
-    [onSelect],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLDivElement>) => {
-      const isTabVariant = variant !== "mobile-drawer";
-      const allowedKeys = isTabVariant
-        ? ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"]
-        : ["ArrowUp", "ArrowDown", "Home", "End"];
-      if (!allowedKeys.includes(e.key)) return;
-      const buttons = Array.from(
-        listRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ??
-          [],
-      );
-      if (buttons.length === 0) return;
-      const currentIndex = buttons.findIndex(
-        (b) => b === document.activeElement,
-      );
-      let nextIndex = currentIndex;
-      if (e.key === "Home") nextIndex = 0;
-      else if (e.key === "End") nextIndex = buttons.length - 1;
-      else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        nextIndex = (currentIndex + 1) % buttons.length;
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
-      }
-      e.preventDefault();
-      buttons[nextIndex]?.focus();
-    },
-    [variant],
-  );
-
-  return { pathname, listRef, handleSelect, handleKeyDown, navItems };
+  return { pathname, navItems };
 }
 
 interface RenderBadgeArgs {
@@ -110,7 +70,7 @@ export function renderNavBadge({ variant, id, savedCount }: RenderBadgeArgs) {
     return (
       <span
         aria-label={`${savedCount} spots saved`}
-        className="flex h-3.5 min-w-3.5 items-center justify-center rounded-md bg-primary px-0.5 text-[8px] font-bold text-on-primary animate-heart-burst"
+        className="flex h-3.5 min-w-3.5 items-center justify-center rounded-md bg-on-wire px-0.5 text-[8px] font-bold text-primary animate-heart-burst"
       >
         {savedCount}
       </span>

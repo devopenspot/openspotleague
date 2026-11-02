@@ -2,6 +2,10 @@
 
 import { UserAvatar } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
+import {
+  PROFILE_BODY_CLASS,
+  PROFILE_EYEBROW_CLASS,
+} from "@/components/profile/profile-styles";
 import type { ProfileSummary } from "@/lib/services/profile/profile";
 
 export function ProfileHero({ summary }: { summary: ProfileSummary }) {
@@ -15,32 +19,23 @@ export function ProfileHero({ summary }: { summary: ProfileSummary }) {
         <UserAvatar
           user={{ name: displayName, initials, avatarUrl: null }}
           size="lg"
-          className="h-12 w-12 text-[13px] sm:h-14 sm:w-14 sm:text-sm"
+          className="h-12 w-12 text-sm sm:h-14 sm:w-14"
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h1 className="truncate font-display text-[17px] font-bold uppercase tracking-tight text-on-surface sm:text-lg">
+            <h1 className="max-w-full truncate font-display text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em] text-on-surface">
               {displayName}
             </h1>
             {streakDays >= 2 ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-widest text-on-primary">
+              <span className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-primary">
                 🔥 {streakDays}d streak
               </span>
             ) : null}
           </div>
-          <p className="mt-0.5 truncate font-display text-[11px] tracking-wide text-secondary">
-            {user.email}
-          </p>
+          <p className={`truncate ${PROFILE_BODY_CLASS}`}>{user.email}</p>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <Badge
-              tone="accent"
-              className="rounded-full px-2.5 py-0.5 text-[11px]"
-            >
-              {rank}
-            </Badge>
-            <span className="font-display text-[11px] font-semibold uppercase tracking-widest text-secondary">
-              {totalPoints} pts
-            </span>
+            <Badge tone="accent">{rank}</Badge>
+            <span className={PROFILE_EYEBROW_CLASS}>{totalPoints} pts</span>
           </div>
         </div>
       </div>
@@ -48,10 +43,10 @@ export function ProfileHero({ summary }: { summary: ProfileSummary }) {
       {/* progress to next rank */}
       <div className="mt-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="font-display text-[10px] font-semibold uppercase tracking-[0.08em] text-secondary">
+          <span className={`shrink-0 ${PROFILE_EYEBROW_CLASS}`}>
             Level progress
           </span>
-          <span className="truncate font-display text-[10px] uppercase tracking-widest text-secondary">
+          <span className={`truncate ${PROFILE_EYEBROW_CLASS}`}>
             {nextRank
               ? `${nextRank.pointsNeeded} to ${nextRank.label}`
               : "Max rank!"}
@@ -68,7 +63,7 @@ export function ProfileHero({ summary }: { summary: ProfileSummary }) {
             aria-label="Progress to next rank"
           />
         </div>
-        <p className="mt-1.5 font-display text-[10px] uppercase tracking-widest text-secondary">
+        <p className={`mt-1.5 ${PROFILE_BODY_CLASS}`}>
           {nextRank
             ? `Keep riding to unlock ${nextRank.label}`
             : "Top rank — stay legendary"}
@@ -83,14 +78,15 @@ export function ProfileHeroSkeleton() {
     <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 ">
       <div className="flex gap-3">
         <div className="h-12 w-12 rounded-full bg-surface-container-high sm:h-14 sm:w-14" />
-        <div className="flex-1 space-y-2.5">
-          <div className="h-4 w-28 rounded bg-surface-container-high" />
-          <div className="h-3 w-44 rounded bg-surface-container-high" />
-          <div className="h-5 w-24 rounded-full bg-surface-container-high" />
+        <div className="min-w-0 flex-1">
+          <div className="h-8 w-40 max-w-full rounded bg-surface-container-high" />
+          <div className="h-5 w-44 max-w-full rounded bg-surface-container-high" />
+          <div className="mt-2 h-7 w-32 rounded-md bg-surface-container-high" />
         </div>
       </div>
-      <div className="mt-4 h-1.5 rounded-full bg-surface-container-high" />
-      <div className="mt-2 h-3 w-36 rounded bg-surface-container-high" />
+      <div className="mt-4 h-4 w-full rounded bg-surface-container-high" />
+      <div className="mt-1.5 h-1.5 rounded-full bg-surface-container-high" />
+      <div className="mt-1.5 h-5 w-52 max-w-full rounded bg-surface-container-high" />
     </div>
   );
 }

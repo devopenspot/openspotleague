@@ -105,9 +105,13 @@ function nearbyNoticeActionLabel(status: UserLocationStatus): string {
 
 interface MapTabProps {
   searchParams: ReadonlyURLSearchParams;
+  scopeDegraded?: boolean;
 }
 
-export default function MapTab({ searchParams }: MapTabProps) {
+export default function MapTab({
+  searchParams,
+  scopeDegraded = false,
+}: MapTabProps) {
   const spots = useSpotsStore((s) => s.spots);
   const countrySpots = useSpotsStore((s) => s.countrySpots);
   const citySpots = useSpotsStore((s) => s.citySpots);
@@ -237,7 +241,7 @@ export default function MapTab({ searchParams }: MapTabProps) {
     !hasFocus && requestedMode === "nearby" && !nearYou;
   const savedModeActive =
     !hasFocus && requestedMode === "saved" && user !== null;
-  const spotsDegraded = dataStatus.spots === "degraded";
+  const spotsDegraded = dataStatus.spots === "degraded" || scopeDegraded;
   const eventsDegraded = dataStatus.events === "degraded";
   // Nearby walks the complete within-radius set client-side (the capped
   // name-ordered directory alone yields zero nearby pins on the seeded
@@ -525,12 +529,11 @@ export default function MapTab({ searchParams }: MapTabProps) {
                 />
                 <div className="min-w-0">
                   <p className={MAP_NOTICE_TITLE_CLASS}>
-                    Region &amp; country required
+                    Region, country &amp; city required
                   </p>
                   <p className={`mt-1 ${MAP_NOTICE_BODY_CLASS}`}>
-                    Filtered mode needs both a region and a country. Choose your
-                    area to load the map. You can also switch to Nearby or
-                    Saved.
+                    Filtered mode needs a region, a country and a city. Choose
+                    your area to load the map.
                   </p>
                 </div>
               </div>
@@ -709,15 +712,14 @@ export default function MapTab({ searchParams }: MapTabProps) {
                 id="map-gate-title"
                 className="font-display text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em]"
               >
-                Choose region &amp; country
+                Choose your area
               </h2>
               <p
                 id="map-gate-desc"
                 className="text-sm font-semibold leading-5 text-secondary"
               >
-                Filtered map requires both a region and a country. Open the
-                search and pick your area to load spots. Or switch to Nearby or
-                Saved above.
+                The filtered map needs a region, a country and a city. Open the
+                search and pick your area to load spots.
               </p>
             </div>
             <button

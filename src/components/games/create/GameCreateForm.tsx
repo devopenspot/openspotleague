@@ -1699,7 +1699,7 @@ export function GameCreateForm({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[var(--mobile-nav-h)] z-50 flex gap-3 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:bottom-0 lg:hidden">
+      <div className="fixed inset-x-0 bottom-[var(--mobile-nav-h)] z-50 flex gap-3 p-3 md:bottom-0 md:pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
         {canQuickStart ? (
           <>
             <button

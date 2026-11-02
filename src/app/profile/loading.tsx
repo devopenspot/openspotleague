@@ -3,6 +3,7 @@ import { ProfileStatsSkeleton } from "@/components/profile/layout/ProfileStats";
 import { RiderActivityBoardSkeleton } from "@/components/games/board/RiderActivityBoard";
 import { ProfileTabBarSkeleton } from "@/components/profile/tabs/ProfileTabBar";
 import { ProfileOverviewSkeleton } from "@/components/profile/layout/ProfileOverviewSkeleton";
+import { PROFILE_EYEBROW_CLASS } from "@/components/profile/profile-styles";
 
 export default function Loading() {
   return (
@@ -13,9 +14,7 @@ export default function Loading() {
       className="min-h-dvh bg-gradient-to-r from-lime-100 via-lime-200 to-lime-400"
     >
       <div className="mx-auto max-w-5xl px-5 py-5 sm:px-6 sm:py-6 lg:px-8">
-        <p className="font-display text-[11px] font-semibold uppercase tracking-[0.08em] text-secondary">
-          Your profile
-        </p>
+        <p className={PROFILE_EYEBROW_CLASS}>Your profile</p>
 
         {/* Main grid — mirrors ProfileClient lg:grid-cols-[1.15fr_0.85fr] */}
         <div

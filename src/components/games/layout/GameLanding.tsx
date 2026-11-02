@@ -125,7 +125,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
         <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
           <div className={`flex justify-center gap-2 py-2`}>
             {/* One instance: pinned above the start buttons on phones. */}
-            <div className="fixed inset-x-3 bottom-[calc(var(--mobile-nav-h)+6rem+env(safe-area-inset-bottom))] z-50 md:bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:static">
+            <div className="fixed inset-x-3 bottom-[calc(var(--mobile-nav-h)+6rem)] z-50 md:bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:static">
               <JoinWithCode variant="games" className="w-full lg:w-auto" />
             </div>
             {signedIn ? (

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { withSafeDefault } from "@/lib/utils/safe-fetch";
+import { withSafeDefault, withSafeDefaultResult } from "@/lib/utils/safe-fetch";
 import { listRegions } from "@/lib/services/spot/regions";
 import { listSpotsForMapScope } from "@/lib/services/spot/map-country";
 import { findSpotById } from "@/lib/services/spot/spots";
@@ -22,9 +22,15 @@ type RawSearchParams = Record<string, string | string[] | undefined>;
 interface CountryScope {
   countrySpots: readonly MapSpot[];
   citySpots: readonly MapSpot[];
+  /** A catalog or scope read failed, so an empty result is not a real "no spots". */
+  degraded: boolean;
 }
 
-const EMPTY_SCOPE: CountryScope = { countrySpots: [], citySpots: [] };
+const EMPTY_SCOPE: CountryScope = {
+  countrySpots: [],
+  citySpots: [],
+  degraded: false,
+};
 const EMPTY_REGIONS: readonly Region[] = [];
 
 /**
@@ -52,12 +58,15 @@ async function loadCountryScope(
   const mode = requestedMapMode(normalizeMapModeParams(params));
   if (mode !== "filtered") return EMPTY_SCOPE;
 
-  const regions = await withSafeDefault(
-    () => listRegions(),
-    EMPTY_REGIONS,
-    "map-page.listRegions",
-  );
-  if (regions.length === 0) return EMPTY_SCOPE;
+  const { value: regions, degraded: regionsDegraded } =
+    await withSafeDefaultResult(
+      () => listRegions(),
+      EMPTY_REGIONS,
+      "map-page.listRegions",
+    );
+  if (regions.length === 0) {
+    return { ...EMPTY_SCOPE, degraded: regionsDegraded };
+  }
   const { country } = resolveUrlRegionCountry(params, regions);
   if (!country) return EMPTY_SCOPE;
   const citySlug = params.get("city")?.toLowerCase() ?? null;
@@ -66,7 +75,7 @@ async function loadCountryScope(
   // When a city is specified, fetch ONLY the city's spots:
   // fast single-page read (<200ms) that prevents edge timeouts.
   if (citySlug) {
-    const citySpots = await withSafeDefault(
+    const { value: citySpots, degraded } = await withSafeDefaultResult(
       () => listSpotsForMapScope(country, citySlug),
       EMPTY_SCOPE.citySpots,
       "map-page.listSpotsForMapScope.city",
@@ -81,12 +90,14 @@ async function loadCountryScope(
         return {
           countrySpots: EMPTY_SCOPE.countrySpots,
           citySpots: [spot, ...citySpots],
+          degraded,
         };
       }
     }
     return {
       countrySpots: EMPTY_SCOPE.countrySpots,
       citySpots,
+      degraded,
     };
   }
 
@@ -101,11 +112,12 @@ async function loadCountryScope(
       return {
         countrySpots: [spot],
         citySpots: EMPTY_SCOPE.citySpots,
+        degraded: false,
       };
     }
   }
 
-  const countrySpots = await withSafeDefault(
+  const { value: countrySpots, degraded } = await withSafeDefaultResult(
     () => listSpotsForMapScope(country),
     EMPTY_SCOPE.countrySpots,
     "map-page.listSpotsForMapScope",
@@ -113,15 +125,11 @@ async function loadCountryScope(
   return {
     countrySpots,
     citySpots: EMPTY_SCOPE.citySpots,
+    degraded,
   };
 }
 
-async function MapCountryScope({
-  searchParams,
-}: {
-  searchParams: Promise<RawSearchParams>;
-}) {
-  const raw = await searchParams;
+function toQueryString(raw: RawSearchParams): string {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(raw)) {
     if (value === undefined) continue;
@@ -131,8 +139,20 @@ async function MapCountryScope({
       params.set(key, value);
     }
   }
-  const { countrySpots, citySpots } = await loadCountryScope(params);
-  return <MapPageClient countrySpots={countrySpots} citySpots={citySpots} />;
+  return params.toString();
+}
+
+async function MapCountryScope({ query }: { query: Promise<string> }) {
+  const { countrySpots, citySpots, degraded } = await loadCountryScope(
+    new URLSearchParams(await query),
+  );
+  return (
+    <MapPageClient
+      countrySpots={countrySpots}
+      citySpots={citySpots}
+      scopeDegraded={degraded}
+    />
+  );
 }
 
 export default function MapPage({
@@ -140,9 +160,13 @@ export default function MapPage({
 }: {
   searchParams: Promise<RawSearchParams>;
 }) {
+  // Never pass the framework's `searchParams` proxy to a child as a prop. In
+  // dev, React serializes the props of the component calling a "use cache"
+  // function, which reads the proxy inside the cache scope and makes that
+  // cached call throw. Pass a plain derived value instead.
   return (
     <Suspense fallback={null}>
-      <MapCountryScope searchParams={searchParams} />
+      <MapCountryScope query={searchParams.then(toQueryString)} />
     </Suspense>
   );
 }

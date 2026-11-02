@@ -27,13 +27,19 @@ import type { MapSpot } from '@/lib/types';
 export function MapPageClient({
   countrySpots = [],
   citySpots = [],
+  scopeDegraded = false,
 }: {
   countrySpots?: readonly MapSpot[];
   citySpots?: readonly MapSpot[];
+  scopeDegraded?: boolean;
 }) {
   return (
     <Suspense fallback={null}>
-      <MapPageInner countrySpots={countrySpots} citySpots={citySpots} />
+      <MapPageInner
+        countrySpots={countrySpots}
+        citySpots={citySpots}
+        scopeDegraded={scopeDegraded}
+      />
     </Suspense>
   );
 }
@@ -41,9 +47,11 @@ export function MapPageClient({
 function MapPageInner({
   countrySpots = [],
   citySpots = [],
+  scopeDegraded = false,
 }: {
   countrySpots?: readonly MapSpot[];
   citySpots?: readonly MapSpot[];
+  scopeDegraded?: boolean;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -191,6 +199,6 @@ function MapPageInner({
   }, [pathname, regions, router, searchParams]);
 
   return (
-    <MapTab searchParams={searchParams} />
+    <MapTab searchParams={searchParams} scopeDegraded={scopeDegraded} />
   );
 }

@@ -12,11 +12,23 @@ import { ProfileOverviewSkeleton } from "./layout/ProfileOverviewSkeleton";
 import { useProfileTab } from "./hooks/useProfileTab";
 import { useProfileSummary } from "./hooks/useProfileSummary";
 import {
+  PROFILE_BODY_CLASS,
+  PROFILE_BUTTON_CLASS,
+  PROFILE_CARD_TITLE_CLASS,
+  PROFILE_EYEBROW_CLASS,
+} from "./profile-styles";
+import {
   RiderActivityBoard,
   RiderActivityBoardSkeleton,
 } from "@/components/games/board/RiderActivityBoard";
 import type { RiderActivityDay } from "@/lib/services/profile/ranking";
 import { SignOutButton } from "@/components/shell/SignOutButton";
+
+const GLANCE_TILE_CLASS =
+  "rounded-[12px] border border-outline-variant bg-surface-container px-3 py-3";
+const GLANCE_VALUE_CLASS = "mt-1 font-display text-base font-bold leading-none";
+const CARD_CLASS =
+  "rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4";
 
 export function ProfileClient() {
   const { summary, loading, error } = useProfileSummary();
@@ -31,9 +43,7 @@ export function ProfileClient() {
         className="min-h-dvh bg-gradient-to-r from-lime-100 via-lime-200 to-lime-400"
       >
         <div className="mx-auto max-w-5xl px-5 py-5 sm:px-6 sm:py-6 lg:px-8">
-          <p className="font-display text-[11px] font-semibold uppercase tracking-[0.08em] text-secondary">
-            Your profile
-          </p>
+          <p className={PROFILE_EYEBROW_CLASS}>Your profile</p>
           <div
             className="mt-3 grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-5"
             aria-hidden="true"
@@ -60,16 +70,14 @@ export function ProfileClient() {
   if (error || !summary) {
     return (
       <div className="mx-auto max-w-2xl px-5 py-12 text-center sm:px-6">
-        <p className="font-display text-base font-bold uppercase">
-          Couldn’t load profile
-        </p>
-        <p className="mt-1.5 font-mono text-[11px] uppercase tracking-widest text-secondary">
+        <p className={PROFILE_CARD_TITLE_CLASS}>Couldn’t load profile</p>
+        <p className={`mt-1.5 ${PROFILE_BODY_CLASS}`}>
           Check your connection and try again
         </p>
         <button
           type="button"
           onClick={() => location.reload()}
-          className="mt-5 min-h-9 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-[11px] font-bold uppercase tracking-widest"
+          className={`mt-5 ${PROFILE_BUTTON_CLASS}`}
         >
           Retry
         </button>
@@ -86,18 +94,16 @@ export function ProfileClient() {
     <div className="bg-gradient-to-r from-lime-100 via-lime-200 to-lime-400">
       <div className="mx-auto max-w-5xl px-5 py-5 sm:px-6 sm:py-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <p className="font-display text-[11px] font-semibold uppercase tracking-[0.08em] text-secondary">
-            Your profile
-          </p>
+          <p className={PROFILE_EYEBROW_CLASS}>Your profile</p>
         </div>
 
-        <div className="mt-3 grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-start lg:gap-5">
-          <div className="space-y-4">
+        <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-5">
+          <div className="min-w-0 space-y-4">
             <ProfileHero summary={summary} />
             <ProfileStats summary={summary} onSelectTab={handleSelectTab} />
           </div>
 
-          <div className="overflow-hidden rounded-[16px] border border-outline-variant">
+          <div className="min-w-0 overflow-hidden rounded-[16px] border border-outline-variant">
             <RiderActivityBoard
               data={activityData}
               headingId="profile-activity-title"
@@ -116,50 +122,42 @@ export function ProfileClient() {
                 aria-labelledby="tab-overview"
                 className="space-y-4 animate-fade-in"
               >
-                <section className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-                  <h3 className="font-display text-[13px] font-bold uppercase tracking-tight">
-                    At a glance
-                  </h3>
-                  <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-secondary">
+                <section className={CARD_CLASS}>
+                  <h3 className={PROFILE_CARD_TITLE_CLASS}>At a glance</h3>
+                  <p className={`mt-1 ${PROFILE_BODY_CLASS}`}>
                     Tap a stat to dive in — built for quick checks between
                     sessions
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                    <div className="rounded-[12px] border border-outline-variant bg-surface-container px-2.5 py-2.5">
-                      <p className="font-display text-[10px] font-semibold uppercase tracking-widest text-secondary">
-                        Next rank
-                      </p>
-                      <p className="mt-1 font-display text-[13px] font-bold leading-none">
+                    <div className={GLANCE_TILE_CLASS}>
+                      <p className={PROFILE_EYEBROW_CLASS}>Next rank</p>
+                      <p className={GLANCE_VALUE_CLASS}>
                         {summary.nextRank ? summary.nextRank.label : "Maxed"}
                       </p>
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-secondary">
+                      <p className={`mt-1 ${PROFILE_EYEBROW_CLASS}`}>
                         {summary.nextRank
                           ? `${summary.nextRank.pointsNeeded} pts to go`
                           : "Stay on top"}
                       </p>
                     </div>
-                    <div className="rounded-[12px] border border-outline-variant bg-surface-container px-2.5 py-2.5">
-                      <p className="font-display text-[10px] font-semibold uppercase tracking-widest text-secondary">
-                        Streak
-                      </p>
-                      <p className="mt-1 font-display text-[13px] font-bold leading-none">
+                    <div className={GLANCE_TILE_CLASS}>
+                      <p className={PROFILE_EYEBROW_CLASS}>Streak</p>
+                      <p className={GLANCE_VALUE_CLASS}>
                         {summary.streakDays} days
                       </p>
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-secondary">
+                      <p className={`mt-1 ${PROFILE_EYEBROW_CLASS}`}>
                         {summary.streakDays >= 2
                           ? "Keep it 🔥"
                           : "Play today to start"}
                       </p>
                     </div>
-                    <div className="rounded-[12px] border border-outline-variant bg-surface-container px-2.5 py-2.5">
-                      <p className="font-display text-[10px] font-semibold uppercase tracking-widest text-secondary">
-                        Units
-                      </p>
-                      <p className="mt-1 font-display text-[13px] font-bold uppercase leading-none">
+                    <div className={GLANCE_TILE_CLASS}>
+                      <p className={PROFILE_EYEBROW_CLASS}>Units</p>
+                      <p className={`${GLANCE_VALUE_CLASS} uppercase`}>
                         {summary.preferences.distanceUnit} • °
                         {summary.preferences.temperatureUnit}
                       </p>
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-secondary">
+                      <p className={`mt-1 ${PROFILE_EYEBROW_CLASS}`}>
                         {summary.preferences.disciplineSlug ??
                           "No sport picked"}
                       </p>
@@ -167,16 +165,14 @@ export function ProfileClient() {
                   </div>
                 </section>
 
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <div className={CARD_CLASS}>
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-display text-[12px] font-bold uppercase tracking-wide">
-                        Recent play
-                      </h4>
+                      <h4 className={PROFILE_CARD_TITLE_CLASS}>Recent play</h4>
                       <button
                         type="button"
                         onClick={() => setTab("play")}
-                        className="font-mono text-[11px] font-bold uppercase tracking-widest text-primary hover:underline"
+                        className={PROFILE_BUTTON_CLASS}
                       >
                         View all
                       </button>
@@ -185,15 +181,13 @@ export function ProfileClient() {
                       <ProfileGamesList />
                     </div>
                   </div>
-                  <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+                  <div className={CARD_CLASS}>
                     <div className="flex items-center justify-between gap-2">
-                      <h4 className="font-display text-[12px] font-bold uppercase tracking-wide">
-                        Tricks
-                      </h4>
+                      <h4 className={PROFILE_CARD_TITLE_CLASS}>Tricks</h4>
                       <button
                         type="button"
                         onClick={() => setTab("tricks")}
-                        className="font-mono text-[11px] font-bold uppercase tracking-widest text-primary hover:underline"
+                        className={PROFILE_BUTTON_CLASS}
                       >
                         Details
                       </button>
@@ -247,23 +241,27 @@ export function ProfileClient() {
                 className="space-y-4 animate-fade-in"
               >
                 <ProfileSettings />
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-                  <h3 className="flex items-center gap-2 font-display text-[13px] font-bold uppercase">
-                    <Settings size={14} /> Account
+                <div className={CARD_CLASS}>
+                  <h3
+                    className={`flex items-center gap-2 ${PROFILE_CARD_TITLE_CLASS}`}
+                  >
+                    <Settings size={18} /> Account
                   </h3>
                   <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
-                      <p className="truncate font-display text-[13px] font-semibold">
+                      <p className="truncate font-display text-sm font-semibold">
                         {summary.user.name || summary.user.email}
                       </p>
-                      <p className="truncate font-mono text-[11px] uppercase tracking-widest text-secondary">
+                      <p className={`truncate ${PROFILE_BODY_CLASS}`}>
                         {summary.user.email}
                       </p>
                     </div>
-                    <SignOutButton className="w-full sm:w-auto rounded-full border border-outline-variant bg-surface-container-high px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest hover:bg-surface-container-highest" />
+                    <SignOutButton className="!h-12 !w-full !rounded-lg !border-2 !border-outline-variant !bg-surface-container-high hover:!bg-surface-container-highest active:translate-y-px sm:!w-12" />
                   </div>
-                  <p className="mt-3 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-secondary">
-                    <LogOut size={12} /> Sign out on this device
+                  <p
+                    className={`mt-3 flex items-center gap-1.5 ${PROFILE_BODY_CLASS}`}
+                  >
+                    <LogOut size={14} /> Sign out on this device
                   </p>
                 </div>
               </div>

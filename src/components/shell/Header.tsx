@@ -9,7 +9,6 @@ import { SignInLink } from "@/components/shell/SignInLink";
 import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
 import { useUIStore } from "@/stores/ui-store";
-import { MAIN_CONTENT_ID } from "@/lib/config/constants";
 import { BrandLogo } from "@/components/shell/BrandLogo";
 
 export interface HeaderProps {
@@ -48,7 +47,6 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
           variant="desktop"
           groups={["discover", "play"]}
           savedCount={savedCount}
-          controlsId={MAIN_CONTENT_ID}
           onSelect={handleSelect}
         />
 
@@ -71,16 +69,12 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
                 variant="desktop"
                 groups={["you"]}
                 savedCount={savedCount}
-                controlsId={MAIN_CONTENT_ID}
-                onSelect={handleSelect}
+                      onSelect={handleSelect}
                 containerId="desktop-nav-you"
               />
             </div>
           ) : (
-            <SignInLink
-              variant="header"
-              className="hidden md:inline-flex min-h-12 whitespace-nowrap !rounded-lg !border-2 !border-on-primary !bg-on-primary !px-3 sm:!px-4 !py-0 !text-sm !tracking-[0.04em] !text-primary hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
-            />
+            <SignInLink variant="app-header" />
           )}
 
           <MobileDrawerTrigger />
