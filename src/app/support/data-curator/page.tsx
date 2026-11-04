@@ -2,6 +2,7 @@ import Link from "next/link";
 import countriesRaw from "@/data/countries.json";
 import { DataCuratorForm } from "@/components/support/DataCuratorForm";
 import type { CountryOption } from "@/components/support/DataCuratorForm";
+import { EYEBROW_ON_WASH, PAGE_TITLE, controlClass } from "@/components/ui/recipes";
 
 export const metadata = {
   title: "Become a data curator",
@@ -19,18 +20,18 @@ const countries: CountryOption[] = (
 
 export default function DataCuratorApplicationPage() {
   return (
-    <main className="min-h-[calc(100dvh-4rem)] w-full bg-gradient-support text-primary">
-      <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:py-8 md:px-10 md:py-10">
+    <div className="min-h-full w-full bg-gradient-support text-on-surface">
+      <div className="mx-auto w-full max-w-3xl px-5 py-8 md:px-10 md:py-10">
         <Link
           href="/support"
-          className="inline-flex min-h-9 items-center rounded-full border border-primary/30 bg-surface-container-lowest px-4 py-2 font-sans text-xs font-semibold tracking-[0.05em] uppercase transition-colors hover:border-primary focus-visible:outline-offset-4"
+          className={controlClass("onWash", "sm")}
         >
           Back to support
         </Link>
-        <p className="mt-6 font-sans text-xs font-semibold tracking-[0.05em] uppercase">
+        <p className={`mt-6 ${EYEBROW_ON_WASH}`}>
           Data curator application
         </p>
-        <h1 className="mt-2 font-display text-[32px] font-bold uppercase leading-[1.15] tracking-[-0.02em] md:text-5xl">
+        <h1 className={`mt-2 ${PAGE_TITLE} md:text-5xl`}>
           Apply to be a data curator.
         </h1>
         <p className="mt-4 max-w-xl text-base leading-7">
@@ -48,6 +49,6 @@ export default function DataCuratorApplicationPage() {
           <DataCuratorForm countries={countries} />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

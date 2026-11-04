@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { ArrowUpRight, Heart, ShieldCheck } from "lucide-react";
 import { env } from "@/lib/config/env";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import {
+  CARD,
+  CARD_TITLE,
+  EYEBROW,
+  EYEBROW_ON_WASH,
+  PAGE_TITLE,
+  controlClass,
+  tagClass,
+} from "@/components/ui/recipes";
 
 // Process to be a data curator: sign in → fill form → admin review → scoped role.
 const PAYPAL_URL =
@@ -44,26 +54,24 @@ const scopes = [
 
 const steps = ["01 Sign in", "02 Fill the form", "03 Admin review"];
 
-const primaryBtn =
-  "inline-flex min-h-11 items-center gap-2 rounded-[9999px] border border-primary bg-primary px-5 py-3 font-sans text-xs font-semibold tracking-[0.05em] text-on-primary uppercase transition-opacity hover:opacity-90 focus-visible:outline-offset-4";
-const secondaryBtn =
-  "inline-flex min-h-11 items-center gap-2 rounded-[9999px] border border-primary/30 bg-surface-container-lowest px-5 py-3 font-sans text-xs font-semibold tracking-[0.05em] text-on-surface uppercase transition-colors hover:border-primary hover:bg-surface-container-high focus-visible:outline-offset-4";
+const primaryBtn = controlClass("primary");
+const secondaryBtn = controlClass("onWash");
 
 export default function SupportPage() {
   return (
-    <main className="min-h-[calc(100dvh-4rem)] w-full bg-gradient-support text-primary">
-      <div className="mx-auto grid w-full max-w-6xl gap-5 px-5 py-6 sm:py-8 md:px-10 lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-10 lg:py-6">
+    <div className="min-h-full w-full bg-gradient-support text-on-surface">
+      <div className="mx-auto grid w-full max-w-6xl gap-5 px-5 py-8 md:px-10 md:py-10 lg:min-h-[calc(100dvh-var(--app-header-h))] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-10">
         <section>
           <Link
             href="/"
-            className="inline-flex min-h-9 items-center rounded-[9999px] border border-primary/30 bg-surface-container-lowest px-4 py-2 font-sans text-xs font-semibold tracking-[0.05em] uppercase transition-colors hover:border-primary focus-visible:outline-offset-4"
+            className={controlClass("onWash", "sm")}
           >
             Back to the map
           </Link>
-          <p className="mt-6 font-sans text-xs font-semibold tracking-[0.05em] uppercase lg:mt-8">
+          <p className={`mt-6 lg:mt-8 ${EYEBROW_ON_WASH}`}>
             Open directory — curated by riders
           </p>
-          <h1 className="mt-2 max-w-xl font-display text-[32px] font-bold uppercase leading-[1.15] tracking-[-0.02em] md:text-5xl">
+          <h1 className={`mt-2 max-w-xl ${PAGE_TITLE} md:text-5xl`}>
             Support through data curation.
           </h1>
           <p className="mt-4 max-w-md text-base leading-7">
@@ -86,11 +94,13 @@ export default function SupportPage() {
             </a>
           </div>
           <ol
-            className="mt-5 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] font-bold uppercase tracking-widest"
+            className="mt-5 flex flex-wrap gap-x-4 gap-y-1"
             aria-label="How to become a data curator"
           >
             {steps.map((s) => (
-              <li key={s}>{s}</li>
+              <li key={s}>
+                <Eyebrow className="text-on-surface">{s}</Eyebrow>
+              </li>
             ))}
           </ol>
         </section>
@@ -99,12 +109,12 @@ export default function SupportPage() {
           <section
             id="guidelines"
             aria-labelledby="guidelines-title"
-            className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-5"
+            className={CARD}
           >
             <div className="flex items-center justify-between gap-3">
               <h2
                 id="guidelines-title"
-                className="font-sans text-xs font-semibold tracking-[0.05em] uppercase"
+                className={EYEBROW}
               >
                 Data curation guidelines
               </h2>
@@ -132,7 +142,7 @@ export default function SupportPage() {
               {scopes.map((scope) => (
                 <li
                   key={scope}
-                  className="rounded-md bg-surface-container-high px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-secondary"
+                  className={tagClass("neutral")}
                 >
                   {scope}
                 </li>
@@ -142,21 +152,21 @@ export default function SupportPage() {
 
           <section
             aria-labelledby="support-options-title"
-            className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-5"
+            className={CARD}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-surface-container-high text-on-surface">
+                <span className="flex h-control w-control items-center justify-center rounded-full bg-surface-container-high text-on-surface">
                   <Heart size={18} strokeWidth={1.7} aria-hidden="true" />
                 </span>
                 <h2
                   id="support-options-title"
-                  className="font-display text-xl font-bold uppercase tracking-[-0.02em]"
+                  className={CARD_TITLE}
                 >
                   PayPal
                 </h2>
               </div>
-              <span className="rounded-md bg-primary px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-on-primary">
+              <span className={tagClass("solid")}>
                 Live
               </span>
             </div>
@@ -167,6 +177,6 @@ export default function SupportPage() {
           </section>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

@@ -6,6 +6,7 @@ import type { FormEvent } from "react";
 import { MapPin, Trophy, Tv, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { CARD, CARD_TITLE, INPUT, LABEL, alertClass, controlClass, tagClass } from "@/components/ui/recipes";
 
 export interface CountryOption {
   iso2: string;
@@ -22,12 +23,10 @@ const KINDS: { id: CuratorKind; title: string; body: string; icon: LucideIcon }[
 ];
 
 // Section headings are h2 elements inside each fieldset; the fieldset is named via aria-labelledby.
-const fieldsetClass = "rounded-[16px] border border-outline-variant bg-surface-container-lowest p-5";
-const headingClass =
-  "font-display text-lg font-bold uppercase leading-[1.3] tracking-[-0.02em] text-on-surface";
+const fieldsetClass = CARD;
+const headingClass = `${CARD_TITLE} text-on-surface`;
 
-const inputClass =
-  "min-h-11 w-full rounded-[12px] border border-outline-variant bg-surface-container-lowest px-3 py-2 text-base text-on-surface placeholder:text-secondary sm:text-sm focus-visible:outline-offset-2";
+const inputClass = INPUT;
 
 export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
   const [kinds, setKinds] = useState<CuratorKind[]>([]);
@@ -77,7 +76,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
               <label
                 key={id}
                 className={cn(
-                  "flex min-h-11 cursor-pointer flex-col gap-2 rounded-[14px] border p-3 transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
+                  "flex min-h-11 cursor-pointer flex-col gap-2 rounded-inner border p-3 transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
                   checked ? "border-primary bg-surface-container-high" : "border-outline-variant bg-surface-container-lowest hover:border-outline",
                 )}
               >
@@ -86,10 +85,10 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
                   <Icon size={18} strokeWidth={1.7} aria-hidden="true" />
                   <span
                     aria-hidden="true"
-                    className={cn("h-4 w-4 rounded-md border border-primary", checked ? "bg-primary" : "bg-transparent")}
+                    className={cn("h-4 w-4 rounded-sm border border-primary", checked ? "bg-primary" : "bg-transparent")}
                   />
                 </span>
-                <span className="font-display text-base font-bold uppercase tracking-[-0.02em]">{title}</span>
+                <span className="font-display text-base font-bold uppercase tracking-tight">{title}</span>
                 <span className="text-xs leading-4 text-on-surface-variant">{body}</span>
               </label>
             );
@@ -111,7 +110,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
                     type="button"
                     onClick={() => toggleCountry(iso2)}
                     aria-label={`Remove ${namesByIso.get(iso2) ?? iso2}`}
-                    className="inline-flex min-h-8 items-center gap-1 rounded-md bg-primary px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-on-primary"
+                    className={cn(tagClass("solid"), "min-h-8 px-3")}
                   >
                     {namesByIso.get(iso2) ?? iso2} <X size={12} aria-hidden="true" />
                   </button>
@@ -130,7 +129,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
             placeholder="Filter countries…"
             className={cn(inputClass, "mt-3")}
           />
-          <ul className="mt-2 max-h-56 overflow-y-auto rounded-[12px] border border-outline-variant">
+          <ul className="mt-2 max-h-56 overflow-y-auto rounded-inner border border-outline-variant">
             {filtered.length === 0 ? (
               <li className="px-3 py-3 text-sm text-on-surface-variant">No countries match.</li>
             ) : (
@@ -144,7 +143,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
                       className="h-4 w-4 accent-[var(--color-primary)]"
                     />
                     <span>{name}</span>
-                    <span className="ml-auto font-mono text-[10px] font-bold tracking-widest text-secondary">{iso2}</span>
+                    <span className={`ml-auto ${LABEL}`}>{iso2}</span>
                   </label>
                 </li>
               ))
@@ -165,7 +164,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
             <label
               key={id}
               className={cn(
-                "flex min-h-11 cursor-pointer items-start gap-3 rounded-[14px] border p-3 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
+                "flex min-h-11 cursor-pointer items-start gap-3 rounded-inner border p-3 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2",
                 visibility === id ? "border-primary bg-surface-container-high" : "border-outline-variant hover:border-outline",
               )}
             >
@@ -181,7 +180,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
                 className="mt-1 h-4 w-4 accent-[var(--color-primary)]"
               />
               <span>
-                <span className="block font-display text-sm font-bold uppercase tracking-[-0.02em]">{title}</span>
+                <span className="block font-display text-sm font-bold uppercase tracking-tight">{title}</span>
                 <span className="block text-xs leading-4 text-on-surface-variant">{body}</span>
               </span>
             </label>
@@ -189,7 +188,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
         </div>
         {visibility === "team" ? (
           <div className="mt-3">
-            <label htmlFor="display-name" className="font-sans text-xs font-semibold tracking-[0.05em] uppercase">
+            <label htmlFor="display-name" className={LABEL}>
               Name to show
             </label>
             <input
@@ -206,7 +205,7 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
         ) : null}
       </fieldset>
 
-      <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-5">
+      <div className={CARD}>
         <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm leading-5">
           <input
             type="checkbox"
@@ -239,20 +238,20 @@ export function DataCuratorForm({ countries }: { countries: CountryOption[] }) {
             type="submit"
             disabled={!isValid}
             aria-describedby={isValid ? undefined : "form-hints"}
-            className="inline-flex min-h-11 items-center rounded-[9999px] border border-primary bg-primary px-6 py-3 font-sans text-xs font-semibold tracking-[0.05em] text-on-primary uppercase transition-opacity hover:opacity-90 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-40"
+            className={controlClass("primary")}
           >
             Submit application
           </button>
           <Link
             href="/support"
-            className="inline-flex min-h-11 items-center rounded-[9999px] border border-outline-variant bg-surface-container-high px-5 py-3 font-sans text-xs font-semibold tracking-[0.05em] uppercase transition-colors hover:border-outline focus-visible:outline-offset-4"
+            className={controlClass("secondary")}
           >
             Cancel
           </Link>
         </div>
 
         {submitted ? (
-          <p role="status" className="mt-4 rounded-[12px] border border-outline-variant bg-surface-container-low px-3 py-2 text-sm leading-5">
+          <p role="status" className={`mt-4 text-sm leading-5 ${alertClass("neutral")}`}>
             Preview only — applications aren&apos;t connected yet. Nothing was sent.
           </p>
         ) : null}

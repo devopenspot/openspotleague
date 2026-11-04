@@ -144,6 +144,9 @@ export function segmentClass(active: boolean): string {
 /** Small label above a title. Use EYEBROW_ON_WIRE on dark rails. */
 export const EYEBROW =
   "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-secondary";
+/** Eyebrow on a route wash (support cyan, profile lime): full-contrast ink. */
+export const EYEBROW_ON_WASH =
+  "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-surface";
 export const EYEBROW_ON_WIRE =
   "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-wire-muted";
 
