@@ -2,18 +2,15 @@
 
 import { Heart, ShieldCheck, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { controlClass } from "@/components/ui/recipes";
 import { showToast } from "@/hooks/ui/useToast";
 import { shareOrCopyUrl } from "@/lib/utils/share";
 import { getOrFetchShortUrl } from "@/lib/utils/short-url";
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import type { Spot } from "@/lib/types";
 
-const ACTION_CLASS =
-  "flex min-h-12 items-center gap-1.5 rounded-lg border-2 px-3 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px sm:px-4";
-const ACTION_OFF_CLASS =
-  "border-outline-variant bg-surface text-on-surface hover:bg-surface-container";
-const ACTION_ON_CLASS =
-  "border-primary bg-primary text-on-primary hover:bg-primary/95";
+const ACTION_OFF_CLASS = controlClass("outline");
+const ACTION_ON_CLASS = controlClass("primary");
 
 interface SpotDetailsActionsProps {
   spot: Spot;
@@ -65,10 +62,7 @@ export function SpotDetailsActions({
               ? `Remove your verification of ${spot.name}`
               : `Verify ${spot.name} — confirm this spot is legit`
           }
-          className={cn(
-            ACTION_CLASS,
-            isVerified ? ACTION_ON_CLASS : ACTION_OFF_CLASS,
-          )}
+          className={isVerified ? ACTION_ON_CLASS : ACTION_OFF_CLASS}
         >
           <ShieldCheck
             size={14}
@@ -82,7 +76,7 @@ export function SpotDetailsActions({
           onClick={() => onToggleSave(spot.id, { name: spot.name })}
           aria-pressed={isSaved}
           aria-label={isSaved ? `Unsave ${spot.name}` : `Save ${spot.name}`}
-          className={cn(ACTION_CLASS, isSaved ? ACTION_ON_CLASS : ACTION_OFF_CLASS)}
+          className={isSaved ? ACTION_ON_CLASS : ACTION_OFF_CLASS}
         >
           <span key={burstKey} aria-hidden="true" className="inline-flex">
             <Heart
@@ -97,7 +91,7 @@ export function SpotDetailsActions({
           type="button"
           onClick={handleShare}
           aria-label={`Share ${spot.name}`}
-          className={cn(ACTION_CLASS, ACTION_OFF_CLASS)}
+          className={ACTION_OFF_CLASS}
         >
           <Share2 size={14} aria-hidden="true" />
           <span>Share</span>
@@ -105,7 +99,7 @@ export function SpotDetailsActions({
       </div>
 
       {locationStatus === "denied" ? (
-        <LocationBlockedCallout onRetry={onRequestLocation} className="mb-4" />
+        <LocationBlockedCallout onRetry={onRequestLocation} size="md" className="mb-4" />
       ) : null}
     </>
   );

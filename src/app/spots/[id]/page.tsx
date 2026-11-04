@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CARD, controlClass, EYEBROW, PAGE_TITLE } from "@/components/ui/recipes";
 import { Compass } from "lucide-react";
 import { findSpotById } from "@/lib/services/spot/spots";
 import { listSuggestedSpots } from "@/lib/services/spot/suggested";
@@ -150,19 +151,19 @@ function SpotUnavailableFallback() {
       role="alert"
       className="min-h-[60vh] flex items-center justify-center p-6"
     >
-      <div className="mx-auto my-12 max-w-md rounded-lg border border-outline-variant bg-surface-bright p-6 text-center sm:p-8">
-        <span className="font-display text-xs font-semibold tracking-[0.05em] text-secondary uppercase block mb-3">
+      <div className={`${CARD} mx-auto my-12 max-w-md text-center sm:p-8`}>
+        <span className={`${EYEBROW} mb-3 block`}>
           503 · Off the grid
         </span>
-        <h1 className="font-display text-3xl font-bold uppercase leading-[1.15] tracking-[-0.02em] text-on-surface">
+        <h1 className={`${PAGE_TITLE} text-on-surface`}>
           Spot temporarily unavailable
         </h1>
-        <p className="mx-auto mt-3 max-w-sm text-sm font-semibold leading-5 text-on-surface-variant">
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-5 text-on-surface-variant">
           We can&rsquo;t reach the spot right now. Try again in a moment.
         </p>
         <Link
           href="/"
-          className="mt-6 inline-flex min-h-12 items-center space-x-2 rounded-lg border-2 border-primary bg-primary px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+          className={`${controlClass("primary")} mt-6`}
         >
           <Compass size={14} aria-hidden="true" />
           <span>Back to directory</span>

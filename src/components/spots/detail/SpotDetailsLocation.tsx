@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Map, MapPin, Navigation, Swords } from "lucide-react";
 import { setMapPreserveLocation } from "@/lib/map/preserve";
 import type { Spot } from "@/lib/types";
+import { controlClass, EYEBROW } from "@/components/ui/recipes";
 
-const LOCATION_LINK_CLASS =
-  "flex min-h-12 items-center justify-center gap-1.5 rounded-lg border-2 px-3 text-center font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px";
-const LOCATION_EXTERNAL_LINK_CLASS = `${LOCATION_LINK_CLASS} border-outline-variant bg-surface text-on-surface hover:bg-surface-container`;
+const LOCATION_PRIMARY_LINK_CLASS = controlClass("primary");
+const LOCATION_SECONDARY_LINK_CLASS = controlClass("secondary");
+const LOCATION_EXTERNAL_LINK_CLASS = controlClass("outline");
 
 interface SpotDetailsLocationProps {
   spot: Spot;
@@ -27,7 +28,7 @@ export function SpotDetailsLocation({
   return (
     <>
       <address className="py-4 not-italic">
-        <span className="block font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+        <span className={`block ${EYEBROW}`}>
           Address
         </span>
         <span className="mt-2 flex items-start gap-2 text-sm font-semibold leading-5 text-on-surface">
@@ -40,7 +41,7 @@ export function SpotDetailsLocation({
         <Link
           href={gamePrefillHref}
           aria-label={`Start training or challenge at ${spot.name}`}
-          className={`${LOCATION_LINK_CLASS} border-primary bg-primary text-on-primary hover:bg-primary/90`}
+          className={LOCATION_PRIMARY_LINK_CLASS}
         >
           <span>Train / Challenge at this spot</span>
           <Swords size={14} aria-hidden="true" className="shrink-0" />
@@ -51,7 +52,7 @@ export function SpotDetailsLocation({
             setMapPreserveLocation();
           }}
           aria-label={`View ${spot.name} on the map`}
-          className={`${LOCATION_LINK_CLASS} border-outline-variant bg-surface-container-high text-on-surface hover:bg-surface-container-highest`}
+          className={LOCATION_SECONDARY_LINK_CLASS}
         >
           <span>View on map</span>
           <Map size={14} aria-hidden="true" className="shrink-0" />

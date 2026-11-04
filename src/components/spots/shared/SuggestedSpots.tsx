@@ -14,11 +14,9 @@ import {
   buildSuggestedSpots,
   SUGGESTED_SPOTS_MIN,
 } from "@/lib/spots/suggestions";
-import { cn } from "@/lib/utils/cn";
+import { chipClass } from "@/components/ui/recipes";
 import type { Spot } from "@/lib/types";
 
-const FILTER_CHIP_CLASS =
-  "inline-flex min-h-12 items-center gap-1 rounded-lg border-2 px-4 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px";
 
 interface SuggestedSpotsProps {
   spot: Spot;
@@ -80,7 +78,7 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
     <section
       id="suggested-spots"
       aria-labelledby="suggested-heading"
-      className="mt-8 mx-4 sm:mx-0 rounded-lg border border-outline-variant bg-surface-container-low p-4 sm:p-5 md:mt-16 md:p-6"
+      className="mx-5 mt-8 rounded-container border border-outline-variant bg-surface-container-low p-4 sm:p-5 md:mx-0 md:mt-16 md:p-6"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <SectionHeader
@@ -88,7 +86,6 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
           title="Suggested Spots"
           titleId="suggested-heading"
           description={result.scopeLabel}
-          className="pl-0 pb-0"
         />
 
         {/* Category filters (active when multiple spot types are available in the suggestions pool) */}
@@ -103,12 +100,7 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
               role="tab"
               aria-selected={selectedType === "all"}
               onClick={() => setSelectedType("all")}
-              className={cn(
-                FILTER_CHIP_CLASS,
-                selectedType === "all"
-                  ? "border-primary bg-primary text-on-primary"
-                  : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
-              )}
+              className={chipClass(selectedType === "all")}
             >
               <span>All</span>
               <span className="opacity-70">({result.spots.length})</span>
@@ -120,12 +112,7 @@ export function SuggestedSpots({ spot, pool }: SuggestedSpotsProps) {
                 role="tab"
                 aria-selected={selectedType === cat.slug}
                 onClick={() => setSelectedType(cat.slug)}
-                className={cn(
-                  FILTER_CHIP_CLASS,
-                  selectedType === cat.slug
-                    ? "border-primary bg-primary text-on-primary"
-                    : "border-outline-variant bg-surface text-on-surface hover:bg-surface-container",
-                )}
+                className={chipClass(selectedType === cat.slug)}
               >
                 <span>{cat.name}</span>
                 <span className="opacity-70">({cat.count})</span>

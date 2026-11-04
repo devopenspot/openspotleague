@@ -19,7 +19,7 @@ export function SpotDetailsFullPage({
   const { isVerified, toggle: toggleVerified } = useVerifiedSpots(user?.id ?? null);
 
   return (
-    <div className="mx-auto max-w-6xl pb-12 animate-fade-in sm:px-6 md:px-8 md:py-8 md:pb-16">
+    <div className="mx-auto w-full max-w-6xl pb-12 animate-fade-in md:px-10 md:py-10 md:pb-16">
       <article>
         <SpotDetailsContent
           spot={spot}
