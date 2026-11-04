@@ -11,23 +11,31 @@ import {
   type DistanceUnit,
   type TemperatureUnit,
 } from "@/stores/preferences-store";
-import {
-  SPORT_DISCIPLINES,
-  type SportPreference,
-} from "@/types/sport-events";
-import { cn } from "@/lib/utils/cn";
+import { SPORT_DISCIPLINES, type SportPreference } from "@/types/sport-events";
 import { useUser } from "@/lib/contexts/user-context";
 import { SignInLink } from "@/components/shell/SignInLink";
+import {
+  CARD_TITLE,
+  EYEBROW,
+  LABEL,
+  SEGMENTED_TRACK,
+  alertClass,
+  chipClass,
+  controlClass,
+  iconButtonClass,
+  segmentClass,
+} from "@/components/ui/recipes";
 
 const ONBOARDING_DIALOG_TITLE_ID = "onboarding-dialog-title";
 
-const SPORT_OPTIONS: ReadonlyArray<{ value: SportPreference; label: string }> = [
-  { value: "all", label: "All disciplines" },
-  { value: "Skateboard", label: "Skateboard" },
-  { value: "BMX", label: "BMX" },
-  { value: "Scooter", label: "Scooter" },
-  { value: "Roller", label: "Roller" },
-];
+const SPORT_OPTIONS: ReadonlyArray<{ value: SportPreference; label: string }> =
+  [
+    { value: "all", label: "All disciplines" },
+    { value: "Skateboard", label: "Skateboard" },
+    { value: "BMX", label: "BMX" },
+    { value: "Scooter", label: "Scooter" },
+    { value: "Roller", label: "Roller" },
+  ];
 
 type Mode = "onboarding" | "edit";
 
@@ -63,7 +71,7 @@ export function OnboardingDialog() {
       role="dialog"
       closeOnBackdrop={!isOnboarding}
       containerClassName="bg-surface"
-      panelClassName="max-w-md overflow-hidden !rounded-[16px] border border-outline-variant bg-surface-container-lowest"
+      panelClassName="max-w-md overflow-hidden border border-outline-variant bg-surface-container-lowest"
     >
       {preferenceValuesReady ? (
         <OnboardingForm
@@ -109,10 +117,10 @@ export function OnboardingDialog() {
               const savedSport: SportPreference | null =
                 saved.disciplineSlug === "all"
                   ? "all"
-                  : SPORT_DISCIPLINES.find(
+                  : (SPORT_DISCIPLINES.find(
                       (candidate) =>
                         candidate.toLowerCase() === saved.disciplineSlug,
-                    ) ?? null;
+                    ) ?? null);
               setPreferences(
                 {
                   distanceUnit: saved.distanceUnit,
@@ -142,8 +150,7 @@ export function OnboardingDialog() {
             devices.
           </p>
           <SignInLink
-            variant="drawer"
-            className="!mt-3 !rounded-[9999px] !border-primary !bg-primary !px-6 !py-3 !text-on-primary transition-opacity hover:!bg-primary hover:!opacity-90"
+            variant="dialog"
             onClick={closeOnboarding}
             next={pendingNext ?? undefined}
           />
@@ -223,19 +230,16 @@ function OnboardingForm({
     <>
       <div className="mb-6 flex items-center justify-between gap-3 border-b border-outline-variant p-4 pb-4 md:p-6">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant bg-surface-container-high text-on-surface">
+          <span className="flex h-control w-control shrink-0 items-center justify-center rounded-control border border-outline-variant bg-surface-container-high text-on-surface">
             <Globe size={16} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <span
-              aria-hidden="true"
-              className="block font-display text-[9px] font-bold tracking-widest uppercase text-secondary"
-            >
+            <span aria-hidden="true" className={`block ${EYEBROW}`}>
               {isOnboarding ? "First-time setup" : "Preferences"}
             </span>
             <h2
               id={titleId}
-              className="font-display text-base font-bold tracking-wide uppercase truncate"
+              className={`truncate ${CARD_TITLE} text-on-surface`}
             >
               {isOnboarding ? "Set your defaults" : "Edit your defaults"}
             </h2>
@@ -246,7 +250,7 @@ function OnboardingForm({
             type="button"
             onClick={onSubmitEdit}
             aria-label="Close preferences"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant text-on-surface transition-colors hover:border-outline hover:bg-surface-container"
+            className={iconButtonClass("outline")}
           >
             <X size={14} aria-hidden="true" />
           </button>
@@ -302,12 +306,7 @@ function OnboardingForm({
               return (
                 <li key={opt.value}>
                   <label
-                    className={cn(
-                      "inline-flex cursor-pointer items-center rounded-full border px-3 py-2 text-[9px] font-bold tracking-widest uppercase transition-colors",
-                      active
-                        ? "border-primary bg-primary text-on-primary"
-                        : "border-outline-variant bg-surface-container-lowest text-on-surface hover:border-outline hover:bg-surface-container",
-                    )}
+                    className={`cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary ${chipClass(active)}`}
                   >
                     <input
                       type="radio"
@@ -330,7 +329,7 @@ function OnboardingForm({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={saving}
-            className="min-h-11 flex-1 rounded-[9999px] border border-primary bg-primary px-6 text-xs font-bold tracking-widest text-on-primary uppercase transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+            className={`flex-1 ${controlClass("primary")}`}
           >
             {isOnboarding ? "Save & continue" : "Save changes"}
           </button>
@@ -338,7 +337,7 @@ function OnboardingForm({
             <button
               type="button"
               onClick={handleReset}
-              className="min-h-11 rounded-[9999px] border border-outline-variant bg-surface-container-high px-4 text-[10px] font-bold tracking-widest text-on-surface uppercase transition-colors hover:bg-surface-container-highest"
+              className={controlClass("secondary")}
             >
               Reset
             </button>
@@ -346,18 +345,15 @@ function OnboardingForm({
         </div>
 
         {saveError ? (
-          <p
-            className="rounded-[8px] border border-error/30 bg-error-container px-3 py-2 text-xs text-on-error-container"
-            role="alert"
-          >
+          <p className={`text-xs ${alertClass("error")}`} role="alert">
             {saveError}
           </p>
         ) : null}
 
         {isOnboarding && (
           <p className="text-[10px] font-display text-secondary leading-snug">
-            Choose one discipline or select all. Signed-in riders get these preferences across
-            devices.
+            Choose one discipline or select all. Signed-in riders get these
+            preferences across devices.
           </p>
         )}
       </div>
@@ -377,7 +373,7 @@ function FieldGroup({ icon, label, htmlFor, children }: FieldGroupProps) {
     <div>
       <label
         htmlFor={htmlFor}
-        className="flex items-center gap-1.5 font-display text-[9px] font-bold tracking-widest uppercase text-secondary mb-2"
+        className={`mb-2 flex items-center gap-1.5 ${LABEL}`}
       >
         {icon}
         <span>{label}</span>
@@ -401,11 +397,7 @@ function SegmentedControl<T extends string | number>({
   options,
 }: SegmentedControlProps<T>) {
   return (
-    <div
-      id={id}
-      role="radiogroup"
-      className="grid grid-cols-2 overflow-hidden rounded-full border border-outline-variant divide-x divide-outline-variant"
-    >
+    <div id={id} role="radiogroup" className={SEGMENTED_TRACK}>
       {options.map((opt) => {
         const active = opt.value === value;
         return (
@@ -415,12 +407,7 @@ function SegmentedControl<T extends string | number>({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(opt.value)}
-            className={cn(
-              "min-h-11 px-3 text-[11px] font-bold tracking-widest uppercase transition-colors",
-              active
-                ? "bg-primary text-on-primary"
-                : "bg-surface-container-lowest text-on-surface hover:bg-surface-container",
-            )}
+            className={segmentClass(active)}
           >
             {opt.label}
           </button>

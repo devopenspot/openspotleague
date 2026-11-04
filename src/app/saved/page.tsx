@@ -9,7 +9,7 @@ export const metadata = {
 export default async function SavedPage() {
   await requireUserOrRedirect("/saved");
   return (
-    <div className="flex min-h-screen h-auto flex-1 flex-col bg-gradient-to-r from-orange-600 via-red-600 to-red-700">
+    <div className="flex min-h-full w-full flex-1 flex-col bg-surface text-on-surface">
       <SavedTab />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle, ShieldAlert, Youtube, PhoneCall } from "lucide-react";
+import { CARD_NESTED } from "@/components/ui/recipes";
 
 export interface LegalCalloutProps {
   type: "risk" | "trespass" | "youtube" | "emergency";
@@ -11,14 +12,14 @@ export function LegalCallout({ type }: LegalCalloutProps) {
     return (
       <aside
         aria-label="Action Sports Physical Risk Notice"
-        className="my-6 rounded-[16px] border border-accent-start/30 bg-accent-start/5 p-5 text-on-surface sm:p-6"
+        className="my-6 rounded-inner border border-accent-start/30 bg-accent-start/5 p-4 text-on-surface sm:p-5"
       >
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-start/15 text-accent-start">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-accent-start/15 text-accent-start">
             <AlertTriangle size={20} aria-hidden="true" />
           </div>
           <div className="space-y-2">
-            <h4 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-accent-start">
+            <h4 className="font-display text-sm font-bold uppercase leading-tight tracking-tight text-accent-start">
               Critical Warning: Inherent Extreme Sports Danger
             </h4>
             <p className="text-xs sm:text-sm leading-relaxed text-on-surface-variant">
@@ -34,14 +35,14 @@ export function LegalCallout({ type }: LegalCalloutProps) {
     return (
       <aside
         aria-label="Private Property & Anti-Trespassing Advisory"
-        className="my-6 rounded-[16px] border border-outline-variant bg-surface-container-low p-5 text-on-surface sm:p-6"
+        className={`my-6 text-on-surface ${CARD_NESTED} sm:p-5`}
       >
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary text-on-primary">
             <ShieldAlert size={20} aria-hidden="true" />
           </div>
           <div className="space-y-2">
-            <h4 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface">
+            <h4 className="font-display text-sm font-bold uppercase leading-tight tracking-tight text-on-surface">
               Respect the Spot: Zero Tolerance for Trespassing
             </h4>
             <p className="text-xs sm:text-sm leading-relaxed text-on-surface-variant">
@@ -57,14 +58,14 @@ export function LegalCallout({ type }: LegalCalloutProps) {
     return (
       <aside
         aria-label="YouTube API Services Disclosure"
-        className="my-6 rounded-[16px] border border-outline-variant bg-surface-container-low p-5 text-on-surface sm:p-6"
+        className={`my-6 text-on-surface ${CARD_NESTED} sm:p-5`}
       >
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-error-container text-error">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-error-container text-error">
             <Youtube size={20} aria-hidden="true" />
           </div>
           <div className="space-y-2">
-            <h4 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface">
+            <h4 className="font-display text-sm font-bold uppercase leading-tight tracking-tight text-on-surface">
               YouTube API Services Notice
             </h4>
             <p className="text-xs sm:text-sm leading-relaxed text-on-surface-variant">
@@ -98,14 +99,14 @@ export function LegalCallout({ type }: LegalCalloutProps) {
     return (
       <aside
         aria-label="Emergency Numbers Informational Advisory"
-        className="my-6 rounded-[16px] border border-outline-variant bg-surface-container-low p-5 text-on-surface sm:p-6"
+        className={`my-6 text-on-surface ${CARD_NESTED} sm:p-5`}
       >
         <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-on-secondary">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-secondary text-on-secondary">
             <PhoneCall size={20} aria-hidden="true" />
           </div>
           <div className="space-y-2">
-            <h4 className="font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface">
+            <h4 className="font-display text-sm font-bold uppercase leading-tight tracking-tight text-on-surface">
               Emergency Phone Numbers Advisory
             </h4>
             <p className="text-xs sm:text-sm leading-relaxed text-on-surface-variant">

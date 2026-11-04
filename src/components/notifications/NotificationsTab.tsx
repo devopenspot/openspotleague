@@ -10,6 +10,15 @@ import {
 import { useUser } from "@/lib/contexts/user-context";
 import { relativeTime } from "@/lib/league/ui-state";
 import { cn } from "@/lib/utils/cn";
+import {
+  EMPTY_STATE,
+  EYEBROW,
+  META,
+  PAGE_TITLE,
+  alertClass,
+  controlClass,
+  pageContainer,
+} from "@/components/ui/recipes";
 
 export default function NotificationsTab() {
   const user = useUser();
@@ -31,9 +40,14 @@ export default function NotificationsTab() {
   } = useEmailDigests(user?.id ?? null);
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-8">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="font-display text-xl font-bold">Notifications</h1>
+    <div className={pageContainer("3xl")}>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className={EYEBROW}>Inbox</p>
+          <h1 className={`mt-1 ${PAGE_TITLE} text-on-surface`}>
+            Notifications
+          </h1>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           {emailDigests !== null && deliveryAvailable === true ? (
             <button
@@ -46,11 +60,9 @@ export default function NotificationsTab() {
                   ? "Daily email digests are on — click to turn off"
                   : "Daily email digests are off — click to turn on"
               }
-              className={cn(
-                "flex items-center gap-2 rounded-full border px-4 py-2 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                emailDigests
-                  ? "border-primary bg-primary text-on-primary"
-                  : "border-outline-variant text-secondary hover:border-outline hover:text-on-surface",
+              className={controlClass(
+                emailDigests ? "primary" : "outline",
+                "sm",
               )}
             >
               <Mail size={14} aria-hidden="true" />
@@ -61,7 +73,7 @@ export default function NotificationsTab() {
             <button
               type="button"
               onClick={() => void markAllRead()}
-              className="flex items-center gap-2 rounded-full border border-outline-variant px-4 py-2 font-display text-xs font-semibold uppercase tracking-wider text-secondary transition-colors hover:border-outline hover:text-on-surface"
+              className={controlClass("outline", "sm")}
             >
               <CheckCheck size={14} aria-hidden="true" />
               Mark all read
@@ -71,7 +83,7 @@ export default function NotificationsTab() {
       </div>
 
       {saveError ? (
-        <p role="alert" className="mb-4 text-sm text-error">
+        <p role="alert" className={`mb-4 text-sm ${alertClass("error")}`}>
           {saveError}
         </p>
       ) : null}
@@ -80,12 +92,12 @@ export default function NotificationsTab() {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-20  rounded-[16px] bg-surface-container"
+              className="h-20 rounded-container bg-surface-container"
             />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-[16px] border border-outline-variant bg-surface-container-low px-6 py-12 text-center">
+        <div className={`flex flex-col items-center gap-3 ${EMPTY_STATE}`}>
           <BellOff size={24} aria-hidden="true" className="text-secondary" />
           <p className="font-display text-sm font-semibold">
             You&apos;re all caught up
@@ -107,7 +119,7 @@ export default function NotificationsTab() {
                   onClick={unread ? () => void markRead([item.id]) : undefined}
                   aria-label={unread ? `${item.title} (unread)` : item.title}
                   className={cn(
-                    "flex items-start gap-3 rounded-[16px] border border-outline-variant px-4 py-4 transition-colors hover:border-outline hover:bg-surface-container",
+                    "flex items-start gap-3 rounded-container border border-outline-variant px-4 py-4 transition-colors hover:border-outline hover:bg-surface-container",
                     unread
                       ? "bg-surface-container font-semibold"
                       : "bg-surface-container-low",
@@ -131,7 +143,7 @@ export default function NotificationsTab() {
                     <p className="mt-0.5 text-sm leading-relaxed text-secondary">
                       {item.body}
                     </p>
-                    <p className="mt-1 font-display text-xs uppercase tracking-wider text-secondary">
+                    <p className={`mt-1 ${META}`}>
                       {relativeTime(item.createdAt)}
                     </p>
                   </div>
@@ -153,11 +165,11 @@ export default function NotificationsTab() {
         <button
           type="button"
           onClick={() => void loadMore()}
-          className="mt-4 w-full rounded-[16px] border border-outline-variant px-4 py-3 font-display text-xs font-semibold uppercase tracking-wider text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className={`mt-4 w-full ${controlClass("outline")}`}
         >
           Load more
         </button>
       )}
-    </main>
+    </div>
   );
 }

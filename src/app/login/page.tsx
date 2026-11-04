@@ -5,6 +5,15 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { showToast } from "@/hooks/ui/useToast";
+import {
+  BODY,
+  CARD_FRAME,
+  META,
+  PAGE_TITLE,
+  alertClass,
+  controlClass,
+  pageContainer,
+} from "@/components/ui/recipes";
 
 function isSafeNext(value: string | null): string {
   if (!value) return "/";
@@ -58,74 +67,74 @@ export default function LoginPage() {
   const busy = pending || loading;
 
   return (
-    <section
-      id="login-tab"
-      role="tabpanel"
-      aria-labelledby="nav-btn-login"
-      className="mx-2 md:mx-auto max-w-md animate-fade-in rounded-[16px] my-16 border border-outline-variant bg-surface-container-lowest px-5 py-8 sm:px-8 sm:py-10"
-    >
-      <h1 className="font-display text-[32px] font-bold leading-[1.2] tracking-[-0.02em] uppercase text-on-surface sm:text-5xl">
-        Sign in
-      </h1>
-      <p className="mt-4 text-sm leading-6 text-on-surface-variant">
-        Continue with your Google account. We only read your name, email, and
-        profile photo — nothing else.
-      </p>
-      <p className="mt-3 text-sm leading-6 text-on-surface-variant">
-        Signing in lets you save spots and access them across sessions, manage
-        your rider account, and join Open Spot challenges.
-      </p>
-
-      {errorMessage ? (
-        <div
-          role="status"
-          aria-live="polite"
-          className="mt-6 rounded-[16px] border border-error/30 bg-error-container px-4 py-3 text-sm leading-6 text-on-error-container"
-        >
-          {errorMessage}
-        </div>
-      ) : null}
-
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={busy}
-        className="mt-8 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-[9999px] border border-primary bg-primary px-6 py-3 text-sm font-bold tracking-[0.05em] text-on-primary uppercase transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+    <div className={`${pageContainer("3xl", { padY: false })} py-10 md:py-16`}>
+      <section
+        id="login-tab"
+        role="tabpanel"
+        aria-labelledby="nav-btn-login"
+        className={`mx-auto max-w-md animate-fade-in px-5 py-8 sm:px-8 sm:py-10 ${CARD_FRAME}`}
       >
-        <GoogleMark />
-        <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
-      </button>
+        <h1 className={`${PAGE_TITLE} text-on-surface`}>Sign in</h1>
+        <p className={`mt-4 ${BODY}`}>
+          Continue with your Google account. We only read your name, email, and
+          profile photo — nothing else.
+        </p>
+        <p className={`mt-3 ${BODY}`}>
+          Signing in lets you save spots and access them across sessions, manage
+          your rider account, and join Open Spot challenges.
+        </p>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-on-surface-variant">
-        By continuing, you agree to our{" "}
-        <Link
-          href="/terms"
-          className="font-semibold text-on-surface underline decoration-outline hover:text-primary focus-visible:outline-offset-2"
+        {errorMessage ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className={`mt-6 text-sm leading-6 ${alertClass("error")}`}
+          >
+            {errorMessage}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={busy}
+          className={`mt-8 w-full ${controlClass("primary")}`}
         >
-          Terms of Use
-        </Link>{" "}
-        and acknowledge our{" "}
-        <Link
-          href="/privacy"
-          className="font-semibold text-on-surface underline decoration-outline hover:text-primary focus-visible:outline-offset-2"
+          <GoogleMark />
+          <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
+        </button>
+
+        <p className="mt-4 text-center text-xs leading-relaxed text-on-surface-variant">
+          By continuing, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="font-semibold text-on-surface underline decoration-outline hover:text-primary focus-visible:outline-offset-2"
+          >
+            Terms of Use
+          </Link>{" "}
+          and acknowledge our{" "}
+          <Link
+            href="/privacy"
+            className="font-semibold text-on-surface underline decoration-outline hover:text-primary focus-visible:outline-offset-2"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
+
+        <p className={`mt-3 text-center ${META}`}>
+          One account. One click. You're in.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className={`mt-8 ${controlClass("secondary")}`}
         >
-          Privacy Policy
-        </Link>
-        .
-      </p>
-
-      <p className="mt-3 text-center font-sans text-xs font-semibold tracking-[0.05em] text-secondary uppercase">
-        One account. One click. You're in.
-      </p>
-
-      <button
-        type="button"
-        onClick={() => router.push("/")}
-        className="mt-8 inline-flex min-h-11 items-center rounded-[9999px] border border-outline-variant bg-surface-container-high px-4 py-3 font-sans text-xs font-semibold tracking-[0.05em] text-on-surface uppercase transition-colors hover:border-outline hover:bg-surface-container-highest"
-      >
-        Back to directory
-      </button>
-    </section>
+          Back to directory
+        </button>
+      </section>
+    </div>
   );
 }
 

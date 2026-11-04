@@ -11,6 +11,7 @@ import {
   THIRD_PARTY_PROCESSORS,
 } from "@/lib/legal/privacy-content";
 import { env } from "@/lib/config/env";
+import { tagClass } from "@/components/ui/recipes";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -77,10 +78,10 @@ export default function PrivacyPage() {
 
           if (section.id === "cookies-storage") {
             customChild = (
-              <div className="overflow-x-auto rounded-[14px] border border-outline-variant bg-surface-container-lowest">
+              <div className="overflow-x-auto rounded-inner border border-outline-variant bg-surface-container-lowest">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-outline-variant bg-surface-container font-sans uppercase tracking-[0.05em] text-on-surface">
+                    <tr className="border-b border-outline-variant bg-surface-container font-display font-bold uppercase tracking-label text-on-surface">
                       <th className="p-3.5">Name / Key</th>
                       <th className="p-3.5">Type</th>
                       <th className="p-3.5">Category</th>
@@ -95,11 +96,11 @@ export default function PrivacyPage() {
                         <td className="p-3.5">{item.type}</td>
                         <td className="p-3.5">
                           <span
-                            className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            className={tagClass(
                               item.category === "Strictly Necessary"
-                                ? "bg-primary text-on-primary"
-                                : "bg-surface-container-high text-on-surface"
-                            }`}
+                                ? "solid"
+                                : "neutral",
+                            )}
                           >
                             {item.category}
                           </span>
@@ -116,10 +117,10 @@ export default function PrivacyPage() {
 
           if (section.id === "third-parties") {
             customChild = (
-              <div className="overflow-x-auto rounded-[14px] border border-outline-variant bg-surface-container-lowest">
+              <div className="overflow-x-auto rounded-inner border border-outline-variant bg-surface-container-lowest">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-outline-variant bg-surface-container font-sans uppercase tracking-[0.05em] text-on-surface">
+                    <tr className="border-b border-outline-variant bg-surface-container font-display font-bold uppercase tracking-label text-on-surface">
                       <th className="p-3.5">Provider</th>
                       <th className="p-3.5">Role</th>
                       <th className="p-3.5">Location</th>
