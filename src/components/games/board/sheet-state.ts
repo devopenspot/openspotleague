@@ -173,7 +173,7 @@ export function deriveGameSheetView(
   });
 
   if (header.isTerminal) {
-    const hasResults = (game.stageLedger?.length ?? 0) > 0;
+    const { hasResults } = header;
     return view("terminal", header.terminalTitle, {
       detail: header.terminalDescription,
       actions: [

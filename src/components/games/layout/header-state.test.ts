@@ -132,9 +132,9 @@ describe("deriveHeaderState", () => {
     expect(won.isTerminal).toBe(true);
     expect(won.terminalTone).toBe("success");
     expect(won.terminalTitle).toBe("You Won!");
-    expect(won.terminalDescription).toBe(
-      "Rider Win — Check The Final Scores Below.",
-    );
+    // No settled rounds: nothing to open in Results.
+    expect(won.terminalDescription).toBe("No Rounds Were Settled.");
+    expect(won.hasResults).toBe(false);
 
     const lost = deriveHeaderState(
       {
@@ -147,11 +147,37 @@ describe("deriveHeaderState", () => {
     expect(lost.terminalTone).toBe("info");
     expect(lost.terminalTitle).toBe("Session Complete");
 
+    // With settled rounds the bar names the viewer's rank, like the dialog.
+    const lostWithRounds = deriveHeaderState(
+      {
+        ...activeChallengeGame,
+        status: "complete",
+        winnerPlayerId: "leader",
+        stageLedger: [
+          {
+            id: "s1",
+            spotType: "rails",
+            attempts: [],
+            scores: [
+              { playerId: "leader", points: 13, eventTypes: [] },
+              { playerId: "rider", points: 5, eventTypes: [] },
+            ],
+          },
+        ],
+      } as unknown as GameState,
+      capabilities,
+    );
+    expect(lostWithRounds.hasResults).toBe(true);
+    expect(lostWithRounds.terminalTitle).toBe("You Finished 2nd");
+    expect(lostWithRounds.terminalDescription).toBe(
+      "Leader Wins — Open Results For The Final Standings.",
+    );
+
     const cancelled = deriveHeaderState(
       { ...activeChallengeGame, status: "cancelled" } as unknown as GameState,
       capabilities,
     );
-    expect(cancelled.terminalTone).toBe("danger");
+    expect(cancelled.terminalTone).toBe("info");
     expect(cancelled.terminalLabel).toBe("Session Status");
     expect(cancelled.terminalDescription).toBe("This Session Was Closed.");
   });

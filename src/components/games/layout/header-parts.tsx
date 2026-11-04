@@ -11,6 +11,12 @@ import { Overlay } from "@/components/feedback/Overlay";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 import { type BadgeTone } from "@/components/ui/Badge";
 import { ShareActions } from "@/components/ui/ShareActions";
+import {
+  CARD,
+  CARD_TITLE,
+  controlClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
 import type { GameState } from "@/lib/schemas/game";
 
@@ -115,6 +121,7 @@ export function GameStatusStrip({
 /** Session-complete / cancelled banner rendered under the sticky bar. */
 export function TerminalResultBar({
   tone,
+  label,
   title,
   description,
   showResultsLink,
@@ -122,7 +129,7 @@ export function TerminalResultBar({
   onBackToChallenges,
   showRunAgain,
 }: {
-  tone: Extract<BadgeTone, "success" | "info" | "danger">;
+  tone: Extract<BadgeTone, "success" | "info">;
   label: string;
   title: string;
   description: string;
@@ -131,54 +138,56 @@ export function TerminalResultBar({
   onBackToChallenges: () => void;
   showRunAgain: boolean;
 }) {
-  const barClasses =
+  const showResults = Boolean(onViewResults) && showResultsLink;
+  // One primary per bar: Run It Again when the game completed, else Results.
+  const resultsTone = showRunAgain ? "outline" : "primary";
+  // A winning viewer gets the same inked frame as the winner row in Results.
+  const frame =
     tone === "success"
-      ? "border-secondary/30 bg-secondary-container text-on-secondary-container"
-      : tone === "danger"
-        ? "border-error/35 bg-error-container text-on-error-container"
-        : "border-secondary/30 bg-secondary-container text-on-secondary-container";
+      ? "rounded-container border border-on-surface bg-surface-container-low p-4 sm:p-5"
+      : CARD;
   return (
     <div className="border-t border-outline-variant py-3 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
         <div
           role="status"
           aria-labelledby="terminal-result-title"
-          className={`flex flex-col gap-3 rounded-[16px] border p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4 ${barClasses}`}
+          className={`flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ${frame}`}
         >
-          <div className="flex min-w-0 flex-col items-start gap-3 md:flex-row">
-            <div className="min-w-0">
-              <h2
-                id="terminal-result-title"
-                className="font-display text-xl font-semibold leading-[1.3]"
-              >
-                {title}
-              </h2>
-              <p className="mt-1 text-sm leading-5">{description}</p>
-            </div>
+          <div className="min-w-0">
+            <span className={tagClass(tone === "success" ? "solid" : "neutral")}>
+              {label}
+            </span>
+            <h2
+              id="terminal-result-title"
+              className={`${CARD_TITLE} mt-2 text-on-surface`}
+            >
+              {title}
+            </h2>
+            <p className="mt-1 text-sm leading-5 text-on-surface-variant">
+              {description}
+            </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-            {onViewResults && showResultsLink ? (
+            <button
+              type="button"
+              onClick={onBackToChallenges}
+              className={controlClass("outline")}
+            >
+              Back
+            </button>
+            {showResults ? (
               <button
                 type="button"
                 onClick={onViewResults}
                 aria-label="View championship results"
-                className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
+                className={controlClass(resultsTone)}
               >
-                results
+                Results
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={onBackToChallenges}
-              className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
-            >
-              Back
-            </button>
             {showRunAgain ? (
-              <Link
-                href="/games"
-                className="inline-flex min-h-11 items-center rounded-full border border-primary bg-primary px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
-              >
+              <Link href="/games" className={controlClass("primary")}>
                 Run It Again
               </Link>
             ) : null}

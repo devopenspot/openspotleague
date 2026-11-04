@@ -1,5 +1,6 @@
 import type { GameCapabilities } from "@/lib/games/capabilities";
 import { isLobbyReadyForStart } from "@/lib/games/lobby";
+import { buildAwardResult, ordinal } from "@/lib/games/award-result";
 import type { GameState } from "@/lib/schemas/game";
 import type { BadgeTone } from "@/components/ui/Badge";
 
@@ -166,22 +167,39 @@ export function deriveHeaderState(
     (player) => player.id === game?.winnerPlayerId,
   );
   const viewerWon = isComplete && winner?.id === game?.viewerPlayerId;
-  const terminalTone: Extract<BadgeTone, "success" | "info" | "danger"> =
-    game?.status === "cancelled" ? "danger" : viewerWon ? "success" : "info";
-  const terminalLabel =
-    game?.status === "cancelled" ? "Session Status" : "Final Result";
-  const terminalTitle =
-    game?.status === "cancelled"
-      ? "Session Closed"
-      : viewerWon
-        ? "You Won!"
+  const isCancelled = game?.status === "cancelled";
+  // Same test as the Results button: there are standings to open.
+  const hasResults = (game?.stageLedger?.length ?? 0) > 0;
+  // Rank from the same builder the results dialog uses, so both agree.
+  const viewerRank =
+    game && isTerminal && hasResults && game.trainingVariant !== "solo"
+      ? (buildAwardResult(game).ranking.find((row) => row.isViewer)?.rank ??
+        null)
+      : null;
+  // Cancelled is a neutral outcome, not an error.
+  const terminalTone: Extract<BadgeTone, "success" | "info"> = viewerWon
+    ? "success"
+    : "info";
+  const terminalLabel = isCancelled ? "Session Status" : "Final Result";
+  const terminalTitle = isCancelled
+    ? "Session Closed"
+    : viewerWon
+      ? "You Won!"
+      : viewerRank !== null && isComplete
+        ? `You Finished ${ordinal(viewerRank)}`
         : "Session Complete";
-  const terminalDescription =
-    game?.status === "cancelled"
+  const openResults = "Open Results For The Final Standings.";
+  const terminalDescription = !hasResults
+    ? isCancelled
       ? "This Session Was Closed."
-      : winner
-        ? `${winner.displayName} Win — Check The Final Scores Below.`
-        : "That's A Wrap — Check The Final Scores Below.";
+      : "No Rounds Were Settled."
+    : isCancelled
+      ? `Crew Headed Out Early — ${openResults}`
+      : viewerWon
+        ? `You Took The Line — ${openResults}`
+        : winner
+          ? `${winner.displayName} Wins — ${openResults}`
+        : `That's A Wrap — ${openResults}`;
 
   return {
     current,
@@ -208,6 +226,7 @@ export function deriveHeaderState(
     terminalLabel,
     terminalTitle,
     terminalDescription,
+    hasResults,
     isWaitingForOthers,
     pendingIds,
     pendingNames,

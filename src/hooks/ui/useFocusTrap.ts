@@ -34,8 +34,13 @@ export function useFocusTrap<T extends HTMLElement>(
 
     // Move initial focus into the container
     const focusable = getFocusable();
+    // `data-autofocus` lets a dialog pick its primary action over the first
+    // focusable element (often a close button).
+    const preferred = container.querySelector<HTMLElement>('[data-autofocus]');
     const initial =
-      initialFocus === 'container' ? container : (focusable[0] ?? container);
+      initialFocus === 'container'
+        ? container
+        : (preferred ?? focusable[0] ?? container);
     initial.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {

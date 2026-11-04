@@ -19,7 +19,6 @@ export function LocationBlockedCallout({
   className = "",
 }: LocationBlockedCalloutProps) {
   const isBanner = variant === "banner";
-  const sizeClass = size === "lg" ? "min-h-12 text-sm" : "";
 
   const handleRetry = () => {
     if (onRetry) void onRetry();
@@ -46,10 +45,10 @@ export function LocationBlockedCallout({
         </p>
       </div>
       <div className={cn("flex shrink-0 flex-wrap gap-2", !isBanner && "mt-3")}>
-        <button type="button" onClick={handleRetry} className={cn(controlClass("primary"), sizeClass)}>
+        <button type="button" onClick={handleRetry} className={controlClass("primary", size)}>
           Try again
         </button>
-        <button type="button" onClick={handleRefresh} className={cn(controlClass("outline"), sizeClass)}>
+        <button type="button" onClick={handleRefresh} className={controlClass("outline", size)}>
           Refresh
         </button>
       </div>

@@ -92,8 +92,9 @@ describe("AwardResultsTable", () => {
     const result = buildAwardResult(gameFixture({ stageLedger: stages }));
     render(<AwardResultsTable result={result} />);
     expect(result.ranking.map((r) => r.rank)).toEqual([1, 1, 2]);
-    // ensure table caption exists
-    expect(screen.getByText("Championship results — ranked by points")).toBeInTheDocument();
+    // one standings list for every breakpoint, with an accessible heading
+    expect(screen.getByText("Final standings — ranked by points")).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
   });
 
   it("does not tie rank 1 when winner and eliminated player both have 0 points", () => {
@@ -142,12 +143,38 @@ describe("AwardResultsTable", () => {
     render(<AwardResultsTable result={result} />);
     expect(screen.getAllByText("Winner").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("You").length).toBeGreaterThanOrEqual(1);
-    // header cells have scope col
-    const headers = screen.getAllByRole("columnheader");
-    expect(headers[0]).toHaveAttribute("scope", "col");
-    // rider cells scope row
-    const rowHeaders = screen.getAllByRole("rowheader");
-    expect(rowHeaders.length).toBeGreaterThanOrEqual(2);
+    // rows are list items in rank order
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Alice");
+    expect(items[0]).toHaveTextContent("Winner");
+  });
+
+  it("shows a letter track per rider and labels attempts as landed and missed", () => {
+    const result = buildAwardResult(
+      gameFixture({
+        winnerPlayerId: "p1",
+        players: [
+          makePlayer({ id: "p1", displayName: "Alice", seatOrder: 0, letters: "B" }),
+          makePlayer({ id: "p2", displayName: "Bob", seatOrder: 1, letters: "BLADE", status: "eliminated" }),
+        ],
+        stageLedger: [
+          makeStage({
+            id: "s1",
+            sequence: 1,
+            attempts: [
+              { playerId: "p1", result: "landed" },
+              { playerId: "p2", result: "failed" },
+            ],
+          }),
+        ],
+      }),
+    );
+    render(<AwardResultsTable result={result} />);
+    expect(screen.getByRole("img", { name: "Alice: 1 of 5 letters" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Bob: 5 of 5 letters" })).toBeInTheDocument();
+    expect(screen.getByText("Out")).toBeInTheDocument();
+    expect(screen.getByText("1 landed · 0 missed")).toBeInTheDocument();
+    expect(screen.queryByText(/W–L/)).not.toBeInTheDocument();
   });
 
   it("renders same data for each game in a 5-game batch (per-row isolation)", () => {

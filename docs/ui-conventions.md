@@ -27,8 +27,8 @@ Controls and containers are told apart by shape, never by colour.
 
 `src/components/ui/recipes.ts` is the single source for the shared class strings. Use it instead of re-typing classes.
 
-- Controls: `controlClass(tone, size)` with `primary`, `secondary`, `outline`, `onWash`, `onWashDark`, `onWire`, `onWireOutline`, `onPhoto`; `iconButtonClass`; `INPUT`, `INPUT_ON_WIRE`, `TEXTAREA`.
-- Chips, tags, tabs: `chipClass(active, surface)`, `tagClass(tone)`, `SEGMENTED_TRACK` + `segmentClass(active)`.
+- Controls: `controlClass(tone, size)` (`md` 44px, `sm` 36px, `lg` 48px for game sessions) with `primary`, `secondary`, `outline`, `onWash`, `onWashDark`, `onWire`, `onWireOutline`, `onPhoto`; `iconButtonClass`; `INPUT`, `INPUT_ON_WIRE`, `TEXTAREA`.
+- Chips, tags, tabs: `chipClass(active, surface)`, `tagClass(tone, size)` (`lg` is the 14px game-session tag), `SEGMENTED_TRACK` + `segmentClass(active)`.
 - Type: `EYEBROW` (and `EYEBROW_ON_WASH`, `EYEBROW_ON_WIRE`), `PAGE_TITLE`, `SECTION_TITLE`, `CARD_TITLE`, `META`, `LABEL`, `BODY`. Title recipes carry no colour; add it at the call site.
 - Containers: `CARD`, `CARD_FRAME`, `CARD_NESTED`, `TILE`, `EMPTY_STATE`, `PANEL_ON_WIRE`, `alertClass(tone)`.
 - Layout: `pageContainer(width)` gives `mx-auto max-w-* px-5 md:px-10` plus the default vertical rhythm.

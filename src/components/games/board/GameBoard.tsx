@@ -501,6 +501,7 @@ export function GameBoard({
           onCategoriesVote={voteCategories}
         />
         <AwardDialog
+          context="board"
           isOpen={awardOpen}
           onClose={() => {
             try {

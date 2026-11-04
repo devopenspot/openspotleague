@@ -3,10 +3,27 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { X } from "lucide-react";
 import { Overlay } from "@/components/feedback/Overlay";
 import { showToast } from "@/hooks/ui/useToast";
-import { buildAwardResult } from "@/lib/games/award-result";
-import { AwardResultsTable } from "@/components/games/award/AwardResultsTable";
+import { shareOrCopyUrl } from "@/lib/utils/share";
+import {
+  buildAwardResult,
+  ordinal,
+  type AwardResultRow,
+} from "@/lib/games/award-result";
+import {
+  AwardResultsTable,
+  attemptsLabel,
+} from "@/components/games/award/AwardResultsTable";
+import {
+  CARD_NESTED,
+  EMPTY_STATE,
+  alertClass,
+  controlClass,
+  iconButtonClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import type { GameHistoryResponse, GameState } from "@/lib/schemas/game";
 
 type Props = {
@@ -14,31 +31,81 @@ type Props = {
   onClose: () => void;
   game: GameState;
   history?: GameHistoryResponse | null;
+  /**
+   * `board`: opened on /games/:id itself — no "View board", 48px session
+   * targets. `list`: opened from a match list elsewhere.
+   */
+  context?: "board" | "list";
 };
 
-export function AwardDialog({ isOpen, onClose, game, history }: Props) {
+/** The page-title voice, one step smaller so long rider names fit the dialog. */
+const HERO_TITLE =
+  "font-display text-2xl font-bold uppercase leading-tight tracking-display text-surface sm:text-3xl";
+
+function ViewerLine({
+  row,
+  hasWinner,
+  size,
+}: {
+  row: AwardResultRow;
+  hasWinner: boolean;
+  size: "lg" | "sm";
+}) {
+  const label = row.isWinner
+    ? "You won"
+    : hasWinner
+      ? `You finished ${ordinal(row.rank)}`
+      : `You're ${ordinal(row.rank)} on points`;
+  return (
+    <p className={`${CARD_NESTED} flex flex-wrap items-center gap-x-3 gap-y-2`}>
+      <span className={tagClass(row.isWinner ? "solid" : "neutral", size)}>
+        {label}
+      </span>
+      <span className="text-sm text-on-surface">
+        <span className="font-mono font-bold tabular-nums">{row.points}</span> pts ·{" "}
+        {attemptsLabel(row)}
+      </span>
+    </p>
+  );
+}
+
+export function AwardDialog({
+  isOpen,
+  onClose,
+  game,
+  history,
+  context = "list",
+}: Props) {
   const router = useRouter();
   const result = useMemo(() => buildAwardResult(game, history ?? null), [game, history]);
+  const onBoard = context === "board";
+  const size = onBoard ? "lg" : "md";
+  // Nothing settled and nobody won: standings would be a board of zeros.
+  const isEmpty =
+    (result.totals.rounds === 0 && result.winner === null) ||
+    (result.ranking.length === 0 && result.soloRow === null);
+  const viewerRow =
+    result.variant === "multiplayer" && !isEmpty
+      ? (result.ranking.find((row) => row.isViewer) ?? null)
+      : null;
+  const canShare = Boolean(game.shareCode);
+
+  function goToBoard() {
+    onClose();
+    router.push(`/games/${game.id}`);
+  }
 
   async function handleShare() {
-    const url = typeof window !== "undefined"
-      ? `${window.location.origin}/games/${game.id}${game.shareCode ? `?share=${encodeURIComponent(game.shareCode)}` : ""}`
-      : `/games/${game.id}`;
-    const title = result.copy.headline;
-    const text = `${result.copy.badge} — ${result.disciplineSlug} · OpenSpot`;
-    try {
-      if (typeof navigator !== "undefined" && "share" in navigator) {
-        await (navigator as unknown as { share: (data: { title: string; text: string; url: string }) => Promise<void> }).share({ title, text, url });
-        return;
-      }
-      if (typeof navigator !== "undefined" && (navigator as Navigator & { clipboard?: { writeText: (t: string) => Promise<void> } }).clipboard) {
-        await (navigator as Navigator & { clipboard: { writeText: (t: string) => Promise<void> } }).clipboard.writeText(url);
-        showToast("Link copied — share your session!", "success");
-        return;
-      }
-      showToast("Share failed — link copied instead", "info");
-    } catch {
-      showToast("Share failed — link copied instead", "info");
+    const url =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/games/${game.id}${game.shareCode ? `?share=${encodeURIComponent(game.shareCode)}` : ""}`
+        : `/games/${game.id}`;
+    const outcome = await shareOrCopyUrl(url, result.copy.headline);
+    if (outcome === "copied") {
+      showToast("Link copied — share your session!", "success");
+    } else if (outcome === "failed" && !("share" in navigator)) {
+      // A dismissed native share sheet also reports "failed": stay quiet then.
+      showToast("Couldn't share — copy the link from the address bar", "info");
     }
   }
 
@@ -49,86 +116,101 @@ export function AwardDialog({ isOpen, onClose, game, history }: Props) {
       labelledBy="award-dialog-title"
       describedBy="award-dialog-subtitle"
       role="dialog"
-      containerClassName="z-[1300]"
-      panelClassName="max-w-2xl w-[min(42rem,calc(100vw-1rem))] overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest shadow-lg"
     >
-      <div className="flex flex-col">
-        <div className="relative h-40 overflow-hidden rounded-t-[16px] bg-surface-container md:h-48">
+      {/* Overlay's panel already sets width/radius defaults that `cn` cannot
+          override, so the dialog's own frame lives on this inner wrapper. */}
+      <div className="mx-auto flex max-h-[calc(100dvh-5rem)] w-full max-w-xl flex-col overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest shadow-lg">
+        <div className="relative flex min-h-48 shrink-0 flex-col justify-end bg-surface-container md:min-h-56">
           <Image
             src={result.image.src}
             alt={result.image.alt}
             fill
-            sizes="(min-width: 768px) 42rem, calc(100vw - 2rem)"
+            sizes="(min-width: 640px) 36rem, calc(100vw - 2rem)"
             unoptimized
             className="object-cover object-[center_30%]"
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-inverse-surface/45" />
-          <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-[11px] font-bold uppercase tracking-[0.05em] text-on-primary">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-on-surface/85 via-on-surface/35 to-on-surface/10"
+          />
+          <span className={`absolute left-4 top-4 ${tagClass("solid", onBoard ? "lg" : "sm")}`}>
             {result.copy.badge}
           </span>
-          <span className="absolute bottom-3 left-4 rounded-full bg-surface-container-high/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.05em] backdrop-blur">
-            {result.disciplineSlug} · {result.mode}
-          </span>
-        </div>
-
-        <div className="space-y-4 p-5 md:p-6">
-          <header className="space-y-1">
-            <h2 id="award-dialog-title" className="font-display text-xl font-bold leading-tight">
-              {result.copy.headline}
-            </h2>
-            <p id="award-dialog-subtitle" className="text-sm text-on-surface-variant">
-              {result.copy.sub}
-            </p>
-          </header>
-
-          <AwardResultsTable result={result} />
-
-          {history?.nextRoundCursor && (
-            <p className="rounded-[12px] border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-              Showing 50 of 50+ rounds —{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  router.push(`/games/${game.id}`);
-                }}
-                className="font-semibold underline underline-offset-4"
-              >
-                view full board
-              </button>
-            </p>
-          )}
-
-          {result.ranking.length === 0 && result.soloRow === null && !history?.nextRoundCursor && (
-            <p className="rounded-[16px] border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant">
-              No rounds were settled — the crew headed out before a line was set.
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-outline-variant bg-surface-container-lowest p-4 md:p-5">
           <button
             type="button"
             onClick={onClose}
-            className="min-h-11 rounded-full border border-outline-variant bg-surface-container-lowest px-5 font-display text-xs font-bold uppercase tracking-[0.05em]"
+            aria-label="Close results"
+            className={`absolute right-3 top-3 ${iconButtonClass("onPhoto", size)}`}
           >
-            Close
+            <X size={18} aria-hidden="true" />
           </button>
+          <header className="relative space-y-1 px-4 pb-4 pt-20 sm:px-5 sm:pb-5">
+            <h2 id="award-dialog-title" className={HERO_TITLE}>
+              {result.copy.headline}
+            </h2>
+            <p id="award-dialog-subtitle" className="text-sm text-surface/85 sm:text-base">
+              {result.copy.sub}
+            </p>
+          </header>
+        </div>
+
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
+          {viewerRow && (
+            <ViewerLine
+              row={viewerRow}
+              hasWinner={result.winner !== null}
+              size={onBoard ? "lg" : "sm"}
+            />
+          )}
+
+          {!isEmpty && <AwardResultsTable result={result} />}
+
+          {history?.nextRoundCursor && (
+            <p className={`${alertClass()} text-sm`}>
+              Showing the first 50 rounds.{" "}
+              {!onBoard && (
+                <button
+                  type="button"
+                  onClick={goToBoard}
+                  className="font-semibold underline underline-offset-4"
+                >
+                  View the full board
+                </button>
+              )}
+            </p>
+          )}
+
+          {isEmpty && (
+            <p className={`${EMPTY_STATE} py-6 text-sm text-on-surface-variant`}>
+              No standings to show for this game.
+            </p>
+          )}
+        </div>
+
+        <div className="flex shrink-0 flex-wrap gap-3 border-t border-outline-variant p-4 sm:justify-end sm:p-5">
           <button
             type="button"
-            onClick={() => {
-              onClose();
-              router.push(`/games/${game.id}`);
-            }}
-            className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-bold uppercase tracking-[0.05em]"
+            onClick={onClose}
+            data-autofocus={canShare ? undefined : true}
+            className={`${controlClass(canShare ? "outline" : "primary", size)} grow sm:grow-0`}
           >
-            View board
+            Done
           </button>
-          {game.shareCode && (
+          {!onBoard && (
+            <button
+              type="button"
+              onClick={goToBoard}
+              className={`${controlClass("outline", size)} grow sm:grow-0`}
+            >
+              View board
+            </button>
+          )}
+          {canShare && (
             <button
               type="button"
               onClick={() => void handleShare()}
-              className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary"
+              data-autofocus
+              className={`${controlClass("primary", size)} grow sm:grow-0`}
             >
               Share
             </button>

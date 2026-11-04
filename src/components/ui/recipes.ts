@@ -27,7 +27,8 @@ export type ControlTone =
   | "onWireOutline"
   | "onPhoto";
 
-export type ControlSize = "md" | "sm";
+/** `lg` is the 48px outdoor-session size (DESIGN.md, inside /games/:id). */
+export type ControlSize = "md" | "sm" | "lg";
 
 const CONTROL_SHAPE =
   "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control border font-display font-bold uppercase tracking-pill transition-[background-color,border-color,color,opacity,transform] duration-150 ease-out active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60";
@@ -35,11 +36,13 @@ const CONTROL_SHAPE =
 const CONTROL_SIZE: Record<ControlSize, string> = {
   md: "min-h-control px-5 text-xs",
   sm: "min-h-control-sm px-4 text-[11px]",
+  lg: "min-h-12 px-6 text-sm",
 };
 
 const ICON_SIZE: Record<ControlSize, string> = {
   md: "h-control w-control",
   sm: "h-control-sm w-control-sm",
+  lg: "h-12 w-12",
 };
 
 /** Colour per surface. Dark surfaces carry their own white focus outline. */
@@ -122,9 +125,18 @@ const TAG_TONE: Record<TagTone, string> = {
   onPhoto: "border-white/15 bg-on-surface/55 text-surface backdrop-blur-md",
 };
 
+const TAG_SIZE = {
+  sm: "px-2.5 py-1 text-[10px]",
+  /** 14px for outdoor game sessions, where the 10-12px label rule does not apply. */
+  lg: "px-3 py-1.5 text-sm",
+} as const;
+
 /** Non-interactive label (status, role, count, scope). */
-export function tagClass(tone: TagTone = "neutral"): string {
-  return `inline-flex items-center gap-1 whitespace-nowrap rounded-control border px-2.5 py-1 font-display text-[10px] font-bold uppercase leading-none tracking-label ${TAG_TONE[tone]}`;
+export function tagClass(
+  tone: TagTone = "neutral",
+  size: keyof typeof TAG_SIZE = "sm",
+): string {
+  return `inline-flex items-center gap-1 whitespace-nowrap rounded-control border font-display font-bold uppercase leading-none tracking-label ${TAG_SIZE[size]} ${TAG_TONE[tone]}`;
 }
 
 /** Segmented tabs: a full-radius track with an inverted active pill (same idea as the nav). */

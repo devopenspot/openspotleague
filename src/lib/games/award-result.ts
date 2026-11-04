@@ -25,6 +25,8 @@ export type AwardResult = {
   mode: "training" | "challenge";
   variant: "multiplayer" | "solo";
   disciplineSlug: string;
+  /** Elimination word for multiplayer games (letter tracks); null for solo. */
+  eliminationWord: string | null;
   status: string;
   winner: AwardResultRow | null;
   ranking: readonly AwardResultRow[];
@@ -39,6 +41,21 @@ export type AwardResult = {
   image: { src: "/challenges.jpg" | "/trainings.jpg"; alt: string };
   source: "live" | "history";
 };
+
+const ORDINAL_SUFFIX: Record<Intl.LDMLPluralRule, string> = {
+  zero: "th",
+  one: "st",
+  two: "nd",
+  few: "rd",
+  many: "th",
+  other: "th",
+};
+const ordinalRules = new Intl.PluralRules("en", { type: "ordinal" });
+
+/** 1 → "1st", 2 → "2nd", 11 → "11th". */
+export function ordinal(rank: number): string {
+  return `${rank}${ORDINAL_SUFFIX[ordinalRules.select(rank)]}`;
+}
 
 function resolveWinnerId(game: GameState): string | null {
   if (game.winnerPlayerId) return game.winnerPlayerId;
@@ -181,13 +198,13 @@ function buildCopy(
     if (game.mode === "challenge") {
       return {
         headline: `${winner.displayName} takes ${game.eliminationWord}!`,
-        sub: `${winner.displayName} cleared the line \u2014 ${winner.points} pts \u00B7 ${winner.landed} tricks landed`,
+        sub: `Cleared the line \u2014 ${winner.points} pts \u00B7 ${winner.landed} landed`,
         badge: `Champion \u2014 ${disciplineLabel}`,
       };
     }
     return {
       headline: `${winner.displayName} on top!`,
-      sub: `Crew cleared \u2014 ${winner.points} pts`,
+      sub: `Top of the crew \u2014 ${winner.points} pts \u00B7 ${winner.landed} landed`,
       badge: `Top rider \u2014 ${disciplineLabel}`,
     };
   }
@@ -246,6 +263,7 @@ export function buildAwardResult(
     mode: game.mode,
     variant: game.trainingVariant,
     disciplineSlug: game.disciplineSlug,
+    eliminationWord: isSolo || !game.eliminationWord ? null : game.eliminationWord,
     status: game.status,
     winner,
     ranking: ranked,

@@ -1,9 +1,14 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { GameState, GameStage } from "@/lib/schemas/game";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
+}));
+
+const showToast = vi.fn();
+vi.mock("@/hooks/ui/useToast", () => ({
+  showToast: (...args: unknown[]) => showToast(...args),
 }));
 
 import { AwardDialog } from "@/components/games/award/AwardDialog";
@@ -93,6 +98,11 @@ function gameFixture(overrides: Partial<GameState> = {}): GameState {
 }
 
 describe("AwardDialog", () => {
+  afterEach(() => {
+    showToast.mockClear();
+    Reflect.deleteProperty(navigator, "share");
+  });
+
   it("renders challenge→/challenges.jpg and training→/trainings.jpg by mode", () => {
     const challenge = gameFixture({ mode: "challenge" });
     const training = gameFixture({ mode: "training", trainingVariant: "multiplayer", winnerPlayerId: "p1" });
@@ -145,6 +155,49 @@ describe("AwardDialog", () => {
     });
     render(<AwardDialog isOpen game={solo} onClose={vi.fn()} />);
     expect(screen.getByText("Nice session!")).toBeInTheDocument();
+  });
+
+  it("tells the viewer where they finished", () => {
+    render(<AwardDialog isOpen game={gameFixture({ viewerPlayerId: "p2" })} onClose={vi.fn()} />);
+    expect(screen.getByText("You finished 2nd")).toBeInTheDocument();
+  });
+
+  it("congratulates a winning viewer", () => {
+    render(<AwardDialog isOpen game={gameFixture({ viewerPlayerId: "p1" })} onClose={vi.fn()} />);
+    expect(screen.getByText("You won")).toBeInTheDocument();
+  });
+
+  it("shows an empty state, not a board of zeros, when nothing was settled", () => {
+    const empty = gameFixture({ status: "cancelled", winnerPlayerId: null, viewerPlayerId: "p1", stageLedger: [] });
+    render(<AwardDialog isOpen game={empty} onClose={vi.fn()} />);
+    expect(screen.getByText("No standings to show for this game.")).toBeInTheDocument();
+    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
+    expect(screen.queryByText(/You finished/)).not.toBeInTheDocument();
+  });
+
+  it("on the board: no View board, Share is focused first", () => {
+    render(<AwardDialog isOpen context="board" game={gameFixture()} onClose={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "View board" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Share" })).toHaveAttribute("data-autofocus");
+  });
+
+  it("the top close button closes the dialog", () => {
+    const onClose = vi.fn();
+    render(<AwardDialog isOpen game={gameFixture()} onClose={onClose} />);
+    fireEvent.click(screen.getByRole("button", { name: "Close results" }));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("stays quiet when the native share sheet is dismissed", async () => {
+    const share = vi.fn().mockRejectedValue(new DOMException("cancelled", "AbortError"));
+    Object.defineProperty(navigator, "share", { value: share, configurable: true });
+    render(<AwardDialog isOpen game={gameFixture()} onClose={vi.fn()} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Share" }));
+    });
+    expect(share).toHaveBeenCalledOnce();
+    expect(showToast).not.toHaveBeenCalled();
   });
 
   it("closes the dialog when clicking View board", () => {

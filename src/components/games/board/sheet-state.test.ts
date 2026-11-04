@@ -344,7 +344,7 @@ describe("deriveGameSheetView", () => {
         ...game,
         status: "complete",
         currentRound: null,
-        stageLedger: [{ id: "round-1" }],
+        stageLedger: [{ id: "round-1", scores: [], attempts: [] }],
       } as unknown as GameState,
       EMPTY_CAPABILITIES,
       context,

@@ -225,7 +225,7 @@ motion:
 components:
   controls:
     source: "controlClass(tone, size), iconButtonClass, INPUT, chipClass, tagClass, SEGMENTED_TRACK/segmentClass in src/components/ui/recipes.ts"
-    shape: "rounded-control (full), 1px border, min-h-control (44px; sm 36px), px-5, font-display text-xs bold uppercase tracking-pill, active:translate-y-px"
+    shape: "rounded-control (full), 1px border, min-h-control (44px; sm 36px; lg 48px for /games/:id sessions), px-5, font-display text-xs bold uppercase tracking-pill, active:translate-y-px"
     tones:
       primary: "border-primary bg-primary text-on-primary — the one main action per surface"
       secondary: "border-outline-variant bg-surface-container-high text-on-surface"
@@ -237,7 +237,7 @@ components:
       onPhoto: "scrim pill: border-white/15 bg-on-surface/55 text-surface backdrop-blur-md"
     inputs: "INPUT matches the button: rounded-control, min-h-control, 1px outline-variant border, text-base sm:text-sm. INPUT_ON_WIRE for dark rails. TEXTAREA is a container (rounded-container)."
     chips: "chipClass(active, 'light'|'wire') — min-h-control-sm, text-xs bold tracking-label; active is solid primary (light) or on-wire (wire)"
-    tags: "tagClass(tone) — non-interactive full-radius labels, 10px bold tracking-label: neutral, outline, solid, onWire, onPhoto"
+    tags: "tagClass(tone, size) — non-interactive full-radius labels, 10px bold tracking-label (size lg is 14px for /games/:id sessions): neutral, outline, solid, onWire, onPhoto"
     segments: "SEGMENTED_TRACK + segmentClass(active): a rounded-control track (p-1) with an inverted active pill — the light-surface twin of the nav pill track"
     rule: "Never place a primary-solid control on a dark panel (bg-on-surface) — use onWire there. cn does not merge classes: pick a tone, never override radius/height/colour at the call site."
   cards:
@@ -351,7 +351,7 @@ guidelines:
   - "On wire surfaces use wire-* tokens, never white/* literals. On photos use scrim-pills. The two never mix."
   - "Overlays: pick top-sheet, side-drawer, or game-sheet from components.overlays — never a fourth pattern. Nav is the pill track (components.nav); never restyle NavLink from a parent."
   - "Keep type high-contrast (Plus Jakarta Sans bold/600, tight tracking) for outdoor glare. Use the typography.recipes; mono only for the <Eyebrow> stamp."
-  - "Outdoor session rule — inside /games/:id on phones: text at least 14px (the 10-12px label convention does not apply here), controls at least 48px, gaps at least 12px, result buttons 72px with 18px bold labels. Landed is solid primary with a check, Failed is white with a 3px on-surface border and an X: they differ by fill, shape, and icon, never by hue alone. Status is text plus icon, never colour alone. No CRT scanline."
+  - "Outdoor session rule — inside /games/:id on phones: text at least 14px (the 10-12px label convention does not apply here), controls at least 48px, gaps at least 12px, result buttons 72px with 18px bold labels. Use controlClass(tone, 'lg') and tagClass(tone, 'lg') there. Landed is solid primary with a check, Failed is white with a 3px on-surface border and an X: they differ by fill, shape, and icon, never by hue alone. Status is text plus icon, never colour alone. No CRT scanline."
   - "Shadows are the exception, not the rule — Panel chassis + Marquee hover are the only 8-24px + shadow sits. Else flat border."
   - "New pages/sections must declare their pages.* entry first — if not listed, default to surface monochrome."
 open-follow-ups:

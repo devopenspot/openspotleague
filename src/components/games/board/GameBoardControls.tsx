@@ -144,6 +144,7 @@ export function GameBoardControls({
     terminalLabel,
     terminalTitle,
     terminalDescription,
+    hasResults,
     isWaitingForOthers,
     pendingCount,
   } = deriveHeaderState(game, capabilities);
@@ -370,7 +371,7 @@ export function GameBoardControls({
               label={terminalLabel}
               title={terminalTitle}
               description={terminalDescription}
-              showResultsLink={(game.stageLedger?.length ?? 0) > 0}
+              showResultsLink={hasResults}
               onViewResults={onViewResults}
               onBackToChallenges={onBackToChallenges}
               showRunAgain={isComplete}

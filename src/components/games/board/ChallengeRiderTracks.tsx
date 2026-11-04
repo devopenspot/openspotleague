@@ -1,6 +1,7 @@
 import { Flag, Trophy } from "lucide-react";
 import type { GameState } from "@/lib/schemas/game";
 import { totalLedgerPoints } from "@/lib/games/challenge-board-model";
+import { LetterTrack } from "@/components/games/shared/LetterTrack";
 
 export function ChallengeRiderTracksContent({
   game,
@@ -94,22 +95,12 @@ export function ChallengeRiderTracksContent({
                     Free Ride — Keep Going Until You Finish Your Run
                   </p>
                 ) : (
-                  <div
-                    className="mt-2 grid gap-1"
-                    style={{
-                      gridTemplateColumns: `repeat(${game.wordLength}, minmax(0, 1fr))`,
-                    }}
-                    aria-label={`${player.displayName} elimination progress`}
-                  >
-                    {Array.from(game.eliminationWord).map((letter, index) => (
-                      <span
-                        key={`${player.id}-${letter}-${index}`}
-                        className={`flex h-7 items-center justify-center rounded-[4px] border font-display text-sm font-bold ${player.letters[index] ? "border-on-surface bg-on-surface text-surface" : "border-outline-variant bg-surface-container-high text-secondary"}`}
-                      >
-                        {player.letters[index] ?? "-"}
-                      </span>
-                    ))}
-                  </div>
+                  <LetterTrack
+                    word={game.eliminationWord}
+                    letters={player.letters}
+                    label={`${player.displayName} elimination progress`}
+                    className="mt-2"
+                  />
                 )}
 
                 {game.mode === "challenge" ? (
