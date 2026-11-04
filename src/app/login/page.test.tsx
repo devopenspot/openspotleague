@@ -72,4 +72,17 @@ describe("LoginPage", () => {
       ),
     );
   });
+  it("shows the OAuth error next to the sign-in actions", () => {
+    navigation.params = new URLSearchParams("error=oauth");
+    render(<LoginPage />);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Google sign-in was cancelled or failed. Try again.",
+    );
+    expect(screen.getByRole("button", { name: /Back to directory/i })).toBeInTheDocument();
+  });
+
+  it("shows no alert without an error", () => {
+    render(<LoginPage />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
 });

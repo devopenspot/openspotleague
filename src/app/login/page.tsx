@@ -7,8 +7,7 @@ import { useTransition } from "react";
 import { showToast } from "@/hooks/ui/useToast";
 import {
   BODY,
-  CARD_FRAME,
-  META,
+  EYEBROW,
   PAGE_TITLE,
   alertClass,
   controlClass,
@@ -67,22 +66,28 @@ export default function LoginPage() {
   const busy = pending || loading;
 
   return (
-    <div className={`${pageContainer("3xl", { padY: false })} py-10 md:py-16`}>
+    <div className={`${pageContainer("3xl", { padY: false })} pt-8 pb-10 sm:py-16`}>
+      {/* Phones read the page on the shared gutter; the card frame starts at
+          `sm`. Same values as CARD_FRAME — `cn` cannot merge a responsive
+          variant of the recipe, so it is spelled out here. */}
       <section
         id="login-tab"
         role="tabpanel"
         aria-labelledby="nav-btn-login"
-        className={`mx-auto max-w-md animate-fade-in px-5 py-8 sm:px-8 sm:py-10 ${CARD_FRAME}`}
+        className="mx-auto max-w-md animate-fade-in sm:rounded-container sm:border sm:border-outline-variant sm:bg-surface-container-lowest sm:px-8 sm:py-10"
       >
-        <h1 className={`${PAGE_TITLE} text-on-surface`}>Sign in</h1>
-        <p className={`mt-4 ${BODY}`}>
-          Continue with your Google account. We only read your name, email, and
-          profile photo — nothing else.
-        </p>
-        <p className={`mt-3 ${BODY}`}>
-          Signing in lets you save spots and access them across sessions, manage
-          your rider account, and join Open Spot challenges.
-        </p>
+        <div className="flex flex-col gap-3">
+          <p className={`text-balance ${EYEBROW}`}>One account. One click. You&apos;re in.</p>
+          <h1 className={`${PAGE_TITLE} text-on-surface`}>Sign in</h1>
+          <p className={BODY}>
+            Continue with your Google account. We only read your name, email,
+            and profile photo — nothing else.
+          </p>
+          <p className={BODY}>
+            Signing in lets you save spots and access them across sessions,
+            manage your rider account, and join Open Spot challenges.
+          </p>
+        </div>
 
         {errorMessage ? (
           <div
@@ -94,15 +99,24 @@ export default function LoginPage() {
           </div>
         ) : null}
 
-        <button
-          type="button"
-          onClick={handleGoogleSignIn}
-          disabled={busy}
-          className={`mt-8 w-full ${controlClass("primary")}`}
-        >
-          <GoogleMark />
-          <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
-        </button>
+        <div className="mt-8 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={busy}
+            className={`w-full ${controlClass("primary", "lg")}`}
+          >
+            <GoogleMark />
+            <span>{busy ? "Opening Google…" : "Continue with Google"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className={`w-full sm:w-auto sm:self-start ${controlClass("outline", "lg")}`}
+          >
+            Back to directory
+          </button>
+        </div>
 
         <p className="mt-4 text-center text-xs leading-relaxed text-on-surface-variant">
           By continuing, you agree to our{" "}
@@ -121,18 +135,6 @@ export default function LoginPage() {
           </Link>
           .
         </p>
-
-        <p className={`mt-3 text-center ${META}`}>
-          One account. One click. You're in.
-        </p>
-
-        <button
-          type="button"
-          onClick={() => router.push("/")}
-          className={`mt-8 ${controlClass("secondary")}`}
-        >
-          Back to directory
-        </button>
       </section>
     </div>
   );
@@ -143,8 +145,8 @@ function GoogleMark() {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      width="16"
-      height="16"
+      width="18"
+      height="18"
       className="shrink-0"
     >
       <path
