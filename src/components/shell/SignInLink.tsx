@@ -6,12 +6,14 @@ import { useUser } from "@/lib/contexts/user-context";
 import { cn } from "@/lib/utils/cn";
 import { controlClass } from "@/components/ui/recipes";
 
-type Variant = "header" | "drawer" | "app-header" | "app-drawer";
+type Variant = "header" | "drawer" | "dialog" | "app-header" | "app-drawer";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   // Light surfaces.
   header: controlClass("outline", "sm"),
   drawer: `${controlClass("primary")} mt-1.5 w-full`,
+  // Footer of a light dialog (OnboardingDialog), under a line of copy.
+  dialog: `${controlClass("primary")} mt-3 w-full`,
   // The black shell chrome: header bar and the mobile drawer footer.
   "app-header": controlClass("onWire"),
   "app-drawer": `${controlClass("onWire")} w-full`,

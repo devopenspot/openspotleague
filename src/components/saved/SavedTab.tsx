@@ -13,6 +13,16 @@ import { useUser } from "@/lib/contexts/user-context";
 import { ROUTES } from "@/lib/navigation/nav";
 import { SavedSpotCard } from "@/components/spots/card/SpotCard";
 import Header from "@/components/saved/Header";
+import {
+  BODY,
+  EMPTY_STATE,
+  SECTION_TITLE,
+  SEGMENTED_TRACK,
+  controlClass,
+  pageContainer,
+  segmentClass,
+  tagClass,
+} from "@/components/ui/recipes";
 
 type Filter = "created" | "saved" | "verified";
 
@@ -75,15 +85,15 @@ export default function SavedTab() {
       id="saved-tab"
       role="tabpanel"
       aria-labelledby="nav-btn-saved"
-      className="space-y-6 py-6 animate-fade-in sm:py-8"
+      className={`space-y-6 animate-fade-in ${pageContainer("6xl")}`}
     >
       <Header />
 
-      <div className="flex flex-wrap items-center gap-3 px-5 md:px-10">
+      <div className="flex flex-wrap items-center gap-3">
         <div
           role="tablist"
           aria-label="Saved collections"
-          className="inline-flex gap-2 rounded-full bg-surface-container p-1 border border-outline-variant"
+          className={`w-full sm:w-auto ${SEGMENTED_TRACK}`}
         >
           {(["created", "saved", "verified"] as Filter[]).map((f) => (
             <button
@@ -92,11 +102,11 @@ export default function SavedTab() {
               aria-selected={filter === f}
               aria-controls={`panel-${f}`}
               onClick={() => setFilter(f)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.05em] transition-colors ${filter === f ? "bg-primary text-on-primary" : "text-on-surface-variant hover:text-on-surface"}`}
+              className={segmentClass(filter === f)}
             >
               {f}{" "}
               <span
-                className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] ${filter === f ? "bg-on-primary/20 text-on-primary" : "bg-surface-container-high text-on-surface-variant"}`}
+                className={`tabular-nums ${filter === f ? "text-on-primary/70" : "text-secondary"}`}
               >
                 {counts[f]}
               </span>
@@ -107,7 +117,7 @@ export default function SavedTab() {
           href={ROUTES.spotsNew}
           data-testid="create-spot-saved"
           aria-label="Create new spot"
-          className="inline-flex items-center gap-1.5 rounded-full border border-outline-variant bg-surface px-4 py-2 text-xs font-semibold uppercase tracking-wide hover:bg-surface-container-high focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:hidden"
+          className={`md:hidden ${controlClass("outline", "sm")}`}
         >
           <Plus size={12} aria-hidden="true" />
           Spot
@@ -119,9 +129,9 @@ export default function SavedTab() {
           id={`panel-${filter}`}
           role="tabpanel"
           aria-labelledby={`tab-${filter}`}
-          className="mx-5 mt-2 flex max-w-lg flex-col items-center justify-center rounded-[16px] border border-outline-variant bg-surface-container-lowest p-6 text-center sm:mx-auto sm:p-8"
+          className={`mx-auto mt-2 flex max-w-lg flex-col items-center justify-center ${EMPTY_STATE}`}
         >
-          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[16px] border border-outline-variant bg-surface-container-high text-secondary">
+          <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-card border border-outline-variant bg-surface-container-high text-secondary">
             {filter === "created" ? (
               <Plus size={20} aria-hidden />
             ) : filter === "verified" ? (
@@ -130,18 +140,16 @@ export default function SavedTab() {
               <Heart size={20} aria-hidden />
             )}
           </div>
-          <h2 className="font-display text-xl font-bold uppercase leading-[1.4] tracking-[-0.02em] text-on-surface">
+          <h2 className={`${SECTION_TITLE} text-on-surface`}>
             {emptyForFilter.title}
           </h2>
-          <p className="mt-3 max-w-sm text-base leading-7 text-on-surface-variant">
-            {emptyForFilter.desc}
-          </p>
+          <p className={`mt-3 max-w-sm ${BODY}`}>{emptyForFilter.desc}</p>
           {filter === "created" ? (
             <Link
               href={ROUTES.spotsNew}
               data-testid="create-spot-saved-empty"
               aria-label="Create new spot"
-              className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-[9999px] border border-primary bg-primary px-6 py-3 font-sans text-xs font-semibold tracking-[0.05em] text-on-primary uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 md:hidden"
+              className={`mt-7 md:hidden ${controlClass("primary")}`}
             >
               <Plus size={14} aria-hidden="true" /> Spot
             </Link>
@@ -149,7 +157,7 @@ export default function SavedTab() {
             <button
               type="button"
               onClick={() => router.push("/")}
-              className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-[9999px] border border-primary bg-primary px-6 py-3 font-sans text-xs font-semibold tracking-[0.05em] text-on-primary uppercase"
+              className={`mt-7 ${controlClass("primary")}`}
             >
               <Compass size={14} aria-hidden /> Explore
             </button>
@@ -159,7 +167,7 @@ export default function SavedTab() {
         <div
           id={`panel-${filter}`}
           role="tabpanel"
-          className="grid grid-cols-1 gap-6 px-5 sm:grid-cols-2 lg:grid-cols-3 md:px-10"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {activeItems.map((spot) => {
             const isCommunity =
@@ -171,7 +179,7 @@ export default function SavedTab() {
               <div key={spot.id} className="relative">
                 {isCommunity || isPersonal ? (
                   <span
-                    className={`absolute left-3 top-3 z-20 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest border ${isCommunity ? "bg-primary text-on-primary border-primary" : "bg-amber-50 text-amber-900 border-amber-200"}`}
+                    className={`absolute left-3 top-3 z-20 ${tagClass(isCommunity ? "solid" : "onPhoto")}`}
                   >
                     {isCommunity ? "Community" : "Private"}
                   </span>
@@ -187,7 +195,6 @@ export default function SavedTab() {
                   onOpen={openSpot}
                   onToggleSave={toggleSaved}
                   onToggleVerify={toggleVerified}
-                  className="!rounded-[16px] !bg-surface-container-lowest [&_button]:rounded-[16px] [&_a]:rounded-[16px] [&_[aria-pressed=true]]:border-primary [&_[aria-pressed=true]]:bg-primary [&_[aria-pressed=true]]:text-on-primary"
                 />
               </div>
             );
