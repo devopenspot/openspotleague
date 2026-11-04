@@ -23,10 +23,10 @@ function CardImage({ item }: { item: TvMarqueeItem }) {
           backgroundSize: "14px 14px",
         }}
       >
-        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-wire-border-strong bg-wire-border-strong text-on-wire shadow-sm">
+        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-wire-border-strong bg-wire-border-strong text-on-wire">
           <Tv size={14} aria-hidden="true" />
         </span>
-        <span className="font-display text-[9px] font-bold uppercase tracking-[0.08em] leading-none text-wire-muted">
+        <span className="font-display text-[9px] font-bold uppercase tracking-pill leading-none text-wire-muted">
           TV
         </span>
       </div>
@@ -73,16 +73,16 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
     >
       <div
         className={cn(
-          "relative aspect-video w-full overflow-hidden rounded-md bg-wire-border transition-[box-shadow,transform] duration-150 ease-out group-active/card:scale-[0.99] group-focus-visible/card:ring-2 group-focus-visible/card:ring-white group-focus-visible/card:ring-offset-2 group-focus-visible/card:ring-offset-wire",
+          "relative aspect-video w-full overflow-hidden rounded-inner bg-wire-border transition-[box-shadow,transform] duration-150 ease-out group-active/card:scale-[0.99] group-focus-visible/card:ring-2 group-focus-visible/card:ring-white group-focus-visible/card:ring-offset-2 group-focus-visible/card:ring-offset-wire",
           active && "ring-2 ring-on-wire",
         )}
       >
         <CardImage item={item} />
         <span
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-on-surface/45 via-transparent to-transparent"
         />
-        <span className="absolute inline-flex items-center rounded-bl-0 rounded-br bg-white px-1.5 py-[3px] font-display text-[10px] font-bold uppercase leading-none tracking-wide text-black">
+        <span className="absolute left-2 top-2 inline-flex items-center rounded-control bg-on-wire px-2 py-1 font-display text-[10px] font-bold uppercase leading-none tracking-label text-wire">
           <span className="truncate max-w-[14ch]">
             {item.isNew ? "New" : item.disciplineSlug}
           </span>
@@ -102,10 +102,10 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
       </div>
 
       <div className="flex min-w-0 flex-col gap-0.5 px-0.5">
-        <p className="line-clamp-2 text-[13px] sm:text-sm font-medium leading-snug text-white/90 transition-colors group-hover/card:text-white">
+        <p className="line-clamp-2 text-sm font-semibold leading-snug text-on-wire">
           {item.title}
         </p>
-        <p className="truncate text-xs text-white/50">
+        <p className="truncate text-xs text-wire-muted">
           {item.isNew ? `${item.disciplineLabel} · ${item.meta}` : item.meta}
         </p>
       </div>

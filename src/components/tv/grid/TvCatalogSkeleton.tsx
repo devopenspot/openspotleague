@@ -30,7 +30,7 @@ export function TvCardSkeleton({ fluid = false }: { fluid?: boolean }) {
         fluid ? "w-full" : "w-[240px] sm:w-[270px]",
       )}
     >
-      <div className={cn("aspect-video w-full rounded-md", BLOCK)} />
+      <div className={cn("aspect-video w-full rounded-inner", BLOCK)} />
       {/* Two title lines: nearly every row has one, so row height holds. */}
       <div className="flex flex-col gap-0.5 px-0.5">
         <div>
@@ -63,7 +63,7 @@ export function TvQueueItemSkeleton() {
     <div
       role="status"
       aria-label="Loading more videos…"
-      className="w-auto min-w-52 max-w-60 shrink-0 snap-start overflow-hidden rounded-[10px] border border-wire-border landscape:w-20"
+      className="w-auto min-w-52 max-w-60 shrink-0 snap-start overflow-hidden rounded-card border border-wire-border landscape:w-20"
     >
       <span className={cn("block aspect-video w-full", BLOCK)} />
       <span className="block px-1.5 py-1 landscape:hidden">
@@ -84,7 +84,7 @@ export function TvControlsSkeleton() {
           <div
             key={i}
             className={cn(
-              "h-[38px] shrink-0 rounded-full sm:h-10",
+              "h-control-sm shrink-0 rounded-control",
               BLOCK,
               width,
             )}
@@ -92,9 +92,9 @@ export function TvControlsSkeleton() {
         ))}
       </div>
       <div className="flex items-center gap-2 py-1 sm:gap-2.5">
-        <div className={cn("h-10 min-w-0 flex-1 rounded-full", BLOCK)} />
-        <div className={cn("h-10 w-10 shrink-0 rounded-full sm:w-40", BLOCK)} />
-        <div className={cn("h-10 w-10 shrink-0 rounded-full sm:w-28", BLOCK)} />
+        <div className={cn("h-control min-w-0 flex-1 rounded-control", BLOCK)} />
+        <div className={cn("h-control w-control shrink-0 rounded-control sm:w-40", BLOCK)} />
+        <div className={cn("h-control w-control shrink-0 rounded-control sm:w-28", BLOCK)} />
       </div>
     </div>
   );
@@ -107,7 +107,7 @@ export function TvCatalogSkeleton() {
       role="status"
       aria-label="Loading TV"
       aria-busy="true"
-      className="mb-30 mt-6 min-w-0 space-y-2 overflow-x-hidden px-3 sm:space-y-4"
+      className="mb-30 min-w-0 space-y-2 overflow-x-hidden px-5 pt-6 sm:space-y-4 md:px-10 md:pt-10"
     >
       <TvControlsSkeleton />
       <div className="space-y-2 sm:space-y-4">

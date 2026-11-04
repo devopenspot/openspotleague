@@ -17,9 +17,9 @@ interface TvCategoryPillsProps {
 
 function pillClassName(active: boolean): string {
   return cn(
-    "inline-flex h-8 sm:h-7.5 shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 sm:px-2.5 font-display text-[11px] sm:text-[10px] font-bold uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 touch-manipulation landscape:h-6.5 landscape:px-2.5 landscape:text-[9.5px]",
+    "inline-flex h-8 sm:h-7.5 shrink-0 items-center gap-1 whitespace-nowrap rounded-full border px-3 sm:px-2.5 font-display text-[11px] sm:text-[10px] font-bold uppercase tracking-label transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 touch-manipulation landscape:h-6.5 landscape:px-2.5 landscape:text-[9.5px]",
     active
-      ? "border-on-wire bg-on-wire text-black"
+      ? "border-on-wire bg-on-wire text-wire"
       : "border-wire-border-strong bg-wire-border text-on-wire hover:bg-wire-border-strong",
   );
 }

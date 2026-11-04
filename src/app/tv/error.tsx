@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Tv } from "lucide-react";
+import { controlClass, PANEL_ON_WIRE } from "@/components/ui/recipes";
 
 export default function TvError({
   error,
@@ -28,8 +29,8 @@ export default function TvError({
   }, [error]);
 
   return (
-    <div className="flex min-h-[60dvh] flex-col items-center justify-center px-4 py-12 text-center text-on-wire">
-      <div className="rounded-[16px] border border-wire-border bg-tv-overlay p-6 sm:p-8 max-w-md w-full">
+    <div className="flex min-h-[60dvh] flex-col items-center justify-center px-5 py-12 text-center text-on-wire">
+      <div className={`${PANEL_ON_WIRE} w-full max-w-md p-6 sm:p-8`}>
         <Tv size={32} className="mx-auto text-wire-muted" aria-hidden="true" />
         <p className="mt-3 text-sm font-semibold text-on-wire">
           TV didn&apos;t load
@@ -41,14 +42,14 @@ export default function TvError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-full bg-on-wire px-5 py-2 font-display text-xs font-bold uppercase tracking-wider text-black transition-colors hover:bg-on-wire/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+            className={controlClass("onWire")}
           >
             Try again
           </button>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-full border border-wire-border-strong bg-transparent px-5 py-2 font-display text-xs font-bold uppercase tracking-wider text-on-wire transition-colors hover:bg-wire-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+            className={controlClass("onWireOutline")}
           >
             Reload
           </button>

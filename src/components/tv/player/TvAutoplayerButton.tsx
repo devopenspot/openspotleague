@@ -40,10 +40,10 @@ export function TvAutoplayerButton({
           : `Shuffle ${queueLabel}`
       }
       title={disabledReason ?? `Shuffle ${queueLabel}`}
-      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full font-display text-sm font-semibold shadow-sm transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-4 ${
+      className={`inline-flex h-control w-control shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control border font-display text-xs font-bold uppercase tracking-pill transition-[background-color,transform] duration-150 ease-out active:translate-y-px focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-5 ${
         count === 0
-          ? "border border-wire-border-strong bg-transparent text-wire-muted"
-          : "bg-on-wire text-black hover:bg-on-wire/90"
+          ? "border-wire-border-strong bg-transparent text-wire-muted"
+          : "border-on-wire bg-on-wire text-wire hover:bg-on-wire/90"
       }`}
     >
       <Shuffle size={16} aria-hidden="true" />

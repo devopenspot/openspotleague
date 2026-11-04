@@ -12,7 +12,7 @@ function buttonClassName(active: boolean): string {
   return cn(
     "inline-flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-full border px-3 font-display text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 touch-manipulation sm:min-w-28",
     active
-      ? "border-on-wire bg-on-wire text-black"
+      ? "border-on-wire bg-on-wire text-wire"
       : "border-wire-border-strong bg-wire-border text-on-wire hover:bg-wire-border-strong",
   );
 }

@@ -8,6 +8,7 @@ import {
 } from "@/components/tv/marquee/tv-marquee-data";
 import { TvMarqueeCard } from "@/components/tv/marquee/TvMarqueeCard";
 import { TvCardSkeleton } from "./TvCatalogSkeleton";
+import { controlClass, PANEL_ON_WIRE, tagClass } from "@/components/ui/recipes";
 
 export interface TvSearchResultsGridProps {
   items: readonly TvCard[];
@@ -39,7 +40,7 @@ function FilterChip({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-wire-border-strong bg-wire-border px-2.5 py-0.5 text-[10px] font-bold uppercase text-on-wire">
+    <span className={tagClass("onWire")}>
       <span>{label}</span>
       <button
         type="button"
@@ -85,7 +86,7 @@ export function TvSearchResultsGrid({
       {/* Search Header: Match count & active filter pills */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-wire-border pb-3">
         <div className="flex flex-wrap items-center gap-2 text-xs text-wire-muted">
-          <span className="font-display font-bold uppercase tracking-wider text-on-wire">
+          <span className="font-display font-bold uppercase tracking-eyebrow text-on-wire">
             {isLoading
               ? "Searching…"
               : `${items.length} ${items.length === 1 ? "video" : "videos"} found`}
@@ -147,7 +148,7 @@ export function TvSearchResultsGrid({
           ))}
         </div>
       ) : isEmpty ? (
-        <div className="rounded-[16px] border border-wire-border bg-tv-overlay px-4 py-12 text-center sm:px-6 sm:py-16">
+        <div className={`${PANEL_ON_WIRE} px-5 py-12 text-center sm:px-6 sm:py-16`}>
           <Search
             size={32}
             className="mx-auto text-wire-muted"
@@ -162,7 +163,7 @@ export function TvSearchResultsGrid({
           <button
             type="button"
             onClick={onResetAll}
-            className="mt-4 rounded-full bg-on-wire px-5 py-2 font-display text-[13px] font-semibold text-black transition-colors hover:bg-on-wire/90"
+            className={`mt-4 ${controlClass("onWire")}`}
           >
             Clear filters
           </button>
@@ -193,7 +194,7 @@ export function TvSearchResultsGrid({
                 type="button"
                 onClick={onLoadMore}
                 disabled={isLoadingMore}
-                className="inline-flex items-center gap-2 rounded-full border border-wire-border-strong bg-wire-border px-6 py-2.5 font-display text-[13px] font-semibold text-on-wire transition-all hover:bg-wire-border-strong active:scale-[0.98] disabled:opacity-50"
+                className={controlClass("onWireOutline")}
               >
                 {isLoadingMore ? "Loading…" : "Load more videos"}
               </button>

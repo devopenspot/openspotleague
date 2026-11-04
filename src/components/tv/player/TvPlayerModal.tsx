@@ -585,7 +585,7 @@ export function TvPlayerModal({
             <div className="min-w-0 flex-1">
               <p
                 id={titleId}
-                className="truncate font-display text-[10px] font-bold uppercase tracking-widest text-on-wire sm:text-[11px]"
+                className="truncate font-display text-[10px] font-bold uppercase tracking-eyebrow text-on-wire sm:text-[11px]"
               >
                 Now playing · {disciplineLabel}
                 {contextLabel ? ` · ${contextLabel}` : ""}
@@ -600,7 +600,7 @@ export function TvPlayerModal({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-            <p className="hidden font-display text-[10px] font-bold uppercase tracking-wider text-wire-muted sm:block">
+            <p className="hidden font-display text-[10px] font-bold uppercase tracking-pill text-wire-muted sm:block">
               {videoFormattedDate}
             </p>
             <button
@@ -636,7 +636,7 @@ export function TvPlayerModal({
                 : "Autoplay next: off"
             }
             className={cn(
-              "inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-wire-border-strong bg-wire-border px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide transition-colors hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:px-3",
+              "inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-wire-border-strong bg-wire-border px-2.5 py-1.5 font-display text-[10px] font-bold uppercase tracking-label transition-colors hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation sm:px-3",
               autoAdvance ? "text-on-wire" : "text-wire-muted",
             )}
           >
@@ -662,7 +662,7 @@ export function TvPlayerModal({
             onClick={() => void handleShare()}
             aria-label="Share video"
             title="Share video"
-            className="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-wire-border-strong bg-wire-border px-3 py-1.5 font-display text-[10px] font-bold uppercase tracking-wide text-on-wire hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
+            className="inline-flex min-h-[36px] shrink-0 items-center gap-1.5 rounded-full border border-wire-border-strong bg-wire-border px-3 py-1.5 font-display text-[10px] font-bold uppercase tracking-label text-on-wire hover:bg-wire-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black touch-manipulation"
           >
             <Share2 size={12} aria-hidden="true" />
             <span className="hidden sm:inline">Share</span>
@@ -692,7 +692,7 @@ export function TvPlayerModal({
                   ? { duration: 0.2, ease: "easeIn" }
                   : { duration: 0.25, ease: "easeOut" }
             }
-            className="relative aspect-video w-full max-w-5xl overflow-hidden md:rounded-[12px] bg-black shadow-2xl ring-1 ring-white/10 [transform:translateZ(0)] landscape:h-full landscape:max-h-full landscape:w-auto landscape:max-w-full"
+            className="relative aspect-video w-full max-w-5xl overflow-hidden md:rounded-card bg-black shadow-2xl ring-1 ring-white/10 [transform:translateZ(0)] landscape:h-full landscape:max-h-full landscape:w-auto landscape:max-w-full"
           >
             {thumb && (!iframeLoaded || awaitingFrames) && !isClosing ? (
               <Image
@@ -729,7 +729,7 @@ export function TvPlayerModal({
                 <button
                   type="button"
                   onClick={() => setUpNextCancelled(true)}
-                  className="shrink-0 rounded-full bg-wire-border-strong px-2.5 py-1 font-semibold transition-colors hover:bg-on-wire hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white touch-manipulation"
+                  className="shrink-0 rounded-full bg-wire-border-strong px-2.5 py-1 font-semibold transition-colors hover:bg-on-wire hover:text-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white touch-manipulation"
                 >
                   Cancel
                 </button>
@@ -746,7 +746,7 @@ export function TvPlayerModal({
                     href={renderVideo.youtubeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center rounded-full bg-on-wire px-4 font-display text-[13px] font-semibold text-black transition-colors hover:bg-on-wire/90"
+                    className="inline-flex min-h-11 items-center rounded-full bg-on-wire px-4 font-display text-[13px] font-semibold text-wire transition-colors hover:bg-on-wire/90"
                   >
                     Watch on YouTube
                   </a>
@@ -769,7 +769,7 @@ export function TvPlayerModal({
                 type="button"
                 onClick={handleUnmute}
                 aria-label="Unmute video"
-                className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 rounded-full border border-wire-border-strong bg-black/85 px-3.5 py-1.5 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-on-wire shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:bg-black active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white touch-manipulation"
+                className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1.5 rounded-full border border-wire-border-strong bg-black/85 px-3.5 py-1.5 font-display text-[10px] sm:text-[11px] font-bold uppercase tracking-pill text-on-wire shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:bg-black active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white touch-manipulation"
               >
                 <VolumeX size={14} className="text-on-wire" aria-hidden="true" />
                 <span>Tap to unmute</span>
@@ -785,7 +785,7 @@ export function TvPlayerModal({
           onTouchEnd={handleTouchEnd}
         >
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded border border-wire-border-strong bg-wire-border px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-wider text-on-wire">
+            <span className="inline-flex items-center gap-1 rounded-control border border-wire-border-strong bg-wire-border px-2 py-0.5 font-display text-[9px] font-bold uppercase tracking-pill text-on-wire">
               <span
                 className="h-1.5 w-1.5 rounded-full bg-on-wire"
                 aria-hidden="true"
@@ -793,7 +793,7 @@ export function TvPlayerModal({
               {disciplineLabel}
             </span>
             {contextLabel ? (
-              <span className="font-display text-[10px] font-bold uppercase tracking-wider text-wire-muted">
+              <span className="font-display text-[10px] font-bold uppercase tracking-pill text-wire-muted">
                 {contextLabel}
               </span>
             ) : null}

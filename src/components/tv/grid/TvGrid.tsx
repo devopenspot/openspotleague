@@ -416,7 +416,7 @@ export function TvGrid({
   return (
     <div
       ref={gridRef}
-      className="min-w-0 scroll-mt-20 space-y-2 sm:space-y-4 overflow-x-hidden px-3 mt-6 mb-30"
+      className="mb-30 min-w-0 scroll-mt-[var(--app-header-h)] space-y-2 overflow-x-hidden px-5 pt-6 sm:space-y-4 md:px-10 md:pt-10"
     >
       {/* Background container — suspended and hidden from compositor when modal is active */}
       <div

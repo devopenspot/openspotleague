@@ -26,7 +26,7 @@ function QueueThumb({ thumb }: { thumb: string | null }) {
     return (
       <span
         aria-hidden="true"
-        className="flex h-full w-full items-center justify-center bg-wire-border font-display text-[9px] font-bold uppercase tracking-widest text-wire-muted"
+        className="flex h-full w-full items-center justify-center bg-wire-border font-display text-[9px] font-bold uppercase tracking-eyebrow text-wire-muted"
       >
         TV
       </span>
@@ -72,7 +72,7 @@ const TvQueueStripItem = memo(function TvQueueStripItem({
       onClick={() => onSelect(item.video.id)}
       style={{ contentVisibility: "auto", containIntrinsicSize: "112px 76px" }}
       className={cn(
-        "group relative w-auto max-w-60 min-w-52 shrink-0 snap-start overflow-hidden rounded-[10px] border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:w-20",
+        "group relative w-auto max-w-60 min-w-52 shrink-0 snap-start overflow-hidden rounded-card border text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-40 landscape:w-20",
         active ? "border-on-wire" : "border-wire-border-strong hover:border-wire-muted",
       )}
     >

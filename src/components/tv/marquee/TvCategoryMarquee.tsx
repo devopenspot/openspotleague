@@ -13,7 +13,7 @@ const CARD_GAP = 12; // gap-3
 
 /** Small text action at the end of a row heading ("See all", "Clear"). */
 export const TV_ROW_ACTION_CLASS =
-  "-my-2 px-1 py-2 text-xs font-medium text-wire-muted transition-colors hover:text-on-wire";
+  "-my-2 px-1 py-2 font-display text-xs font-bold uppercase tracking-pill text-wire-muted transition-colors hover:text-on-wire focus-visible:outline-white";
 
 function RowArrow({
   direction,
@@ -31,7 +31,7 @@ function RowArrow({
       aria-label={label}
       onClick={onClick}
       className={cn(
-        "absolute top-[84px] z-20 hidden h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-wire-border-strong bg-wire text-on-wire shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out hover:border-wire-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:top-[92px] sm:flex [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/wire:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100",
+        "absolute top-[84px] z-20 hidden h-control-sm w-control-sm -translate-y-1/2 items-center justify-center rounded-control border border-wire-border-strong bg-wire text-on-wire transition-[opacity,background-color,transform,border-color] duration-150 ease-out hover:border-wire-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:top-[92px] sm:flex [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover/wire:opacity-100 [@media(hover:hover)]:focus-visible:opacity-100",
         direction === "left" ? "left-1" : "right-1",
       )}
     >
@@ -268,7 +268,7 @@ export const TvCategoryMarquee = memo(function TvCategoryMarquee({
   return (
     <section aria-label={label} className="shrink-0 bg-wire pt-3 sm:pt-4">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="px-0 text-base sm:text-lg font-semibold leading-tight text-on-wire">
+        <h2 className="font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-wire sm:text-sm">
           {label}
         </h2>
         {headerAction}

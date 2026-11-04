@@ -3,6 +3,7 @@
 import { useId } from "react";
 import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { INPUT_ON_WIRE } from "@/components/ui/recipes";
 import { formatTvCategory } from "@/components/tv/marquee/tv-marquee-data";
 
 export interface TvFilterBarProps {
@@ -50,7 +51,7 @@ export function TvFilterBar({
           autoComplete="off"
           spellCheck="false"
           className={cn(
-            "min-h-[40px] w-full text-ellipsis rounded-full [&::-webkit-search-cancel-button]:appearance-none border border-wire-border-strong bg-tv-overlay py-1.5 pl-9 text-base font-medium text-on-wire transition-colors placeholder:text-wire-muted focus:border-on-wire focus:outline-none focus:ring-1 focus:ring-white sm:py-2 sm:text-sm",
+            `${INPUT_ON_WIRE} text-ellipsis pl-9 [&::-webkit-search-cancel-button]:appearance-none`,
             query ? "pr-9" : "pr-3",
           )}
         />
@@ -67,7 +68,7 @@ export function TvFilterBar({
       </div>
 
       {/* Category: icon on phones (native select stretched over it), pill from sm */}
-      <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-wire-border-strong text-on-wire transition-colors hover:border-wire-muted focus-within:border-on-wire focus-within:ring-1 focus-within:ring-white sm:w-auto">
+      <div className="relative flex h-control w-control shrink-0 items-center justify-center rounded-control border border-wire-border-strong bg-wire-border text-on-wire transition-colors hover:border-wire-muted focus-within:border-on-wire focus-within:ring-1 focus-within:ring-white sm:w-auto">
         <label htmlFor={categorySelectId} className="sr-only">
           Filter by category
         </label>
@@ -82,7 +83,7 @@ export function TvFilterBar({
           id={categorySelectId}
           value={selectedCategory}
           onChange={(e) => onSelectCategory(e.target.value)}
-          className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full bg-transparent text-base opacity-0 focus:outline-none sm:static sm:w-auto sm:pl-3.5 sm:pr-8 sm:font-display sm:text-[13px] sm:font-medium sm:opacity-100"
+          className="absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full bg-transparent text-base opacity-0 focus:outline-none sm:static sm:w-auto sm:pl-4 sm:pr-8 sm:font-display sm:text-xs sm:font-bold sm:uppercase sm:tracking-pill sm:opacity-100"
         >
           <option value="all" className="bg-wire text-on-wire">
             All categories
