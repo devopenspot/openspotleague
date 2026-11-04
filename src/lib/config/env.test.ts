@@ -32,9 +32,14 @@ describe("database URL resolution", () => {
 })
 
 describe("PayPal support URL validation and resolution", () => {
-  it("accepts https PayPal checkout and paypal.me URLs with a non-empty path", () => {
+  it("accepts https PayPal checkout, donate, and paypal.me URLs with a non-empty path", () => {
     expect(
       isValidPaypalSupportUrl("https://www.paypal.com/ncp/payment/8XU46EVXHAVYL"),
+    ).toBe(true)
+    expect(
+      isValidPaypalSupportUrl(
+        "https://www.paypal.com/donate/?hosted_button_id=8XU46EVXHAVYL",
+      ),
     ).toBe(true)
     expect(isValidPaypalSupportUrl("https://paypal.me/openspot")).toBe(true)
     expect(isValidPaypalSupportUrl("https://www.paypal.me/openspot")).toBe(true)
@@ -49,10 +54,16 @@ describe("PayPal support URL validation and resolution", () => {
     expect(isValidPaypalSupportUrl("not-a-url")).toBe(false)
   })
 
-  it("falls back to DEFAULT_PAYPAL_SUPPORT_URL when unset or invalid", () => {
+  it("falls back to hosted button ID or DEFAULT_PAYPAL_SUPPORT_URL when URL is unset or invalid", () => {
     expect(resolvePaypalSupportUrl(undefined)).toBe(DEFAULT_PAYPAL_SUPPORT_URL)
     expect(resolvePaypalSupportUrl("   ")).toBe(DEFAULT_PAYPAL_SUPPORT_URL)
     expect(resolvePaypalSupportUrl("https://evil.example.com/pay")).toBe(
+      DEFAULT_PAYPAL_SUPPORT_URL,
+    )
+    expect(resolvePaypalSupportUrl(undefined, "8XU46EVXHAVYL")).toBe(
+      "https://www.paypal.com/ncp/payment/8XU46EVXHAVYL",
+    )
+    expect(resolvePaypalSupportUrl(undefined, "invalid id!")).toBe(
       DEFAULT_PAYPAL_SUPPORT_URL,
     )
     expect(resolvePaypalSupportUrl(" https://paypal.me/openspot ")).toBe(

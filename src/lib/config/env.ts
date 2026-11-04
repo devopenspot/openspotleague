@@ -30,6 +30,8 @@ const PAYPAL_ALLOWED_HOSTS = new Set([
   "www.paypal.me",
 ]);
 
+const PAYPAL_HOSTED_BUTTON_ID_PATTERN = /^[A-Z0-9]{10,20}$/i;
+
 export function isValidPaypalSupportUrl(value: string): boolean {
   try {
     const parsed = new URL(value.trim());
@@ -41,10 +43,17 @@ export function isValidPaypalSupportUrl(value: string): boolean {
   }
 }
 
-export function resolvePaypalSupportUrl(rawValue?: string | null): string {
+export function resolvePaypalSupportUrl(
+  rawValue?: string | null,
+  rawHostedButtonId?: string | null,
+): string {
   const trimmed = rawValue?.trim();
   if (trimmed && isValidPaypalSupportUrl(trimmed)) {
     return trimmed;
+  }
+  const buttonId = rawHostedButtonId?.trim();
+  if (buttonId && PAYPAL_HOSTED_BUTTON_ID_PATTERN.test(buttonId)) {
+    return `https://www.paypal.com/ncp/payment/${buttonId.toUpperCase()}`;
   }
   return DEFAULT_PAYPAL_SUPPORT_URL;
 }
@@ -65,6 +74,7 @@ const EnvSchema = z
       (u) => !u || isValidPaypalSupportUrl(u),
       "must be an https:// PayPal URL (paypal.com or paypal.me)",
     ),
+    NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID: optionalString(),
 
     // OpenWeather
     URL_WEATHER: z
@@ -295,6 +305,8 @@ export function getSupabaseUrl(): string | null {
 export function getPaypalSupportUrl(): string {
   return resolvePaypalSupportUrl(
     process.env.NEXT_PUBLIC_PAYPAL_URL ?? env.NEXT_PUBLIC_PAYPAL_URL,
+    process.env.NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID ??
+      env.NEXT_PUBLIC_PAYPAL_HOSTED_BUTTON_ID,
   );
 }
 
