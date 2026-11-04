@@ -3,14 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Trophy, GraduationCap, Flame, Clock } from "lucide-react";
-import {
-  PROFILE_BODY_CLASS,
-  PROFILE_BUTTON_CLASS,
-  PROFILE_BUTTON_PRIMARY_CLASS,
-  PROFILE_EYEBROW_CLASS,
-  PROFILE_SEGMENTS_CLASS,
-  profileSegmentClass,
-} from "@/components/profile/profile-styles";
+import { BODY, EMPTY_STATE, EYEBROW, META, SEGMENTED_TRACK, controlClass, segmentClass, tagClass } from "@/components/ui/recipes";
 import type { ProfileGame } from "@/lib/services/profile/profile";
 
 type Mode = "training" | "challenge";
@@ -20,29 +13,29 @@ function GameCard({ game }: { game: ProfileGame }) {
   return (
     <Link
       href={`/games/${game.id}`}
-      className="flex items-center gap-2.5 rounded-lg border-2 border-outline-variant bg-surface-container-lowest p-3 transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+      className="flex items-center gap-2.5 rounded-container border border-outline-variant bg-surface-container-lowest p-3 transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
     >
       <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border ${isTraining ? "border-outline-variant bg-surface-container" : "border-primary bg-primary text-on-primary"}`}
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control border ${isTraining ? "border-outline-variant bg-surface-container" : "border-primary bg-primary text-on-primary"}`}
       >
         {isTraining ? <GraduationCap size={15} /> : <Trophy size={15} />}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="font-display text-sm font-bold uppercase leading-none tracking-[0.04em] text-on-surface">
+          <span className="font-display text-sm font-bold uppercase leading-none tracking-dense text-on-surface">
             {isTraining ? "Training" : "Challenge"}
           </span>
-          <span className="rounded-md bg-surface-container-high px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+          <span className={tagClass("neutral")}>
             {game.disciplineSlug}
           </span>
           {game.isWinner ? (
-            <span className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-primary">
+            <span className={tagClass("solid")}>
               <Flame size={12} /> Won
             </span>
           ) : null}
         </div>
         <div
-          className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 ${PROFILE_EYEBROW_CLASS}`}
+          className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 ${META}`}
         >
           <span className="inline-flex items-center gap-1">
             <Clock size={12} /> {new Date(game.updatedAt).toLocaleDateString()}
@@ -52,7 +45,7 @@ function GameCard({ game }: { game: ProfileGame }) {
           <span>• {game.role}</span>
         </div>
       </div>
-      <span className="shrink-0 font-display text-sm font-bold uppercase tracking-[0.04em] text-primary">
+      <span className="shrink-0 font-display text-sm font-bold uppercase tracking-dense text-primary">
         Open
       </span>
     </Link>
@@ -63,13 +56,13 @@ function GameCardSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex items-center gap-2.5 rounded-lg border-2 border-outline-variant bg-surface-container-lowest p-3"
+      className="flex items-center gap-2.5 rounded-container border border-outline-variant bg-surface-container-lowest p-3"
     >
-      <div className="h-9 w-9 shrink-0 rounded-md bg-surface-container-high" />
+      <div className="h-9 w-9 shrink-0 rounded-control bg-surface-container-high" />
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex items-center gap-1.5">
           <div className="h-4 w-20 rounded bg-surface-container-high" />
-          <div className="h-6 w-16 rounded-md bg-surface-container-high" />
+          <div className="h-6 w-16 rounded-control bg-surface-container-high" />
         </div>
         <div className="h-4 max-w-48 rounded bg-surface-container-high" />
       </div>
@@ -135,13 +128,13 @@ export function ProfileGamesList() {
   return (
     <div className="space-y-3" aria-busy={loading && items.length === 0}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className={PROFILE_EYEBROW_CLASS}>Your sessions</h3>
-        <div className={PROFILE_SEGMENTS_CLASS}>
+        <h3 className={EYEBROW}>Your sessions</h3>
+        <div className={SEGMENTED_TRACK}>
           <button
             type="button"
             onClick={() => setMode("challenge")}
             aria-pressed={mode === "challenge"}
-            className={profileSegmentClass(mode === "challenge")}
+            className={segmentClass(mode === "challenge")}
           >
             Challenges
           </button>
@@ -149,7 +142,7 @@ export function ProfileGamesList() {
             type="button"
             onClick={() => setMode("training")}
             aria-pressed={mode === "training"}
-            className={profileSegmentClass(mode === "training")}
+            className={segmentClass(mode === "training")}
           >
             Trainings
           </button>
@@ -159,16 +152,16 @@ export function ProfileGamesList() {
       {loading && items.length === 0 ? (
         <ProfileGamesListSkeleton count={4} />
       ) : items.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-5 text-center">
-          <p className="font-display text-sm font-bold uppercase tracking-[0.04em]">
+        <div className={EMPTY_STATE}>
+          <p className="font-display text-sm font-bold uppercase tracking-dense">
             No {mode}s yet
           </p>
-          <p className={`mt-1 ${PROFILE_BODY_CLASS}`}>
+          <p className={`mt-1 ${BODY}`}>
             Start your first {mode} from League
           </p>
           <Link
             href="/games"
-            className={`mt-3 ${PROFILE_BUTTON_PRIMARY_CLASS}`}
+            className={`mt-3 ${controlClass("primary")}`}
           >
             Go to League
           </Link>
@@ -183,24 +176,24 @@ export function ProfileGamesList() {
       )}
 
       {error ? (
-        <p className="text-sm font-semibold leading-5 text-error">
+        <p className="text-sm leading-5 text-error">
           Couldn’t load sessions
         </p>
       ) : null}
 
-      <div className="flex min-h-12 justify-center">
+      <div className="flex min-h-control justify-center">
         {cursor ? (
           <button
             type="button"
             onClick={() => load(false)}
             disabled={loading}
-            className={`${PROFILE_BUTTON_CLASS} disabled:opacity-50`}
+            className={`${controlClass("outline")} disabled:opacity-50`}
           >
             {loading ? "Loading…" : "Load more"}
           </button>
         ) : items.length > 0 ? (
           <span
-            className={`inline-flex min-h-12 items-center ${PROFILE_EYEBROW_CLASS}`}
+            className={`inline-flex min-h-control items-center ${META}`}
           >
             You’re all caught up
           </span>

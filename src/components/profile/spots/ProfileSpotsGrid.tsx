@@ -4,14 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Heart, CheckCircle, MapPinned } from "lucide-react";
 import { AppImage } from "@/components/ui/AppImage";
-import {
-  PROFILE_BODY_CLASS,
-  PROFILE_BUTTON_CLASS,
-  PROFILE_BUTTON_PRIMARY_CLASS,
-  PROFILE_EYEBROW_CLASS,
-  PROFILE_SEGMENTS_CLASS,
-  profileSegmentClass,
-} from "@/components/profile/profile-styles";
+import { BODY, EMPTY_STATE, EYEBROW, META, SEGMENTED_TRACK, controlClass, segmentClass, tagClass } from "@/components/ui/recipes";
 import type { Spot } from "@/lib/types";
 
 type Kind = "saved" | "verified" | "visited";
@@ -20,7 +13,7 @@ function SpotCard({ spot }: { spot: Spot }) {
   return (
     <Link
       href={`/spots/${spot.id}`}
-      className="group overflow-hidden rounded-lg border-2 border-outline-variant bg-surface-container-lowest transition-[border-color,transform] hover:border-outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+      className="group overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest transition-[border-color,transform] hover:border-outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-container">
         <AppImage
@@ -34,17 +27,17 @@ function SpotCard({ spot }: { spot: Spot }) {
         />
       </div>
       <div className="p-3">
-        <p className="truncate font-display text-sm font-bold uppercase leading-tight tracking-[0.04em]">
+        <p className="truncate font-display text-sm font-bold uppercase leading-tight tracking-dense">
           {spot.name}
         </p>
-        <p className={`mt-0.5 truncate ${PROFILE_EYEBROW_CLASS}`}>
+        <p className={`mt-0.5 truncate ${META}`}>
           {spot.city} • {spot.country}
         </p>
         <div className="mt-1.5 flex flex-wrap gap-1">
           {spot.types.slice(0, 3).map((t) => (
             <span
               key={t.slug}
-              className="rounded-md bg-surface-container-high px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary"
+              className={tagClass("neutral")}
             >
               {t.name}
             </span>
@@ -59,15 +52,15 @@ function SpotCardSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="overflow-hidden rounded-lg border-2 border-outline-variant bg-surface-container-lowest"
+      className="overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest"
     >
       <div className="aspect-[16/10] w-full bg-surface-container-high" />
       <div className="p-3 space-y-2">
         <div className="h-4 w-24 rounded bg-surface-container-high" />
         <div className="h-4 w-32 rounded bg-surface-container-high" />
         <div className="flex gap-1">
-          <div className="h-6 w-16 rounded-md bg-surface-container-high" />
-          <div className="h-6 w-20 rounded-md bg-surface-container-high" />
+          <div className="h-6 w-16 rounded-control bg-surface-container-high" />
+          <div className="h-6 w-20 rounded-control bg-surface-container-high" />
         </div>
       </div>
     </div>
@@ -133,13 +126,13 @@ export function ProfileSpotsGrid() {
   return (
     <div className="space-y-3" aria-busy={loading && items.length === 0}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className={PROFILE_EYEBROW_CLASS}>Your spots</h3>
-        <div className={`self-start ${PROFILE_SEGMENTS_CLASS}`}>
+        <h3 className={EYEBROW}>Your spots</h3>
+        <div className={`self-start ${SEGMENTED_TRACK}`}>
           <button
             type="button"
             onClick={() => setKind("saved")}
             aria-pressed={kind === "saved"}
-            className={profileSegmentClass(kind === "saved")}
+            className={segmentClass(kind === "saved")}
           >
             <Heart size={14} /> Saved
           </button>
@@ -147,7 +140,7 @@ export function ProfileSpotsGrid() {
             type="button"
             onClick={() => setKind("verified")}
             aria-pressed={kind === "verified"}
-            className={profileSegmentClass(kind === "verified")}
+            className={segmentClass(kind === "verified")}
           >
             <CheckCircle size={14} /> Verified
           </button>
@@ -155,7 +148,7 @@ export function ProfileSpotsGrid() {
             type="button"
             onClick={() => setKind("visited")}
             aria-pressed={kind === "visited"}
-            className={profileSegmentClass(kind === "visited")}
+            className={segmentClass(kind === "visited")}
           >
             <MapPinned size={14} /> Visited
           </button>
@@ -165,11 +158,11 @@ export function ProfileSpotsGrid() {
       {loading && items.length === 0 ? (
         <ProfileSpotsGridSkeleton count={6} />
       ) : items.length === 0 ? (
-        <div className="rounded-lg border-2 border-dashed border-outline-variant bg-surface-container-low p-5 text-center">
-          <p className="font-display text-sm font-bold uppercase tracking-[0.04em]">
+        <div className={EMPTY_STATE}>
+          <p className="font-display text-sm font-bold uppercase tracking-dense">
             No {kind} spots
           </p>
-          <p className={`mt-1 ${PROFILE_BODY_CLASS}`}>
+          <p className={`mt-1 ${BODY}`}>
             {kind === "saved"
               ? "Tap ♥ on any spot to save it"
               : kind === "verified"
@@ -178,7 +171,7 @@ export function ProfileSpotsGrid() {
           </p>
           <Link
             href={kind === "visited" ? "/games" : "/"}
-            className={`mt-3 ${PROFILE_BUTTON_PRIMARY_CLASS}`}
+            className={`mt-3 ${controlClass("primary")}`}
           >
             Explore spots
           </Link>
@@ -197,24 +190,24 @@ export function ProfileSpotsGrid() {
       )}
 
       {error ? (
-        <p className="text-sm font-semibold leading-5 text-error">
+        <p className="text-sm leading-5 text-error">
           Couldn’t load spots
         </p>
       ) : null}
 
-      <div className="flex min-h-12 justify-center">
+      <div className="flex min-h-control justify-center">
         {cursor ? (
           <button
             type="button"
             onClick={() => load(false)}
             disabled={loading}
-            className={`${PROFILE_BUTTON_CLASS} disabled:opacity-50`}
+            className={`${controlClass("outline")} disabled:opacity-50`}
           >
             {loading ? "Loading…" : "Load more"}
           </button>
         ) : items.length > 0 ? (
           <span
-            className={`inline-flex min-h-12 items-center ${PROFILE_EYEBROW_CLASS}`}
+            className={`inline-flex min-h-control items-center ${META}`}
           >
             End of list
           </span>

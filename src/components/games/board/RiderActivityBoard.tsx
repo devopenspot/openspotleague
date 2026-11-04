@@ -57,7 +57,7 @@ export function RiderActivityBoard({
 
   return (
     <section
-      className="min-w-0 rounded-[16px] bg-on-surface p-3.5 text-surface sm:p-4"
+      className="min-w-0 rounded-container bg-on-surface p-3.5 text-surface sm:p-4"
       aria-labelledby={headingId}
     >
       <div className="flex flex-col items-start gap-1 pb-2.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
@@ -110,7 +110,7 @@ export function RiderActivityBoardSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="min-w-0 rounded-[16px] bg-on-surface p-3.5 sm:p-4 "
+      className="min-w-0 rounded-container bg-on-surface p-3.5 sm:p-4 "
     >
       <div className="flex flex-col gap-1 pb-2.5 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">

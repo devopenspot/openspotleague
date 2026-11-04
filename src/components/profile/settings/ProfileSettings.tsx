@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { showToast } from "@/hooks/ui/useToast";
-import {
-  PROFILE_BODY_CLASS,
-  PROFILE_CARD_TITLE_CLASS,
-} from "@/components/profile/profile-styles";
+import { BODY, CARD, CARD_TITLE, INPUT, alertClass } from "@/components/ui/recipes";
 import type { Preferences } from "@/lib/schemas/preferences";
 import { fetchWithTimeout } from "@/lib/utils/fetch-timeout";
 
@@ -82,9 +79,9 @@ export function ProfileSettings() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-        <h3 className={PROFILE_CARD_TITLE_CLASS}>Preferences</h3>
-        <p className={`mt-1 ${PROFILE_BODY_CLASS}`}>
+      <div className={CARD}>
+        <h2 className={CARD_TITLE}>Preferences</h2>
+        <p className={`mt-1 ${BODY}`}>
           Units & sport — saved instantly, syncs to weather & distances
         </p>
 
@@ -118,7 +115,7 @@ export function ProfileSettings() {
             >
               Main sport
             </label>
-            <p className={PROFILE_BODY_CLASS}>
+            <p className={BODY}>
               Used for League and spot suggestions
             </p>
             <select
@@ -132,7 +129,7 @@ export function ProfileSettings() {
                 })
               }
               disabled={saving}
-              className="mt-2 min-h-12 w-full rounded-lg border-2 border-outline-variant bg-surface-container px-3 font-display text-base font-semibold text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
+              className={`mt-2 ${INPUT} font-display font-semibold`}
             >
               <option value="">No preference</option>
               {SPORTS.map((s) => (
@@ -145,8 +142,8 @@ export function ProfileSettings() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-outline-variant bg-surface-container p-3">
-        <p className={PROFILE_BODY_CLASS}>
+      <div className={alertClass("neutral")}>
+        <p className={BODY}>
           Tip: preferences apply everywhere — map distances, weather header, and
           game suggestions update right away.
         </p>
@@ -158,20 +155,20 @@ export function ProfileSettings() {
 export function ProfileSettingsSkeleton() {
   return (
     <div aria-hidden="true" className="space-y-3 ">
-      <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+      <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
         <div className="h-7 w-40 rounded bg-surface-container-high" />
         <div className="mt-1 h-5 w-64 max-w-full rounded bg-surface-container-high" />
         <div className="mt-4 space-y-3">
-          <div className="h-[86px] rounded-lg border-2 border-outline-variant bg-surface-container-high sm:h-[66px]" />
-          <div className="h-[86px] rounded-lg border-2 border-outline-variant bg-surface-container-high sm:h-[66px]" />
+          <div className="h-[86px] rounded-container border border-outline-variant bg-surface-container-high sm:h-[66px]" />
+          <div className="h-[86px] rounded-container border border-outline-variant bg-surface-container-high sm:h-[66px]" />
           <div>
             <div className="h-5 w-20 rounded bg-surface-container-high" />
             <div className="h-5 w-56 max-w-full rounded bg-surface-container-high" />
-            <div className="mt-2 h-12 rounded-lg border-2 border-outline-variant bg-surface-container-high" />
+            <div className="mt-2 h-12 rounded-container border border-outline-variant bg-surface-container-high" />
           </div>
         </div>
       </div>
-      <div className="h-[86px] rounded-lg border border-outline-variant bg-surface-container-high sm:h-[46px]" />
+      <div className="h-[86px] rounded-container border border-outline-variant bg-surface-container-high sm:h-[46px]" />
     </div>
   );
 }

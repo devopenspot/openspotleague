@@ -159,6 +159,10 @@ export const SECTION_TITLE =
 export const CARD_TITLE =
   "font-display text-lg font-bold uppercase leading-tight tracking-tight";
 
+/** Dense uppercase meta line (counts, dates, scopes) — quieter than EYEBROW. */
+export const META =
+  "font-display text-xs font-semibold uppercase leading-tight tracking-label text-secondary";
+
 /** Stat / field label. */
 export const LABEL =
   "font-display text-[10px] font-bold uppercase leading-tight tracking-label text-secondary";

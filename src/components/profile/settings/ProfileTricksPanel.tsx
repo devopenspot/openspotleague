@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  PROFILE_BODY_CLASS,
-  PROFILE_CARD_TITLE_CLASS,
-  PROFILE_EYEBROW_CLASS,
-} from "@/components/profile/profile-styles";
+import { BODY, CARD_FRAME, CARD_TITLE, EYEBROW, META, tagClass } from "@/components/ui/recipes";
 import type { ProfileTricks } from "@/lib/services/profile/profile";
 
 function LevelBar({
@@ -20,7 +16,7 @@ function LevelBar({
   const pct = max > 0 ? Math.round((count / max) * 100) : 0;
   return (
     <div className="flex items-center gap-2.5">
-      <span className={`w-7 ${PROFILE_EYEBROW_CLASS}`}>L{level}</span>
+      <span className={`w-7 ${META}`}>L{level}</span>
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-container-high">
         <div
           className="h-full rounded-full bg-primary transition-all"
@@ -34,7 +30,11 @@ function LevelBar({
   );
 }
 
-export function ProfileTricksPanel() {
+/**
+ * `bare` drops the panel's own card frame when it is nested inside another
+ * card (the Overview tab), so the page never shows a card inside a card.
+ */
+export function ProfileTricksPanel({ bare = false }: { bare?: boolean } = {}) {
   const [data, setData] = useState<ProfileTricks | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -55,11 +55,11 @@ export function ProfileTricksPanel() {
   }, []);
 
   if (loading) {
-    return <ProfileTricksSkeleton />;
+    return <ProfileTricksSkeleton bare={bare} />;
   }
   if (error || !data) {
     return (
-      <p className={PROFILE_BODY_CLASS}>Tricks unavailable right now</p>
+      <p className={BODY}>Tricks unavailable right now</p>
     );
   }
 
@@ -69,11 +69,11 @@ export function ProfileTricksPanel() {
     total > 0 ? Math.round((data.totalLanded / total) * 100) : 0;
 
   return (
-    <div className="overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest">
-      <div className="p-4">
+    <div className={bare ? "" : `overflow-hidden ${CARD_FRAME}`}>
+      <div className={bare ? "" : "p-4"}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className={PROFILE_CARD_TITLE_CLASS}>Tricks landed</h3>
-          <span className="rounded-md bg-surface-container-high px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary">
+          <h3 className={`${bare ? "sr-only" : CARD_TITLE}`}>Tricks landed</h3>
+          <span className={tagClass("neutral")}>
             {data.totalLanded} landed • {data.totalFailed} failed •{" "}
             {successRate}% success
           </span>
@@ -83,15 +83,15 @@ export function ProfileTricksPanel() {
           <LevelBar level={2} count={data.byLevel[2]} max={max} />
           <LevelBar level={3} count={data.byLevel[3]} max={max} />
         </div>
-        <p className={`mt-2.5 ${PROFILE_EYEBROW_CLASS}`}>
+        <p className={`mt-2.5 ${META}`}>
           L1 = 5 pts • L2 = 13 • L3 = 21 • Win bonus 34
         </p>
       </div>
 
-      <div className="border-t border-outline-variant bg-surface-container-low/40 p-4">
-        <h4 className={PROFILE_EYEBROW_CLASS}>Recent landings</h4>
+      <div className={bare ? "mt-4 border-t border-outline-variant pt-4" : "border-t border-outline-variant bg-surface-container-low/40 p-4"}>
+        <h4 className={EYEBROW}>Recent landings</h4>
         {data.recent.length === 0 ? (
-          <p className={`mt-2.5 ${PROFILE_BODY_CLASS}`}>
+          <p className={`mt-2.5 ${BODY}`}>
             No landings yet — land your first in a game
           </p>
         ) : (
@@ -99,17 +99,17 @@ export function ProfileTricksPanel() {
             {data.recent.map((r, idx) => (
               <li
                 key={`${r.name}-${idx}`}
-                className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-inner border border-outline-variant bg-surface-container-low px-3 py-2"
               >
                 <div className="min-w-0">
                   <p className="truncate font-display text-sm font-semibold leading-none">
                     {r.name}
                   </p>
-                  <p className={`mt-1 ${PROFILE_EYEBROW_CLASS}`}>
+                  <p className={`mt-1 ${META}`}>
                     Lvl {r.level} • {new Date(r.date).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-md bg-primary px-2 py-1 font-display text-xs font-bold text-on-primary">
+                <span className={`shrink-0 ${tagClass("solid")}`}>
                   +{r.points}
                 </span>
               </li>
@@ -123,18 +123,20 @@ export function ProfileTricksPanel() {
 
 export function ProfileTricksSkeleton({
   compact = false,
+  bare = false,
 }: {
   compact?: boolean;
+  bare?: boolean;
 }) {
   return (
     <div
       aria-hidden="true"
-      className="overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest "
+      className={bare ? "" : `overflow-hidden ${CARD_FRAME}`}
     >
-      <div className="p-4">
+      <div className={bare ? "" : "p-4"}>
         <div className="flex items-center justify-between gap-2">
           <div className="h-7 w-40 rounded bg-surface-container-high" />
-          <div className="h-6 w-44 max-w-full rounded-md bg-surface-container-high" />
+          <div className="h-6 w-44 max-w-full rounded-control bg-surface-container-high" />
         </div>
         <div className="mt-3 space-y-2.5">
           <div className="flex items-center gap-2.5">
@@ -155,19 +157,19 @@ export function ProfileTricksSkeleton({
         </div>
         <div className="mt-2.5 h-4 w-48 max-w-full rounded bg-surface-container-high" />
       </div>
-      <div className="border-t border-outline-variant bg-surface-container-low/40 p-4">
+      <div className={bare ? "mt-4 border-t border-outline-variant pt-4" : "border-t border-outline-variant bg-surface-container-low/40 p-4"}>
         <div className="h-4 w-32 rounded bg-surface-container-high" />
         <div className="mt-2.5 space-y-1.5">
           {Array.from({ length: compact ? 2 : 3 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container px-3 py-2"
+              className="flex items-center justify-between gap-3 rounded-inner border border-outline-variant bg-surface-container-low px-3 py-2"
             >
               <div className="space-y-1 flex-1">
                 <div className="h-3.5 w-24 rounded bg-surface-container-high" />
                 <div className="h-4 w-28 rounded bg-surface-container-high" />
               </div>
-              <div className="h-6 w-10 rounded-md bg-surface-container-high" />
+              <div className="h-6 w-10 rounded-control bg-surface-container-high" />
             </div>
           ))}
         </div>

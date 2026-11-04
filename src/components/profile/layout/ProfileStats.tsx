@@ -1,12 +1,12 @@
 "use client";
 
-import { PROFILE_EYEBROW_CLASS } from "@/components/profile/profile-styles";
+import { META } from "@/components/ui/recipes";
 import type { ProfileSummary } from "@/lib/services/profile/profile";
 
 const STAT_BUTTON_CLASS =
-  "rounded-lg text-left transition-transform active:translate-y-px focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2";
+  "rounded-card text-left transition-transform active:translate-y-px focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2";
 const INFO_TILE_CLASS =
-  "rounded-[12px] border border-outline-variant bg-surface-container px-2 py-2.5";
+  "rounded-card border border-outline-variant bg-surface-container px-2 py-2.5";
 
 function StatCard({
   value,
@@ -18,13 +18,13 @@ function StatCard({
   actionLabel?: string;
 }) {
   return (
-    <div className="flex min-h-[92px] flex-col items-center justify-center rounded-lg border-2 border-outline-variant bg-surface-container-lowest px-2.5 py-3 text-center">
+    <div className="flex min-h-[92px] flex-col items-center justify-center rounded-card border border-outline-variant bg-surface-container-lowest px-2.5 py-3 text-center transition-colors hover:border-outline">
       <span className="font-display text-2xl font-bold leading-none text-on-surface">
         {value}
       </span>
-      <span className={`mt-1.5 ${PROFILE_EYEBROW_CLASS}`}>{label}</span>
+      <span className={`mt-1.5 ${META}`}>{label}</span>
       {actionLabel ? (
-        <span className={`mt-0.5 ${PROFILE_EYEBROW_CLASS}`}>{actionLabel}</span>
+        <span className={`mt-0.5 ${META}`}>{actionLabel}</span>
       ) : null}
     </div>
   );
@@ -91,19 +91,19 @@ export function ProfileStats({
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2 text-center sm:gap-2.5">
         <div className={INFO_TILE_CLASS}>
-          <div className={PROFILE_EYEBROW_CLASS}>Saved</div>
+          <div className={META}>Saved</div>
           <div className="mt-1 font-display text-base font-bold leading-none">
             {counts.saved}
           </div>
         </div>
         <div className={INFO_TILE_CLASS}>
-          <div className={PROFILE_EYEBROW_CLASS}>Visited</div>
+          <div className={META}>Visited</div>
           <div className="mt-1 font-display text-base font-bold leading-none">
             {counts.visited}
           </div>
         </div>
         <div className={INFO_TILE_CLASS}>
-          <div className={PROFILE_EYEBROW_CLASS}>Points</div>
+          <div className={META}>Points</div>
           <div className="mt-1 font-display text-base font-bold leading-none">
             {summary.totalPoints}
           </div>
@@ -120,7 +120,7 @@ export function ProfileStatsSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="h-[92px] rounded-lg bg-surface-container-high"
+            className="h-[92px] rounded-card bg-surface-container-high"
           />
         ))}
       </div>
@@ -128,7 +128,7 @@ export function ProfileStatsSkeleton() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="h-[58px] rounded-[12px] bg-surface-container-high"
+            className="h-[58px] rounded-card bg-surface-container-high"
           />
         ))}
       </div>
