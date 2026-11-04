@@ -89,7 +89,11 @@ pnpm lint && pnpm typecheck && pnpm test
 - No `animate-pulse` outside skeleton and loading components.
 - Form controls are at least 16px on mobile (`text-base sm:text-sm`). Never set `maximum-scale` or `user-scalable=no`.
 - The dark map palette applies only to the map canvas and on-map overlays.
-- The warm gradient is reserved for the Home hero and the Games landing page.
+- Shape rule: controls (buttons, inputs, selects, pills, chips, tabs, tags, icon buttons) are `rounded-control` (full) and `h-control` (44px), and buttons match inputs (same height, 1px border). Containers (cards, panels, fieldsets, textareas, empty states) are `rounded-container` (16px); nested rows are `rounded-inner` (14px); small tiles are `rounded-card` (12px). Map pins are the only 4px. No new `rounded-[*]` literals.
+- Build UI from the class recipes in `src/components/ui/recipes.ts` (`controlClass`, `chipClass`, `tagClass`, `INPUT`, `EYEBROW`, `PAGE_TITLE`, `CARD`, `pageContainer`, …). `cn` does not merge Tailwind classes: pick a variant, never override a recipe's radius, height or colour from the call site, and never restyle a shared component with `!important` classes.
+- Pages share one gutter: `px-5 md:px-10` (`pageContainer`).
+- One wash per route: warm `bg-gradient-primary` for the Home hero and the Games landing page, lime `bg-gradient-profile` for Profile, cyan `bg-gradient-support` for Support. Everything else is monochrome surface (TV is the navy wire).
+- The nav is a "pill track" on the black chrome: the active item is an inverted `bg-on-wire text-wire` pill on desktop, the bottom bar and the drawer alike. NavLink variants own those styles.
 - Keep Next image optimization off (`unoptimized: true`); images come straight from the R2 CDN.
 
 ## Docs

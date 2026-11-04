@@ -2,12 +2,15 @@
 name: Lumina Soft
 description:
   Outdoor catalog + monochrome dashboard. One festival wash per route,
-  monochrome everywhere else so photos and maps stay the focus. Relaxed
-  16px/full for interactive, 14px for cards nested inside 16px parents,
-  high-contrast type for outdoor glare, shadowless flat with subtle
-  hover/border, soft brutalist pins. Three overlay patterns only:
-  flush top-sheet (search), right side-drawer (tasks you open yourself),
-  and the non-modal game-sheet (live game sessions on phones).
+  monochrome everywhere else so photos and maps stay the focus. Shape tells
+  controls from containers — every control (button, input, pill, chip, tab,
+  tag) is full-radius and 44px, buttons match inputs; every container
+  (card, panel, fieldset) is a 16px block. Black "wire" chrome with a pill
+  track nav, high-contrast type for outdoor glare, shadowless flat with
+  subtle hover/border, soft brutalist pins. Class recipes live in
+  src/components/ui/recipes.ts. Three overlay patterns only — flush
+  top-sheet (search), right side-drawer (tasks you open yourself), and the
+  non-modal game-sheet (live game sessions on phones).
 colors:
   surface: "#f7f9fb"
   surface-dim: "#d8dadc"
@@ -65,10 +68,10 @@ colors:
   gradient-primary: "linear-gradient(to right, #ea580c, #dc2626, #b91c1c)"
   on-gradient: "#ffffff"
   # route washes — one per route, blessed only (see pages.*)
-  gradient-explore-start: "#22d3ee"
-  gradient-explore-mid: "#2dd4bf"
-  gradient-explore-end: "#0d9488"
-  gradient-explore: "linear-gradient(to bottom, #22d3ee, #2dd4bf, #0d9488)"
+  gradient-support-start: "#22d3ee"
+  gradient-support-mid: "#2dd4bf"
+  gradient-support-end: "#0d9488"
+  gradient-support: "linear-gradient(to bottom, #22d3ee, #2dd4bf, #0d9488)"
   gradient-profile-start: "#ecfccb"
   gradient-profile-mid: "#d9f99d"
   gradient-profile-end: "#a3e635"
@@ -111,23 +114,23 @@ pages:
     hero: "gradient-primary"
     wire: "wire"
     note: "Page shell bg-surface; hero is the only full-bleed warm gradient via `bg-gradient-primary` (tokens #ea580c/#dc2626/#b91c1c). Interior cards stay surface-container-lowest. Marquee rail uses wire (=primary)."
-  explore:
-    shell: "gradient-explore"
-    note: "Full-bleed vertical wash from #22d3ee via #2dd4bf to #0d9488. Only Explore uses this wash. Tabs, cards, directory inside stay monochrome surface-container-lowest."
+  support:
+    shell: "gradient-support"
+    note: "Full-bleed vertical cyan wash (#22d3ee → #2dd4bf → #0d9488) via `bg-gradient-support`, on /support, /support/data-curator and /thankyouforsupport so the flow keeps one palette. Body ink is on-surface; eyebrows use EYEBROW_ON_WASH; buttons are controlClass('primary') and controlClass('onWash'). Cards inside stay CARD (surface-container-lowest)."
   games:
     shell: "gradient-primary"
     note: "Games landing reuses the same warm hero gradient as home. Board/panel inside stays monochrome."
   map:
     shell: "surface"
-    canvas: "map-surface-container-lowest + --map-tile-filter (see DESIGN_MAP.md)"
-    note: "Page shell/sidebar/controls stay strictly light monochrome (surface + outline-variant); ONLY the map canvas, tiles, and on-map markers/overlays use the high-contrast dark palette from DESIGN_MAP.md (--color-map-* + --map-tile-filter). Pins are the only tight 4px in the app."
+    canvas: "map-surface-container-lowest + --map-tile-filter (map section of globals.css)"
+    note: "Page shell/sidebar/controls stay strictly light monochrome (surface + outline-variant); ONLY the map canvas, tiles, and on-map markers/overlays use the high-contrast dark palette (--color-map-* + --map-tile-filter, defined in the map section of src/app/globals.css). Pins are the only tight 4px in the app."
   profile:
     shell: "gradient-profile"
-    note: "Horizontal wash from #ecfccb via #d9f99d to #a3e635. The lime pages — only Profile uses it. Stats/activity inside stay white/monochrome."
+    note: "Horizontal lime wash (#ecfccb → #d9f99d → #a3e635) via `bg-gradient-profile` only — never raw from-lime-* literals. ProfileShell applies it with min-h-full to the loaded, loading (ProfileSkeleton) and error states. Tabs and segments are the light pill track (SEGMENTED_TRACK); cards, tiles and rows inside stay white/monochrome with 1px borders."
   tv:
     shell: "inverse-surface"
     overlay: "tv-overlay"
-    note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Text uses on-wire and wire-muted only. Panels use tv-overlay. All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
+    note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Shares the shell gutter (px-5 md:px-10). Row headings are the wire-rail heading (font-display uppercase tracking-eyebrow text-on-wire). Discipline pills are chipClass(active, 'wire'); CTAs are controlClass('onWire' | 'onWireOutline'); the search field is INPUT_ON_WIRE. Text uses on-wire and wire-muted only — no text-black or white/* literals. Video cards are rounded-inner with a full-radius tag. Panels use PANEL_ON_WIRE (tv-overlay). All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
   sport-events:
     shell: "surface"
     hero: "on-surface"
@@ -138,9 +141,9 @@ pages:
   spot-detail:
     shell: "surface"
     hero: "on-surface"
-    note: "Large photo hero with on-surface scrim + white labels and controls (see components.scrim-pills) — keeps spot photo hero, not a gradient wash."
+    note: "Large photo hero with on-surface scrim + full-radius photo controls (controlClass('onPhoto')) and labels (tagClass('onPhoto'), TypeBadges size md) — see components.scrim-pills. The hero is full-bleed on phones; content sections use the px-5 gutter and the frame is md:px-10. Actions and location links are pill controls; suggested-spot filters are chips. Error, not-found and 503 states share one CARD."
   chrome:
-    note: "Overlays and drawers are chrome, not washes — they never take a pages.* gradient. SearchOverlay top-sheet and MobileDrawer side-drawer both sit on monochrome panels (see components.overlays)."
+    note: "Header, bottom bar, mobile drawer and the search top-sheet are the black wire chrome (bg-primary / wire tokens), never a pages.* gradient. On TV the wire is navy via the route override. Nav uses the pill track (components.nav). Header height is --app-header-h, the bottom bar is --mobile-nav-h."
 typography:
   font-family: Plus Jakarta Sans, sans-serif
   # Single family — both display and sans map to Plus Jakarta Sans (via next/font --font-jakarta)
@@ -152,38 +155,49 @@ typography:
     title: "18-20px / 600-700 / uppercase tight — card titles, section headers"
     headline: "24-32px / 700 / tight — SectionHeader md:text-[32px]"
     display: "32-48px mobile 32 / 700 / tracking -0.02-0.03em — Hero/event featured title only"
-  tracking-steps: "0.04em (dense card rows) · 0.05em (labels/badges) · 0.08em (pills/CTAs) · 0.12em (eyebrows/stats) — no other tracking literals"
+  tracking-steps: "tracking-dense 0.04em (dense card rows) · tracking-label 0.05em (labels/badges/tags) · tracking-pill 0.08em (pills/CTAs/nav) · tracking-eyebrow 0.12em (eyebrows/rail headings) · tracking-display -0.02em (page titles) — use the tokens, never tracking-[*] literals or tracking-wide(r/st)"
+  recipes:
+    source: "src/components/ui/recipes.ts"
+    EYEBROW: "font-display text-xs font-bold uppercase tracking-eyebrow text-secondary (EYEBROW_ON_WASH: text-on-surface, EYEBROW_ON_WIRE: text-wire-muted)"
+    PAGE_TITLE: "font-display text-2xl sm:text-4xl font-bold uppercase leading-tight tracking-display (no colour)"
+    SECTION_TITLE: "font-display text-xl sm:text-2xl font-bold uppercase leading-tight tracking-tight (no colour)"
+    CARD_TITLE: "font-display text-lg font-bold uppercase leading-tight tracking-tight (no colour)"
+    META: "font-display text-xs font-semibold uppercase tracking-label text-secondary — counts, dates, scopes"
+    LABEL: "font-display 10px bold uppercase tracking-label text-secondary — stat/field labels"
+    BODY: "text-sm leading-relaxed text-on-surface-variant, weight 400"
   tokens-legacy:
     display: { size: 48px, weight: "700", line-height: "1.2", letter-spacing: -0.02em }
     headline: { size: 32px, weight: "700", line-height: "1.3" }
     title: { size: 20px, weight: "600", line-height: "1.4" }
     body: { size: 16px, weight: "400", line-height: "1.5" }
     label: { size: 12px, weight: "600", line-height: "1.2", letter-spacing: 0.05em, text-transform: uppercase }
-  font-mono: "ui-monospace — used for Eyebrow 10px mono stamps, not display"
+  font-mono: "ui-monospace — only via the <Eyebrow> stamp component (10px mono, e.g. numbered steps, 'Coming soon'), and the ⌘K kbd. Section eyebrows use the EYEBROW recipe (display), not mono."
   rules:
     - "Tracking: display -0.02em only for large titles; pick the nearest tracking-step above — ad-hoc tracking-[0.08em] in Hero is the reference."
     - "Weights: 700 for headings/CTAs, 600 for labels, 400 for body copy — no light weights."
     - "Always text-base (16px) on inputs on mobile to prevent iOS zoom — enforced in globals.css base + @media (max-width:639px)."
 shape:
+  rule: "Controls vs containers. Controls — buttons, links styled as buttons, inputs, selects, pills, chips, tabs, tags/badges, icon buttons, nav items — are rounded-control (full). Containers — cards, panels, fieldsets, textareas, empty states, alerts, image frames, sheets — are rounded-container (16px). Buttons match inputs: same height (h-control 44px), same 1px border."
   radius-none: 0px
   radius-sm: 4px
   radius-md: 8px
   radius-card: 12px
   radius-inner: 14px
   radius-lg: 16px
+  radius-container: 16px
   radius-chassis: 20px
   radius-xl: 24px
   radius-full: 9999px
+  radius-control: 9999px
   usage:
-    - "4px (sm) — pins + cluster tight surfaces + event tier pill only (leaflet-pin 4px)"
-    - "8px (md) — badges, labels on spot photos, search thumbs 8px"
-    - "12px (card) — ProfileStats and glance info tiles, GameBoardControls dek, gate alerts"
-    - "14px (inner) — rows/cards NESTED inside a 16px parent or photo card: Hero inner panels + numbered rows, MarqueeCard, skeleton inner blocks. Never top-level on a page section."
-    - "16px (lg) — default card radius: SpotCard, EventCard, SurfaceCard, search rows, toasts, overlay panels, drawer footer cards (relaxed); map controls h-12"
-    - "20px (chassis) / 24px (xl) — game PanelShell chassis (20-24) only"
-    - "full — all pills, CTAs, tabs, primary buttons, toast action/dismiss"
-  literal-map: "rounded-[4px]→rounded-sm · rounded-[8px]→rounded-md · rounded-[12px]→rounded-card · rounded-[14px]→rounded-inner (nested only) · rounded-[16px]→rounded-lg · rounded-[9999px]→rounded-full — no new rounded-[*] literals"
-  rule: "Interactive prefers 16px or full. 14px is blessed ONLY as nested-inner. Tight 4/8 only where spec lists — never for primary CTAs or toast containers."
+    - "control (full) — every button, input, select, pill, chip, tab, tag, badge, icon button, nav item, toast action/dismiss"
+    - "container (16px) — SpotCard, EventCard, CARD, panels, fieldsets, textareas, empty states, toasts, overlay panels, drawer footer cards"
+    - "inner (14px) — rows/blocks nested inside a 16px container (CARD_NESTED), MarqueeCard and TV video cards, skeleton inner blocks. Never top-level."
+    - "card (12px) — stat and glance tiles (TILE), alerts (alertClass), TV queue items"
+    - "sm (4px) — map pins, clusters and the event tier pill only"
+    - "chassis 20px / xl 24px — game PanelShell chassis only"
+  literal-map: "rounded-[4px]→rounded-sm · rounded-[8px] on a tag→rounded-control · rounded-[12px]→rounded-card · rounded-[14px]→rounded-inner · rounded-[16px]→rounded-container · rounded-[9999px]→rounded-control — no new rounded-[*] literals"
+  exceptions: "Game sessions (/games/:id) keep 48px+ outdoor targets (LocationBlockedCallout size lg). Map pins stay 4px."
 spacing:
   margin-mobile: 20px
   margin-desktop: 40px
@@ -194,8 +208,12 @@ spacing:
   section: 80px
   stack-sm: 8px
   stack-md: 24px
+  control: "2.75rem (44px) — h-control / min-h-control / w-control"
+  control-sm: "2.25rem (36px) — chips, segments, desktop nav items"
+  app-header-h: "calc(2.75rem + 1.5rem + 1px) — py-3 + one control row + border"
   mobile-nav-h: "calc(77px + env(safe-area-inset-bottom))"
-  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5/gutter=16. Shell chrome shares px-5/md:px-10 margins; BottomNav is 77px plus the safe area (var(--mobile-nav-h)), and main content pads by the same variable; Header is content-height (py-3), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
+  page-gutter: "px-5 (20px) md:px-10 (40px) — pageContainer(width) in recipes.ts; widths 3xl (league forms), 5xl (profile), 6xl (spot, support, TV), 7xl (landing, sport events)"
+  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5=20. Every page and the shell chrome share the px-5/md:px-10 gutter; photo heroes may bleed on phones. BottomNav is 77px plus the safe area (var(--mobile-nav-h)), and main content pads by the same variable; Header is content-height (--app-header-h), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
   durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
   easings: "ease-out default, linear for radar sweep (3.5s), cubic-bezier(0, 0, 0.2, 1) for ping"
@@ -205,34 +223,43 @@ motion:
   shadows: "Shadowless by default (shadow-none). Exceptions: PanelShell inset+ 0 8px 24px, MarqueeCard hover:shadow-md + -translate-y-px, hover:shadow-sm on discover cards."
   overlays: "Overlay flush-top: spring damping 30 stiffness 320, 0.18s fade fallback. SideDrawer: 280ms ease-out enter, 200ms ease-in exit, backdrop bg-on-surface/50 0.18s. Game-sheet: 280ms ease-out between detents, 0ms under reduced motion. Toast: opacity/y 0.16s easeOut stagger 0.04."
 components:
-  buttons:
-    primary:
-      bg: var(--color-primary)
-      text: var(--color-on-primary)
-      radius: var(--radius-full)
-      padding: 12px 24px
-      note: "Solid uses primary #0a0a0a (not on-surface #121212). Outline uses border-outline-variant + surface-container-high. EXCEPTION: never place a primary-solid CTA on a dark panel (bg-on-surface) — near-invisible black-on-black (see known-issues.final-cta)."
-    accent:
-      bg: var(--gradient-primary)
-      text: var(--color-on-gradient)
-      radius: var(--radius-full)
-      padding: 12px 24px
-      note: "Accent button only on gradient hero — not repeating UI."
-    secondary:
-      bg: var(--color-surface-container-high)
-      text: var(--color-on-surface)
-      radius: var(--radius-full)
+  controls:
+    source: "controlClass(tone, size), iconButtonClass, INPUT, chipClass, tagClass, SEGMENTED_TRACK/segmentClass in src/components/ui/recipes.ts"
+    shape: "rounded-control (full), 1px border, min-h-control (44px; sm 36px), px-5, font-display text-xs bold uppercase tracking-pill, active:translate-y-px"
+    tones:
+      primary: "border-primary bg-primary text-on-primary — the one main action per surface"
+      secondary: "border-outline-variant bg-surface-container-high text-on-surface"
+      outline: "border-outline-variant bg-surface-container-lowest text-on-surface — quiet actions on light surfaces"
+      onWash: "border-on-surface bg-surface-container-lowest text-on-surface — light button on a route wash (Home hero, Support, Profile)"
+      onWashDark: "on-primary-container fill, text-on-primary — dark button on a wash"
+      onWire: "bg-on-wire text-wire — solid button on the black/navy wire (header Sign in, TV CTAs)"
+      onWireOutline: "bg-wire-border border-wire-border-strong text-on-wire — icon buttons and quiet actions on the wire"
+      onPhoto: "scrim pill: border-white/15 bg-on-surface/55 text-surface backdrop-blur-md"
+    inputs: "INPUT matches the button: rounded-control, min-h-control, 1px outline-variant border, text-base sm:text-sm. INPUT_ON_WIRE for dark rails. TEXTAREA is a container (rounded-container)."
+    chips: "chipClass(active, 'light'|'wire') — min-h-control-sm, text-xs bold tracking-label; active is solid primary (light) or on-wire (wire)"
+    tags: "tagClass(tone) — non-interactive full-radius labels, 10px bold tracking-label: neutral, outline, solid, onWire, onPhoto"
+    segments: "SEGMENTED_TRACK + segmentClass(active): a rounded-control track (p-1) with an inverted active pill — the light-surface twin of the nav pill track"
+    rule: "Never place a primary-solid control on a dark panel (bg-on-surface) — use onWire there. cn does not merge classes: pick a tone, never override radius/height/colour at the call site."
   cards:
     bg: var(--color-surface-container-lowest)
     radius: var(--radius-lg)
     border: 1px solid var(--color-outline-variant)
     padding: 16px
-    note: "Default card is radius-lg (16px): SpotCard, EventCard, SurfaceCard, search rows. Rows nested INSIDE a 16px card use radius-inner (14px): Hero rider/discover rows, MarqueeCard. No other 14px."
+    recipe: "CARD (CARD_FRAME + p-4 sm:p-5), CARD_NESTED, TILE, EMPTY_STATE, PANEL_ON_WIRE, alertClass(tone)"
+    note: "Default card is rounded-container (16px): SpotCard, EventCard, SurfaceCard, CARD. Rows nested INSIDE a 16px card use rounded-inner (14px). Never a card inside a card — drop the inner frame (e.g. ProfileTricksPanel bare). Borders are 1px."
   badges:
-    radius: var(--radius-md)
-    padding: 4px 8px
-    text-style: "label 12px 600 uppercase 0.05em"
-    note: "Tones use semantic containers — neutral/info/success vs error. Fix Badge rounded-[8px] literal → rounded-md."
+    radius: var(--radius-control)
+    padding: 4px 10px
+    text-style: "font-display 12px bold uppercase tracking-label"
+    note: "Badge (ui/Badge.tsx) tones use semantic containers — neutral/info/success vs error. Full radius like every tag."
+  nav:
+    pattern: "Pill track on the black wire chrome — one active treatment everywhere"
+    desktop: "AppNavList desktop = rounded-control bg-wire-border p-1 track; NavLink items min-h-control-sm px-4 text-xs bold uppercase tracking-pill; inactive text-wire-muted hover:bg-wire-border-strong; active bg-on-wire text-wire. The 'you' group is a second track (lg+)."
+    bottom-bar: "77px + safe area, bg-primary, border-t wire-border. Each tab: icon in an h-8 w-14 rounded-control pill over an 11px semibold uppercase tracking-label label; active pill bg-on-wire text-wire, label text-on-wire; inactive text-wire-muted."
+    drawer: "Rows are full-width rounded-control min-h-control pills: bg-wire-border at rest, bg-on-wire text-wire when active. Footer: Preferences and Sign out are controlClass('onWireOutline'), profile card is a rounded-container wire card, Sign in is controlClass('onWire')."
+    header-actions: "Search, notifications, menu and drawer close are iconButtonClass('onWireOutline') circles (44px, icon 18)."
+    badges: "Count badges are bg-on-wire text-wire rounded-control with ring-2 ring-wire so they read on the active white pill too."
+    rule: "NavLink variants own every nav style. Never restyle a NavLink, SignInLink or SignOutButton from a parent or with !important — add a variant."
   overlays:
     note: "Exactly three patterns — pick one, never a fourth. Top-sheet and side-drawer are modal: they lock body scroll, trap focus, close on Escape, honor reduced-motion. The game-sheet is the only non-modal pattern. None of them auto-open during play."
     game-sheet:
@@ -254,13 +281,13 @@ components:
       gestures: "Touch swipe toward the edge closes (96px or 500px/s). Mouse never drags, so text stays selectable."
       timing: "Only ever opened by a tap: side-drawers never auto-open."
       backdrop: "absolute inset-0 bg-on-surface opacity 0.5"
-      header: "DrawerHeader: eyebrow, title, and one circular h-12 w-12 rounded-full close button with an X at 20 (border-outline-variant, never border-on-surface). MobileDrawer swaps the title for BrandLogo."
-      footer: "border-t border-outline-variant bg-surface-container-low px-5 py-5; Preferences full-width button; profile card radius-lg"
+      header: "DrawerHeader: eyebrow, title, and one circular close button (iconButtonClass, X at 20). MobileDrawer is the wire chrome: BrandLogo + iconButtonClass('onWireOutline') close."
+      footer: "Light drawers: border-t border-outline-variant bg-surface-container-low px-5 py-5. MobileDrawer: border-t border-wire-border bg-primary, see components.nav.drawer."
       rule: "NavLink variants own their own styles — never restyle [data-nav-tab] from the drawer/header parent."
   scrim-pills:
     note: "Pills floating over photography (MarqueeCard kind/meta/title, spot heroes). Blessed exception to monochrome: translucent dark pills on image."
     pill: "rounded-full border border-white/15 bg-on-surface/55 text-surface backdrop-blur-md, micro 9px bold uppercase 0.08em"
-    spot-photos: "On the spot hero and map popup, controls are rounded-lg border-2, 44-48px, text-xs semibold 0.05em, white focus outline. Non-interactive labels are rounded-md."
+    spot-photos: "On the spot hero, controls are controlClass('onPhoto') (full, 44px, white focus outline) and labels are tagClass('onPhoto') or TypeBadges variant overlay size md — all full radius."
     wash: "bg-gradient-to-t from-on-surface/45 via-transparent to-transparent over the image bottom"
     rule: "Scrim pills live on photos only — never on flat surfaces (use badges there)."
   skeleton:
@@ -268,9 +295,9 @@ components:
     on-light: " rounded bg-surface-container-high (blocks) / bg-surface-container-lowest (inner cards)"
     on-gradient-or-wire: " bg-white/10-25 (never surface tokens — invisible on dark)"
   empty-state:
-    note: "Dashed-border centered block for zero results (search no-results). radius-lg border-dashed border-outline-variant bg-surface-container-low, secondary label copy."
+    note: "EMPTY_STATE: dashed-border centered block for zero results. rounded-container border-dashed border-outline-variant bg-surface-container-low, secondary label copy, one control."
   gate-alert:
-    note: "Forced-gate notice (search region+country gate). radius-card border + tinted bg + eyebrow title + secondary body — never raw primary/10 black tint (see migration-checklist)."
+    note: "alertClass(tone): rounded-card border + tinted bg + EYEBROW title + body. LocationBlockedCallout uses it. Never a raw primary/10 black tint."
   toast:
     generic: true
     palette: "Monochrome — same as cards (bg-surface-container-lowest or surface, border-outline-variant, text-on-surface). No per-page tint. Stays generic for all routes."
@@ -280,7 +307,7 @@ components:
       radius: var(--radius-lg)
       shadow: "sm"
       padding: "px-4 py-3"
-      note: "Relaxed, not square — replaces current rounded-[4px] border-on-surface. Fresh air via shape, not color. No square corners."
+      note: "Relaxed, not square. Fresh air via shape, not color."
     tag: "font-display 10px bold uppercase tracking-widest [ INFO / OK / ERR ] — text-on-surface, stays monochrome"
     title: "font-display xs bold uppercase tracking-widest text-on-surface"
     message: "xs text-on-surface (semibold without title, normal with title)"
@@ -303,50 +330,34 @@ components:
     viewport: "fixed bottom-[calc(var(--mobile-nav-h)+1rem)] left-1/2 -translate-x-1/2 z-[1400] w-[min(28rem,calc(100vw-2rem))] gap-2 md:bottom-6; above every overlay. placement=top below md during game sessions, where the game-sheet owns the bottom edge."
     motion: "motion/react opacity/y 0.16s easeOut stagger 0.04, useReducedMotion opacity-only"
     a11y: "error tone role=alert aria-live=assertive + border-l-2 or dot may remain but not square; others role=status polite"
-    bugfix: "Remove rounded-[4px] everywhere in Toast.tsx:38,71,81,107 → radius-lg/full above. No square."
   pins:
-    pin: "See DESIGN_MAP.md — border-map-outline (#c29e99) bg-map-surface-container (#303030) text-map-on-surface (#efefef) radius-sm 4px; active inverts to bg-map-electric (#ff3131) text-on-primary border-map-primary (#ffc4bd) outline 2px map-primary + ambient glow + leafletPinPulse 180ms; saved uses bg-map-surface-container-high (#3b3b3b) text-map-primary border-map-primary + map-primary-container (#ff6b63) corner notch"
-    cluster: "See DESIGN_MAP.md — bg-map-surface-container-high (#3b3b3b) text-map-primary (#ffc4bd) border-1.5 border-map-primary-container (#ff6b63) radius-lg 16px 30px chip + ambient glow"
-    user: "See DESIGN_MAP.md — crosshair + ring 2.5s ping + dot 10px in map-tertiary (#82ddf7 cyan) with 2px map-tertiary-fixed (#c4f0ff) border + cyan glow; nearby radius circle uses #82ddf7 / #36b1d0"
-    event: "See DESIGN_MAP.md — tier 8px 4px radius bg-map-surface-container-low (#2b2b2b) border-map-outline (#c29e99) text-map-on-surface-variant (#f0ccc9); square 88-132px 4px radius bg-map-surface-container (#303030) text-map-on-surface border-map-primary-container (#ff6b63) (active bg-map-electric #ff3131 outline 2px map-primary #ffc4bd); status dot live (#ff3131)/upcoming (#ffc4bd)/completed (#d6d4d3) by form"
+    pin: "Map palette (globals.css) — border-map-outline (#c29e99) bg-map-surface-container (#303030) text-map-on-surface (#efefef) radius-sm 4px; active inverts to bg-map-electric (#ff3131) text-on-primary border-map-primary (#ffc4bd) outline 2px map-primary + ambient glow + leafletPinPulse 180ms; saved uses bg-map-surface-container-high (#3b3b3b) text-map-primary border-map-primary + map-primary-container (#ff6b63) corner notch"
+    cluster: "Map palette (globals.css) — bg-map-surface-container-high (#3b3b3b) text-map-primary (#ffc4bd) border-1.5 border-map-primary-container (#ff6b63) radius-lg 16px 30px chip + ambient glow"
+    user: "Map palette (globals.css) — crosshair + ring 2.5s ping + dot 10px in map-tertiary (#82ddf7 cyan) with 2px map-tertiary-fixed (#c4f0ff) border + cyan glow; nearby radius circle uses #82ddf7 / #36b1d0"
+    event: "Map palette (globals.css) — tier 8px 4px radius bg-map-surface-container-low (#2b2b2b) border-map-outline (#c29e99) text-map-on-surface-variant (#f0ccc9); square 88-132px 4px radius bg-map-surface-container (#303030) text-map-on-surface border-map-primary-container (#ff6b63) (active bg-map-electric #ff3131 outline 2px map-primary #ffc4bd); status dot live (#ff3131)/upcoming (#ffc4bd)/completed (#d6d4d3) by form"
   panel:
     chassis: "radius-chassis 20px border 1.5px on-surface bg-surface-container-high + inset highlight"
     screen: "radial highlight + 0 2px 12px shadow, no scanline"
     deck: "surface-container + border-top outline-variant"
-known-issues:
-  final-cta-contrast:
-    severity: "must-fix"
-    where: "src/components/landing/FinalCta.tsx:14,35"
-    problem: "Dark panel bg-on-surface (#121212) with Heart icon text-primary (#0a0a0a, near-invisible) and primary-solid CTA bg-primary (#0a0a0a on #121212, black-on-black)."
-    fix: "Eyebrow icon → text-accent-start; primary CTA → keep pill shape but bg-surface-container-lowest text-on-surface, OR gradient accent bg-gradient-primary text-on-gradient. Never primary-solid on on-surface panels."
 guidelines:
   - "Performance Rule — Strict Ban on animate-pulse in UI: Never use animate-pulse or continuous pulse animation loops in user interface components, controls, badges, status dots, or live indicators. Web browser performance, battery efficiency, and repaint minimization make this mandatory and non-negotiable. Only one exception: transient loading skeletons (*Skeleton.tsx, loading.tsx)."
   - "Monochrome is the system (surface ladder #f7f9fb → #ffffff → #e7eaee). Color only via blessed washes in pages.* plus permission/activity LEDs — photos/maps stay the focus."
-  - "All maps across the entire site (LeafletCanvas, SpotStaticMap, SpotMapFallback) use the dedicated high-contrast dark palette in DESIGN_MAP.md (--color-map-* tokens and --map-tile-filter on .leaflet-tile-pane / .map-tile-dark) ONLY for the map canvas, tiles, and on-map markers/overlays; surrounding page shells, layouts, sidebars, and cards stay light monochrome."
+  - "All maps across the entire site (LeafletCanvas, SpotStaticMap, SpotMapFallback) use the dedicated high-contrast dark palette (--color-map-* tokens and --map-tile-filter on .leaflet-tile-pane / .map-tile-dark, map section of globals.css) ONLY for the map canvas, tiles, and on-map markers/overlays; surrounding page shells, layouts, sidebars, and cards stay light monochrome."
   - "One wash per route, picked from pages.* only — never invent a new from-*/via-* gradient. Use var(--gradient-*) or bg-gradient-*."
-  - "Reserve #0a0a0a (primary — pure black) strictly for CTAs, active nav, critical states, pins active, wire rail. Never on dark panels (see known-issues)."
-  - "Use relaxed 16px (radius-lg) or full for interactive; 14px (radius-inner) only for rows/cards nested inside a 16px parent. No new rounded-[*] literals — use the shape.literal-map."
+  - "Reserve #0a0a0a (primary — pure black) for CTAs, critical states, active pins and the wire chrome (header, bottom bar, drawer, marquee rail). Never a primary-solid control on a dark panel — use controlClass('onWire')."
+  - "Shape rule: controls are rounded-control (full) and h-control (44px), buttons match inputs; containers are rounded-container (16px), nested rows rounded-inner (14px), tiles rounded-card (12px). No new rounded-[*] literals — use shape.literal-map."
+  - "Build from src/components/ui/recipes.ts. Never override a recipe's radius/height/colour from the call site and never restyle shared components with !important — cn does not merge Tailwind classes."
+  - "Every page shares the px-5 md:px-10 gutter (pageContainer). AppShell owns <main>; pages render a <div>."
   - "On wire surfaces use wire-* tokens, never white/* literals. On photos use scrim-pills. The two never mix."
-  - "Overlays: pick top-sheet, side-drawer, or game-sheet from components.overlays — never a fourth pattern, never restyle NavLink from a parent."
-  - "Keep type high-contrast (Plus Jakarta Sans bold/600, tight tracking) for outdoor glare. Mono only for Eyebrow stamps."
+  - "Overlays: pick top-sheet, side-drawer, or game-sheet from components.overlays — never a fourth pattern. Nav is the pill track (components.nav); never restyle NavLink from a parent."
+  - "Keep type high-contrast (Plus Jakarta Sans bold/600, tight tracking) for outdoor glare. Use the typography.recipes; mono only for the <Eyebrow> stamp."
   - "Outdoor session rule — inside /games/:id on phones: text at least 14px (the 10-12px label convention does not apply here), controls at least 48px, gaps at least 12px, result buttons 72px with 18px bold labels. Landed is solid primary with a check, Failed is white with a 3px on-surface border and an X: they differ by fill, shape, and icon, never by hue alone. Status is text plus icon, never colour alone. No CRT scanline."
   - "Shadows are the exception, not the rule — Panel chassis + Marquee hover are the only 8-24px + shadow sits. Else flat border."
   - "New pages/sections must declare their pages.* entry first — if not listed, default to surface monochrome."
-rounded:
-  sm: 0.25rem
-  DEFAULT: 0.5rem
-  md: 0.75rem
-  lg: 1rem
-  xl: 1.5rem
-  full: 9999px
-migration-checklist:
-  # DESIGN.md-only scope: components untouched. Work through top to bottom.
-  - "gradient-token: Hero.tsx:27 + HomeSkeleton.tsx:12 `bg-gradient-to-r from-orange-600 via-red-600 to-red-700` → `bg-gradient-primary`; drop stray `py-auto` (Hero.tsx:27, invalid no-op)."
-  - "wire-tokens: LandingMarquee.tsx:210,248-266 `text-white/border-white/15/bg-white/10-15` → on-wire/wire-border/wire-border-strong/wire-muted per colors mapping above. Keep ring-white focus rings + from-wire edge fades."
-  - "final-cta: apply known-issues.final-cta-contrast fix (icon + CTA tokens)."
-  - "drawer: MobileDrawer.tsx:65 remove `border-r` (right-side drawer); :75 `border-on-surface` → `border-outline-variant`; :81 delete `[&_[data-nav-tab]]` parent overrides (move into NavLink mobile-drawer variant); :69/:143/:151/:168/:174 `rounded-[16px]/[9999px]` → rounded-lg/full."
-  - "search: SearchOverlay.tsx:244 delete bogus `focus:true` class; :284 gate alert `border-primary/20 bg-primary/10` → radius-card + surface tint per gate-alert; radius literals → shape.literal-map."
-  - "headers: Header.tsx:27 drop `[&_[data-nav-tab]]` parent overrides (rounded/selected styles belong in NavLink desktop variant)."
-  - "badges: Badge `rounded-[8px]` literal → `rounded-md` (unchanged from prior spec, still open)."
-  - "skeleton: HomeSkeleton gradient/wire blocks already use bg-white/* correctly — no change; only the hero wash literal (item 1)."
+open-follow-ups:
+  # Outside the consistency pass; each is UI-only unless noted.
+  - "saved: src/app/saved/page.tsx still spells the warm wash as raw from-orange-600/via-red-600/to-red-700 — use bg-gradient-primary or drop to surface (Saved is not a blessed wash route)."
+  - "pages not yet on the recipes: login, legal (terms/privacy), notifications, spot create, admin."
+  - "links to /explore (spots error/not-found) point at a route that no longer exists — behaviour fix, not styling."
+  - "MarqueeCard corner labels are solid white, not the scrim-pill spec."
 ---
