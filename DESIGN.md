@@ -143,7 +143,10 @@ pages:
     hero: "on-surface"
     note: "Large photo hero with on-surface scrim + full-radius photo controls (controlClass('onPhoto')) and labels (tagClass('onPhoto'), TypeBadges size md) — see components.scrim-pills. The hero is full-bleed on phones; content sections use the px-5 gutter and the frame is md:px-10. Actions and location links are pill controls; suggested-spot filters are chips. Error, not-found and 503 states share one CARD."
   chrome:
-    note: "Header, bottom bar, mobile drawer and the search top-sheet are the black wire chrome (bg-primary / wire tokens), never a pages.* gradient. On TV the wire is navy via the route override. Nav uses the pill track (components.nav). Header height is --app-header-h, the bottom bar is --mobile-nav-h."
+    note: "Header, bottom bar, mobile drawer and the search top-sheet are the black wire chrome (bg-primary / wire tokens), never a pages.* gradient. On TV the wire is navy via the route override. Nav uses the pill track (components.nav). Header height is --app-header-h, the bottom bar is --mobile-nav-h. The header is sticky top-0 and stays pinned for the whole page (see spacing.note for the shell height that makes this hold)."
+  login:
+    shell: "surface"
+    note: "Phones: no card — content sits straight on the px-5 gutter; the card frame (CARD_FRAME values, sm:px-8 sm:py-10) starts at sm. EYEBROW tagline above PAGE_TITLE, then BODY copy and the error alertClass('error'). Continue with Google (primary) and Back to directory (outline) are stacked full-width lg (48px) controls; from sm Back is a plain pill. Fine print sits below the actions."
 typography:
   font-family: Plus Jakarta Sans, sans-serif
   # Single family — both display and sans map to Plus Jakarta Sans (via next/font --font-jakarta)
@@ -213,7 +216,7 @@ spacing:
   app-header-h: "calc(2.75rem + 1.5rem + 1px) — py-3 + one control row + border"
   mobile-nav-h: "calc(77px + env(safe-area-inset-bottom))"
   page-gutter: "px-5 (20px) md:px-10 (40px) — pageContainer(width) in recipes.ts; widths 3xl (league forms), 5xl (profile), 6xl (spot, support, TV), 7xl (landing, sport events)"
-  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5=20. Every page and the shell chrome share the px-5/md:px-10 gutter; photo heroes may bleed on phones. BottomNav is 77px plus the safe area (var(--mobile-nav-h)), and main content pads by the same variable; Header is content-height (--app-header-h), not fixed. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
+  note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5=20. Every page and the shell chrome share the px-5/md:px-10 gutter; photo heroes may bleed on phones. BottomNav is 77px plus the safe area (var(--mobile-nav-h)), and main content pads by the same variable; Header is content-height (--app-header-h), not fixed. Shell height: on routes where the document scrolls, the AppShell root is min-h-dvh so main's nav padding lands after the last line (an h-dvh root would leave the last ~77px under the bottom bar). Only the map, /games/:id, /games and / keep a one-screen h-dvh frame, and they scroll inside main. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
   durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
   easings: "ease-out default, linear for radar sweep (3.5s), cubic-bezier(0, 0, 0.2, 1) for ping"
@@ -356,8 +359,7 @@ guidelines:
   - "New pages/sections must declare their pages.* entry first — if not listed, default to surface monochrome."
 open-follow-ups:
   # Outside the consistency pass; each is UI-only unless noted.
-  - "saved: src/app/saved/page.tsx still spells the warm wash as raw from-orange-600/via-red-600/to-red-700 — use bg-gradient-primary or drop to surface (Saved is not a blessed wash route)."
-  - "pages not yet on the recipes: login, legal (terms/privacy), notifications, spot create, admin."
+  - "pages not yet on the recipes: spot create, admin."
   - "links to /explore (spots error/not-found) point at a route that no longer exists — behaviour fix, not styling."
   - "MarqueeCard corner labels are solid white, not the scrim-pill spec."
 ---

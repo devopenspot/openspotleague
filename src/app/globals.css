@@ -206,7 +206,10 @@
   --spacing-control: 2.75rem;
   --spacing-control-sm: 2.25rem;
   /* Shell chrome heights. Header = py-3 + one control row + 1px border;
-   * BottomNav = 77px + safe area. Keep both in sync with Header/AppNavList. */
+   * BottomNav = 77px + safe area. Keep both in sync with Header/AppNavList.
+   * AppShell pads <main> by --mobile-nav-h; that only clears the bottom bar
+   * because document-scrolling routes use a min-h-dvh root (AppShell.tsx).
+   * Only map / game / landing routes keep an h-dvh frame and scroll in main. */
   --app-header-h: calc(2.75rem + 1.5rem + 1px);
   --mobile-nav-h: calc(77px + env(safe-area-inset-bottom));
 

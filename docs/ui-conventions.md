@@ -39,6 +39,7 @@ Controls and containers are told apart by shape, never by colour.
 
 - Header: `py-3` plus one control row plus a 1px border, exposed as `--app-header-h`. Use it for sticky offsets and `min-h-[calc(100dvh-var(--app-header-h))]`.
 - Bottom bar: 77px plus the safe area, exposed as `--mobile-nav-h`. `AppShell` pads `main` by it below `md`.
+- Shell height: on routes where the document scrolls, the `AppShell` root is `min-h-dvh`, so that padding lands after the last line and the sticky header stays pinned for the whole page. Only the map, `/games/:id`, `/games` and `/` keep a one-screen `h-dvh` frame, and they scroll inside `main`. Never fix the shell at one screen on a route whose document scrolls: the last ~77px end up under the bottom bar on phones.
 - Nav is a "pill track" on the black chrome. Inactive items are `text-wire-muted`; the active item is an inverted `bg-on-wire text-wire` pill. Desktop items sit in a `rounded-control bg-wire-border p-1` track, the bottom bar draws the pill behind the icon, and drawer rows are full-width pills. `NavLink` variants own these styles; never restyle them from a parent.
 - `AppShell` owns the `<main>` landmark. Pages render a `<div>`, never a nested `<main>`.
 
@@ -62,6 +63,8 @@ Inputs, selects, and textareas must render at 16px or larger on mobile, otherwis
 
 - `src/components/games/create/GameCreateForm.tsx`: helper subcomponents live in `form-parts.tsx`. Trick-catalog filtering (AND logic) lives in `trick-catalog-filters.ts`, which has tests.
 - `src/components/games/board/GameBoardControls.tsx`: renders the desktop deck and `GameSheet`, the phone action surface. Each phase's next step comes from `deriveGameSheetView` in `sheet-state.ts` (tested), derived game state from `layout/header-state.ts` (tested), and presentational parts are in `layout/header-parts.tsx`.
+- `src/components/games/award/`: the end-of-game results dialog. `AwardDialog` renders it and `AwardResultsTable` the standings; the copy, ranking and viewer row come from `buildAwardResult` in `src/lib/games/award-result.ts` (tested), which also feeds the board's end bar through `layout/header-state.ts`. `src/components/games/shared/LetterTrack.tsx` draws elimination letters for both the dialog and the live crew board.
+- Overlays pick their initial focus from a `data-autofocus` element (`useFocusTrap`); mark the dialog's main action with it.
 - `src/components/feedback/`: `BottomSheet` is the non-modal game-sheet, `SideDrawer` plus `DrawerParts` are for anything opened on purpose. See `DESIGN.md`, `components.overlays`.
 - When JSX dereferences `game`, keep the explicit `game &&` guard. TypeScript narrowing is lost across module boundaries.
 
