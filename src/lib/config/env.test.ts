@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
-import { resolveDatabaseUrl } from "./env"
+import {
+  DEFAULT_PAYPAL_SUPPORT_URL,
+  isValidPaypalSupportUrl,
+  resolveDatabaseUrl,
+  resolvePaypalSupportUrl,
+} from "./env"
 
 describe("database URL resolution", () => {
   it("ignores blank values and prefers the runtime pooler", () => {
@@ -23,5 +28,35 @@ describe("database URL resolution", () => {
     expect(getDatabaseUrl()).toBe("postgres://hyperdrive")
     expect(isUsingHyperdrive()).toBe(true)
     vi.unstubAllEnvs()
+  })
+})
+
+describe("PayPal support URL validation and resolution", () => {
+  it("accepts https PayPal checkout and paypal.me URLs with a non-empty path", () => {
+    expect(
+      isValidPaypalSupportUrl("https://www.paypal.com/ncp/payment/8XU46EVXHAVYL"),
+    ).toBe(true)
+    expect(isValidPaypalSupportUrl("https://paypal.me/openspot")).toBe(true)
+    expect(isValidPaypalSupportUrl("https://www.paypal.me/openspot")).toBe(true)
+  })
+
+  it("rejects non-https schemes, non-PayPal hosts, and bare root URLs", () => {
+    expect(
+      isValidPaypalSupportUrl("http://www.paypal.com/ncp/payment/8XU46EVXHAVYL"),
+    ).toBe(false)
+    expect(isValidPaypalSupportUrl("https://evil.example.com/paypal")).toBe(false)
+    expect(isValidPaypalSupportUrl("https://www.paypal.com/")).toBe(false)
+    expect(isValidPaypalSupportUrl("not-a-url")).toBe(false)
+  })
+
+  it("falls back to DEFAULT_PAYPAL_SUPPORT_URL when unset or invalid", () => {
+    expect(resolvePaypalSupportUrl(undefined)).toBe(DEFAULT_PAYPAL_SUPPORT_URL)
+    expect(resolvePaypalSupportUrl("   ")).toBe(DEFAULT_PAYPAL_SUPPORT_URL)
+    expect(resolvePaypalSupportUrl("https://evil.example.com/pay")).toBe(
+      DEFAULT_PAYPAL_SUPPORT_URL,
+    )
+    expect(resolvePaypalSupportUrl(" https://paypal.me/openspot ")).toBe(
+      "https://paypal.me/openspot",
+    )
   })
 })

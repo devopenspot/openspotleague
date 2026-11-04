@@ -20,6 +20,35 @@ function resolveAppUrl(value: unknown): unknown {
   return undefined;
 }
 
+export const DEFAULT_PAYPAL_SUPPORT_URL =
+  "https://www.paypal.com/ncp/payment/8XU46EVXHAVYL";
+
+const PAYPAL_ALLOWED_HOSTS = new Set([
+  "paypal.com",
+  "www.paypal.com",
+  "paypal.me",
+  "www.paypal.me",
+]);
+
+export function isValidPaypalSupportUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value.trim());
+    if (parsed.protocol !== "https:") return false;
+    if (!PAYPAL_ALLOWED_HOSTS.has(parsed.hostname.toLowerCase())) return false;
+    return parsed.pathname.length > 1;
+  } catch {
+    return false;
+  }
+}
+
+export function resolvePaypalSupportUrl(rawValue?: string | null): string {
+  const trimmed = rawValue?.trim();
+  if (trimmed && isValidPaypalSupportUrl(trimmed)) {
+    return trimmed;
+  }
+  return DEFAULT_PAYPAL_SUPPORT_URL;
+}
+
 const EnvSchema = z
   .object({
     // Public origin (used by metadataBase, sitemap, robots).
@@ -32,7 +61,10 @@ const EnvSchema = z
     // coming-soon state instead of rendering broken external links.
     NEXT_PUBLIC_BUY_ME_A_COFFEE_URL: optionalUrl(),
     NEXT_PUBLIC_PATREON_URL: optionalUrl(),
-    NEXT_PUBLIC_PAYPAL_URL: optionalUrl(),
+    NEXT_PUBLIC_PAYPAL_URL: optionalUrl().refine(
+      (u) => !u || isValidPaypalSupportUrl(u),
+      "must be an https:// PayPal URL (paypal.com or paypal.me)",
+    ),
 
     // OpenWeather
     URL_WEATHER: z
@@ -253,6 +285,17 @@ export function getDirectDatabaseUrl(): string | null {
 
 export function getSupabaseUrl(): string | null {
   return env.NEXT_PUBLIC_SUPABASE_URL ?? null;
+}
+
+/**
+ * Public PayPal support URL. Reads the literal `process.env.NEXT_PUBLIC_PAYPAL_URL`
+ * first so Vite/vinext inlines it at build time without requiring a Worker secret,
+ * falling back to `env.NEXT_PUBLIC_PAYPAL_URL` and `DEFAULT_PAYPAL_SUPPORT_URL`.
+ */
+export function getPaypalSupportUrl(): string {
+  return resolvePaypalSupportUrl(
+    process.env.NEXT_PUBLIC_PAYPAL_URL ?? env.NEXT_PUBLIC_PAYPAL_URL,
+  );
 }
 
 export function getSupabaseAdminUrl(): string | null {

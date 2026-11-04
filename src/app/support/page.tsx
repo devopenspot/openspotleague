@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Heart, ShieldCheck } from "lucide-react";
-import { env } from "@/lib/config/env";
+import { QRCodeSVG } from "qrcode.react";
+import { getPaypalSupportUrl } from "@/lib/config/env";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import {
   CARD,
@@ -13,9 +14,6 @@ import {
 } from "@/components/ui/recipes";
 
 // Process to be a data curator: sign in → fill form → admin review → scoped role.
-const PAYPAL_URL =
-  env.NEXT_PUBLIC_PAYPAL_URL ??
-  "https://www.paypal.com/ncp/payment/8XU46EVXHAVYL";
 
 export const metadata = {
   title: "Support Open Spot",
@@ -58,6 +56,8 @@ const primaryBtn = controlClass("primary");
 const secondaryBtn = controlClass("onWash");
 
 export default function SupportPage() {
+  const paypalUrl = getPaypalSupportUrl();
+
   return (
     <div className="min-h-full w-full bg-gradient-support text-on-surface">
       <div className="mx-auto grid w-full max-w-6xl gap-5 px-5 py-8 md:px-10 md:py-10 lg:min-h-[calc(100dvh-var(--app-header-h))] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-10">
@@ -79,20 +79,6 @@ export default function SupportPage() {
             data curators keep the map honest — only for the countries and
             sports they can verify.
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/support/data-curator" className={primaryBtn}>
-              Become a data curator{" "}
-              <ArrowUpRight size={15} aria-hidden="true" />
-            </Link>
-            <a
-              href={PAYPAL_URL}
-              target="_blank"
-              rel="noopener"
-              className={secondaryBtn}
-            >
-              Support via PayPal <ArrowUpRight size={15} aria-hidden="true" />
-            </a>
-          </div>
           <ol
             className="mt-5 flex flex-wrap gap-x-4 gap-y-1"
             aria-label="How to become a data curator"
@@ -103,6 +89,21 @@ export default function SupportPage() {
               </li>
             ))}
           </ol>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href="/support/data-curator" className={primaryBtn}>
+              Become a data curator{" "}
+              <ArrowUpRight size={15} aria-hidden="true" />
+            </Link>
+            <a
+              href={paypalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Support Open Spot via PayPal (opens in a new tab)"
+              className={secondaryBtn}
+            >
+              Support via PayPal <ArrowUpRight size={15} aria-hidden="true" />
+            </a>
+          </div>
         </section>
 
         <div className="grid gap-4 mb-16">
@@ -170,10 +171,39 @@ export default function SupportPage() {
                 Live
               </span>
             </div>
-            <p className="mt-3 text-sm leading-5 text-on-surface-variant">
-              One-off support for hosting, imagery and map costs. The map stays
-              open. Support via PayPal.
-            </p>
+            <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-sm">
+                <p className="text-sm leading-5 text-on-surface-variant">
+                  One-off support for hosting, imagery and map costs. The map
+                  stays open.
+                </p>
+                <div className="mt-4">
+                  <a
+                    href={paypalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Donate via PayPal (opens in a new tab)"
+                    className={primaryBtn}
+                  >
+                    Donate via PayPal{" "}
+                    <ArrowUpRight size={15} aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
+              <div
+                role="img"
+                aria-label="QR code to support Open Spot via PayPal"
+                className="hidden shrink-0 rounded-inner border border-outline-variant bg-surface-container-lowest p-2.5 sm:block"
+              >
+                <QRCodeSVG
+                  value={paypalUrl}
+                  size={88}
+                  bgColor="#ffffff"
+                  fgColor="#0a0a0a"
+                  level="M"
+                />
+              </div>
+            </div>
           </section>
         </div>
       </div>
