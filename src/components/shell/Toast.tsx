@@ -96,7 +96,7 @@ export function ToastViewport({
     <div
       aria-label="Notifications"
       role="region"
-      className={`pointer-events-none fixed left-1/2 z-[1400] flex w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 flex-col items-stretch gap-2 md:top-auto md:bottom-6 ${placement === "top" ? "top-[calc(env(safe-area-inset-top)+0.5rem)]" : "bottom-[calc(var(--mobile-nav-h,80px)+1rem)]"}`}
+      className={`pointer-events-none fixed left-1/2 z-[1400] flex w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 flex-col items-stretch gap-2 md:top-auto md:bottom-6 ${placement === "top" ? "top-[calc(env(safe-area-inset-top)+0.5rem)]" : "bottom-[calc(var(--mobile-nav-h)+1rem)]"}`}
     >
       <AnimatePresence initial={false}>
         {toasts.map((t, i) => (

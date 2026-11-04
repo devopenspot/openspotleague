@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
+import { SECTION_TITLE } from "@/components/ui/recipes";
 
 type SectionHeaderVariant = "surface" | "inverse";
 
@@ -31,7 +32,7 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "flex items-end justify-between gap-4 pl-4 md:pl-0",
+        "flex items-end justify-between gap-4",
         className,
       )}
     >
@@ -41,8 +42,9 @@ export function SectionHeader({
             {eyebrowIcon}
             <span
               className={cn(
-                "font-display text-xs font-bold uppercase leading-tight tracking-[0.05em]",
-                eyebrowClassName,
+                "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow",
+                eyebrowClassName ??
+                  (variant === "inverse" ? "text-surface/85" : "text-secondary"),
               )}
             >
               {eyebrow}
@@ -52,7 +54,7 @@ export function SectionHeader({
         <h2
           id={titleId}
           className={cn(
-            "font-display text-xl font-bold uppercase leading-tight tracking-tight md:text-[32px] md:leading-[1.3]",
+            SECTION_TITLE,
             textClassName,
           )}
         >

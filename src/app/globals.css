@@ -109,14 +109,14 @@
     var(--color-accent-end)
   );
   --color-on-gradient: #ffffff;
-  --color-gradient-explore-start: #22d3ee;
-  --color-gradient-explore-mid: #2dd4bf;
-  --color-gradient-explore-end: #0d9488;
-  --gradient-explore: linear-gradient(
+  --color-gradient-support-start: #22d3ee;
+  --color-gradient-support-mid: #2dd4bf;
+  --color-gradient-support-end: #0d9488;
+  --gradient-support: linear-gradient(
     to bottom,
-    var(--color-gradient-explore-start),
-    var(--color-gradient-explore-mid),
-    var(--color-gradient-explore-end)
+    var(--color-gradient-support-start),
+    var(--color-gradient-support-mid),
+    var(--color-gradient-support-end)
   );
   --color-gradient-profile-start: #ecfccb;
   --color-gradient-profile-mid: #d9f99d;
@@ -201,10 +201,21 @@
   --spacing-stack-md: 1.5rem;
   --spacing-margin-mobile: 1.25rem;
   --spacing-margin-desktop: 2.5rem;
+  /* Control height — buttons match inputs (DESIGN.md shape.rule). h-control,
+   * min-h-control, w-control = 44px; *-control-sm = 36px for chips. */
+  --spacing-control: 2.75rem;
+  --spacing-control-sm: 2.25rem;
+  /* Shell chrome heights. Header = py-3 + one control row + 1px border;
+   * BottomNav = 77px + safe area. Keep both in sync with Header/AppNavList. */
+  --app-header-h: calc(2.75rem + 1.5rem + 1px);
   --mobile-nav-h: calc(77px + env(safe-area-inset-bottom));
 
-  /* Radii — relaxed 16/full for interactive, 14 (inner) for rows/cards nested
-   * inside a 16px parent or photo card, tight 4/8/12 only where listed. */
+  /* Radii — shape rule (DESIGN.md shape.rule):
+   *   controls (buttons, inputs, selects, pills, chips, tabs, badges, icon
+   *   buttons) → rounded-control (full);
+   *   containers (cards, panels, sheets, fieldsets, textareas) → rounded-container (16px);
+   *   nested containers → rounded-inner (14px); small tiles → rounded-card (12px);
+   *   map pins only → rounded-sm (4px). */
   --radius-none: 0px;
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -213,11 +224,11 @@
   --radius-lg: 16px;
   --radius-chassis: 20px;
   --radius-xl: 24px;
-  --radius: 8px;
-  --radius-md-rounded: 0.75rem;
   --radius-full: 9999px;
+  --radius-control: 9999px;
+  --radius-container: 16px;
 
-  /* Map-only theme tokens from DESIGN_MAP.md (lifted 20% for contrast & legibility) —
+  /* Map-only theme tokens (DESIGN.md pages.map) (lifted 20% for contrast & legibility) —
    * applied strictly to map canvases, tile layers (.leaflet-tile-pane and .map-tile-dark),
    * and on-map markers/overlays while surrounding page/layout chrome stays light. */
   --map-tile-filter: grayscale(100%) invert(100%) contrast(85%) brightness(125%);
@@ -291,7 +302,7 @@
   /* Account for sticky header when scrolling to focused elements */
   :target,
   *:focus-visible {
-    scroll-margin-top: 80px;
+    scroll-margin-top: calc(var(--app-header-h) + 0.5rem);
   }
 
   /* Prevent iOS Safari auto-zoom on focus (threshold 16px). Keep form
@@ -345,7 +356,7 @@
 }
 
 @layer base {
-  /* Keep Leaflet chrome in the DESIGN_MAP.md high-contrast nocturnal HUD palette. */
+  /* Keep Leaflet chrome in the high-contrast nocturnal HUD palette. */
   .leaflet-control-zoom {
     overflow: hidden;
     border: 1px solid var(--color-map-outline-variant) !important;
@@ -392,7 +403,7 @@
     background: var(--color-map-surface-container-lowest);
     font-family: var(--font-sans);
   }
-  /* General rule: all map tiles render in DESIGN_MAP.md high-contrast dark mode while page/layout chrome stays light. */
+  /* General rule: all map tiles render in the high-contrast dark mode while page/layout chrome stays light. */
   .leaflet-tile-pane,
   .map-tile-dark {
     filter: var(--map-tile-filter);
@@ -428,7 +439,7 @@
     --color-map-surface-variant: #595959;
   }
 
-  /* Custom divIcon pins — DESIGN_MAP.md high-contrast nocturnal HUD surfaces over dark tiles.
+  /* Custom divIcon pins — map palette: high-contrast nocturnal HUD surfaces over dark tiles.
    * Width/height come from Tailwind utility classes on the divIcon HTML so
    * the pin scales with the viewport. Base layer holds color/border/halo state. */
   .leaflet-pin {
@@ -552,7 +563,7 @@
     color: var(--color-map-primary);
   }
 
-  /* Active — DESIGN_MAP.md electric red (#ff3131) with luminous #ffb4ab ring and ambient glow */
+  /* Active — map palette: electric red (#ff3131) with luminous #ffb4ab ring and ambient glow */
   .leaflet-pin--active {
     animation: leafletPinPulse 180ms ease-out 1;
   }
@@ -614,7 +625,7 @@
     outline-offset: 3px;
   }
 
-  /* User-location pin — DESIGN_MAP.md tertiary cyan (#6ad4f4) crosshair, ping ring, and center dot. */
+  /* User-location pin — map palette: tertiary cyan (#6ad4f4) crosshair, ping ring, and center dot. */
   .leaflet-user-pin {
     border: 0;
     position: relative;
@@ -665,7 +676,7 @@
     opacity: 0.8;
   }
 
-  /* Event pin — DESIGN_MAP.md nocturnal HUD surface (#1f1f1f) with #ff544b border and #1b1b1b tier badge. */
+  /* Event pin — map palette: nocturnal HUD surface (#1f1f1f) with #ff544b border and #1b1b1b tier badge. */
   .leaflet-event-pin {
     display: flex;
     flex-direction: column;
@@ -911,8 +922,8 @@
     color: var(--color-on-gradient);
   }
 
-  .bg-gradient-explore {
-    background-image: var(--gradient-explore);
+  .bg-gradient-support {
+    background-image: var(--gradient-support);
     color: var(--color-on-surface);
   }
 
