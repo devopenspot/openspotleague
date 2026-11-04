@@ -19,7 +19,7 @@ const countries: CountryOption[] = (
 
 export default function DataCuratorApplicationPage() {
   return (
-    <main className="min-h-[calc(100dvh-4rem)] w-full bg-gradient-explore text-primary">
+    <main className="min-h-[calc(100dvh-4rem)] w-full bg-gradient-support text-primary">
       <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:py-8 md:px-10 md:py-10">
         <Link
           href="/support"

@@ -51,7 +51,7 @@ const secondaryBtn =
 
 export default function SupportPage() {
   return (
-    <main className="min-h-[calc(100dvh-4rem)] w-full bg-gradient-explore text-primary">
+    <main className="min-h-[calc(100dvh-4rem)] w-full bg-gradient-support text-primary">
       <div className="mx-auto grid w-full max-w-6xl gap-5 px-5 py-6 sm:py-8 md:px-10 lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-10 lg:py-6">
         <section>
           <Link
