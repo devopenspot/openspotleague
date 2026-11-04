@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, MapPin, Plus, Trophy, Users } from "lucide-react";
 import { JoinByCodeEntry } from "@/components/league/JoinByCodeEntry";
 import { PaymentGateNotice } from "@/components/league/PaymentGateNotice";
+import { alertClass, CARD, controlClass, EMPTY_STATE, EYEBROW, PAGE_TITLE, pageContainer, tagClass } from "@/components/ui/recipes";
 import {
   formatDateRange,
   groupLeagueEvents,
@@ -47,11 +48,11 @@ function EventCard({ item }: { item: MyLeagueEventItem }) {
     <li>
       <Link
         href={rolePath}
-        className="flex flex-col gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest p-4 transition-colors hover:border-outline"
+        className={`flex flex-col gap-3 ${CARD} transition-colors hover:border-outline`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface">
+            <p className="font-display text-sm font-bold uppercase tracking-dense text-on-surface">
               {item.name}
             </p>
             <p className="mt-1 flex items-center gap-2 text-xs text-secondary">
@@ -62,10 +63,10 @@ function EventCard({ item }: { item: MyLeagueEventItem }) {
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <span className="rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+            <span className={tagClass("outline")}>
               {statusLabel(item.status)}
             </span>
-            <span className="rounded-md bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface">
+            <span className={tagClass("neutral")}>
               {roleLabel(item.myRole)}
             </span>
           </div>
@@ -135,19 +136,19 @@ export default function LeagueHub() {
   const { organizing, judging, riding } = groupLeagueEvents(items);
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 py-8">
+    <div className={pageContainer("3xl")}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-display text-xs font-bold uppercase tracking-[0.12em] text-secondary">
+          <p className={EYEBROW}>
             League
           </p>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
+          <h1 className={`mt-1 ${PAGE_TITLE} text-on-surface`}>
             My sport events
           </h1>
         </div>
         <Link
           href="/league/new"
-          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary transition-opacity hover:opacity-90"
+          className={controlClass("primary")}
         >
           <Plus size={14} aria-hidden="true" />
           New event
@@ -163,26 +164,26 @@ export default function LeagueHub() {
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="h-24  rounded-lg bg-surface-container"
+              className="h-24 rounded-container bg-surface-container"
             />
           ))}
         </div>
       ) : error ? (
         <div
           role="alert"
-          className="flex flex-col items-start gap-3 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
+          className={`flex flex-col items-start gap-3 text-sm ${alertClass("error")}`}
         >
           {error}
           <button
             type="button"
             onClick={retry}
-            className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline"
+            className={controlClass("secondary")}
           >
             Retry
           </button>
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-6 py-12 text-center">
+        <div className={`flex flex-col items-center gap-3 ${EMPTY_STATE}`}>
           <Trophy size={24} aria-hidden="true" className="text-secondary" />
           <p className="font-display text-sm font-semibold">No events yet</p>
           <p className="max-w-sm text-sm text-secondary">
@@ -191,7 +192,7 @@ export default function LeagueHub() {
           </p>
           <Link
             href="/league/new"
-            className="mt-1 inline-flex min-h-11 items-center gap-2 rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline"
+            className={`mt-1 ${controlClass("secondary")}`}
           >
             <Plus size={14} aria-hidden="true" />
             Create an event
@@ -204,7 +205,7 @@ export default function LeagueHub() {
           <RoleGroup title="Riding" icon={MapPin} items={riding} />
         </div>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -219,7 +220,7 @@ function RoleGroup({
   if (items.length === 0) return null;
   return (
     <section aria-label={title}>
-      <h2 className="mb-3 font-display text-xs font-bold uppercase tracking-[0.08em] text-secondary">
+      <h2 className="mb-3 font-display text-xs font-bold uppercase tracking-pill text-secondary">
         {title} · {items.length}
       </h2>
       <ul className="flex flex-col gap-3">

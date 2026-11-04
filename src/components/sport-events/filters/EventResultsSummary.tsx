@@ -11,7 +11,7 @@ export function EventResultsSummary({
     <p
       aria-live="polite"
       aria-atomic="true"
-      className="font-display text-xs font-bold tracking-widest text-secondary uppercase"
+      className="font-display text-xs font-bold tracking-label text-secondary uppercase"
     >
       {visibleCount === totalCount
         ? `${totalCount} on the circuit`

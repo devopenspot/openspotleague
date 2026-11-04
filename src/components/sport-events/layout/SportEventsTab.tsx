@@ -53,7 +53,7 @@ export function SportEventsTab({ featured, events }: SportEventsTabProps) {
             {user ? (
               <Link
                 href="/league/new"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary transition-opacity hover:opacity-90"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-primary transition-opacity hover:opacity-90"
               >
                 <Plus size={14} aria-hidden="true" />
                 Create event
@@ -61,7 +61,7 @@ export function SportEventsTab({ featured, events }: SportEventsTabProps) {
             ) : null}
             <Link
               href="/league"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
             >
               <Trophy size={14} aria-hidden="true" />
               My league

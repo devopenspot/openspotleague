@@ -68,7 +68,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+        className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
       >
         {label} {required ? <span aria-hidden="true">*</span> : null}
       </label>
@@ -112,7 +112,7 @@ function Section({
 }) {
   return (
     <fieldset className="rounded-lg border border-outline-variant bg-surface-container-low p-5 sm:p-6">
-      <legend className="flex items-center gap-2 px-1 font-display text-sm font-bold tracking-[0.05em] text-on-surface">
+      <legend className="flex items-center gap-2 px-1 font-display text-sm font-bold tracking-label text-on-surface">
         <Icon size={16} aria-hidden="true" />
         {title}
       </legend>
@@ -240,7 +240,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
     <form onSubmit={handleSubmit} noValidate className="mx-auto w-full max-w-3xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-display text-xs font-bold uppercase tracking-[0.12em] text-secondary">
+          <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
             League
           </p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
@@ -253,7 +253,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             </p>
           ) : null}
         </div>
-        <p className="rounded-full border border-outline-variant bg-surface-container-high px-4 py-2 font-display text-xs font-semibold uppercase tracking-[0.08em] text-secondary">
+        <p className="rounded-full border border-outline-variant bg-surface-container-high px-4 py-2 font-display text-xs font-semibold uppercase tracking-pill text-secondary">
           Free plan · up to 3 riders
         </p>
       </div>
@@ -286,7 +286,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
           <div className="sm:col-span-2">
             <label
               htmlFor="league-description"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Description
             </label>
@@ -306,7 +306,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             ) : null}
           </div>
           <div className="sm:col-span-2">
-            <p className="mb-1.5 text-xs font-semibold tracking-[0.05em] text-secondary">
+            <p className="mb-1.5 text-xs font-semibold tracking-label text-secondary">
               Disciplines <span aria-hidden="true">*</span>
             </p>
             <ul className="flex flex-wrap gap-2" aria-label="Event disciplines">
@@ -405,7 +405,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
           <div>
             <label
               htmlFor="league-country"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Country <span aria-hidden="true">*</span>
             </label>
@@ -432,7 +432,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
           <div>
             <label
               htmlFor="league-category"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Category <span aria-hidden="true">*</span>
             </label>
@@ -467,14 +467,14 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
         <button
           type="button"
           onClick={() => router.push("/league")}
-          className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline"
+          className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={busy}
-          className="min-h-11 rounded-full bg-primary px-6 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="min-h-11 rounded-full bg-primary px-6 font-display text-xs font-semibold uppercase tracking-pill text-on-primary transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {busy ? "Creating…" : "Create event"}
         </button>

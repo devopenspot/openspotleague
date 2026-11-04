@@ -26,7 +26,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
     <article
       id="featured-event"
       data-event-id={event.id}
-      className="group relative w-full overflow-hidden rounded-[16px] border border-outline-variant bg-on-surface"
+      className="group relative w-full overflow-hidden rounded-container border border-outline-variant bg-on-surface"
     >
       <div className="relative min-h-[38rem] w-full sm:h-[480px] sm:min-h-0 md:h-[560px]">
         <AppImage
@@ -55,11 +55,11 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
         <div className="absolute inset-0 flex flex-col justify-between p-5 text-surface sm:p-8 md:p-10">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 font-display text-xs font-bold tracking-widest text-surface/80 uppercase">
+              <div className="flex items-center gap-2 font-display text-xs font-bold tracking-label text-surface/80 uppercase">
                 <Trophy size={12} aria-hidden="true" className="text-surface" />
                 <span>Featured Event</span>
               </div>
-              <span className="self-start rounded-[8px] border border-surface/70 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-widest text-surface uppercase">
+              <span className="self-start rounded-control border border-surface/70 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-label text-surface uppercase">
                 {event.categoryName}
               </span>
             </div>
@@ -77,7 +77,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${event.name} on Instagram`}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-[9999px] border border-surface/40 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-offset-4"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-control border border-surface/40 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-offset-4"
                       >
                         <Instagram size={14} aria-hidden="true" />
                       </a>
@@ -90,7 +90,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${event.name} on YouTube`}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-[9999px] border border-surface/40 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-offset-4"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-control border border-surface/40 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-offset-4"
                       >
                         <Youtube size={14} aria-hidden="true" />
                       </a>
@@ -99,7 +99,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                 </ul>
               )}
               {isLive && (
-                <div className="flex items-center gap-2 self-start rounded-[8px] border border-error bg-on-surface/30 px-3 py-1 font-display text-xs font-bold tracking-widest text-error uppercase">
+                <div className="flex items-center gap-2 self-start rounded-control border border-error bg-on-surface/30 px-3 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
                   <span
                     aria-hidden="true"
                     className="h-1.5 w-1.5 rounded-full bg-error -dot"
@@ -127,10 +127,10 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                   aria-hidden="true"
                 />
                 <div className="min-w-0">
-                  <dt className="font-display text-xs font-bold tracking-widest text-surface/60 uppercase">
+                  <dt className="font-display text-xs font-bold tracking-label text-surface/60 uppercase">
                     Date
                   </dt>
-                  <dd className="font-display text-sm font-bold tracking-wide text-surface uppercase sm:text-base">
+                  <dd className="font-display text-sm font-bold tracking-dense text-surface uppercase sm:text-base">
                     {event.dateRangeLabel}
                   </dd>
                 </div>
@@ -142,10 +142,10 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                   aria-hidden="true"
                 />
                 <div className="min-w-0">
-                  <dt className="font-display text-xs font-bold tracking-widest text-surface/60 uppercase">
+                  <dt className="font-display text-xs font-bold tracking-label text-surface/60 uppercase">
                     Location
                   </dt>
-                  <dd className="font-display text-sm font-bold tracking-wide text-surface uppercase sm:text-base truncate">
+                  <dd className="font-display text-sm font-bold tracking-dense text-surface uppercase sm:text-base truncate">
                     {location.city}
                     {location.country ? `, ${location.country}` : ""}
                     {location.venue && (
@@ -165,7 +165,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Visit ${event.name} official site in a new tab`}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-[9999px] bg-primary px-5 py-3 font-display text-xs font-bold tracking-widest text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px sm:px-6"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-control bg-primary px-5 py-3 font-display text-xs font-bold tracking-label text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px sm:px-6"
                 >
                   <span>Visit official site</span>
                   <ExternalLink
@@ -181,7 +181,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                   {event.sports.map((sport) => (
                     <li
                       key={sport}
-                      className="rounded-[8px] border border-surface/40 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-widest text-surface uppercase"
+                      className="rounded-control border border-surface/40 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-label text-surface uppercase"
                     >
                       {sport}
                     </li>
@@ -198,7 +198,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                     },
                   })}
                   aria-label={`Show spots and events in ${event.location.country} on the map`}
-                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-[9999px] border border-surface/40 bg-on-surface/20 px-4 py-2 font-display text-xs font-bold tracking-widest text-surface uppercase transition-colors hover:bg-on-surface/40 focus-visible:outline-offset-4"
+                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-control border border-surface/40 bg-on-surface/20 px-4 py-2 font-display text-xs font-bold tracking-label text-surface uppercase transition-colors hover:bg-on-surface/40 focus-visible:outline-offset-4"
                 >
                   <span>View spots and events in {event.location.country}</span>
                   <MapPinned

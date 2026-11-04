@@ -29,7 +29,7 @@ export function JoinByCodeEntry({ variant = "compact" }: JoinByCodeEntryProps) {
         Invite code
       </label>
       {variant === "link" ? (
-        <span className="inline-flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-secondary">
+        <span className="inline-flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-pill text-secondary">
           <Ticket size={14} aria-hidden="true" />
           Have a code?
         </span>
@@ -48,7 +48,7 @@ export function JoinByCodeEntry({ variant = "compact" }: JoinByCodeEntryProps) {
       <button
         type="submit"
         disabled={!trimmed}
-        className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline disabled:opacity-50"
+        className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline disabled:opacity-50"
       >
         Join
       </button>

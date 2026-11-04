@@ -35,7 +35,7 @@ export function EventSkeleton() {
           </div>
         </div>
         <div className="mx-5 sm:mx-6 lg:mx-10">
-          <div className="min-h-[38rem] w-full animate-pulse rounded-[16px] border border-outline-variant bg-surface-container sm:h-[480px] sm:min-h-0 md:h-[560px]" />
+          <div className="min-h-[38rem] w-full animate-pulse rounded-container border border-outline-variant bg-surface-container sm:h-[480px] sm:min-h-0 md:h-[560px]" />
         </div>
       </section>
 
@@ -52,7 +52,7 @@ export function EventSkeleton() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="flex flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest"
+              className="flex flex-col overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest"
             >
               <div className="h-52 w-full animate-pulse bg-surface-container" />
               <div className="space-y-3 p-5">

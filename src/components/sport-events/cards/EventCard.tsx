@@ -35,7 +35,7 @@ function CategoryBadge({ categoryName }: { categoryName: string }) {
   return (
     <span
       aria-hidden="true"
-      className="rounded-[8px] border border-outline bg-surface/95 px-2 py-1 font-display text-xs font-bold tracking-widest text-on-surface uppercase"
+      className="rounded-control border border-outline bg-surface/95 px-2 py-1 font-display text-xs font-bold tracking-label text-on-surface uppercase"
     >
       {categoryName}
     </span>
@@ -59,7 +59,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
     <article
       data-event-card={event.id}
       data-event-status={event.status}
-      className="group relative flex w-full flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest text-left transition-[border-color,background-color] hover:border-on-surface focus-within:border-on-surface"
+      className="group relative flex w-full flex-col overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest text-left transition-[border-color,background-color] hover:border-on-surface focus-within:border-on-surface"
     >
       <div className="relative h-52 w-full overflow-hidden bg-on-surface">
         {event.url ? (
@@ -124,7 +124,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${event.name} on Instagram`}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-[9999px] bg-surface/95 text-on-surface transition-colors hover:bg-surface focus-visible:outline-offset-4"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-surface/95 text-on-surface transition-colors hover:bg-surface focus-visible:outline-offset-4"
                 >
                   <Instagram size={12} aria-hidden="true" />
                 </a>
@@ -137,7 +137,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${event.name} on YouTube`}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-[9999px] bg-surface/95 text-on-surface transition-colors hover:bg-surface focus-visible:outline-offset-4"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-surface/95 text-on-surface transition-colors hover:bg-surface focus-visible:outline-offset-4"
                 >
                   <Youtube size={12} aria-hidden="true" />
                 </a>
@@ -147,7 +147,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
         )}
 
         {event.status === "live" && (
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-[8px] bg-surface/95 px-2 py-1 font-display text-xs font-bold tracking-widest text-error uppercase">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-control bg-surface/95 px-2 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
             <span
               aria-hidden="true"
               className="h-1.5 w-1.5 rounded-full bg-error -dot"
@@ -168,7 +168,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           />
           <span
             className={cn(
-              "font-display text-xs font-bold tracking-widest uppercase",
+              "font-display text-xs font-bold tracking-label uppercase",
               STATUS_TEXT_STYLES[event.status],
             )}
           >
@@ -176,12 +176,12 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           </span>
         </div>
 
-        <h3 className="font-display text-lg font-bold tracking-wide text-on-surface uppercase group-hover:underline">
+        <h3 className="font-display text-lg font-bold tracking-dense text-on-surface uppercase group-hover:underline">
           {event.name}
         </h3>
 
         {event.shortName && (
-          <span className="mt-1 block font-display text-xs tracking-widest text-secondary uppercase">
+          <span className="mt-1 block font-display text-xs tracking-label text-secondary uppercase">
             {event.shortName}
           </span>
         )}
@@ -228,7 +228,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
             {event.sports.map((sport) => (
               <li
                 key={sport}
-                className="rounded-[8px] border border-outline-variant bg-surface-container-low px-2 py-1 font-display text-xs font-bold tracking-widest text-on-surface uppercase"
+                className="rounded-control border border-outline-variant bg-surface-container-low px-2 py-1 font-display text-xs font-bold tracking-label text-on-surface uppercase"
               >
                 {sport}
               </li>
@@ -245,7 +245,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
               },
             })}
             aria-label={`Show spots and events in ${event.location.country} on the map`}
-            className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-[9999px] border border-outline-variant bg-surface-container-high px-4 py-2 font-display text-xs font-bold tracking-widest text-on-surface uppercase transition-colors hover:bg-surface-container-highest focus-visible:outline-offset-4"
+            className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-control border border-outline-variant bg-surface-container-high px-4 py-2 font-display text-xs font-bold tracking-label text-on-surface uppercase transition-colors hover:bg-surface-container-highest focus-visible:outline-offset-4"
           >
             <span>View spots and events in {event.location.country}</span>
             <MapPinned
@@ -268,7 +268,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${event.name} on Instagram`}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-[9999px] px-2 font-display text-xs font-bold tracking-widest text-on-surface uppercase hover:underline focus-visible:outline-offset-4"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-control px-2 font-display text-xs font-bold tracking-label text-on-surface uppercase hover:underline focus-visible:outline-offset-4"
                 >
                   <Instagram size={11} aria-hidden="true" />
                   Instagram
@@ -285,7 +285,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${event.name} on YouTube`}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-[9999px] px-2 font-display text-xs font-bold tracking-widest text-on-surface uppercase hover:underline focus-visible:outline-offset-4"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-control px-2 font-display text-xs font-bold tracking-label text-on-surface uppercase hover:underline focus-visible:outline-offset-4"
                 >
                   <Youtube size={11} aria-hidden="true" />
                   YouTube
@@ -301,7 +301,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Visit ${event.name} official site in a new tab`}
-            className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-[9999px] bg-primary px-4 py-3 font-display text-xs font-bold tracking-widest text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px"
+            className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-control bg-primary px-4 py-3 font-display text-xs font-bold tracking-label text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px"
           >
             <span>Visit official site</span>
             <ExternalLink

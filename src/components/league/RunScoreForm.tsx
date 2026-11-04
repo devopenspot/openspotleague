@@ -38,7 +38,7 @@ export function RunScoreForm({
             key={criterion.key}
             className="rounded-md border border-outline-variant bg-surface-container-low p-2"
           >
-            <p className="mb-1 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+            <p className="mb-1 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
               {criterion.label}
             </p>
             <div className="flex items-center justify-between gap-1">
@@ -93,7 +93,7 @@ export function RunScoreForm({
             if (result) setScores({});
           })();
         }}
-        className="col-span-2 min-h-11 rounded-full bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-[0.08em] text-on-primary hover:opacity-90 disabled:opacity-40"
+        className="col-span-2 min-h-11 rounded-full bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-40"
       >
         {submitLabel}
       </button>

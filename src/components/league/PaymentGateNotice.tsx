@@ -67,13 +67,13 @@ export function PaymentGateNotice({
       role={state === "disabled" ? "alert" : "status"}
       aria-live="polite"
       className={cn(
-        "flex flex-col gap-2 rounded-[16px] border p-4 sm:p-5",
+        "flex flex-col gap-2 rounded-container border p-4 sm:p-5",
         STATE_STYLES[state],
       )}
     >
       <div className="flex items-center gap-2">
         <Icon size={16} aria-hidden="true" className="shrink-0" />
-        <h2 className="font-display text-xs font-bold uppercase tracking-widest">
+        <h2 className="font-display text-xs font-bold uppercase tracking-label">
           {title}
         </h2>
       </div>

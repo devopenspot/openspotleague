@@ -93,7 +93,7 @@ export function StatusFilter({ events }: StatusFilterProps) {
 
       <dl
         aria-label="Filter events by status"
-        className="grid grid-cols-4 gap-1.5 self-start rounded-[16px] border border-outline-variant bg-surface-container-low p-1.5 sm:self-end"
+        className="grid grid-cols-4 gap-1.5 self-start rounded-container border border-outline-variant bg-surface-container-low p-1.5 sm:self-end"
       >
         {tiles.map((tile) => {
           const active = current === tile.value;
@@ -134,7 +134,7 @@ function StatusStat({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "truncate flex max-h-18 md:max-h-20 min-w-0 flex-col items-start gap-1.5 rounded-[16px] px-2 py-3 transition-[background-color,color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:min-w-[90px] sm:px-4",
+        "truncate flex max-h-18 md:max-h-20 min-w-0 flex-col items-start gap-1.5 rounded-inner px-2 py-3 transition-[background-color,color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:min-w-[90px] sm:px-4",
         active
           ? "bg-primary text-on-primary"
           : "bg-surface-container-high text-on-surface hover:bg-surface-container-highest",
@@ -148,7 +148,7 @@ function StatusStat({
             active ? "bg-on-primary" : dotClass,
           )}
         />
-        <h2 className="font-display text-xs font-bold tracking-widest uppercase truncate">
+        <h2 className="font-display text-xs font-bold tracking-label uppercase truncate">
           {label}
         </h2>
       </div>

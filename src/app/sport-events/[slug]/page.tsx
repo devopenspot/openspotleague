@@ -116,18 +116,18 @@ export default async function SportEventPage({
   const hasSocials = Boolean(event.instagram || event.youtube);
 
   return (
-    <main className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
+    <div className="mx-auto w-full max-w-7xl px-5 py-8 md:px-10 md:py-10">
       <nav aria-label="Breadcrumb" className="mb-6">
         <Link
           href="/sport-events"
-          className="inline-flex items-center gap-2 font-display text-xs font-bold uppercase tracking-widest text-secondary underline underline-offset-4 hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-2 font-display text-xs font-bold uppercase tracking-label text-secondary underline underline-offset-4 hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           <span aria-hidden="true">←</span> Back to events
         </Link>
       </nav>
 
       {/* Hero image + header */}
-      <section className="overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest">
+      <section className="overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest">
         <div className="relative h-[320px] w-full overflow-hidden bg-on-surface sm:h-[440px]">
           <AppImage
             src={event.image}
@@ -151,12 +151,12 @@ export default async function SportEventPage({
           {/* top meta row */}
           <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4 sm:p-6">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-[8px] border border-surface/60 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-widest text-surface uppercase backdrop-blur-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-control border border-surface/60 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-label text-surface uppercase backdrop-blur-sm">
                 <Trophy size={12} aria-hidden="true" />
                 {event.categoryName}
               </span>
               {isLive ? (
-                <span className="inline-flex items-center gap-1.5 rounded-[8px] bg-surface px-2.5 py-1 font-display text-xs font-bold tracking-widest text-error uppercase">
+                <span className="inline-flex items-center gap-1.5 rounded-control bg-surface px-2.5 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
                   <span
                     aria-hidden="true"
                     className="h-1.5 w-1.5 rounded-full bg-error -dot"
@@ -164,7 +164,7 @@ export default async function SportEventPage({
                   Live
                 </span>
               ) : isCompleted ? (
-                <span className="inline-flex rounded-[8px] bg-surface/90 px-2.5 py-1 font-display text-xs font-bold tracking-widest text-secondary uppercase">
+                <span className="inline-flex rounded-control bg-surface/90 px-2.5 py-1 font-display text-xs font-bold tracking-label text-secondary uppercase">
                   Completed
                 </span>
               ) : null}
@@ -211,12 +211,12 @@ export default async function SportEventPage({
               {event.name}
             </h1>
             {event.shortName ? (
-              <p className="mt-2 font-display text-xs font-bold uppercase tracking-widest text-surface/70">
+              <p className="mt-2 font-display text-xs font-bold uppercase tracking-label text-surface/70">
                 {event.shortName}
               </p>
             ) : null}
             <div className="mt-3 flex flex-wrap items-center gap-2 text-surface/90">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 font-display text-xs font-bold uppercase tracking-wide text-on-surface">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 font-display text-xs font-bold uppercase tracking-dense text-on-surface">
                 <Calendar size={12} aria-hidden="true" />
                 {event.dateRangeLabel}
               </span>
@@ -230,7 +230,7 @@ export default async function SportEventPage({
                   {event.sports.map((sport) => (
                     <span
                       key={sport}
-                      className="rounded-full border border-surface/40 bg-on-surface/30 px-2 py-1 font-display text-[10px] font-bold uppercase tracking-widest text-surface"
+                      className="rounded-full border border-surface/40 bg-on-surface/30 px-2 py-1 font-display text-[10px] font-bold uppercase tracking-label text-surface"
                     >
                       {sport}
                     </span>
@@ -245,7 +245,7 @@ export default async function SportEventPage({
         <div className="grid gap-6 p-5 sm:p-6 md:p-8 lg:grid-cols-[1fr_340px]">
           <div className="space-y-6">
             {isUpcoming ? (
-              <div className="inline-flex items-center gap-2 rounded-[12px] border border-outline-variant bg-surface-container-high px-3 py-2 font-mono text-xs uppercase tracking-widest text-on-surface">
+              <div className="inline-flex items-center gap-2 rounded-card border border-outline-variant bg-surface-container-high px-3 py-2 font-mono text-xs uppercase tracking-label text-on-surface">
                 <span
                   className="h-1.5 w-1.5 rounded-full bg-primary -dot"
                   aria-hidden="true"
@@ -259,7 +259,7 @@ export default async function SportEventPage({
             ) : null}
 
             <div className="space-y-3">
-              <h2 className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
+              <h2 className="font-display text-xs font-bold uppercase tracking-label text-secondary">
                 About
               </h2>
               <p className="max-w-prose text-sm leading-6 text-on-surface-variant sm:text-base">
@@ -275,10 +275,10 @@ export default async function SportEventPage({
                   aria-hidden="true"
                 />
                 <div>
-                  <dt className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
+                  <dt className="font-display text-xs font-bold uppercase tracking-label text-secondary">
                     Date
                   </dt>
-                  <dd className="mt-1 font-display text-sm font-semibold uppercase tracking-wide text-on-surface">
+                  <dd className="mt-1 font-display text-sm font-semibold uppercase tracking-dense text-on-surface">
                     {event.dateRangeLabel}
                   </dd>
                   {event.endDate && event.endDate !== event.startDate ? (
@@ -295,7 +295,7 @@ export default async function SportEventPage({
                   aria-hidden="true"
                 />
                 <div className="min-w-0">
-                  <dt className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
+                  <dt className="font-display text-xs font-bold uppercase tracking-label text-secondary">
                     Location
                   </dt>
                   <dd className="mt-1 text-sm font-semibold text-on-surface">
@@ -320,13 +320,13 @@ export default async function SportEventPage({
 
             {event.sports.length > 0 ? (
               <div className="flex flex-wrap gap-1.5 border-t border-outline-variant pt-6">
-                <span className="w-full font-display text-xs font-bold uppercase tracking-widest text-secondary">
+                <span className="w-full font-display text-xs font-bold uppercase tracking-label text-secondary">
                   Disciplines
                 </span>
                 {event.sports.map((sport) => (
                   <span
                     key={sport}
-                    className="rounded-[8px] border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-widest text-on-surface"
+                    className="rounded-control border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-label text-on-surface"
                   >
                     {sport}
                   </span>
@@ -344,7 +344,7 @@ export default async function SportEventPage({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Visit ${event.name} official site in a new tab`}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-display text-xs font-bold uppercase tracking-widest text-on-primary transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-display text-xs font-bold uppercase tracking-label text-on-primary transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 Visit official site
                 <ExternalLink size={14} aria-hidden="true" />
@@ -360,7 +360,7 @@ export default async function SportEventPage({
                   },
                 })}
                 aria-label={`Show spots and events in ${event.location.country} on the map`}
-                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-outline-variant bg-surface-container-high px-4 py-3 font-display text-xs font-bold uppercase tracking-widest text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-outline-variant bg-surface-container-high px-4 py-3 font-display text-xs font-bold uppercase tracking-label text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 View on map
                 <MapPinned size={14} aria-hidden="true" />
@@ -368,8 +368,8 @@ export default async function SportEventPage({
             ) : null}
 
             {hasSocials ? (
-              <div className="rounded-[16px] border border-outline-variant bg-surface-container-low p-4">
-                <p className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
+              <div className="rounded-container border border-outline-variant bg-surface-container-low p-4">
+                <p className="font-display text-xs font-bold uppercase tracking-label text-secondary">
                   Social
                 </p>
                 <ul className="mt-3 flex gap-2">
@@ -380,7 +380,7 @@ export default async function SportEventPage({
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${event.name} on Instagram`}
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3 font-display text-xs font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3 font-display text-xs font-bold uppercase tracking-label text-on-surface hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                       >
                         <Instagram size={12} aria-hidden="true" />
                         Instagram
@@ -394,7 +394,7 @@ export default async function SportEventPage({
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${event.name} on YouTube`}
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3 font-display text-xs font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-3 font-display text-xs font-bold uppercase tracking-label text-on-surface hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                       >
                         <Youtube size={12} aria-hidden="true" />
                         YouTube
@@ -405,13 +405,13 @@ export default async function SportEventPage({
               </div>
             ) : null}
 
-            <p className="px-1 text-center font-display text-[10px] uppercase tracking-widest text-secondary">
+            <p className="px-1 text-center font-display text-[10px] uppercase tracking-label text-secondary">
               Official event — verify dates on the organizer site
             </p>
           </aside>
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 
@@ -437,10 +437,10 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
   return (
     <div className="space-y-3 border-t border-outline-variant pt-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-display text-xs font-bold uppercase tracking-widest text-secondary">
+        <h2 className="font-display text-xs font-bold uppercase tracking-label text-secondary">
           My performance
         </h2>
-        <span className="rounded-md bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface">
+        <span className="rounded-md bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-on-surface">
           {role}
         </span>
       </div>
@@ -451,8 +451,8 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
       ) : (
         <div className="space-y-3">
           {history.result ? (
-            <p className="inline-flex items-center gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface">
-              <span className="font-display text-sm font-bold uppercase tracking-wide">
+            <p className="inline-flex items-center gap-2 rounded-card border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface">
+              <span className="font-display text-sm font-bold uppercase tracking-dense">
                 Rank #{history.result.rank}
               </span>
               <span aria-hidden="true">·</span>
@@ -466,7 +466,7 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
               {history.myRuns.map((run) => (
                 <li
                   key={run.runId}
-                  className="rounded-[8px] border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-widest text-on-surface"
+                  className="rounded-control border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-label text-on-surface"
                 >
                   Run {run.sequence} · {run.status}
                   {run.myTotal !== null ? ` · ${run.myTotal.toFixed(2)}` : ""}
@@ -479,7 +479,7 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
               {history.myJudgements.map((entry) => (
                 <li
                   key={`${entry.runId}-${entry.total}`}
-                  className="rounded-[8px] border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-widest text-on-surface"
+                  className="rounded-control border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-label text-on-surface"
                 >
                   Run {entry.sequence} judged · {entry.total.toFixed(2)}
                 </li>

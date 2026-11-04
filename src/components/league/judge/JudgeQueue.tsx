@@ -158,7 +158,7 @@ export function JudgeQueue({
 
   if (error || !state) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-5 py-12">
+      <div className="mx-auto w-full max-w-3xl px-5 py-12">
         {error ? (
           <div
             role="alert"
@@ -168,7 +168,7 @@ export function JudgeQueue({
             <button
               type="button"
               onClick={retry}
-              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline"
+              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
             >
               Retry
             </button>
@@ -183,7 +183,7 @@ export function JudgeQueue({
             ))}
           </div>
         )}
-      </main>
+      </div>
     );
   }
 
@@ -215,10 +215,10 @@ export function JudgeQueue({
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-5 py-8">
+    <div className="mx-auto w-full max-w-3xl px-5 py-8">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-display text-xs font-bold uppercase tracking-[0.12em] text-secondary">
+          <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
             Judge queue
           </p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
@@ -244,7 +244,7 @@ export function JudgeQueue({
         <button
           type="button"
           onClick={() => router.push(`/sport-events/${slug}`)}
-          className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-secondary transition-colors hover:border-outline hover:text-on-surface"
         >
           Event page
         </button>
@@ -283,7 +283,7 @@ export function JudgeQueue({
       >
         <h2
           id="judge-current-run"
-          className="mb-3 font-display text-sm font-bold uppercase tracking-[0.05em]"
+          className="mb-3 font-display text-sm font-bold uppercase tracking-label"
         >
           Current run
         </h2>
@@ -306,7 +306,7 @@ export function JudgeQueue({
                   <p className="min-w-0 truncate text-base font-semibold text-on-surface">
                     {openRun.riderName}
                   </p>
-                  <p className="font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+                  <p className="font-display text-[10px] font-bold uppercase tracking-label text-secondary">
                     Run {openRun.sequence} of {state.runs.length}
                   </p>
                 </div>
@@ -324,7 +324,7 @@ export function JudgeQueue({
                       )}
                 </p>
               ) : (
-                <span className="shrink-0 rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+                <span className="shrink-0 rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
                   Window closed
                 </span>
               )}
@@ -343,7 +343,7 @@ export function JudgeQueue({
                   }
                 />
                 <p
-                  className="font-display text-[10px] font-bold uppercase tracking-[0.08em] text-secondary"
+                  className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary"
                   aria-live="polite"
                 >
                   {openRunMyScore
@@ -353,7 +353,7 @@ export function JudgeQueue({
               </>
             ) : (
               <p
-                className="font-display text-[10px] font-bold uppercase tracking-[0.08em] text-secondary"
+                className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary"
                 aria-live="polite"
               >
                 {readOnly
@@ -373,7 +373,7 @@ export function JudgeQueue({
                       windowMinutes: 5,
                     });
                   }}
-                  className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface hover:border-outline disabled:opacity-40"
+                  className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
                 >
                   Extend 5 min
                 </button>
@@ -383,7 +383,7 @@ export function JudgeQueue({
                   onClick={() => {
                     void run(`/runs/${openRun.id}/window`, { mode: "close" });
                   }}
-                  className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface hover:border-outline disabled:opacity-40"
+                  className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
                 >
                   Close window
                 </button>
@@ -397,7 +397,7 @@ export function JudgeQueue({
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2
             id="judge-history-heading"
-            className="font-display text-sm font-bold uppercase tracking-[0.05em]"
+            className="font-display text-sm font-bold uppercase tracking-label"
           >
             My submissions
           </h2>
@@ -422,7 +422,7 @@ export function JudgeQueue({
                     {entry.run.riderName}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-md bg-surface-container px-2 py-1 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface">
+                <span className="shrink-0 rounded-md bg-surface-container px-2 py-1 font-display text-[10px] font-bold uppercase tracking-label text-on-surface">
                   {entry.score.total.toFixed(2)} pts
                 </span>
               </li>
@@ -440,6 +440,6 @@ export function JudgeQueue({
           {submittedNotice}
         </p>
       ) : null}
-    </main>
+    </div>
   );
 }

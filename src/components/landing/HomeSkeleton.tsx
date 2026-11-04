@@ -13,7 +13,7 @@ export function HomeSkeleton() {
         <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center">
           <div className="w-full min-w-0 space-y-4 sm:space-y-5 text-center">
             {/* Discipline pills placeholder */}
-            <div className="mx-auto h-[29px] sm:h-[30px] w-64 animate-pulse rounded-lg bg-white/20" />
+            <div className="mx-auto h-[29px] sm:h-[30px] w-64 animate-pulse rounded-control bg-white/20" />
             {/* Heading + subheadline placeholder — transparent real copy, so it wraps exactly like Hero */}
             <div aria-hidden="true" className="space-y-1 sm:space-y-2">
               <div className="animate-pulse font-display text-2xl sm:text-4xl md:text-5xl font-bold uppercase tracking-[-0.02em] text-transparent leading-[1.3] sm:leading-[1.15]">
@@ -29,15 +29,15 @@ export function HomeSkeleton() {
             </div>
             {/* Search pill */}
             <div className="pt-1">
-              <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-lg bg-white/90" />
+              <div className="mx-auto h-12 w-full max-w-xl animate-pulse rounded-control bg-white/90" />
             </div>
             {/* Action buttons — mirrors Hero buttons */}
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-              <div className="h-12 w-[118px] animate-pulse rounded-lg bg-white/20" />
-              <div className="h-12 w-[76px] animate-pulse rounded-lg bg-white/20" />
-              <div className="h-12 w-[317px] max-w-full animate-pulse rounded-lg bg-white/20" />
-              <div className="h-12 w-[98px] animate-pulse rounded-lg bg-white/20 md:hidden" />
-              <div className="h-12 w-[181px] animate-pulse rounded-lg bg-white/20" />
+              <div className="h-control w-[118px] animate-pulse rounded-control bg-white/20" />
+              <div className="h-control w-[76px] animate-pulse rounded-control bg-white/20" />
+              <div className="h-control w-[317px] max-w-full animate-pulse rounded-control bg-white/20" />
+              <div className="h-control w-[98px] animate-pulse rounded-control bg-white/20 md:hidden" />
+              <div className="h-control w-[181px] animate-pulse rounded-control bg-white/20" />
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@ export function HomeSkeleton() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-[32vh] w-[208px] shrink-0 animate-pulse rounded-[14px] border border-wire-border bg-wire-border sm:w-[232px]"
+                className="h-[32vh] w-[208px] shrink-0 animate-pulse rounded-inner border border-wire-border bg-wire-border sm:w-[232px]"
               />
             ))}
           </div>

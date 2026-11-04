@@ -29,11 +29,11 @@ export function EventDirectory({
             <div>
               <h2
                 id="featured-event-heading"
-                className="font-display text-xl font-bold tracking-wide text-on-surface uppercase"
+                className="font-display text-xl font-bold tracking-dense text-on-surface uppercase"
               >
                 Featured
               </h2>
-              <p className="mt-1 font-display text-xs font-bold tracking-widest text-secondary uppercase">
+              <p className="mt-1 font-display text-xs font-bold tracking-label text-secondary uppercase">
                 Editor&apos;s pick
               </p>
             </div>
@@ -53,11 +53,11 @@ export function EventDirectory({
           <div>
             <h2
               id="events-grid-heading"
-              className="font-display text-xl font-bold tracking-wide text-on-surface uppercase"
+              className="font-display text-xl font-bold tracking-dense text-on-surface uppercase"
             >
               All Events
             </h2>
-            <p className="mt-1 font-display text-xs font-bold tracking-widest text-secondary uppercase">
+            <p className="mt-1 font-display text-xs font-bold tracking-label text-secondary uppercase">
               {events.length} on the circuit
             </p>
           </div>
@@ -78,7 +78,7 @@ export function EventDirectory({
       </section>
 
       <footer className="mx-5 border-t border-outline-variant pt-6 text-center sm:mx-6 lg:mx-10">
-        <p className="font-display text-xs font-bold tracking-widest text-secondary uppercase">
+        <p className="font-display text-xs font-bold tracking-label text-secondary uppercase">
           All dates are subject to change. Tap a card to verify on the official
           site.
         </p>
@@ -88,7 +88,7 @@ export function EventDirectory({
             href="https://www.worldskate.org/"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-[9999px] px-2 py-1 font-display font-bold tracking-widest uppercase underline underline-offset-2 hover:text-on-surface focus-visible:outline-offset-4"
+            className="rounded-control px-2 py-1 font-display font-bold tracking-label uppercase underline underline-offset-2 hover:text-on-surface focus-visible:outline-offset-4"
           >
             Browse the federations
           </a>

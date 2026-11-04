@@ -155,7 +155,7 @@ export function EventCarousel({
           aria-roledescription="carousel"
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          className="flex gap-5 overflow-x-auto scroll-smooth pb-4 pt-1 snap-x snap-mandatory scroll-px-6 no-scrollbar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:rounded-[16px]"
+          className="flex gap-5 overflow-x-auto scroll-smooth pb-4 pt-1 snap-x snap-mandatory scroll-px-6 no-scrollbar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:rounded-container"
         >
           {events.map((event, idx) => (
             <div

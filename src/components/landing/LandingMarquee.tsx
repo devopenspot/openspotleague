@@ -209,7 +209,7 @@ export function LandingMarquee({
         className="shrink-0 border-t border-wire-border bg-wire"
       >
         {/* <WireRail count={0} onPersonalize={openPreferences} /> */}
-        <div className="px-4 py-6 text-center text-sm text-white/70">
+        <div className="px-4 py-6 text-center text-sm text-wire-muted">
           No highlights yet — check back soon.
         </div>
       </section>
@@ -221,7 +221,7 @@ export function LandingMarquee({
       aria-label="Open Spot wire"
       className="shrink-0 border-t border-wire-border bg-wire"
     >
-      <div className="flex items-center justify-between px-4 sm:px-10 pt-3.5 pb-2 border-b border-wire-border">
+      <div className="flex items-center justify-between px-5 md:px-10 pt-3.5 pb-2 border-b border-wire-border">
         <div className="flex items-center gap-2">
           <span
             className="h-2 w-2 rounded-full bg-emerald-500 "
@@ -260,10 +260,10 @@ export function LandingMarquee({
           onClick={() => scrollBy(-1)}
           disabled={!canScrollLeft}
           className={cn(
-            "absolute left-1 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
+            "absolute left-1 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-on-wire transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
             canScrollLeft
-              ? "border-white/15 opacity-100 hover:bg-white/15 hover:border-white/25 active:bg-white/20 active:scale-[0.98]"
-              : "pointer-events-none border-white/10 opacity-30",
+              ? "border-wire-border-strong opacity-100 hover:bg-wire-border-strong hover:border-wire-muted active:scale-[0.98]"
+              : "pointer-events-none border-wire-border opacity-30",
           )}
         >
           <ChevronLeft size={16} aria-hidden="true" />
@@ -274,10 +274,10 @@ export function LandingMarquee({
           onClick={() => scrollBy(1)}
           disabled={!canScrollRight}
           className={cn(
-            "absolute right-1 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-white shadow-sm transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
+            "absolute right-1 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border bg-wire text-on-wire transition-[opacity,background-color,transform,border-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:flex sm:h-9 sm:w-9",
             canScrollRight
-              ? "border-white/15 opacity-100 hover:bg-white/15 hover:border-white/25 active:bg-white/20 active:scale-[0.98]"
-              : "pointer-events-none border-white/10 opacity-30",
+              ? "border-wire-border-strong opacity-100 hover:bg-wire-border-strong hover:border-wire-muted active:scale-[0.98]"
+              : "pointer-events-none border-wire-border opacity-30",
           )}
         >
           <ChevronRight size={16} aria-hidden="true" />

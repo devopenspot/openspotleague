@@ -6,6 +6,7 @@ import { MapPin } from "lucide-react";
 import { useUserLocation } from "@/hooks/map/useUserLocation";
 import { showToast } from "@/hooks/ui/useToast";
 import { cn } from "@/lib/utils/cn";
+import { controlClass } from "@/components/ui/recipes";
 import { ROUTES } from "@/lib/navigation/nav";
 import { setMapPreserveNearbyEntry } from "@/lib/map/preserve";
 
@@ -41,7 +42,7 @@ export function NearbyCtaButton() {
       disabled={isRequesting}
       aria-busy={isRequesting}
       aria-describedby={`${NEARBY_BUTTON_ID}-status`}
-      className="group flex min-h-12 items-center gap-2 rounded-lg border-2 border-on-primary-container bg-on-primary-container px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-on-primary-container/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-60"
+      className={cn("group", controlClass("onWashDark"))}
     >
       <MapPin
         size={14}

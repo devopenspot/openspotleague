@@ -11,9 +11,9 @@ export function EventEmptyState({ status }: EventEmptyStateProps) {
   return (
     <div
       id="events-empty-state"
-      className="mx-5 flex max-w-lg flex-col items-center justify-center rounded-[16px] border border-dashed border-outline-variant bg-surface-container-lowest px-5 py-16 text-center sm:mx-6 lg:mx-auto"
+      className="mx-5 flex max-w-lg flex-col items-center justify-center rounded-container border border-dashed border-outline-variant bg-surface-container-lowest px-5 py-16 text-center sm:mx-6 lg:mx-auto"
     >
-      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-[16px] border border-outline-variant bg-surface-container-high text-secondary">
+      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-outline-variant bg-surface-container-high text-secondary">
         <Trophy size={20} aria-hidden="true" />
       </div>
       <h4 className="font-display text-xl font-bold uppercase tracking-wider text-on-surface">

@@ -22,7 +22,7 @@ export function StateBadge({ status }: { status: string }) {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
   return (
-    <span className="rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+    <span className="rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
       {label}
     </span>
   );
@@ -53,7 +53,7 @@ export function ConfirmButton({
         disabled={disabled}
         onClick={() => setOpen(true)}
         className={cn(
-          "min-h-11 rounded-full px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] transition-colors disabled:opacity-50",
+          "min-h-11 rounded-full px-5 font-display text-xs font-semibold uppercase tracking-pill transition-colors disabled:opacity-50",
           variant === "primary"
             ? "bg-primary text-on-primary hover:opacity-90"
             : "border border-outline-variant bg-surface-container-high text-on-surface hover:border-outline",
@@ -71,7 +71,7 @@ export function ConfirmButton({
         contentId="confirm-dialog"
       >
         <div className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
-          <h2 id={titleId} className="font-display text-sm font-bold uppercase tracking-[0.05em]">
+          <h2 id={titleId} className="font-display text-sm font-bold uppercase tracking-label">
             {confirmTitle}
           </h2>
           <p id={bodyId} className="mt-2 text-sm leading-relaxed text-secondary">
@@ -81,7 +81,7 @@ export function ConfirmButton({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface"
+              className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface"
             >
               Keep as is
             </button>
@@ -91,7 +91,7 @@ export function ConfirmButton({
                 setOpen(false);
                 onConfirm();
               }}
-              className="min-h-11 rounded-full bg-primary px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary hover:opacity-90"
+              className="min-h-11 rounded-full bg-primary px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-primary hover:opacity-90"
             >
               Confirm
             </button>
@@ -133,7 +133,7 @@ export function InviteRow({
       )}
     >
       <div className="min-w-0">
-        <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface">
+        <p className="font-display text-xs font-bold uppercase tracking-label text-on-surface">
           {invite.role} · {invite.useCount}
           {invite.maxUses ? `/${invite.maxUses}` : ""} used
         </p>
@@ -160,7 +160,7 @@ export function InviteRow({
               setTimeout(() => setCopied(null), 2500);
             }
           }}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:border-outline disabled:opacity-50"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-label text-on-surface hover:border-outline disabled:opacity-50"
         >
           {copied === "link" ? (
             <Check size={12} aria-hidden="true" />
@@ -174,7 +174,7 @@ export function InviteRow({
           disabled={disabled || invite.revoked}
           onClick={() => setCopied(copied === "qr" ? null : "qr")}
           aria-expanded={copied === "qr"}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface hover:border-outline disabled:opacity-50"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-label text-on-surface hover:border-outline disabled:opacity-50"
         >
           <QrCode size={12} aria-hidden="true" />
           QR
@@ -224,7 +224,7 @@ export function MemberRow({
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span className="rounded-md bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface">
+        <span className="rounded-md bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-on-surface">
           {roleLabel}
         </span>
         {!isMainOrganizer ? (
@@ -289,7 +289,7 @@ export function RunRow({
             <p className="min-w-0 truncate text-sm font-semibold text-on-surface">
               {run.riderName}
             </p>
-            <p className="font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+            <p className="font-display text-[10px] font-bold uppercase tracking-label text-secondary">
               {run.status}
               {run.scheduledAt
                 ? ` · ${new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(new Date(run.scheduledAt))} UTC`
@@ -303,7 +303,7 @@ export function RunRow({
               type="button"
               disabled={!canJudge || !canOpenWindow}
               onClick={onOpenWindow}
-              className="min-h-9 rounded-full bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-[0.08em] text-on-primary hover:opacity-90 disabled:opacity-40"
+              className="min-h-9 rounded-full bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-40"
             >
               Open window
             </button>
@@ -314,7 +314,7 @@ export function RunRow({
                 type="button"
                 disabled={disabled}
                 onClick={onExtendWindow}
-                className="min-h-9 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-[0.08em] text-on-surface hover:border-outline disabled:opacity-40"
+                className="min-h-9 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
               >
                 Extend
               </button>
@@ -322,7 +322,7 @@ export function RunRow({
                 type="button"
                 disabled={disabled}
                 onClick={onCloseWindow}
-                className="min-h-9 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-[0.08em] text-on-surface hover:border-outline disabled:opacity-40"
+                className="min-h-9 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
               >
                 Close
               </button>
@@ -336,7 +336,7 @@ export function RunRow({
           {run.scores.map((score) => (
             <li
               key={`${run.id}-${score.judgeName}`}
-              className="rounded-md bg-surface-container px-2 py-1 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-on-surface"
+              className="rounded-md bg-surface-container px-2 py-1 font-display text-[10px] font-bold uppercase tracking-label text-on-surface"
             >
               {score.judgeName}: {score.total.toFixed(2)}
             </li>
@@ -347,7 +347,7 @@ export function RunRow({
       {isJudging ? (
         <div className="flex flex-col gap-3">
           <p
-            className="font-display text-[10px] font-bold uppercase tracking-[0.08em] text-secondary"
+            className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary"
             aria-live="polite"
           >
             {windowActive

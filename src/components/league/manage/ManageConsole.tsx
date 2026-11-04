@@ -210,7 +210,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
 
   if (error || !state) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-5 py-12">
+      <div className="mx-auto w-full max-w-3xl px-5 py-12">
         {error ? (
           <div
             role="alert"
@@ -220,7 +220,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
             <button
               type="button"
               onClick={retry}
-              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface transition-colors hover:border-outline"
+              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
             >
               Retry
             </button>
@@ -235,7 +235,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
             ))}
           </div>
         )}
-      </main>
+      </div>
     );
   }
 
@@ -245,10 +245,10 @@ export function ManageConsole({ eventId }: { eventId: string }) {
   const judgeCapable = state.myRole === "judge" || organizer;
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-5 py-8">
+    <div className="mx-auto w-full max-w-4xl px-5 py-8">
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-display text-xs font-bold uppercase tracking-[0.12em] text-secondary">
+          <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
             Organizer console
           </p>
           <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
@@ -281,7 +281,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
         <button
           type="button"
           onClick={() => router.push(`/sport-events/${event.slug}`)}
-          className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-secondary transition-colors hover:border-outline hover:text-on-surface"
         >
           View public page
         </button>
@@ -339,7 +339,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
             data-nav-tab
             onClick={() => setTab(entry.id)}
             className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] transition-colors",
+              "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-display text-xs font-semibold uppercase tracking-pill transition-colors",
               tab === entry.id
                 ? "border-primary bg-primary text-on-primary"
                 : "border-outline-variant bg-surface-container-high text-secondary hover:border-outline hover:text-on-surface",
@@ -422,7 +422,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
         />
       ) : null}
       {tab === "metrics" ? <MetricsPanel eventId={eventId} /> : null}
-    </main>
+    </div>
   );
 }
 
@@ -461,14 +461,14 @@ function ConfigPanel({
       className="flex flex-col gap-5"
     >
       <fieldset className="rounded-lg border border-outline-variant bg-surface-container-low p-5 sm:p-6">
-        <legend className="px-1 font-display text-sm font-bold tracking-[0.05em] text-on-surface">
+        <legend className="px-1 font-display text-sm font-bold tracking-label text-on-surface">
           Event details
         </legend>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label
               htmlFor="cfg-name"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Name
             </label>
@@ -483,7 +483,7 @@ function ConfigPanel({
           <div>
             <label
               htmlFor="cfg-start"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Start date
             </label>
@@ -499,7 +499,7 @@ function ConfigPanel({
           <div>
             <label
               htmlFor="cfg-end"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               End date
             </label>
@@ -515,7 +515,7 @@ function ConfigPanel({
           <div>
             <label
               htmlFor="cfg-category"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Category
             </label>
@@ -548,7 +548,7 @@ function ConfigPanel({
           <div>
             <label
               htmlFor="cfg-visibility"
-              className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
             >
               Visibility
             </label>
@@ -712,7 +712,7 @@ function RosterPanel({
             <p className="font-display text-xl font-bold text-on-surface">
               {stat.count}
             </p>
-            <p className="font-display text-[10px] font-bold uppercase tracking-[0.08em] text-secondary">
+            <p className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary">
               {stat.label}
             </p>
           </div>
@@ -721,14 +721,14 @@ function RosterPanel({
 
       {organizer ? (
         <div className="rounded-lg border border-outline-variant bg-surface-container-low p-5">
-          <h3 className="mb-3 font-display text-xs font-bold uppercase tracking-[0.08em] text-secondary">
+          <h3 className="mb-3 font-display text-xs font-bold uppercase tracking-pill text-secondary">
             Share invites
           </h3>
           <div className="flex flex-wrap items-end gap-3">
             <div>
               <label
                 htmlFor="invite-role"
-                className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+                className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
               >
                 Role
               </label>
@@ -751,7 +751,7 @@ function RosterPanel({
             <div>
               <label
                 htmlFor="invite-expiry"
-                className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"
+                className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
               >
                 Expires in
               </label>
@@ -777,7 +777,7 @@ function RosterPanel({
                   inviteExpiry === "0" ? 365 : Number(inviteExpiry),
                 )
               }
-              className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary hover:opacity-90 disabled:opacity-50"
+              className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-50"
             >
               Create invite
             </button>
@@ -844,7 +844,7 @@ function LivePanel({
       aria-labelledby="manage-tab-live"
       className="flex flex-col gap-4"
     >
-      <p className="font-display text-xs font-bold uppercase tracking-[0.08em] text-secondary">
+      <p className="font-display text-xs font-bold uppercase tracking-pill text-secondary">
         Run queue · {state.runs.length} runs
       </p>
       {state.runs.length === 0 ? (
@@ -931,7 +931,7 @@ function ResultsPanel({
                   {result.riderName}
                 </p>
               </div>
-              <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+              <p className="font-display text-xs font-bold uppercase tracking-label text-secondary">
                 {result.totalScore.toFixed(2)} run · +{result.pointsAwarded}{" "}
                 league pts
               </p>
@@ -1052,7 +1052,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
             key={stat.label}
             className="rounded-inner border border-outline-variant bg-surface-bright p-4"
           >
-            <p className="font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+            <p className="font-display text-[10px] font-bold uppercase tracking-label text-secondary">
               {stat.label}
             </p>
             <p className="mt-1 font-display text-2xl font-bold text-on-surface">
@@ -1063,7 +1063,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
       </div>
 
       <div className="rounded-inner border border-outline-variant bg-surface-bright p-4">
-        <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+        <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
           Criterion averages
         </p>
         {dashboard.criteria.length === 0 ? (
@@ -1113,7 +1113,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
       </div>
 
       <div className="rounded-inner border border-outline-variant bg-surface-bright p-4">
-        <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-[0.05em] text-secondary">
+        <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
           Judge submissions
         </p>
         {dashboard.judges.length === 0 ? (
@@ -1195,7 +1195,7 @@ function PlanPaymentActions({
         type="button"
         disabled={disabled || busyPlan !== null}
         onClick={() => void register("free")}
-        className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary hover:opacity-90 disabled:opacity-50"
+        className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-50"
       >
         {busyPlan === "free" ? "Registering…" : "Register free plan ($0)"}
       </button>
@@ -1203,7 +1203,7 @@ function PlanPaymentActions({
         type="button"
         disabled={disabled || busyPlan !== null}
         onClick={() => void register("starter")}
-        className="min-h-11 rounded-full border border-outline-variant px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface hover:border-outline disabled:opacity-50"
+        className="min-h-11 rounded-full border border-outline-variant px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-50"
       >
         {busyPlan === "starter" ? "Requesting…" : "Request Starter ($5)"}
       </button>
@@ -1211,7 +1211,7 @@ function PlanPaymentActions({
         type="button"
         disabled={disabled || busyPlan !== null}
         onClick={() => void register("pro")}
-        className="min-h-11 rounded-full border border-outline-variant px-5 font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-surface hover:border-outline disabled:opacity-50"
+        className="min-h-11 rounded-full border border-outline-variant px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-50"
       >
         {busyPlan === "pro" ? "Requesting…" : "Request Pro ($21)"}
       </button>

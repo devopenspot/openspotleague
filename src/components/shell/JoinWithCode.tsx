@@ -7,6 +7,7 @@ import { DrawerHeader } from "@/components/feedback/DrawerParts";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 import { resolveJoinPath } from "@/lib/games/join-input";
 import { cn } from "@/lib/utils/cn";
+import { controlClass } from "@/components/ui/recipes";
 
 const JOIN_GAME_DRAWER_ID = `join-game-drawer`;
 const JOIN_GAME_TITLE_ID = `join-game-title`;
@@ -41,8 +42,7 @@ interface JoinWithCodeProps {
 }
 
 const VARIANT_TRIGGER_CLASSES: Record<JoinWithCodeVariant, string> = {
-  landing:
-    "inline-flex min-h-12 items-center gap-2 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
+  landing: `${controlClass("onWash")} focus-visible:outline-white`,
   games:
     "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px",
 };

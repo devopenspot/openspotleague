@@ -96,21 +96,21 @@ export function JoinWithInvite({ code }: { code: string }) {
 
   if (loading) {
     return (
-      <main className="mx-auto w-full max-w-md px-5 py-16">
+      <div className="mx-auto w-full max-w-md px-5 py-16">
         <div
           className="h-32  rounded-lg bg-surface-container"
           aria-hidden="true"
         />
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 py-12">
+    <div className="mx-auto w-full max-w-md px-5 py-12">
       <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
         {preview ? (
           <>
-            <p className="font-display text-xs font-bold uppercase tracking-[0.12em] text-secondary">
+            <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
               League invite
             </p>
             <h1 className="mt-1 font-display text-xl font-bold tracking-tight text-on-surface">
@@ -158,7 +158,7 @@ export function JoinWithInvite({ code }: { code: string }) {
                 disabled={joinState === "busy"}
                 onClick={() => void join()}
                 className={cn(
-                  "mt-5 min-h-11 w-full rounded-full bg-primary font-display text-xs font-semibold uppercase tracking-[0.08em] text-on-primary transition-opacity hover:opacity-90 disabled:opacity-50",
+                  "mt-5 min-h-11 w-full rounded-full bg-primary font-display text-xs font-semibold uppercase tracking-pill text-on-primary transition-opacity hover:opacity-90 disabled:opacity-50",
                 )}
               >
                 {joinState === "busy" ? "Joining…" : "Join the event"}
@@ -183,11 +183,11 @@ export function JoinWithInvite({ code }: { code: string }) {
         )}
         <Link
           href="/sport-events"
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-[0.08em] text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-secondary transition-colors hover:border-outline hover:text-on-surface"
         >
           All events
         </Link>
       </div>
-    </main>
+    </div>
   );
 }

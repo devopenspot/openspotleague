@@ -84,7 +84,7 @@ export function LandingFeatures() {
   return (
     <section
       aria-labelledby="landing-features-title"
-      className="border-b border-outline-variant/60 bg-surface py-12 sm:py-16 px-4 sm:px-6 md:px-10"
+      className="border-b border-outline-variant/60 bg-surface py-12 sm:py-16 px-5 md:px-10"
     >
       <div className="mx-auto max-w-7xl space-y-10 sm:space-y-12">
         {/* Section Header */}
