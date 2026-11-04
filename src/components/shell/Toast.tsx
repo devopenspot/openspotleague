@@ -34,9 +34,9 @@ function ToastItem({ toast, onDismiss, index }: ToastItemProps) {
         ease: 'easeOut',
         delay: reduced ? 0 : index * 0.04,
       }}
-      className="pointer-events-auto relative flex items-stretch gap-2 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-2 shadow-sm"
+      className="pointer-events-auto relative flex items-stretch gap-2 rounded-container border border-outline-variant bg-surface-container-lowest p-2 shadow-sm"
     >
-      <div className="flex min-w-0 flex-1 items-center gap-3 rounded-[12px] px-3 py-2">
+      <div className="flex min-w-0 flex-1 items-center gap-3 rounded-card px-3 py-2">
         <span
           aria-hidden="true"
           className="shrink-0 font-display text-[10px] font-bold tracking-widest text-on-surface uppercase"
@@ -106,7 +106,7 @@ export function ToastViewport({
       {overflow > 0 ? (
         <div
           aria-live="polite"
-          className="pointer-events-auto self-center rounded-[16px] border border-outline-variant bg-surface-container-lowest px-3 py-2 font-display text-[10px] font-bold tracking-widest text-on-surface uppercase shadow-sm"
+          className="pointer-events-auto self-center rounded-container border border-outline-variant bg-surface-container-lowest px-3 py-2 font-display text-[10px] font-bold tracking-widest text-on-surface uppercase shadow-sm"
         >
           +{overflow} more
         </div>

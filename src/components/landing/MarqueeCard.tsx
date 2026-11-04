@@ -78,7 +78,7 @@ export function MarqueeCard({ item }: { item: MarqueeItem }) {
     <Link
       href={item.href}
       aria-label={`${kindLabel(item.kind)}: ${item.title} — ${item.meta}`}
-      className="group/card flex w-[208px] shrink-0 flex-col overflow-hidden rounded-[14px] border border-wire-border bg-wire-border text-left transition-colors duration-150 ease-out hover:border-wire-border-strong hover:bg-wire-border-strong hover:shadow-md hover:-translate-y-px active:translate-y-0 active:bg-wire-border-strong active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:w-[232px]"
+      className="group/card flex w-[208px] shrink-0 flex-col overflow-hidden rounded-inner border border-wire-border bg-wire-border text-left transition-colors duration-150 ease-out hover:border-wire-border-strong hover:bg-wire-border-strong hover:shadow-md hover:-translate-y-px active:translate-y-0 active:bg-wire-border-strong active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire sm:w-[232px]"
     >
       <div className="relative h-[32vh] w-full overflow-hidden bg-wire-border flex items-center justify-center">
         <CardImage item={item} />

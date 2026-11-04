@@ -39,7 +39,7 @@ export function ShareActions({
   }
 
   const buttonClass = compact
-    ? "inline-flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-[16px] border border-outline bg-surface-container-high px-2 py-2 font-display text-xs font-bold uppercase leading-tight tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+    ? "inline-flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-container border border-outline bg-surface-container-high px-2 py-2 font-display text-xs font-bold uppercase leading-tight tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
     : "inline-flex min-h-11 items-center gap-2 rounded-full border border-outline bg-surface-container-high px-3 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:bg-surface-container-highest focus-visible:outline-offset-4";
 
   return (
@@ -86,7 +86,7 @@ export function ShareActions({
       {showQr ? (
         <div
           className={cn(
-            "rounded-[16px] border border-outline-variant bg-surface-bright",
+            "rounded-container border border-outline-variant bg-surface-bright",
             compact ? "col-span-3 flex justify-center p-2" : "basis-full p-4",
           )}
           aria-label="QR code for shared link"

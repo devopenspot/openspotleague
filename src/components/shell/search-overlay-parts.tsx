@@ -155,7 +155,7 @@ export function MatchedSpots({
                   onClick={() => onPick(spot)}
                   className="flex min-h-20 w-full items-center gap-4 rounded-lg border-2 border-outline-variant bg-surface-container-lowest p-3 text-left transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
                 >
-                  <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[8px] bg-on-surface">
+                  <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-on-surface">
                     {spot.image?.trim() ? (
                       <AppImage
                         src={spot.image}
@@ -182,7 +182,7 @@ export function MatchedSpots({
                         <TypeBadges
                           types={spot.types}
                           variant="surface"
-                          className="[&_span]:rounded-[8px] [&_span]:bg-wire-border-strong [&_span]:px-2 [&_span]:py-1 [&_span]:text-xs [&_span]:text-on-wire"
+                          className="[&_span]:rounded-md [&_span]:bg-wire-border-strong [&_span]:px-2 [&_span]:py-1 [&_span]:text-xs [&_span]:text-on-wire"
                         />
                       ) : null}
                       {distance ? <span>{distance}</span> : null}
