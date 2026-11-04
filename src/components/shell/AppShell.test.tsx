@@ -107,6 +107,35 @@ describe("AppShell", () => {
     expect(screen.getByRole("main")).toHaveClass("overflow-hidden");
   });
 
+  it("lets the shell grow with a document-scrolling page so content clears the bottom nav", () => {
+    mockPathname = "/login";
+    const { container } = render(
+      <AppShell>
+        <div>Login Content</div>
+      </AppShell>,
+    );
+
+    const root = container.querySelector("#app-root");
+    expect(root).toHaveClass("min-h-dvh");
+    expect(root).not.toHaveClass("h-dvh");
+  });
+
+  it.each(["/map", "/games", "/games/abc-123", "/"])(
+    "keeps a one-screen shell on %s, which scrolls inside main",
+    (pathname) => {
+      mockPathname = pathname;
+      const { container } = render(
+        <AppShell>
+          <div>Framed Content</div>
+        </AppShell>,
+      );
+
+      const root = container.querySelector("#app-root");
+      expect(root).toHaveClass("h-dvh");
+      expect(root).not.toHaveClass("min-h-dvh");
+    },
+  );
+
   it("bails out completely on /admin routes", () => {
     mockPathname = "/admin/spots";
     const { container } = render(

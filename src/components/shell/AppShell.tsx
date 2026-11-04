@@ -97,11 +97,17 @@ export function AppShell({
   const showHeader = !isGameSession;
   const showBottomNav = !isLandingRoute && !isGameSession;
 
+  // Map, game and landing routes scroll inside `main`, so the shell is one
+  // screen tall. Every other route scrolls the document: the shell must grow
+  // with the page, or `main`'s nav padding and the sticky header stop at the
+  // first screen (content hidden under the bottom nav on phones).
+  const isFixedFrame = isMapRoute || isGameSession || isGameLanding || isLandingRoute;
+  const rootClassName = isFixedFrame
+    ? "relative flex h-dvh flex-col bg-surface font-sans text-on-surface selection:bg-primary selection:text-surface"
+    : "relative flex min-h-dvh flex-col bg-surface font-sans text-on-surface selection:bg-primary selection:text-surface";
+
   return (
-    <div
-      id="app-root"
-      className="relative flex h-dvh flex-col bg-surface font-sans text-on-surface selection:bg-primary selection:text-surface"
-    >
+    <div id="app-root" className={rootClassName}>
       {showHeader ? (
         <Header image={headerImage} imageAlt={headerImageAlt} />
       ) : null}
