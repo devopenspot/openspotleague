@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Bell } from "lucide-react";
 import { useUnreadNotificationCount } from "@/hooks/data/useNotifications";
 import { useUser } from "@/lib/contexts/user-context";
+import { iconButtonClass } from "@/components/ui/recipes";
+import { cn } from "@/lib/utils/cn";
 
 export function NotificationBell() {
   const user = useUser();
@@ -19,13 +21,13 @@ export function NotificationBell() {
           ? `Notifications, ${unreadCount} unread`
           : "Notifications"
       }
-      className="relative flex h-12 w-12 items-center justify-center rounded-lg border-2 border-wire-border bg-wire-border text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
+      className={cn("relative", iconButtonClass("onWireOutline"))}
     >
-      <Bell size={16} aria-hidden="true" />
+      <Bell size={18} aria-hidden="true" />
       {badge && (
         <span
           data-notification-badge
-          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-on-wire px-1 font-display text-[10px] font-bold leading-none text-primary"
+          className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-control bg-on-wire px-1 font-display text-[10px] font-bold leading-none text-wire ring-2 ring-wire"
         >
           {badge}
         </span>

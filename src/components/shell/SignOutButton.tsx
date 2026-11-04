@@ -3,19 +3,32 @@
 import { LogOut } from 'lucide-react';
 import { useSignOut } from '@/hooks/ui/useSignOut';
 import { cn } from '@/lib/utils/cn';
+import { controlClass, iconButtonClass } from '@/components/ui/recipes';
+
+type SignOutVariant = 'icon' | 'drawer' | 'wire' | 'profile';
 
 interface SignOutButtonProps {
-  variant?: 'icon' | 'drawer';
+  variant?: SignOutVariant;
   className?: string;
 }
 
-const BASE_CLASSES =
-  'inline-flex items-center justify-center rounded-full border border-outline-variant text-secondary hover:text-on-surface hover:border-outline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface transition-all disabled:opacity-60 disabled:cursor-not-allowed';
+const VARIANT_CLASSES: Record<SignOutVariant, string> = {
+  // Small circular icon on light surfaces.
+  icon: iconButtonClass('outline', 'sm'),
+  // Full-width labelled pill on light surfaces.
+  drawer: `${controlClass('outline')} w-full`,
+  // Full-width labelled pill in the black mobile drawer.
+  wire: `${controlClass('onWireOutline')} w-full`,
+  // Profile settings row: full width on phones, a 44px circle from sm.
+  profile:
+    'inline-flex h-control w-full shrink-0 items-center justify-center rounded-control border border-outline-variant bg-surface-container-high text-on-surface transition-[background-color,border-color,transform] duration-150 ease-out hover:border-outline active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 sm:w-control',
+};
 
-const VARIANT_CLASSES: Record<NonNullable<SignOutButtonProps['variant']>, string> = {
-  icon: 'h-8 w-8 bg-surface-bright',
-  drawer:
-    'w-full gap-2 rounded-full border border-outline bg-surface-container-low px-4 py-2.5 text-[10px] font-display font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container',
+const SHOWS_LABEL: Record<SignOutVariant, boolean> = {
+  icon: false,
+  drawer: true,
+  wire: true,
+  profile: false,
 };
 
 export function SignOutButton({ variant = 'icon', className }: SignOutButtonProps) {
@@ -32,14 +45,13 @@ export function SignOutButton({ variant = 'icon', className }: SignOutButtonProp
       disabled={pending}
       aria-label={label}
       aria-busy={pending}
-      className={cn(BASE_CLASSES, VARIANT_CLASSES[variant], className)}
+      className={cn(VARIANT_CLASSES[variant], className)}
     >
       <LogOut
-        size={14}
+        size={SHOWS_LABEL[variant] ? 14 : 16}
         aria-hidden="true"
-        className={variant === 'drawer' ? '-ml-1' : undefined}
       />
-      {variant === 'drawer' ? <span>{label}</span> : null}
+      {SHOWS_LABEL[variant] ? <span>{label}</span> : null}
     </button>
   );
 }

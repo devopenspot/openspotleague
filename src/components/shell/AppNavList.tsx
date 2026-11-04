@@ -20,7 +20,8 @@ interface AppNavListProps {
 }
 
 const VARIANT_CONTAINER: Record<NavVariant, string> = {
-  desktop: "hidden items-center gap-2 md:flex",
+  desktop:
+    "hidden items-center gap-1 rounded-control bg-wire-border p-1 md:flex",
   "mobile-tab":
     "fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-wire-border bg-primary px-2 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] md:hidden",
   "mobile-drawer": "flex flex-col gap-2",

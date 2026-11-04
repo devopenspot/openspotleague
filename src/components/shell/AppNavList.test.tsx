@@ -41,15 +41,14 @@ describe("AppNavList", () => {
       screen.getByRole("link", { name: /Saved/ }),
     ).toHaveAttribute("aria-current", "page");
     expect(screen.getByLabelText("3 spots saved")).toHaveClass(
-      "rounded-md",
-      "px-2",
-      "py-1",
-      "text-on-primary",
+      "rounded-control",
+      "bg-on-wire",
+      "text-wire",
     );
     expect(screen.getByRole("link", { name: /Saved/ })).toHaveClass(
-      "bg-primary",
-      "text-on-primary",
-      "border-primary",
+      "rounded-control",
+      "bg-on-wire",
+      "text-wire",
     );
   });
 

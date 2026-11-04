@@ -10,6 +10,7 @@ import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
 import { useUIStore } from "@/stores/ui-store";
 import { BrandLogo } from "@/components/shell/BrandLogo";
+import { iconButtonClass } from "@/components/ui/recipes";
 
 export interface HeaderProps {
   image?: string;
@@ -38,11 +39,11 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
         <BrandLogo
           image={resolvedImage}
           alt={imageAlt}
-          className="rounded-lg transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         />
 
-        {/* Primary discovery + play — 4 items max (Explore, Map, Events, League).
-            Hidden on mobile (<md) where BottomNav takes over. */}
+        {/* Primary pill track (Map, League, TV). Hidden below md, where the
+            bottom bar takes over. */}
         <AppNavList
           variant="desktop"
           groups={["discover", "play"]}
@@ -57,9 +58,9 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
             type="button"
             aria-label="Search spots"
             onClick={tryOpenSearch}
-            className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-wire-border bg-wire-border text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
+            className={iconButtonClass("onWireOutline")}
           >
-            <Search size={16} aria-hidden="true" />
+            <Search size={18} aria-hidden="true" />
           </button>
 
           {/* Personal cluster: only for signed-in riders. Anonymous sees Sign in CTA instead of ghost tabs. */}
@@ -69,7 +70,7 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
                 variant="desktop"
                 groups={["you"]}
                 savedCount={savedCount}
-                      onSelect={handleSelect}
+                onSelect={handleSelect}
                 containerId="desktop-nav-you"
               />
             </div>

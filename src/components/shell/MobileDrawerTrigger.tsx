@@ -2,6 +2,7 @@
 
 import { Menu } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
+import { iconButtonClass } from "@/components/ui/recipes";
 
 export function MobileDrawerTrigger() {
   const openDrawer = useUIStore((s) => s.openDrawer);
@@ -12,7 +13,7 @@ export function MobileDrawerTrigger() {
       onClick={openDrawer}
       aria-label="Open menu"
       aria-controls="mobile-hamburger-portal"
-      className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-wire-border bg-wire-border text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
+      className={iconButtonClass("onWireOutline")}
     >
       <Menu size={18} aria-hidden="true" />
     </button>

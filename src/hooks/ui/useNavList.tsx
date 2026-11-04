@@ -60,7 +60,7 @@ export function renderNavBadge({ variant, id, savedCount }: RenderBadgeArgs) {
     return (
       <span
         aria-label={`${savedCount} spots saved`}
-        className="rounded-md bg-primary px-2 py-1 text-[9px] font-mono font-bold text-on-primary"
+        className="inline-flex h-5 min-w-5 items-center justify-center rounded-control bg-on-wire px-1.5 font-display text-[10px] font-bold leading-none text-wire ring-2 ring-wire"
       >
         {savedCount}
       </span>
@@ -70,7 +70,7 @@ export function renderNavBadge({ variant, id, savedCount }: RenderBadgeArgs) {
     return (
       <span
         aria-label={`${savedCount} spots saved`}
-        className="flex h-3.5 min-w-3.5 items-center justify-center rounded-md bg-on-wire px-0.5 text-[8px] font-bold text-primary animate-heart-burst"
+        className="flex h-4 min-w-4 items-center justify-center rounded-control bg-on-wire px-1 font-display text-[9px] font-bold leading-none text-wire ring-2 ring-wire animate-heart-burst"
       >
         {savedCount}
       </span>
@@ -79,7 +79,7 @@ export function renderNavBadge({ variant, id, savedCount }: RenderBadgeArgs) {
   return (
     <span
       aria-label={`${savedCount} spots saved`}
-      className="inline-flex h-4 min-w-4 items-center justify-center rounded-md bg-primary px-1 text-[10px] font-bold text-on-primary"
+      className="inline-flex h-4 min-w-4 items-center justify-center rounded-control bg-on-wire px-1 font-display text-[10px] font-bold leading-none text-wire ring-2 ring-wire"
     >
       {savedCount}
     </span>

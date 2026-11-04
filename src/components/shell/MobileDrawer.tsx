@@ -14,8 +14,10 @@ import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
 import { BrandLogo } from "@/components/shell/BrandLogo";
 import { isActivePath, type NavGroup } from "@/lib/navigation/nav";
-import { navLabelFor, useNavList } from "@/hooks/ui/useNavList";
 import { NavLink } from "@/components/shell/NavLink";
+import { navLabelFor, renderNavBadge, useNavList } from "@/hooks/ui/useNavList";
+import { controlClass, iconButtonClass, LABEL } from "@/components/ui/recipes";
+import { cn } from "@/lib/utils/cn";
 
 const DRAWER_ID = "mobile-hamburger-portal";
 const DRAWER_TITLE_ID = "mobile-drawer-title";
@@ -61,13 +63,13 @@ export function MobileDrawer() {
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-wire-border bg-primary px-5 py-3">
-          <BrandLogo className="rounded-lg transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" />
+          <BrandLogo className="transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2" />
           <button
             id="close-hamburger-btn"
             type="button"
             onClick={closeDrawer}
             aria-label="Close menu"
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-wire-border bg-wire-border text-on-wire transition-colors hover:border-wire-border-strong hover:bg-wire-border-strong hover:text-on-wire focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-wire"
+            className={iconButtonClass("onWireOutline")}
           >
             <X size={20} aria-hidden="true" />
           </button>
@@ -78,13 +80,13 @@ export function MobileDrawer() {
             Primary navigation
           </h3>
 
-          <nav aria-labelledby={DRAWER_TITLE_ID} className="space-y-0">
+          <nav aria-labelledby={DRAWER_TITLE_ID} className="space-y-2 px-5 pt-4">
             {DRAWER_GROUP_ORDER.map((group) => {
               const items = navItems.filter((item) => item.group === group);
               if (items.length === 0) return null;
               return (
                 <section key={group} aria-labelledby={`drawer-group-${group}`}>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col gap-2">
                     {items.map((item) => {
                       const isActive = isActivePath(pathname, item.path);
                       const showBadge = item.id === "saved" && savedCount > 0;
@@ -103,24 +105,18 @@ export function MobileDrawer() {
                           tab={item.id}
                           href={item.path}
                           label={navLabelFor(item, "mobile-drawer")}
-                          icon={<Icon size={16} aria-hidden="true" />}
+                          icon={<Icon size={18} aria-hidden="true" />}
                           active={isActive}
                           variant="mobile-drawer"
                           onClick={handleClick}
-                          className={
-                            isActive
-                              ? "!border-b !border-wire-border-strong !border-l-2 !border-l-on-wire !bg-wire-border-strong !text-on-primary focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2"
-                              : "!border-b !border-wire-border !bg-primary !text-wire-muted hover:!border-wire-border-strong hover:!bg-wire-border hover:!text-on-wire focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2"
-                          }
                           badge={
-                            showBadge ? (
-                              <span
-                                aria-label={`${savedCount} spots saved`}
-                                className="rounded-md bg-on-wire px-2 py-1 text-[9px] font-mono font-bold text-primary"
-                              >
-                                {savedCount}
-                              </span>
-                            ) : undefined
+                            showBadge
+                              ? renderNavBadge({
+                                  variant: "mobile-drawer",
+                                  id: item.id,
+                                  savedCount,
+                                })
+                              : undefined
                           }
                         />
                       );
@@ -131,7 +127,7 @@ export function MobileDrawer() {
             })}
           </nav>
 
-          <p className="p-4 font-display text-xs font-semibold leading-5 text-wire-muted">
+          <p className="px-5 py-6 text-xs leading-5 text-wire-muted">
             “I've missed more than 9000 shots in my career. I've lost almost 300
             games. 26 times, I've been trusted to take the game winning shot and
             missed. I've failed over and over and over again in my life. And
@@ -145,7 +141,7 @@ export function MobileDrawer() {
           id="preferences-btn"
           type="button"
           onClick={handleOpenPreferences}
-          className="flex min-h-12 w-full items-center justify-between rounded-lg border-2 border-wire-border bg-wire-border px-4 text-left font-display text-sm font-bold uppercase tracking-[0.04em] text-on-wire transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
+          className={cn(controlClass("onWireOutline"), "w-full justify-start")}
         >
           <span className="flex items-center gap-2">
             <Settings size={14} aria-hidden="true" />
@@ -157,11 +153,11 @@ export function MobileDrawer() {
             <Link
               href="/profile"
               onClick={closeDrawer}
-              className="flex items-center gap-3 rounded-lg border-2 border-wire-border bg-wire-border p-3 transition-[background-color,border-color,transform] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
+              className="flex items-center gap-3 rounded-container border border-wire-border bg-wire-border p-3 transition-[background-color,border-color] hover:border-wire-border-strong hover:bg-wire-border-strong focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
               <UserAvatar user={user} size="md" />
               <div className="min-w-0 flex-1">
-                <span className="block font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-wire-muted">
+                <span className={cn(LABEL, "block text-wire-muted")}>
                   Signed in — View profile
                 </span>
                 <span className="block truncate text-sm font-semibold text-on-wire">
@@ -169,17 +165,10 @@ export function MobileDrawer() {
                 </span>
               </div>
             </Link>
-            <SignOutButton
-              variant="drawer"
-              className="min-h-12 !rounded-lg !border-2 !border-wire-border !bg-wire-border !px-4 !py-0 !text-sm !tracking-[0.04em] !text-on-wire hover:!border-wire-border-strong hover:!bg-wire-border-strong focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
-            />
+            <SignOutButton variant="wire" />
           </>
         ) : (
-          <SignInLink
-            variant="drawer"
-            className="!mt-0 min-h-12 !rounded-lg !border-2 !border-on-primary !bg-on-primary !px-4 !py-0 !text-sm !tracking-[0.04em] !text-primary hover:!bg-on-primary/90 focus-visible:!ring-white focus-visible:!ring-offset-wire active:translate-y-px"
-            onClick={closeDrawer}
-          />
+          <SignInLink variant="app-drawer" onClick={closeDrawer} />
         )}
         <div className="flex items-center justify-center gap-3 pt-2 text-xs font-semibold text-wire-muted">
           <Link

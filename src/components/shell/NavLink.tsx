@@ -19,26 +19,30 @@ interface NavLinkProps {
   onClick?: MouseEventHandler<HTMLAnchorElement>;
 }
 
+/**
+ * "Pill track" nav (DESIGN.md components.nav). One language on every
+ * breakpoint: inactive items are muted text on the black chrome, the active
+ * item is an inverted white pill. Desktop items sit in a rounded-full track,
+ * the bottom bar puts the pill behind the icon, drawer rows are full pills.
+ */
 const VARIANT_STYLES: Record<
   NavVariant,
   { base: string; active: string; inactive: string }
 > = {
   desktop: {
-    base: "flex min-h-12 items-center space-x-2 rounded-lg px-3 font-display text-sm font-bold uppercase tracking-[0.04em] transition-[background-color,color,transform] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
-    active: "border-b-2 border-on-wire bg-wire-border/50 text-on-wire",
-    inactive: "text-wire-muted hover:bg-wire-border hover:text-on-wire",
+    base: "inline-flex min-h-control-sm items-center gap-2 rounded-control px-4 font-display text-xs font-bold uppercase tracking-pill transition-[background-color,color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
+    active: "bg-on-wire text-wire",
+    inactive: "text-wire-muted hover:bg-wire-border-strong hover:text-on-wire",
   },
-  // radius-lg 16px per DESIGN.md — interactive controls are 16px or full.
   "mobile-tab": {
-    base: "flex min-h-14 min-w-14 flex-col items-center justify-center space-y-1 rounded-lg border-b-2 px-3 font-display text-xs font-semibold uppercase tracking-[0.05em] transition-[background-color,color,transform] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
-    active: "border-on-wire bg-wire-border/50 text-on-wire",
-    inactive: "border-transparent text-wire-muted hover:text-on-wire",
+    base: "group flex min-h-14 min-w-14 flex-1 flex-col items-center justify-center gap-1 rounded-control font-display text-[11px] font-semibold uppercase tracking-label transition-colors duration-150 ease-out focus-visible:outline-2 focus-visible:outline-white focus-visible:-outline-offset-2",
+    active: "text-on-wire",
+    inactive: "text-wire-muted hover:text-on-wire",
   },
   "mobile-drawer": {
-    base: "flex min-h-12 w-full items-center justify-between border-b-1 px-4 font-display text-sm font-bold uppercase tracking-[0.04em] transition-colors",
-    active: "bg-primary text-on-primary border-primary",
-    inactive:
-      "border-outline-variant/60 bg-surface-container-low hover:border-outline text-secondary hover:text-on-surface",
+    base: "flex min-h-control w-full items-center justify-between gap-3 rounded-control px-4 font-display text-sm font-bold uppercase tracking-dense transition-[background-color,color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px",
+    active: "bg-on-wire text-wire",
+    inactive: "bg-wire-border text-on-wire hover:bg-wire-border-strong",
   },
 };
 
@@ -73,31 +77,43 @@ export function NavLink({
         className,
       )}
     >
-      <span
-        className={cn(
-          "flex items-center",
-          variant === "mobile-tab" ? "flex-col space-y-1" : "space-x-2",
-        )}
-      >
-        {overlay ? (
+      {variant === "mobile-tab" ? (
+        <>
+          <span
+            className={cn(
+              "relative flex h-8 w-14 items-center justify-center rounded-control transition-colors duration-150 ease-out",
+              active ? "bg-on-wire text-wire" : "group-hover:bg-wire-border",
+            )}
+          >
+            <span aria-hidden="true" className="shrink-0">
+              {icon}
+            </span>
+            {overlay ? (
+              <span className="absolute -top-1 right-2 flex items-center justify-center">
+                {badge}
+              </span>
+            ) : null}
+          </span>
+          <span>{label}</span>
+        </>
+      ) : (
+        <span className="flex min-w-0 items-center gap-2">
           <span className="relative inline-flex">
             <span aria-hidden="true" className="shrink-0">
               {icon}
             </span>
-            <span className="absolute -top-1.5 -right-2 flex items-center justify-center">
-              {badge}
-            </span>
+            {overlay ? (
+              <span className="absolute -top-1.5 -right-2 flex items-center justify-center">
+                {badge}
+              </span>
+            ) : null}
           </span>
-        ) : (
-          <span className="relative inline-flex">
-            <span aria-hidden="true" className="shrink-0">
-              {icon}
-            </span>
-            {badge && <span className="ml-2 flex items-center">{badge}</span>}
-          </span>
-        )}
-        <span>{label}</span>
-      </span>
+          <span>{label}</span>
+          {badge && !overlay ? (
+            <span className="flex items-center">{badge}</span>
+          ) : null}
+        </span>
+      )}
     </Link>
   );
 }
