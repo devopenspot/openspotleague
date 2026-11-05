@@ -15,18 +15,18 @@ const JOIN_EVENT_DESCRIPTION_ID = "join-event-description";
 
 const UI_COPY = {
   joinWithCode: "Join with code",
-  joinEyebrow: "Join an event",
+  joinEyebrow: "Join a contest",
   joinTitle: "Have an invite code?",
   joinDescription:
-    "Paste the invite code or event link an organizer sent you to preview and join the event.",
-  closeJoinEvent: "Close join event",
-  enterInviteCodeLabel: "Enter an event invite code",
-  placeholder: "Invite code or event link",
+    "Paste the invite code or contest link an organizer sent you to preview and join the contest.",
+  closeJoinEvent: "Close join contest",
+  enterInviteCodeLabel: "Enter a contest invite code",
+  placeholder: "Invite code or contest link",
   join: "Join",
   paste: "Paste",
-  emptyInviteCodeError: "Enter an invite code to join an event.",
+  emptyInviteCodeError: "Enter an invite code to join a contest.",
   invalidInviteCodeError:
-    "That doesn't look like an event invite link. Try the invite code instead.",
+    "That doesn't look like a contest invite link. Try the invite code instead.",
   pasteFailedError: "Couldn't read your clipboard. Type the code instead.",
   inviteCodeErrorId: "invite-code-error",
 } as const;

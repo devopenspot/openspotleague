@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { LeagueWash } from "@/components/league/landing/LeagueWash";
 import { ManageConsole } from "@/components/league/manage/ManageConsole";
 import { requireUserOrRedirect } from "@/lib/auth/server";
 import { buildContestManageUrl } from "@/lib/league/urls";
@@ -20,9 +19,5 @@ export default async function ManagePage({
   await requireUserOrRedirect(buildContestManageUrl(slug));
   const resolved = await resolveLeagueEventIdBySlug(slug);
   if (!resolved) notFound();
-  return (
-    <LeagueWash>
-      <ManageConsole eventId={resolved.id} />
-    </LeagueWash>
-  );
+  return <ManageConsole eventId={resolved.id} />;
 }

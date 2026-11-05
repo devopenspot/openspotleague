@@ -76,10 +76,10 @@ colors:
   gradient-profile-mid: "#d9f99d"
   gradient-profile-end: "#a3e635"
   gradient-profile: "linear-gradient(to right, #ecfccb, #d9f99d, #a3e635)"
-  gradient-events-start: "#0284c7"
-  gradient-events-mid: "#2563eb"
-  gradient-events-end: "#1e40af"
-  gradient-events: "linear-gradient(to right, #0284c7, #2563eb, #1e40af)"
+  gradient-league-start: "#0284c7"
+  gradient-league-mid: "#2563eb"
+  gradient-league-end: "#1e40af"
+  gradient-league: "linear-gradient(to right, #0284c7, #2563eb, #1e40af)"
   # wire — inverted dark rail (landing marquee), derived from primary.
   # On wire surfaces NEVER use white/* literals — map via wire-* tokens:
   #   text-white → text-on-wire · text-white/60-70 → text-wire-muted
@@ -135,13 +135,13 @@ pages:
     shell: "inverse-surface"
     overlay: "tv-overlay"
     note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Shares the shell gutter (px-5 md:px-10). Row headings are the wire-rail heading (font-display uppercase tracking-eyebrow text-on-wire). Discipline pills are chipClass(active, 'wire'); CTAs are controlClass('onWire' | 'onWireOutline'); the search field is INPUT_ON_WIRE. Text uses on-wire and wire-muted only — no text-black or white/* literals. Video cards are rounded-inner with the locked corner tab (components.tv-card) — never a full-radius tag. Panels use PANEL_ON_WIRE (tv-overlay). All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
-  sport-events:
-    shell: "gradient-events"
+  league-landing:
+    shell: "gradient-league"
     hero: "on-surface"
-    note: "Horizontal saturated electric-blue/cobalt wash (#0284c7 → #2563eb → #1e40af) via `bg-gradient-events` only — never raw from-sky-*/from-blue-* literals. The wash sets text-on-gradient (white ink) and covers /sport-events, /sport-events/[slug], /sport-events/join/[code], loading and error states. Directory: header straight on the wash (EYEBROW_ON_GRADIENT + visible PAGE_TITLE text-on-gradient + one line of copy), actions are controlClass('onWash') (Join with code, My league) and controlClass('onWashDark') (Create event, signed in only); below a border-on-gradient/20 rule sits the SEGMENTED_TRACK status filter (All/Live/Upcoming/Past with counts, empty statuses hidden unless active) and the single META_ON_GRADIENT results count. Sections are SECTION_TITLE text-on-gradient with an EYEBROW_ON_GRADIENT line: Featured (dark bg-on-surface photo hero, one scrim, View event controlClass('onWire') + Official site controlClass('onPhoto')), Live & upcoming (EventCard grid), Past events (compact EventCard, 4 columns on lg). EventCard is CARD_FRAME with tagClass('onPhoto') photo labels; the whole card opens /sport-events/[slug] via a stretched title link, and the only other targets are footer iconButtonClass('outline') links (socials, official site). Detail page: full-bleed photo hero on phones (CARD_FRAME from md) with tagClass('onPhoto') labels, a TILE countdown, and an aside with Official site (primary), map (secondary), ShareActions and socials. Footer is border-on-gradient/20 with an onWash pill CTA. On-wash ink uses on-gradient tokens, never white/* literals (skeleton blocks excepted)."
+    note: "Horizontal saturated electric-blue/cobalt wash (#0284c7 → #2563eb → #1e40af) via `bg-gradient-league` (LeagueWash) only — never raw from-sky-*/from-blue-* literals. The wash sets text-on-gradient (white ink) and covers /league, /league/[slug], /league/join/[code] and the error state. Landing (LeagueLanding): header straight on the wash (EYEBROW_ON_GRADIENT + visible PAGE_TITLE 'Contests' text-on-gradient + one line of copy); actions are JoinByCodeEntry controlClass('onWash') and Create a contest controlClass('onWashDark') (signed in only). Signed-in users then get My contests (SECTION_TITLE text-on-gradient; Organizing / Judging / Riding groups of CARD rows with tag pills and PaymentGateNotice). Public contests sits below a border-on-gradient/20 rule: SEGMENTED_TRACK status filter (All/Live/Upcoming/Past with counts, empty statuses hidden unless active), the single META_ON_GRADIENT count, then Featured (dark bg-on-surface hero, one scrim, View contest controlClass('onWire') + Official site controlClass('onPhoto')), Live & upcoming (ContestCard grid) and Past contests (compact ContestCard, 4 columns on lg). Free contests are never listed, so the directory's empty state explains that public listings arrive with the paid tiers. ContestCard is CARD_FRAME with tagClass('onPhoto') labels; the whole card opens /league/[slug] via a stretched title link, and the only other targets are footer iconButtonClass('outline') links (socials, official site). Covers: an uploaded photo, otherwise ContestCover — the wash with a Trophy and category · disciplines line, never the generic OG image. Detail page: full-bleed hero on phones (CARD_FRAME from md), a TILE countdown, and an aside with Manage contest (organizers, primary) and Judge queue (judges/organizers), official site, map and ShareActions (public contests only; private contests show a 'Private contest' note), socials. On-wash ink uses on-gradient tokens, never white/* literals (skeleton blocks excepted)."
   league:
     shell: "surface"
-    note: "League is a working tool, so it stays monochrome surface (no wash): /league hub, /league/new, /sport-events/[slug]/manage and /judge. Columns are pageContainer('3xl') for hub, create and judge, and pageContainer('5xl') for the organizer console. Header is EYEBROW + PAGE_TITLE + BODY with the action row below (primary + outline). Forms use the league form parts (src/components/league/form-parts.tsx): fieldsets are CARD with a CARD_TITLE heading and BODY intro, labels are LABEL, controls are INPUT / TEXTAREA / SelectField, disciplines are chipClass checkboxes, and errors are alertClass('error'). Shared admin fields (DateField, CountryAutocomplete) take appearance='pill' here. Console tabs are SEGMENTED_TRACK + segmentClass; stats are TILE; rows nested in a card are CARD_NESTED; empty blocks are EMPTY_STATE; confirm dialogs are a CARD in Overlay with outline + primary actions. Join-by-code opens the right side-drawer (SIDE_DRAWER_PANEL). Judge scoring is used outdoors on phones: steppers are iconButtonClass('outline','lg'), submit is controlClass('primary','lg'), and run text is at least 14px."
+    note: "The League working tools stay monochrome surface (no wash): /league/new (also reused as /admin/league/contests/new in curator mode), /league/[slug]/manage and /league/[slug]/judge. Columns are pageContainer('3xl') for create and judge, and pageContainer('5xl') for the organizer console. Header is EYEBROW + PAGE_TITLE + BODY with the action row below (primary + outline). Forms use the league form parts (src/components/league/form-parts.tsx): fieldsets are CARD with a CARD_TITLE heading and BODY intro, labels are LABEL, controls are INPUT / TEXTAREA / SelectField, disciplines are chipClass checkboxes, and errors are alertClass('error'). Shared admin fields (DateField, CountryAutocomplete) take appearance='pill' here. Console tabs are SEGMENTED_TRACK + segmentClass; stats are TILE; rows nested in a card are CARD_NESTED; empty blocks are EMPTY_STATE; confirm dialogs are a CARD in Overlay with outline + primary actions. Join-by-code opens the right side-drawer (SIDE_DRAWER_PANEL). Judge scoring is used outdoors on phones: steppers are iconButtonClass('outline','lg'), submit is controlClass('primary','lg'), and run text is at least 14px."
   admin:
     shell: "surface-bright"
     note: "Flat monochrome — surface-bright + outline-variant borders, no wash."
@@ -201,7 +201,7 @@ shape:
   radius-control: 9999px
   usage:
     - "control (full) — every button, input, select, pill, chip, tab, tag, badge, icon button, nav item, toast action/dismiss"
-    - "container (16px) — SpotCard, EventCard, CARD, panels, fieldsets, textareas, empty states, toasts, overlay panels, drawer footer cards"
+    - "container (16px) — SpotCard, ContestCard, CARD, panels, fieldsets, textareas, empty states, toasts, overlay panels, drawer footer cards"
     - "inner (14px) — rows/blocks nested inside a 16px container (CARD_NESTED), MarqueeCard and TV video cards, skeleton inner blocks. Never top-level."
     - "card (12px) — stat and glance tiles (TILE), alerts (alertClass), TV queue items"
     - "sm (4px) — map pins, clusters, the event tier pill, and the locked TvMarqueeCard corner tab (rounded-tl-sm rounded-br-sm, see components.tv-card) only"
@@ -222,7 +222,7 @@ spacing:
   control-sm: "2.25rem (36px) — chips, segments, desktop nav items"
   app-header-h: "calc(2.75rem + 1.5rem + 1px) — py-3 + one control row + border"
   mobile-nav-h: "calc(77px + env(safe-area-inset-bottom))"
-  page-gutter: "px-5 (20px) md:px-10 (40px) — pageContainer(width) in recipes.ts; widths 3xl (league forms), 5xl (profile), 6xl (spot, support, TV), 7xl (landing, sport events)"
+  page-gutter: "px-5 (20px) md:px-10 (40px) — pageContainer(width) in recipes.ts; widths 3xl (league forms), 5xl (profile, organizer console), 6xl (spot, support, TV), 7xl (landing, League landing and contest page)"
   note: "Tokens map to Tailwind literals: gap-2=8, gap-4=16, gap-6=24, px-5=20. Every page and the shell chrome share the px-5/md:px-10 gutter; photo heroes may bleed on phones. BottomNav is 77px plus the safe area (var(--mobile-nav-h)), and main content pads by the same variable; Header is content-height (--app-header-h), not fixed. Shell height: on routes where the document scrolls, the AppShell root is min-h-dvh so main's nav padding lands after the last line (an h-dvh root would leave the last ~77px under the bottom bar). Only the map, /games/:id, /games and / keep a one-screen h-dvh frame, and they scroll inside main. Toast viewport sits at bottom-[calc(var(--mobile-nav-h)+1rem)] md:bottom-6."
 motion:
   durations: "150ms ease-out base (pills, chevrons, NavLink), 300ms image hover scale-102, 500ms hero scale-105, 180ms pin pulse (one-shot active state), 2.5s user ping"
@@ -256,7 +256,7 @@ components:
     border: 1px solid var(--color-outline-variant)
     padding: 16px
     recipe: "CARD (CARD_FRAME + p-4 sm:p-5), CARD_NESTED, TILE, EMPTY_STATE, PANEL_ON_WIRE, alertClass(tone)"
-    note: "Default card is rounded-container (16px): SpotCard, EventCard, SurfaceCard, CARD. Rows nested INSIDE a 16px card use rounded-inner (14px). Never a card inside a card — drop the inner frame (e.g. ProfileTricksPanel bare). Borders are 1px."
+    note: "Default card is rounded-container (16px): SpotCard, ContestCard, SurfaceCard, CARD. Rows nested INSIDE a 16px card use rounded-inner (14px). Never a card inside a card — drop the inner frame (e.g. ProfileTricksPanel bare). Borders are 1px."
   badges:
     radius: var(--radius-control)
     padding: 4px 10px

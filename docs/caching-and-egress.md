@@ -25,7 +25,7 @@ Never call `revalidateTag` inside a transaction. If you do, a concurrent request
 - `withDbWrite` runs the operation inside `runWithDeferredCacheInvalidation`. Code inside it calls `queueTagRevalidate(tag, profile)`, and the queued tags are flushed only after commit.
 - Use and extend the central helpers instead of hand-writing tag lists:
   - `revalidateSpotCaches(spotId, slug)` in `src/lib/services/spot/spots.ts`
-  - `revalidateEventCaches(eventId, slug)` in `src/lib/services/event/events.ts`
+  - `queueEventTags(eventId)` in `src/lib/services/league/index.ts` (contests: `events:list`, `events:featured`, `events:item:<id>`; cover changes also queue `event-images`)
   - `revalidateTvPaths()` in `src/lib/services/tv/tv.ts`
   - `revalidateTaxonomyPaths()` in `src/lib/services/taxonomy/taxonomy.ts`
 

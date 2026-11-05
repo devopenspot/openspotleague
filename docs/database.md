@@ -68,11 +68,11 @@ Trick catalogs use replace-and-snapshot semantics: the JSON fixture is the sourc
 - Roles:
   - `admin`
   - `curator` (legacy)
-  - `spot_curator` and `event_curator`, scoped by country through `curator_country_scopes`
+  - `spot_curator` and `contest_curator`, scoped by country through `curator_country_scopes`. `contest_curator` (formerly `event_curator`, renamed in `0006_contest_curator_role`) holds `content.read`, `media.manage` and `league.curate`; admins also hold `league.curate`. See `docs/league.md`.
   - `trick_curator`, scoped by discipline through `curator_discipline_scopes`
 - RLS policies:
   - `spots_public_read`: public spots that are not admin-hidden; personal spots only for their creator.
-  - `sport_events_public_read`: public events; drafts and unlisted events only for their creator.
+  - `sport_events_public_read`: public contests; unlisted (free-plan) contests only for their creator. Members reach unlisted contests through the league service, never through RLS.
   - `user_notifications_owner`, `user_email_preferences_owner`: rows belong to the owner only.
 
 ## Realtime
@@ -81,7 +81,7 @@ The `supabase_realtime` publication includes `user_notifications`, `game_realtim
 
 ## Storage
 
-- Cloudflare R2 is the object store (`STORAGE_PROVIDER=r2`). The buckets are `R2_BUCKET_SPOTS` and `R2_BUCKET_EVENTS`.
+- Cloudflare R2 is the object store (`STORAGE_PROVIDER=r2`). The buckets are `R2_BUCKET_SPOTS` and `R2_BUCKET_EVENTS`; the events bucket holds contest covers (`uploadEventImage`, `/api/league/events/[id]/cover`).
 - Uploads go through `src/lib/storage/index.ts`. Where Sharp loads, `processImageBuffer` (`src/lib/storage/process.ts`) writes 128, 400, and 800 px WebP variants. Sharp does not load on Workers, so there it stores the original file and points every variant path at it.
 - Images are served directly from `spots.cdn.openspotleague.com` and `events.cdn.openspotleague.com`, so image traffic adds nothing to database egress.
 - `src/lib/supabase/storage.ts` is a deprecated shim; import `@/lib/storage` instead.
