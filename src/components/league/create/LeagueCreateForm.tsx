@@ -12,7 +12,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
-import { ArrowLeft, CalendarClock, Eye, Link2, MapPin, Trophy } from "lucide-react";
+import { ArrowLeft, CalendarClock, Eye, Layers, Link2, MapPin, Trophy } from "lucide-react";
 import type { CountrySelection } from "@/components/admin/spots/form/CountryAutocomplete";
 import { CountryAutocomplete } from "@/components/admin/spots/form/CountryAutocomplete";
 import { DateField } from "@/components/league/DateField";
@@ -41,6 +41,14 @@ import { leagueCreateEventInputSchema } from "@/lib/schemas/league";
 import type { LeagueCreateEventResponse } from "@/lib/schemas/league";
 import { buildContestDetailUrl, buildContestManageUrl } from "@/lib/league/urls";
 import { ROUTES } from "@/lib/navigation/nav";
+import {
+  FORMAT_TEMPLATES,
+  RATED_FORMATS,
+  RATING_DISCIPLINES,
+  disciplineLabel,
+  type RatedFormat,
+  type RatingDiscipline,
+} from "@/lib/league/rating/formats";
 
 const CATEGORY_OPTIONS: { value: ContestCategory; label: string }[] =
   SportEventCategorySchema.options.map((value) => ({
@@ -52,6 +60,20 @@ const CATEGORY_OPTIONS: { value: ContestCategory; label: string }[] =
   }));
 
 const DISCIPLINE_OPTIONS = [...SportDisciplineSchema.options];
+
+type DivisionChoice = { discipline: RatingDiscipline; format: RatedFormat };
+
+/** Sport titles ("Roller") for the chosen divisions, in catalog order. */
+function sportsFor(divisions: readonly DivisionChoice[]): (typeof DISCIPLINE_OPTIONS)[number][] {
+  return DISCIPLINE_OPTIONS.filter((sport) =>
+    divisions.some((division) => division.discipline === sport.toLowerCase()),
+  );
+}
+
+/** Video deadline: the end of the chosen day, UTC. */
+function deadlineIso(date: string): string | undefined {
+  return date ? `${date}T23:59:59.000Z` : undefined;
+}
 
 const noopSubscribe = () => () => {};
 
@@ -93,7 +115,10 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
   const [name, setName] = useState("");
   const [shortName, setShortName] = useState("");
   const [description, setDescription] = useState("");
-  const [sports, setSports] = useState<(typeof DISCIPLINE_OPTIONS)[number][]>([]);
+  const [divisions, setDivisions] = useState<DivisionChoice[]>([]);
+  const [submissionMode, setSubmissionMode] = useState<"live" | "video">("live");
+  const [deadlineDate, setDeadlineDate] = useState("");
+  const sports = sportsFor(divisions);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [city, setCity] = useState("");
@@ -127,11 +152,11 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
     return max.toISOString().slice(0, 10);
   }, []);
 
-  function toggleSport(value: (typeof DISCIPLINE_OPTIONS)[number]) {
-    setSports((current) =>
-      current.includes(value)
-        ? current.filter((currentValue) => currentValue !== value)
-        : [...current, value],
+  function toggleDivision(choice: DivisionChoice) {
+    setDivisions((current) =>
+      current.some((division) => division.discipline === choice.discipline && division.format === choice.format)
+        ? current.filter((division) => !(division.discipline === choice.discipline && division.format === choice.format))
+        : [...current, choice],
     );
   }
 
@@ -141,6 +166,9 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
       shortName: shortName.trim() || undefined,
       description,
       sports,
+      divisions: divisions.length > 0 ? divisions : undefined,
+      submissionMode,
+      submissionDeadlineAt: submissionMode === "video" ? deadlineIso(deadlineDate) : undefined,
       startDate,
       endDate: endDate || undefined,
       city: city.trim(),
@@ -157,15 +185,22 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
 
   function validate(): boolean {
     const parsed = leagueCreateEventInputSchema.safeParse(payload());
-    if (parsed.success) {
+    if (parsed.success && divisions.length > 0) {
       setErrors({});
       return true;
     }
     const fieldErrors: Record<string, string> = {};
+    if (divisions.length === 0) fieldErrors.divisions = "Pick at least one division";
+    if (parsed.success) {
+      flushSync(() => setErrors(fieldErrors));
+      return false;
+    }
     for (const issue of parsed.error.issues) {
-      const key = issue.path[0];
+      const raw = issue.path[0];
+      // Sports are derived from the divisions, so surface them there.
+      const key = raw === "sports" ? "divisions" : raw;
       if (typeof key === "string" && !fieldErrors[key]) {
-        fieldErrors[key] = issue.message;
+        fieldErrors[key] = key === "divisions" ? "Pick at least one division" : issue.message;
       }
     }
     // Commit the error state now so the focus step below finds the
@@ -323,37 +358,6 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
             required
             error={errors.category}
           />
-          <div className="sm:col-span-2">
-            <FieldLabel required>Disciplines</FieldLabel>
-            <ul
-              className="flex flex-wrap gap-2"
-              aria-label="Contest disciplines"
-            >
-              {DISCIPLINE_OPTIONS.map((value) => {
-                const active = sports.includes(value);
-                return (
-                  <li key={value}>
-                    <label
-                      className={`${chipClass(active)} cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={active}
-                        onChange={() => toggleSport(value)}
-                        className="sr-only"
-                        aria-invalid={errors.sports ? true : undefined}
-                        aria-describedby={
-                          errors.sports ? "league-sports-error" : undefined
-                        }
-                      />
-                      {value}
-                    </label>
-                  </li>
-                );
-              })}
-            </ul>
-            <FieldMessages id="league-sports" error={errors.sports} />
-          </div>
           <ContestCoverField
             id="league-cover"
             file={coverFile}
@@ -365,6 +369,93 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
             sports={sports}
             disabled={busy}
           />
+        </div>
+      </FormSection>
+
+      <FormSection
+        icon={Layers}
+        title="Format"
+        intro="Pick how riders compete and the divisions they can enter. Each division is a discipline and a format, with its own runs and standings."
+      >
+        <div className="space-y-5">
+          <fieldset>
+            <legend className="sr-only">How riders compete</legend>
+            <FieldLabel required>How riders compete</FieldLabel>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(
+                [
+                  { value: "live", title: "Live", body: "Riders ride in person. You open each rider's judging window." },
+                  { value: "video", title: "Video", body: "Riders paste a video link before a deadline. Judges score from a queue." },
+                ] as const
+              ).map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex cursor-pointer flex-col gap-1 rounded-inner border p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary ${submissionMode === option.value ? "border-primary bg-surface-container" : "border-outline-variant"}`}
+                >
+                  <input
+                    type="radio"
+                    name="league-submission-mode"
+                    value={option.value}
+                    checked={submissionMode === option.value}
+                    onChange={() => setSubmissionMode(option.value)}
+                    className="sr-only"
+                  />
+                  <span className="text-sm font-semibold text-on-surface">{option.title}</span>
+                  <span className={BODY}>{option.body}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {submissionMode === "video" ? (
+            <DateField
+              id="league-video-deadline"
+              label="Video deadline"
+              value={deadlineDate}
+              onChange={setDeadlineDate}
+              required
+              error={errors.submissionDeadlineAt}
+              min={startDate || new Date().toISOString().slice(0, 10)}
+              hint="Videos are due by the end of this day (UTC), after the start date."
+              appearance="pill"
+            />
+          ) : null}
+
+          <div>
+            <FieldLabel required>Divisions</FieldLabel>
+            <div className="space-y-3" role="group" aria-label="Contest divisions">
+              {RATING_DISCIPLINES.map((discipline) => (
+                <div key={discipline} className="flex flex-wrap items-center gap-2">
+                  <span className="w-24 shrink-0 text-sm font-semibold text-on-surface">{disciplineLabel(discipline)}</span>
+                  {RATED_FORMATS.map((format) => {
+                    const active = divisions.some((division) => division.discipline === discipline && division.format === format);
+                    return (
+                      <label
+                        key={format}
+                        className={`${chipClass(active)} cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={active}
+                          onChange={() => toggleDivision({ discipline, format })}
+                          className="sr-only"
+                          aria-label={`${disciplineLabel(discipline)} ${FORMAT_TEMPLATES[format].label}`}
+                          aria-invalid={errors.divisions ? true : undefined}
+                          aria-describedby={errors.divisions ? "league-divisions-error" : undefined}
+                        />
+                        {FORMAT_TEMPLATES[format].label}
+                      </label>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <p className={`mt-2 ${BODY}`}>
+              Park and Street runs last 50 seconds and Vert 45. Street adds a best trick. Every division is judged on
+              difficulty, style, amplitude, consistency and creativity.
+            </p>
+            <FieldMessages id="league-divisions" error={errors.divisions} />
+          </div>
         </div>
       </FormSection>
 
