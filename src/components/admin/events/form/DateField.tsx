@@ -3,6 +3,7 @@
 import { useId } from "react"
 import { CalendarDays, X } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
+import { INPUT, LABEL, controlClass } from "@/components/ui/recipes"
 
 const CONTROL_BASE =
   "w-full rounded-md border bg-surface-bright p-3 pr-10 text-base font-medium text-on-surface shadow-none transition-colors focus:border-primary focus:outline-none focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
@@ -18,6 +19,8 @@ interface DateFieldProps {
   max?: string
   placeholder?: string
   id?: string
+  /** `pill` renders the shared INPUT recipe (league forms); `admin` keeps the admin form look. */
+  appearance?: "admin" | "pill"
 }
 
 function todayIso(): string {
@@ -48,7 +51,9 @@ export function DateField({
   max,
   placeholder = "YYYY-MM-DD",
   id: providedId,
+  appearance = "admin",
 }: DateFieldProps) {
+  const pill = appearance === "pill"
   const autoId = useId()
   const id = providedId ?? autoId
   const hintId = hint ? `${id}-hint` : undefined
@@ -60,12 +65,12 @@ export function DateField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary">
+      <label htmlFor={id} className={pill ? `mb-1.5 block ${LABEL}` : "mb-1.5 block text-xs font-semibold tracking-[0.05em] text-secondary"}>
         {label} {required ? <span aria-hidden="true">*</span> : null}
       </label>
 
       <div className="relative">
-        <span aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-secondary">
+        <span aria-hidden="true" className={cn("pointer-events-none absolute top-1/2 -translate-y-1/2 text-secondary", pill ? "left-4" : "left-3")}>
           <CalendarDays size={14} />
         </span>
 
@@ -80,7 +85,11 @@ export function DateField({
           placeholder={placeholder}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={cn(CONTROL_BASE, "pl-9", error && "border-error", !error && "border-outline-variant")}
+          className={
+            pill
+              ? `${INPUT} pl-10 pr-12`
+              : cn(CONTROL_BASE, "pl-9", error && "border-error", !error && "border-outline-variant")
+          }
         />
 
         {hasValue ? (
@@ -88,7 +97,11 @@ export function DateField({
             type="button"
             onClick={() => onChange("")}
             aria-label={`Clear ${label}`}
-            className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-secondary transition-colors hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className={cn(
+              "absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center text-secondary",
+              "transition-colors hover:bg-surface-container-high hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+              pill ? "h-8 w-8 rounded-control" : "h-7 w-7 rounded-md",
+            )}
           >
             <X size={12} aria-hidden="true" />
           </button>
@@ -99,7 +112,11 @@ export function DateField({
         <button
           type="button"
           onClick={() => onChange(todayIso())}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-2 font-display text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-secondary transition-colors duration-150 ease-out hover:border-outline hover:text-on-surface active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className={
+            pill
+              ? controlClass("outline", "sm")
+              : "inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-2 font-display text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-secondary transition-colors duration-150 ease-out hover:border-outline hover:text-on-surface active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          }
           aria-label={`Set ${label} to today`}
         >
           Today
@@ -120,7 +137,7 @@ export function DateField({
         </p>
       ) : null}
       {error ? (
-        <p id={errorId} role="alert" className="mt-1 text-xs text-error">
+        <p id={errorId} role="alert" className={cn("mt-1 text-xs text-error", pill && "font-semibold")}>
           {error}
         </p>
       ) : null}

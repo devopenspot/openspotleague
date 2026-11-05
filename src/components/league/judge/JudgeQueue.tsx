@@ -17,6 +17,18 @@ import { RunScoreForm } from "@/components/league/RunScoreForm";
 import { useLeagueRealtime } from "@/components/league/hooks/useLeagueRealtime";
 import { StateBadge } from "@/components/league/manage/manage-parts";
 import {
+  BODY,
+  CARD,
+  CARD_NESTED,
+  CARD_TITLE,
+  EYEBROW,
+  PAGE_TITLE,
+  alertClass,
+  controlClass,
+  pageContainer,
+  tagClass,
+} from "@/components/ui/recipes";
+import {
   formatCountdown,
   isOrganizerRole,
   isWindowActive,
@@ -158,29 +170,29 @@ export function JudgeQueue({
 
   if (error || !state) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-5 py-12">
+      <div className={`${pageContainer("3xl")} text-on-surface`}>
         {error ? (
           <div
             role="alert"
-            className="flex flex-col items-start gap-3 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
+            className={`flex flex-col items-start gap-3 text-sm ${alertClass("error")}`}
           >
             {error}
             <button
               type="button"
               onClick={retry}
-              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
+              className={controlClass("outline", "sm")}
             >
               Retry
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3" aria-hidden="true">
-            {[0, 1, 2, 3].map((index) => (
-              <div
-                key={index}
-                className="h-20  rounded-lg bg-surface-container"
-              />
-            ))}
+          <div aria-busy="true">
+            <p className="sr-only">Loading the judge queue…</p>
+            <div className="flex flex-col gap-3" aria-hidden="true">
+              <div className="h-16 w-2/3 animate-pulse rounded-card bg-surface-container-high" />
+              <div className="h-64 animate-pulse rounded-container border border-outline-variant bg-surface-container-lowest" />
+              <div className="h-20 animate-pulse rounded-container border border-outline-variant bg-surface-container-lowest" />
+            </div>
           </div>
         )}
       </div>
@@ -215,25 +227,18 @@ export function JudgeQueue({
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-5 py-8">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+    <div className={`${pageContainer("3xl")} text-on-surface`}>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
-            Judge queue
-          </p>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
-            {event.name}
-          </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-secondary">
+          <p className={EYEBROW}>Judge queue</p>
+          <h1 className={`mt-1 ${PAGE_TITLE}`}>{event.name}</h1>
+          <p className="mt-3 flex flex-wrap items-center gap-2">
             <StateBadge status={event.status} />
-            <span
-              className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-2 py-0.5"
-              data-realtime={connection}
-            >
+            <span className={tagClass("outline")} data-realtime={connection}>
               <span
                 aria-hidden="true"
                 className={cn(
-                  "h-1.5 w-1.5 rounded-full",
+                  "h-1.5 w-1.5 rounded-control",
                   connection === "connected" ? "bg-primary" : "bg-outline",
                 )}
               />
@@ -244,7 +249,7 @@ export function JudgeQueue({
         <button
           type="button"
           onClick={() => router.push(`/sport-events/${slug}`)}
-          className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className={controlClass("outline")}
         >
           Event page
         </button>
@@ -269,51 +274,45 @@ export function JudgeQueue({
       ) : null}
 
       {actionError ? (
-        <div
-          role="alert"
-          className="mb-5 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
-        >
+        <div role="alert" className={`mb-5 text-sm ${alertClass("error")}`}>
           {actionError}
         </div>
       ) : null}
 
       <section
         aria-labelledby="judge-current-run"
-        className="mb-8 rounded-inner border border-outline-variant bg-surface-bright p-4"
+        className={`mb-8 ${CARD} sm:p-6`}
       >
-        <h2
-          id="judge-current-run"
-          className="mb-3 font-display text-sm font-bold uppercase tracking-label"
-        >
+        <h2 id="judge-current-run" className={`mb-4 ${CARD_TITLE}`}>
           Current run
         </h2>
         {event.status !== "live" ? (
-          <p className="text-sm text-secondary">
+          <p className={BODY}>
             Judging opens when the event goes live.
           </p>
         ) : !openRun ? (
-          <p className="text-sm text-secondary">
+          <p className={BODY}>
             No run is being judged right now. The queue updates automatically.
           </p>
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-container-high font-display text-xs font-bold text-on-surface">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-primary font-display text-base font-bold tabular-nums text-on-primary">
                   {openRun.sequence}
                 </span>
                 <div className="min-w-0">
-                  <p className="min-w-0 truncate text-base font-semibold text-on-surface">
+                  <p className="min-w-0 truncate text-lg font-semibold text-on-surface">
                     {openRun.riderName}
                   </p>
-                  <p className="font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+                  <p className="font-display text-sm font-semibold uppercase tracking-label text-secondary">
                     Run {openRun.sequence} of {state.runs.length}
                   </p>
                 </div>
               </div>
               {openRun.windowEndsAt !== null && windowActive ? (
                 <p
-                  className="shrink-0 font-mono text-xl font-bold tabular-nums text-on-surface"
+                  className="shrink-0 font-display text-2xl font-bold tabular-nums text-on-surface"
                   aria-live="polite"
                   aria-label="Time left in the judging window"
                 >
@@ -324,7 +323,7 @@ export function JudgeQueue({
                       )}
                 </p>
               ) : (
-                <span className="shrink-0 rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+                <span className={`shrink-0 ${tagClass("outline", "lg")}`}>
                   Window closed
                 </span>
               )}
@@ -343,7 +342,7 @@ export function JudgeQueue({
                   }
                 />
                 <p
-                  className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary"
+                  className="text-sm font-semibold text-secondary"
                   aria-live="polite"
                 >
                   {openRunMyScore
@@ -353,7 +352,7 @@ export function JudgeQueue({
               </>
             ) : (
               <p
-                className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary"
+                className="text-sm font-semibold text-secondary"
                 aria-live="polite"
               >
                 {readOnly
@@ -373,7 +372,7 @@ export function JudgeQueue({
                       windowMinutes: 5,
                     });
                   }}
-                  className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
+                  className={controlClass("outline", "lg")}
                 >
                   Extend 5 min
                 </button>
@@ -383,7 +382,7 @@ export function JudgeQueue({
                   onClick={() => {
                     void run(`/runs/${openRun.id}/window`, { mode: "close" });
                   }}
-                  className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
+                  className={controlClass("outline", "lg")}
                 >
                   Close window
                 </button>
@@ -395,16 +394,13 @@ export function JudgeQueue({
 
       <section aria-labelledby="judge-history-heading">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h2
-            id="judge-history-heading"
-            className="font-display text-sm font-bold uppercase tracking-label"
-          >
+          <h2 id="judge-history-heading" className={EYEBROW}>
             My submissions
           </h2>
           <Gavel size={14} aria-hidden="true" className="text-secondary" />
         </div>
         {mySubmissions.length === 0 ? (
-          <p className="text-sm text-secondary">
+          <p className={BODY}>
             Scores you submit appear here.
           </p>
         ) : (
@@ -412,17 +408,17 @@ export function JudgeQueue({
             {mySubmissions.map((entry) => (
               <li
                 key={entry.run.id}
-                className="flex items-center justify-between gap-3 rounded-inner border border-outline-variant bg-surface-bright px-4 py-3"
+                className={`flex items-center justify-between gap-3 ${CARD_NESTED}`}
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-high font-display text-xs font-bold text-on-surface">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-surface-container-high font-display text-xs font-bold tabular-nums text-on-surface">
                     {entry.run.sequence}
                   </span>
                   <p className="min-w-0 truncate text-sm font-medium text-on-surface">
                     {entry.run.riderName}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-md bg-surface-container px-2 py-1 font-display text-[10px] font-bold uppercase tracking-label text-on-surface">
+                <span className={`shrink-0 tabular-nums ${tagClass("neutral")}`}>
                   {entry.score.total.toFixed(2)} pts
                 </span>
               </li>
@@ -435,7 +431,7 @@ export function JudgeQueue({
         <p
           role="status"
           aria-live="polite"
-          className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-on-surface"
+          className={`mt-4 text-sm ${alertClass("neutral")}`}
         >
           {submittedNotice}
         </p>

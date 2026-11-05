@@ -82,14 +82,14 @@ export function iconButtonClass(
 
 /** Text input / select. Same height and radius as a button; 16px on mobile. */
 export const INPUT =
-  "min-h-control w-full rounded-control border border-outline-variant bg-surface-container-lowest px-4 text-base text-on-surface placeholder:text-secondary transition-colors hover:border-outline sm:text-sm";
+  "min-h-control w-full rounded-control border border-outline-variant bg-surface-container-lowest px-4 text-base text-on-surface placeholder:text-secondary transition-colors hover:border-outline aria-invalid:border-error disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm";
 
 export const INPUT_ON_WIRE =
   "min-h-control w-full rounded-control border border-wire-border-strong bg-wire-border px-4 text-base text-on-wire placeholder:text-wire-muted transition-colors hover:border-wire-muted focus-visible:outline-white sm:text-sm";
 
 /** Multi-line text is a container, not a control. */
 export const TEXTAREA =
-  "w-full rounded-container border border-outline-variant bg-surface-container-lowest px-4 py-3 text-base text-on-surface placeholder:text-secondary sm:text-sm";
+  "w-full rounded-container border border-outline-variant bg-surface-container-lowest px-4 py-3 text-base text-on-surface placeholder:text-secondary transition-colors hover:border-outline aria-invalid:border-error sm:text-sm";
 
 /* ───────────────────────── Chips, tags, segments ───────────────────────── */
 
@@ -159,6 +159,9 @@ export const EYEBROW =
 /** Eyebrow on a route wash (support cyan, profile lime): full-contrast ink. */
 export const EYEBROW_ON_WASH =
   "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-surface";
+/** Eyebrow on a saturated wash (sport-events blue, warm hero): white ink. */
+export const EYEBROW_ON_GRADIENT =
+  "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-gradient/80";
 export const EYEBROW_ON_WIRE =
   "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-wire-muted";
 
@@ -177,6 +180,10 @@ export const CARD_TITLE =
 /** Dense uppercase meta line (counts, dates, scopes) — quieter than EYEBROW. */
 export const META =
   "font-display text-xs font-semibold uppercase leading-tight tracking-label text-secondary";
+
+/** META on a saturated wash (sport-events blue). */
+export const META_ON_GRADIENT =
+  "font-display text-xs font-semibold uppercase leading-tight tracking-label text-on-gradient/80";
 
 /** Stat / field label. */
 export const LABEL =

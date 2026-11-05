@@ -946,7 +946,7 @@
 
   .bg-gradient-events {
     background-image: var(--gradient-events);
-    color: var(--color-on-surface);
+    color: var(--color-on-gradient);
   }
 }
 

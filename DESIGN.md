@@ -138,7 +138,10 @@ pages:
   sport-events:
     shell: "gradient-events"
     hero: "on-surface"
-    note: "Horizontal saturated electric-blue/cobalt wash (#0284c7 → #2563eb → #1e40af) via `bg-gradient-events` only — never raw from-sky-*/from-blue-* literals. Applied across /sport-events, /sport-events/[slug], /sport-events/join/[code], loading and error states. Uses the /games card-on-wash layout: floating white circuit action bar + CARD command deck with 4 Stat filter tiles, inverted white section titles (text-on-gradient) directly on the wash, dark featured hero (bg-on-surface) with onWire/onPhoto controls, and border-white/20 footer with onWash pill CTA."
+    note: "Horizontal saturated electric-blue/cobalt wash (#0284c7 → #2563eb → #1e40af) via `bg-gradient-events` only — never raw from-sky-*/from-blue-* literals. The wash sets text-on-gradient (white ink) and covers /sport-events, /sport-events/[slug], /sport-events/join/[code], loading and error states. Directory: header straight on the wash (EYEBROW_ON_GRADIENT + visible PAGE_TITLE text-on-gradient + one line of copy), actions are controlClass('onWash') (Join with code, My league) and controlClass('onWashDark') (Create event, signed in only); below a border-on-gradient/20 rule sits the SEGMENTED_TRACK status filter (All/Live/Upcoming/Past with counts, empty statuses hidden unless active) and the single META_ON_GRADIENT results count. Sections are SECTION_TITLE text-on-gradient with an EYEBROW_ON_GRADIENT line: Featured (dark bg-on-surface photo hero, one scrim, View event controlClass('onWire') + Official site controlClass('onPhoto')), Live & upcoming (EventCard grid), Past events (compact EventCard, 4 columns on lg). EventCard is CARD_FRAME with tagClass('onPhoto') photo labels; the whole card opens /sport-events/[slug] via a stretched title link, and the only other targets are footer iconButtonClass('outline') links (socials, official site). Detail page: full-bleed photo hero on phones (CARD_FRAME from md) with tagClass('onPhoto') labels, a TILE countdown, and an aside with Official site (primary), map (secondary), ShareActions and socials. Footer is border-on-gradient/20 with an onWash pill CTA. On-wash ink uses on-gradient tokens, never white/* literals (skeleton blocks excepted)."
+  league:
+    shell: "surface"
+    note: "League is a working tool, so it stays monochrome surface (no wash): /league hub, /league/new, /sport-events/[slug]/manage and /judge. Columns are pageContainer('3xl') for hub, create and judge, and pageContainer('5xl') for the organizer console. Header is EYEBROW + PAGE_TITLE + BODY with the action row below (primary + outline). Forms use the league form parts (src/components/league/form-parts.tsx): fieldsets are CARD with a CARD_TITLE heading and BODY intro, labels are LABEL, controls are INPUT / TEXTAREA / SelectField, disciplines are chipClass checkboxes, and errors are alertClass('error'). Shared admin fields (DateField, CountryAutocomplete) take appearance='pill' here. Console tabs are SEGMENTED_TRACK + segmentClass; stats are TILE; rows nested in a card are CARD_NESTED; empty blocks are EMPTY_STATE; confirm dialogs are a CARD in Overlay with outline + primary actions. Join-by-code opens the right side-drawer (SIDE_DRAWER_PANEL). Judge scoring is used outdoors on phones: steppers are iconButtonClass('outline','lg'), submit is controlClass('primary','lg'), and run text is at least 14px."
   admin:
     shell: "surface-bright"
     note: "Flat monochrome — surface-bright + outline-variant borders, no wash."
@@ -165,11 +168,11 @@ typography:
   tracking-steps: "tracking-dense 0.04em (dense card rows) · tracking-label 0.05em (labels/badges/tags) · tracking-pill 0.08em (pills/CTAs/nav) · tracking-eyebrow 0.12em (eyebrows/rail headings) · tracking-display -0.02em (page titles) — use the tokens, never tracking-[*] literals or tracking-wide(r/st)"
   recipes:
     source: "src/components/ui/recipes.ts"
-    EYEBROW: "font-display text-xs font-bold uppercase tracking-eyebrow text-secondary (EYEBROW_ON_WASH: text-on-surface, EYEBROW_ON_WIRE: text-wire-muted)"
+    EYEBROW: "font-display text-xs font-bold uppercase tracking-eyebrow text-secondary (EYEBROW_ON_WASH: text-on-surface, EYEBROW_ON_GRADIENT: text-on-gradient/80 for the saturated events wash, EYEBROW_ON_WIRE: text-wire-muted)"
     PAGE_TITLE: "font-display text-2xl sm:text-4xl font-bold uppercase leading-tight tracking-display (no colour)"
     SECTION_TITLE: "font-display text-xl sm:text-2xl font-bold uppercase leading-tight tracking-tight (no colour)"
     CARD_TITLE: "font-display text-lg font-bold uppercase leading-tight tracking-tight (no colour)"
-    META: "font-display text-xs font-semibold uppercase tracking-label text-secondary — counts, dates, scopes"
+    META: "font-display text-xs font-semibold uppercase tracking-label text-secondary — counts, dates, scopes (META_ON_GRADIENT: text-on-gradient/80)"
     LABEL: "font-display 10px bold uppercase tracking-label text-secondary — stat/field labels"
     BODY: "text-sm leading-relaxed text-on-surface-variant, weight 400"
   tokens-legacy:

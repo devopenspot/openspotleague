@@ -2,13 +2,17 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Plus, Trophy } from "lucide-react";
 import { EventDirectory } from "@/components/sport-events/layout/EventDirectory";
 import { EventResultsSummary } from "@/components/sport-events/filters/EventResultsSummary";
 import { StatusFilter } from "@/components/sport-events/filters/StatusFilter";
 import { JoinByCodeEntry } from "@/components/league/JoinByCodeEntry";
-import { controlClass } from "@/components/ui/recipes";
+import {
+  EYEBROW_ON_GRADIENT,
+  PAGE_TITLE,
+  controlClass,
+  pageContainer,
+} from "@/components/ui/recipes";
 import { useUser } from "@/lib/contexts/user-context";
 import type { SportEventEnriched } from "@/types/sport-events";
 import { useEventStatusFilter } from "@/lib/sport-events/status-filter";
@@ -20,7 +24,6 @@ interface SportEventsTabProps {
 }
 
 export function SportEventsTab({ featured, events }: SportEventsTabProps) {
-  const searchParams = useSearchParams();
   const { status, filter } = useEventStatusFilter();
   const user = useUser();
 
@@ -28,64 +31,65 @@ export function SportEventsTab({ featured, events }: SportEventsTabProps) {
     () => orderEventsForDirectory(filter(events)),
     [filter, events],
   );
-  const featuredEventForGrid = useMemo(() => {
+  const featuredEvent = useMemo(() => {
+    if (status === "completed") return undefined;
     if (featured && visibleEvents.some((event) => event.id === featured.id)) {
       return featured;
     }
     return visibleEvents.find((event) => event.status !== "completed");
-  }, [featured, visibleEvents]);
-  const gridList = featuredEventForGrid
-    ? visibleEvents.filter((event) => event.id !== featuredEventForGrid.id)
+  }, [featured, status, visibleEvents]);
+  const listEvents = featuredEvent
+    ? visibleEvents.filter((event) => event.id !== featuredEvent.id)
     : visibleEvents;
 
   return (
     <section
       id="sport-events-tab"
-      role="tabpanel"
-      aria-labelledby="nav-btn-events"
-      className="mx-auto flex w-full max-w-7xl flex-1 flex-col space-y-8 px-5 py-4 pb-10 animate-fade-in sm:py-6 md:space-y-10 md:px-10"
+      aria-labelledby="sport-events-title"
+      className={`${pageContainer("7xl", { padY: false })} flex flex-1 flex-col gap-10 py-8 animate-fade-in md:gap-12 md:py-10`}
     >
-      <h1 className="visually-hidden">Sport Events</h1>
-
-      <header className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-outline-variant bg-surface-container-lowest px-4 py-3 text-on-surface sm:px-5">
-          <div className="flex items-center gap-2.5">
-            <span
-              aria-hidden="true"
-              className="h-2 w-2 shrink-0 rounded-control bg-on-surface"
-            />
-            <EventResultsSummary
-              visibleCount={visibleEvents.length}
-              totalCount={events.length}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <JoinByCodeEntry />
-            <Link href="/league" className={controlClass("secondary")}>
-              <Trophy size={14} aria-hidden="true" />
-              My league
-            </Link>
-            {user ? (
-              <Link href="/league/new" className={controlClass("primary")}>
-                <Plus size={14} aria-hidden="true" />
-                Create event
-              </Link>
-            ) : null}
-          </div>
+      <header className="flex flex-col gap-6">
+        <div className="max-w-3xl">
+          <p className={EYEBROW_ON_GRADIENT}>Official &amp; community circuit</p>
+          <h1
+            id="sport-events-title"
+            className={`mt-2 ${PAGE_TITLE} text-on-gradient md:text-5xl`}
+          >
+            Sport Events
+          </h1>
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-on-gradient/85">
+            World tours, federations, festivals and community jams — the stages
+            where action sports happen. Open an event for dates, location and
+            your league results.
+          </p>
         </div>
 
-        <StatusFilter events={events} />
+        <div className="flex flex-wrap items-center gap-2">
+          <JoinByCodeEntry variant="onWash" />
+          <Link href="/league" className={controlClass("onWash")}>
+            <Trophy size={14} aria-hidden="true" />
+            My league
+          </Link>
+          {user ? (
+            <Link href="/league/new" className={controlClass("onWashDark")}>
+              <Plus size={14} aria-hidden="true" />
+              Create event
+            </Link>
+          ) : null}
+        </div>
 
-        <span className="sr-only">
-          {searchParams.get("status")
-            ? `Showing ${status} events`
-            : "Showing all events"}
-        </span>
+        <div className="flex flex-col gap-3 border-t border-on-gradient/20 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <StatusFilter events={events} />
+          <EventResultsSummary
+            visibleCount={visibleEvents.length}
+            totalCount={events.length}
+          />
+        </div>
       </header>
 
       <EventDirectory
-        featured={featuredEventForGrid}
-        events={gridList}
+        featured={featuredEvent}
+        events={listEvents}
         status={status}
       />
     </section>

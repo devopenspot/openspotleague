@@ -1,7 +1,12 @@
+import type { ReactNode } from "react";
 import { EventCard } from "@/components/sport-events/cards/EventCard";
 import { EventEmptyState } from "@/components/sport-events/shared/EventEmptyState";
 import { EventFeaturedHero } from "@/components/sport-events/cards/EventFeaturedHero";
-import { SECTION_TITLE, controlClass } from "@/components/ui/recipes";
+import {
+  EYEBROW_ON_GRADIENT,
+  SECTION_TITLE,
+  controlClass,
+} from "@/components/ui/recipes";
 import type {
   SportEventEnriched,
   SportEventStatus,
@@ -9,83 +14,80 @@ import type {
 
 interface EventDirectoryProps {
   featured: SportEventEnriched | undefined;
+  /** Already filtered and ordered; excludes the featured event. */
   events: readonly SportEventEnriched[];
   status: "all" | SportEventStatus;
 }
+
+const UPCOMING_TITLE: Record<"all" | SportEventStatus, string> = {
+  all: "Live & upcoming",
+  live: "Live now",
+  upcoming: "Upcoming",
+  completed: "Live & upcoming",
+};
 
 export function EventDirectory({
   featured,
   events,
   status,
 }: EventDirectoryProps) {
+  const active = events.filter((event) => event.status !== "completed");
+  const past = events.filter((event) => event.status === "completed");
+  const nothing = !featured && events.length === 0;
+
   return (
     <>
-      {featured && (
-        <section
+      {featured ? (
+        <DirectorySection
           id="featured-event-section"
-          aria-labelledby="featured-event-heading"
-          className="space-y-4"
+          title="Featured"
+          eyebrow="Editor's pick"
         >
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2
-                id="featured-event-heading"
-                className={`${SECTION_TITLE} text-on-gradient`}
-              >
-                Featured
-              </h2>
-              <p className="mt-1 font-display text-xs font-semibold uppercase tracking-label text-white/80">
-                Editor&apos;s pick
-              </p>
-            </div>
-          </div>
           <EventFeaturedHero event={featured} />
-        </section>
-      )}
+        </DirectorySection>
+      ) : null}
 
-      <section
-        id="events-grid-section"
-        aria-labelledby="events-grid-heading"
-        className="space-y-4"
-      >
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2
-              id="events-grid-heading"
-              className={`${SECTION_TITLE} text-on-gradient`}
-            >
-              All Events
-            </h2>
-            <p className="mt-1 font-display text-xs font-semibold uppercase tracking-label text-white/80">
-              {events.length} on the circuit
-            </p>
-          </div>
-        </div>
+      {nothing ? <EventEmptyState status={status} /> : null}
 
-        {events.length === 0 ? (
-          <EventEmptyState status={status} />
-        ) : (
+      {active.length > 0 ? (
+        <DirectorySection
+          id="events-grid-section"
+          title={UPCOMING_TITLE[status]}
+          eyebrow={`${active.length} ${active.length === 1 ? "event" : "events"}`}
+        >
           <div
             id="events-grid"
-            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
           >
-            {events.map((event, index) => (
+            {active.map((event, index) => (
               <EventCard key={event.id} event={event} priority={index === 0} />
             ))}
           </div>
-        )}
-      </section>
+        </DirectorySection>
+      ) : null}
 
-      <footer className="mt-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8">
-        <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+      {past.length > 0 ? (
+        <DirectorySection
+          id="past-events-section"
+          title="Past events"
+          eyebrow="Results and archives"
+        >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {past.map((event) => (
+              <EventCard key={event.id} event={event} variant="compact" />
+            ))}
+          </div>
+        </DirectorySection>
+      ) : null}
+
+      <footer className="mt-auto border-t border-on-gradient/20 pt-8 text-on-gradient">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="font-display text-xs font-bold tracking-label text-white/95 uppercase">
-              All dates are subject to change. Tap a card to verify on the
-              official site.
+            <p className="font-display text-xs font-bold uppercase tracking-label">
+              Dates can change — confirm on the organizer&apos;s site.
             </p>
-            <p className="mt-1.5 text-xs text-white/75">
-              Looking for a missing event? Check the official international
-              federation calendar.
+            <p className="mt-1.5 text-xs text-on-gradient/80">
+              Missing an event? Check the international federation calendar.
             </p>
           </div>
           <a
@@ -99,5 +101,33 @@ export function EventDirectory({
         </div>
       </footer>
     </>
+  );
+}
+
+function DirectorySection({
+  id,
+  title,
+  eyebrow,
+  children,
+}: {
+  id: string;
+  title: string;
+  eyebrow: string;
+  children: ReactNode;
+}) {
+  const headingId = `${id}-heading`;
+  return (
+    <section id={id} aria-labelledby={headingId} className="space-y-4">
+      <div>
+        <p className={EYEBROW_ON_GRADIENT}>{eyebrow}</p>
+        <h2
+          id={headingId}
+          className={`mt-1 ${SECTION_TITLE} text-on-gradient`}
+        >
+          {title}
+        </h2>
+      </div>
+      {children}
+    </section>
   );
 }

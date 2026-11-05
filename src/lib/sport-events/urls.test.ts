@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildEventMapUrl } from "./urls";
+import { buildEventDetailUrl, buildEventMapUrl } from "./urls";
 
 const BASE = "https://openspot.test";
 
@@ -52,6 +52,14 @@ describe("buildEventMapUrl", () => {
     expect(parsed.searchParams.get("region")).toBe("europe");
     expect([...parsed.searchParams.keys()].sort()).toEqual(
       ["country", "layer", "region"].sort(),
+    );
+  });
+});
+
+describe("buildEventDetailUrl", () => {
+  it("encodes the slug into the internal event path", () => {
+    expect(buildEventDetailUrl("winterclash 2027")).toBe(
+      "/sport-events/winterclash%202027",
     );
   });
 });

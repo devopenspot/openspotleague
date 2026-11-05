@@ -33,3 +33,8 @@ export function buildEventMapUrl(input: BuildEventMapUrlInput): string {
   }
   return `${ROUTES.map}?${params.toString()}`;
 }
+
+/** Internal event page (`/sport-events/[slug]`). */
+export function buildEventDetailUrl(slug: string): string {
+  return `/sport-events/${encodeURIComponent(slug)}`;
+}

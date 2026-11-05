@@ -12,7 +12,22 @@ import { cn } from "@/lib/utils/cn";
 import { Overlay } from "@/components/feedback/Overlay";
 import { RunScoreForm } from "@/components/league/RunScoreForm";
 import type { LeagueEventState } from "@/lib/services/league";
+import {
+  BODY,
+  CARD,
+  CARD_NESTED,
+  CARD_TITLE,
+  LABEL,
+  controlClass,
+  iconButtonClass,
+  tagClass,
+} from "@/components/ui/recipes";
 
+/**
+ * @deprecated Admin league panels still use this square control. League
+ * surfaces use the INPUT recipe; move the admin panels when admin moves onto
+ * the recipes (DESIGN.md open-follow-ups).
+ */
 export const MANAGE_CONTROL_CLASSES =
   "w-full rounded-md border border-outline-variant bg-surface-bright p-3 text-base sm:text-sm font-medium text-on-surface shadow-none transition-colors focus:border-primary focus:outline-none focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:opacity-50";
 
@@ -22,7 +37,7 @@ export function StateBadge({ status }: { status: string }) {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
   return (
-    <span className="rounded-md border border-outline-variant px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+    <span className={tagClass("outline")}>
       {label}
     </span>
   );
@@ -52,12 +67,7 @@ export function ConfirmButton({
         type="button"
         disabled={disabled}
         onClick={() => setOpen(true)}
-        className={cn(
-          "min-h-11 rounded-full px-5 font-display text-xs font-semibold uppercase tracking-pill transition-colors disabled:opacity-50",
-          variant === "primary"
-            ? "bg-primary text-on-primary hover:opacity-90"
-            : "border border-outline-variant bg-surface-container-high text-on-surface hover:border-outline",
-        )}
+        className={controlClass(variant)}
       >
         {label}
       </button>
@@ -70,18 +80,18 @@ export function ConfirmButton({
         role="alertdialog"
         contentId="confirm-dialog"
       >
-        <div className="w-full max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
-          <h2 id={titleId} className="font-display text-sm font-bold uppercase tracking-label">
+        <div className={`w-full max-w-md text-on-surface ${CARD}`}>
+          <h2 id={titleId} className={CARD_TITLE}>
             {confirmTitle}
           </h2>
-          <p id={bodyId} className="mt-2 text-sm leading-relaxed text-secondary">
+          <p id={bodyId} className={`mt-2 ${BODY}`}>
             {confirmBody}
           </p>
-          <div className="mt-4 flex justify-end gap-2">
+          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface"
+              className={controlClass("outline")}
             >
               Keep as is
             </button>
@@ -91,7 +101,7 @@ export function ConfirmButton({
                 setOpen(false);
                 onConfirm();
               }}
-              className="min-h-11 rounded-full bg-primary px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-primary hover:opacity-90"
+              className={controlClass("primary")}
             >
               Confirm
             </button>
@@ -128,7 +138,7 @@ export function InviteRow({
   return (
     <li
       className={cn(
-        "flex flex-wrap items-center justify-between gap-3 rounded-inner border border-outline-variant bg-surface-bright px-4 py-3",
+        `flex flex-wrap items-center justify-between gap-3 ${CARD_NESTED}`,
         invite.revoked && "opacity-50",
       )}
     >
@@ -137,7 +147,7 @@ export function InviteRow({
           {invite.role} · {invite.useCount}
           {invite.maxUses ? `/${invite.maxUses}` : ""} used
         </p>
-        <p className="mt-0.5 truncate font-mono text-[10px] text-secondary">
+        <p className={`mt-0.5 truncate tabular-nums ${LABEL}`}>
           {invite.code}
           {invite.expiresAt
             ? ` · expires ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(invite.expiresAt))}`
@@ -160,7 +170,7 @@ export function InviteRow({
               setTimeout(() => setCopied(null), 2500);
             }
           }}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-label text-on-surface hover:border-outline disabled:opacity-50"
+          className={controlClass("outline", "sm")}
         >
           {copied === "link" ? (
             <Check size={12} aria-hidden="true" />
@@ -174,7 +184,7 @@ export function InviteRow({
           disabled={disabled || invite.revoked}
           onClick={() => setCopied(copied === "qr" ? null : "qr")}
           aria-expanded={copied === "qr"}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-label text-on-surface hover:border-outline disabled:opacity-50"
+          className={controlClass("outline", "sm")}
         >
           <QrCode size={12} aria-hidden="true" />
           QR
@@ -184,13 +194,13 @@ export function InviteRow({
           disabled={disabled || invite.revoked}
           onClick={onRevoke}
           aria-label={`Revoke ${invite.role} invite`}
-          className="inline-flex min-h-9 items-center rounded-full border border-outline-variant px-3 text-secondary hover:border-error hover:text-error disabled:opacity-50"
+          className={`${iconButtonClass("outline", "sm")} text-secondary hover:text-error`}
         >
           <Trash2 size={12} aria-hidden="true" />
         </button>
       </div>
       {copied === "qr" ? (
-        <div className="w-full rounded-inner bg-surface-bright p-3">
+        <div className="w-fit rounded-card border border-outline-variant bg-surface-container-lowest p-3">
           <QRCodeSVG value={url} size={112} aria-label={`QR code for the ${invite.role} invite`} />
         </div>
       ) : null}
@@ -216,7 +226,7 @@ export function MemberRow({
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
   return (
-    <li className="flex items-center justify-between gap-3 rounded-inner border border-outline-variant bg-surface-bright px-4 py-3">
+    <li className={`flex items-center justify-between gap-3 ${CARD_NESTED}`}>
       <div className="flex min-w-0 items-center gap-2">
         <Users size={14} aria-hidden="true" className="shrink-0 text-secondary" />
         <p className="min-w-0 truncate text-sm font-medium text-on-surface">
@@ -224,7 +234,7 @@ export function MemberRow({
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span className="rounded-md bg-surface-container-high px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-label text-on-surface">
+        <span className={tagClass("neutral")}>
           {roleLabel}
         </span>
         {!isMainOrganizer ? (
@@ -233,7 +243,7 @@ export function MemberRow({
             disabled={disabled}
             onClick={onRemove}
             aria-label={`Remove ${displayName}`}
-            className="inline-flex min-h-9 items-center rounded-full border border-outline-variant px-3 text-secondary hover:border-error hover:text-error disabled:opacity-50"
+            className={`${iconButtonClass("outline", "sm")} text-secondary hover:text-error`}
           >
             <Trash2 size={12} aria-hidden="true" />
           </button>
@@ -279,17 +289,17 @@ export function RunRow({
     (nowMs === null || new Date(run.windowEndsAt).getTime() > nowMs);
 
   return (
-    <li className="flex flex-col gap-3 rounded-inner border border-outline-variant bg-surface-bright p-4">
+    <li className={`flex flex-col gap-3 ${CARD_NESTED}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-high font-display text-xs font-bold text-on-surface">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-surface-container-high font-display text-xs font-bold tabular-nums text-on-surface">
             {run.sequence}
           </span>
           <div className="min-w-0">
             <p className="min-w-0 truncate text-sm font-semibold text-on-surface">
               {run.riderName}
             </p>
-            <p className="font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+            <p className={LABEL}>
               {run.status}
               {run.scheduledAt
                 ? ` · ${new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(new Date(run.scheduledAt))} UTC`
@@ -303,7 +313,7 @@ export function RunRow({
               type="button"
               disabled={!canJudge || !canOpenWindow}
               onClick={onOpenWindow}
-              className="min-h-9 rounded-full bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-40"
+              className={controlClass("primary", "sm")}
             >
               Open window
             </button>
@@ -314,7 +324,7 @@ export function RunRow({
                 type="button"
                 disabled={disabled}
                 onClick={onExtendWindow}
-                className="min-h-9 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
+                className={controlClass("outline", "sm")}
               >
                 Extend
               </button>
@@ -322,7 +332,7 @@ export function RunRow({
                 type="button"
                 disabled={disabled}
                 onClick={onCloseWindow}
-                className="min-h-9 rounded-full border border-outline-variant px-3 font-display text-[10px] font-bold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-40"
+                className={controlClass("outline", "sm")}
               >
                 Close
               </button>
@@ -336,7 +346,7 @@ export function RunRow({
           {run.scores.map((score) => (
             <li
               key={`${run.id}-${score.judgeName}`}
-              className="rounded-md bg-surface-container px-2 py-1 font-display text-[10px] font-bold uppercase tracking-label text-on-surface"
+              className={tagClass("neutral")}
             >
               {score.judgeName}: {score.total.toFixed(2)}
             </li>
@@ -347,7 +357,7 @@ export function RunRow({
       {isJudging ? (
         <div className="flex flex-col gap-3">
           <p
-            className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary"
+            className={LABEL}
             aria-live="polite"
           >
             {windowActive

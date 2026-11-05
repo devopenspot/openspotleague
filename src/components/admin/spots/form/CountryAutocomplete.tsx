@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { Check, ChevronDown, X } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
+import { INPUT } from "@/components/ui/recipes"
 import { useCountries, type CountryOption } from "../hooks/useCountries"
 
 export interface CountrySelection {
@@ -22,6 +23,8 @@ interface CountryAutocompleteProps {
   id?: string
   invalid?: boolean
   disabled?: boolean
+  /** `pill` renders the shared INPUT recipe (league forms); `admin` keeps the admin form look. */
+  appearance?: "admin" | "pill"
 }
 
 const FIELD_CLASSES =
@@ -46,6 +49,7 @@ export function CountryAutocomplete({
   id: idProp,
   invalid,
   disabled,
+  appearance = "admin",
 }: CountryAutocompleteProps) {
   const generatedId = useId()
   const id = idProp ?? generatedId
@@ -201,9 +205,9 @@ export function CountryAutocomplete({
           aria-invalid={invalid ? true : undefined}
           aria-describedby={error ? statusId : undefined}
           placeholder="Search country…"
-          className={cn(FIELD_CLASSES, "pr-16")}
+          className={appearance === "pill" ? `${INPUT} pr-16` : cn(FIELD_CLASSES, "pr-16")}
         />
-        <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center gap-1">
+        <div className={cn("pointer-events-none absolute inset-y-0 flex items-center gap-1", appearance === "pill" ? "right-4" : "right-2")}>
           {value.name.length > 0 && !disabled ? (
             <button
               type="button"
