@@ -150,4 +150,30 @@ describe("AppNavList", () => {
       "aria-current",
     );
   });
+
+  it("exposes Events (/sport-events) across desktop, mobile-tab, and mobile-drawer variants", () => {
+    navigation.pathname = "/sport-events";
+
+    const { rerender } = render(
+      <AppNavList variant="desktop" savedCount={0} onSelect={vi.fn()} />,
+    );
+    const desktopLink = screen.getByRole("link", { name: "Events" });
+    expect(desktopLink).toHaveAttribute("href", "/sport-events");
+    expect(desktopLink).toHaveAttribute("id", "nav-btn-events");
+    expect(desktopLink).toHaveAttribute("aria-current", "page");
+
+    rerender(
+      <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
+    );
+    const mobileTabLink = screen.getByRole("link", { name: "Events" });
+    expect(mobileTabLink).toHaveAttribute("href", "/sport-events");
+    expect(mobileTabLink).toHaveAttribute("aria-current", "page");
+
+    rerender(
+      <AppNavList variant="mobile-drawer" savedCount={0} onSelect={vi.fn()} />,
+    );
+    const drawerLink = screen.getByRole("link", { name: "Events" });
+    expect(drawerLink).toHaveAttribute("href", "/sport-events");
+    expect(drawerLink).toHaveAttribute("aria-current", "page");
+  });
 });
