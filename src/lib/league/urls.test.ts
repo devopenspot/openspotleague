@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildEventDetailUrl, buildEventMapUrl } from "./urls";
+import { buildContestDetailUrl, buildContestMapUrl } from "./urls";
 
 const BASE = "https://openspot.test";
 
@@ -7,9 +7,9 @@ function parseUrl(url: string): URL {
   return new URL(url, BASE);
 }
 
-describe("buildEventMapUrl", () => {
+describe("buildContestMapUrl", () => {
   it("returns the expected map URL for a fully populated event", () => {
-    const url = buildEventMapUrl({
+    const url = buildContestMapUrl({
       location: { country: "United States" },
     });
     const parsed = parseUrl(url);
@@ -19,7 +19,7 @@ describe("buildEventMapUrl", () => {
   });
 
   it("derives the country slug from the country name", () => {
-    const url = buildEventMapUrl({
+    const url = buildContestMapUrl({
       location: { country: "Germany" },
     });
     const parsed = parseUrl(url);
@@ -27,7 +27,7 @@ describe("buildEventMapUrl", () => {
   });
 
   it("handles diacritics in country names (Normalize NFKD)", () => {
-    const url = buildEventMapUrl({
+    const url = buildContestMapUrl({
       location: { country: "Norway" },
     });
     const parsed = parseUrl(url);
@@ -35,7 +35,7 @@ describe("buildEventMapUrl", () => {
   });
 
   it("emits a valid URL string with no extra params", () => {
-    const url = buildEventMapUrl({
+    const url = buildContestMapUrl({
       location: { country: "Japan" },
     });
     expect(url).toMatch(/^\/map\?/);
@@ -44,7 +44,7 @@ describe("buildEventMapUrl", () => {
   });
 
   it("includes the region slug when region is provided", () => {
-    const url = buildEventMapUrl({
+    const url = buildContestMapUrl({
       location: { country: "France", region: "Europe" },
     });
     const parsed = parseUrl(url);
@@ -56,10 +56,10 @@ describe("buildEventMapUrl", () => {
   });
 });
 
-describe("buildEventDetailUrl", () => {
+describe("buildContestDetailUrl", () => {
   it("encodes the slug into the internal event path", () => {
-    expect(buildEventDetailUrl("winterclash 2027")).toBe(
-      "/sport-events/winterclash%202027",
+    expect(buildContestDetailUrl("winterclash 2027")).toBe(
+      "/league/winterclash%202027",
     );
   });
 });

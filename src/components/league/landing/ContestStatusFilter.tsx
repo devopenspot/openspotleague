@@ -10,7 +10,7 @@ import {
 } from "@/lib/league/status-filter";
 import type { ContestEnriched } from "@/types/league";
 
-interface StatusFilterProps {
+interface ContestStatusFilterProps {
   events: readonly ContestEnriched[];
 }
 
@@ -40,7 +40,7 @@ const SEGMENT_ORDER: readonly StatusValue[] = [
  * Status filter: a segmented pill track (DESIGN.md components.controls.segments).
  * The URL is the source of truth; empty statuses are hidden unless active.
  */
-export function StatusFilter({ events }: StatusFilterProps) {
+export function ContestStatusFilter({ events }: ContestStatusFilterProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -76,7 +76,7 @@ export function StatusFilter({ events }: StatusFilterProps) {
   return (
     <div
       role="group"
-      aria-label="Filter events by status"
+      aria-label="Filter contests by status"
       className={cn(SEGMENTED_TRACK, "w-full sm:w-auto")}
     >
       {segments.map((segment) => {

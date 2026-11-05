@@ -20,7 +20,7 @@ export const NAV_ITEMS: readonly {
     | "/"
     | "/map"
     | "/saved"
-    | "/sport-events"
+    | "/league"
     | "/games"
     | "/support"
     | "/admin"
@@ -38,8 +38,8 @@ export const NAV_ITEMS: readonly {
   group: NavGroup;
 }[] = [
   {
-    id: "events",
-    path: "/sport-events",
+    id: "league",
+    path: "/league",
     label: "League",
     shortLabel: "League",
     drawerLabel: "League",
@@ -130,7 +130,7 @@ export const ROUTES = {
   login: "/login",
   explore: "/explore",
   map: "/map",
-  events: "/sport-events",
+  league: "/league",
   games: "/games",
   support: "/support",
   saved: "/saved",

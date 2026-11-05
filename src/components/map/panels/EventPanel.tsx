@@ -4,6 +4,7 @@ import { Calendar, ExternalLink, MapPin, Trophy, X } from "lucide-react";
 import type { MapEvent } from "@/types/league";
 import { Countdown } from "@/components/ui/Countdown";
 import { ShareActions } from "@/components/ui/ShareActions";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
 interface EventPanelProps {
   event: MapEvent;
@@ -161,7 +162,7 @@ export function EventPanel({
           <ExternalLink size={11} aria-hidden="true" />
         </a>
         <ShareActions
-          url={`/sport-events/${encodeURIComponent(event.slug)}`}
+          url={buildContestDetailUrl(event.slug)}
           title={event.name}
           className="pt-1"
         />

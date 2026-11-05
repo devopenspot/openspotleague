@@ -1,17 +1,13 @@
 import type { ReactNode } from "react";
-import { EventCard } from "@/components/sport-events/cards/EventCard";
-import { EventEmptyState } from "@/components/sport-events/shared/EventEmptyState";
-import { EventFeaturedHero } from "@/components/sport-events/cards/EventFeaturedHero";
-import {
-  EYEBROW_ON_GRADIENT,
-  SECTION_TITLE,
-  controlClass,
-} from "@/components/ui/recipes";
+import { ContestCard } from "@/components/league/landing/ContestCard";
+import { ContestEmptyState } from "@/components/league/landing/ContestEmptyState";
+import { ContestFeaturedHero } from "@/components/league/landing/ContestFeaturedHero";
+import { EYEBROW_ON_GRADIENT, SECTION_TITLE } from "@/components/ui/recipes";
 import type { ContestEnriched, ContestStatus } from "@/types/league";
 
-interface EventDirectoryProps {
+interface ContestDirectoryProps {
   featured: ContestEnriched | undefined;
-  /** Already filtered and ordered; excludes the featured event. */
+  /** Already filtered and ordered; excludes the featured contest. */
   events: readonly ContestEnriched[];
   status: "all" | ContestStatus;
 }
@@ -23,11 +19,11 @@ const UPCOMING_TITLE: Record<"all" | ContestStatus, string> = {
   completed: "Live & upcoming",
 };
 
-export function EventDirectory({
+export function ContestDirectory({
   featured,
   events,
   status,
-}: EventDirectoryProps) {
+}: ContestDirectoryProps) {
   const active = events.filter((event) => event.status !== "completed");
   const past = events.filter((event) => event.status === "completed");
   const nothing = !featured && events.length === 0;
@@ -36,28 +32,28 @@ export function EventDirectory({
     <>
       {featured ? (
         <DirectorySection
-          id="featured-event-section"
+          id="featured-contest-section"
           title="Featured"
-          eyebrow="Editor's pick"
+          eyebrow="Public contest"
         >
-          <EventFeaturedHero event={featured} />
+          <ContestFeaturedHero event={featured} />
         </DirectorySection>
       ) : null}
 
-      {nothing ? <EventEmptyState status={status} /> : null}
+      {nothing ? <ContestEmptyState status={status} /> : null}
 
       {active.length > 0 ? (
         <DirectorySection
-          id="events-grid-section"
+          id="contests-grid-section"
           title={UPCOMING_TITLE[status]}
-          eyebrow={`${active.length} ${active.length === 1 ? "event" : "events"}`}
+          eyebrow={`${active.length} ${active.length === 1 ? "contest" : "contests"}`}
         >
           <div
-            id="events-grid"
+            id="contests-grid"
             className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
           >
             {active.map((event, index) => (
-              <EventCard key={event.id} event={event} priority={index === 0} />
+              <ContestCard key={event.id} event={event} priority={index === 0} />
             ))}
           </div>
         </DirectorySection>
@@ -65,38 +61,18 @@ export function EventDirectory({
 
       {past.length > 0 ? (
         <DirectorySection
-          id="past-events-section"
-          title="Past events"
+          id="past-contests-section"
+          title="Past contests"
           eyebrow="Results and archives"
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {past.map((event) => (
-              <EventCard key={event.id} event={event} variant="compact" />
+              <ContestCard key={event.id} event={event} variant="compact" />
             ))}
           </div>
         </DirectorySection>
       ) : null}
 
-      <footer className="mt-auto border-t border-on-gradient/20 pt-8 text-on-gradient">
-        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <p className="font-display text-xs font-bold uppercase tracking-label">
-              Dates can change — confirm on the organizer&apos;s site.
-            </p>
-            <p className="mt-1.5 text-xs text-on-gradient/80">
-              Missing an event? Check the international federation calendar.
-            </p>
-          </div>
-          <a
-            href="https://www.worldskate.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${controlClass("onWash", "sm")} focus-visible:outline-white`}
-          >
-            Browse the federations
-          </a>
-        </div>
-      </footer>
     </>
   );
 }

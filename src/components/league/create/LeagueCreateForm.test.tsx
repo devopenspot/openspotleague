@@ -22,7 +22,7 @@ describe("LeagueCreateForm", () => {
       "/league",
     );
     expect(
-      screen.getByRole("heading", { level: 1, name: /create a sport event/i }),
+      screen.getByRole("heading", { level: 1, name: /create a contest/i }),
     ).toBeInTheDocument();
   });
 

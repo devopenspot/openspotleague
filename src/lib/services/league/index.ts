@@ -15,6 +15,11 @@
  */
 
 import "server-only";
+import { DEFAULT_CONTEST_IMAGE } from "@/lib/league/cover";
+import {
+  findEventBySlug,
+  runFindEventById,
+} from "@/lib/services/event/events";
 
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { getDbClient, withDbRead, withDbWrite } from "@/lib/db/client";
@@ -98,7 +103,7 @@ import type {
   LeagueMutationResponse,
   LeaguePaymentInput,
 } from "@/lib/schemas/league";
-import type { EventPaymentStatus, EventRole, EventSignalType, NotificationType, ContestCategory } from "@/types/league";
+import type { ContestCategory, ContestEnriched, EventPaymentStatus, EventRole, EventSignalType, NotificationType } from "@/types/league";
 import { log } from "@/lib/utils/log";
 
 type Db = ReturnType<typeof getDbClient>["db"];
@@ -109,7 +114,6 @@ const READ_TX_OPTIONS = {
   accessMode: "read only",
 } as const;
 
-const DEFAULT_EVENT_IMAGE = "/opengraph.png";
 const CREATE_ACTION = "create";
 const UPDATE_CONFIG_ACTION = "update-config";
 const REGISTER_PAYMENT_ACTION = "register-payment";
@@ -452,7 +456,7 @@ export async function createLeagueEvent(
             : null,
         categorySlug: input.category,
         planSlug: FREE_PLAN_SLUG,
-        imageUrl: input.imageUrl ?? DEFAULT_EVENT_IMAGE,
+        imageUrl: input.imageUrl ?? DEFAULT_CONTEST_IMAGE,
         version: 0,
         createdBy: userId,
         updatedBy: userId,
@@ -3975,6 +3979,33 @@ export async function getMyEventHistoryBySlug(
   const resolved = await resolveLeagueEventIdBySlug(slug);
   if (!resolved) return null;
   return getMyEventHistory(resolved.id, userId);
+}
+
+export interface ContestDetail {
+  contest: ContestEnriched;
+  /** The viewer's own activity; null for guests and non-members. */
+  history: MyEventHistory | null;
+}
+
+/**
+ * Contest detail for `/league/[slug]`. Public contests render for everyone
+ * (cached public read). Unlisted contests — every free-plan contest, shared
+ * by QR code — render only for active members; everyone else gets null (404).
+ */
+export async function getContestDetailBySlug(
+  slug: string,
+  viewerId: string | null,
+): Promise<ContestDetail | null> {
+  const [publicContest, history] = await Promise.all([
+    findEventBySlug(slug),
+    viewerId ? getMyEventHistoryBySlug(slug, viewerId) : Promise.resolve(null),
+  ]);
+  if (publicContest) return { contest: publicContest, history };
+  if (!history) return null;
+  const resolved = await resolveLeagueEventIdBySlug(slug);
+  if (!resolved) return null;
+  const contest = await runFindEventById(resolved.id);
+  return contest ? { contest, history } : null;
 }
 
 // ---------- admin plans ----------

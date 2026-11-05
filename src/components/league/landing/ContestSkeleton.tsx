@@ -1,13 +1,13 @@
 /**
- * Loading mirror of SportEventsTab: on-wash header (eyebrow, title, copy,
+ * Loading mirror of LeagueLanding: on-wash header (eyebrow, title, copy,
  * actions, segmented filter), featured hero, and the card grid. Blocks on the
  * blue wash use bg-white/* (DESIGN.md components.skeleton.on-gradient-or-wire).
  */
-export function EventSkeleton() {
+export function ContestSkeleton() {
   return (
     <div
       role="status"
-      aria-label="Loading sport events"
+      aria-label="Loading contests"
       aria-busy="true"
       className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-10 px-5 py-8 md:gap-12 md:px-10 md:py-10"
     >
@@ -64,6 +64,23 @@ export function EventSkeleton() {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+/** Loading rows for the signed-in "My contests" section (on the wash). */
+export function MyContestsSkeleton() {
+  return (
+    <div aria-busy="true">
+      <p className="sr-only">Loading your contests…</p>
+      <div className="flex flex-col gap-3" aria-hidden="true">
+        {[0, 1].map((index) => (
+          <div
+            key={index}
+            className="h-28 animate-pulse rounded-container bg-white/20"
+          />
+        ))}
+      </div>
     </div>
   );
 }

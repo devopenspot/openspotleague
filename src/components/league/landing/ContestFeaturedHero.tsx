@@ -7,7 +7,7 @@ import {
   MapPin,
   Youtube,
 } from "lucide-react";
-import { AppImage } from "@/components/ui/AppImage";
+import { ContestCover } from "@/components/league/landing/ContestCover";
 import type { ContestEnriched } from "@/types/league";
 import {
   controlClass,
@@ -15,18 +15,19 @@ import {
   tagClass,
 } from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
-import { buildEventDetailUrl } from "@/lib/league/urls";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
-interface EventFeaturedHeroProps {
+interface ContestFeaturedHeroProps {
   event: ContestEnriched;
 }
 
 /**
- * Editor's pick: a dark photo hero (bg-on-surface) with one scrim, the
- * event basics and two actions — View event (onWire) and Official site
- * (onPhoto). Disciplines and the map link live on the event page.
+ * Featured contest: a dark photo hero (bg-on-surface) with one scrim, the
+ * contest basics and two actions — View contest (onWire) and Official site
+ * (onPhoto). Curators pick it (`featured`); otherwise the next live or
+ * upcoming public contest. Disciplines and the map link live on the detail page.
  */
-export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
+export function ContestFeaturedHero({ event }: ContestFeaturedHeroProps) {
   const { location } = event;
   const isLive = event.status === "live";
   const isCompleted = event.status === "completed";
@@ -34,23 +35,22 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
 
   return (
     <article
-      id="featured-event"
-      data-event-id={event.id}
+      id="featured-contest"
+      data-contest-id={event.id}
       className="group relative w-full overflow-hidden rounded-container border border-on-gradient/20 bg-on-surface"
     >
       <div className="relative h-[28rem] w-full sm:h-[480px] md:h-[520px]">
-        <AppImage
-          src={event.image}
-          alt=""
-          fill
+        <ContestCover
+          image={event.image}
+          categoryName={event.categoryName}
+          sports={event.sports}
           sizes="(min-width: 1280px) 1200px, 100vw"
           className={cn(
             "object-cover transition-transform duration-500 ease-out group-hover:scale-105",
             isCompleted && "opacity-50",
           )}
-          referrerPolicy="no-referrer"
-          unoptimized
           priority
+          dimmed={isCompleted}
         />
         <div
           aria-hidden="true"
@@ -132,10 +132,10 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <Link
-                href={buildEventDetailUrl(event.slug)}
+                href={buildContestDetailUrl(event.slug)}
                 className={controlClass("onWire")}
               >
-                View event
+                View contest
                 <ArrowRight
                   size={14}
                   aria-hidden="true"

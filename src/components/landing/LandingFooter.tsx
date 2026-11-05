@@ -71,7 +71,7 @@ export function LandingFooter() {
               </li>
               <li>
                 <Link
-                  href="/sport-events"
+                  href={ROUTES.league}
                   className={FOOTER_LINK_CLASS}
                 >
                   Contests & Events

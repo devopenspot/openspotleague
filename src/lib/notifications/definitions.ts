@@ -1,11 +1,12 @@
 /**
  * Notification type constants + copy rendering — pure module shared by the
  * service payloads and the UI so wording never drifts. Types mirror the
- * `NotificationType` union in `src/types/sport-events.ts`; v1 is in-app only
+ * `NotificationType` union in `src/types/league.ts`; v1 is in-app only
  * (see plan.league.spec.md decisions — email/push arrive in Phase 5).
  */
 
 import type { NotificationPayload, NotificationType } from "@/types/league";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
 export interface NotificationCopy {
   title: string;
@@ -64,7 +65,7 @@ export function notificationHref(
   payload: NotificationPayload,
 ): string | null {
   if (ADMIN_TYPES.has(type)) return "/admin/league/payments";
-  return payload.eventSlug ? `/sport-events/${payload.eventSlug}` : null;
+  return payload.eventSlug ? buildContestDetailUrl(payload.eventSlug) : null;
 }
 
 function eventLabel(payload: NotificationPayload): string {

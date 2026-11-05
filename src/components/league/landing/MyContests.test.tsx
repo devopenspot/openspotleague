@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import LeagueHub from "./LeagueHub";
+import { MyContests } from "./MyContests";
 
 const fetchMock = vi.fn();
 
@@ -34,21 +34,21 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
 });
 
-describe("LeagueHub", () => {
+describe("MyContests", () => {
   it("shows the empty state with a create CTA", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({ items: [] }),
     });
-    render(<LeagueHub />);
-    expect(await screen.findByText("No events yet")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /create an event/i })).toHaveAttribute(
+    render(<MyContests />);
+    expect(await screen.findByText("No contests yet")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /create a contest/i })).toHaveAttribute(
       "href",
       "/league/new",
     );
   });
 
-  it("groups events by role and deep-links organizers to manage", async () => {
+  it("groups contests by role and deep-links organizers to manage", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -64,18 +64,18 @@ describe("LeagueHub", () => {
         ],
       }),
     });
-    render(<LeagueHub />);
+    render(<MyContests />);
     expect(await screen.findByText("Night Jam")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /organizing · 1/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /judging · 1/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /riding · 1/i })).toBeInTheDocument();
     const manageLink = screen.getByRole("link", { name: /night jam/i });
-    expect(manageLink).toHaveAttribute("href", "/sport-events/night-jam/manage");
+    expect(manageLink).toHaveAttribute("href", "/league/night-jam/manage");
     const riderLink = screen.getByRole("link", { name: /city cup/i });
-    expect(riderLink).toHaveAttribute("href", "/sport-events/city-cup");
+    expect(riderLink).toHaveAttribute("href", "/league/city-cup");
   });
 
-  it("surfaces the payment notice for gated events", async () => {
+  it("surfaces the payment notice for gated contests", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -88,7 +88,7 @@ describe("LeagueHub", () => {
         ],
       }),
     });
-    render(<LeagueHub />);
+    render(<MyContests />);
     expect(await screen.findByRole("status")).toHaveAttribute(
       "data-payment-state",
       "locked",
@@ -98,7 +98,7 @@ describe("LeagueHub", () => {
 
   it("shows the error state when the API fails", async () => {
     fetchMock.mockResolvedValue({ ok: false });
-    render(<LeagueHub />);
+    render(<MyContests />);
     expect(
       await screen.findByRole("alert"),
     ).toHaveTextContent(/could not be loaded/i);

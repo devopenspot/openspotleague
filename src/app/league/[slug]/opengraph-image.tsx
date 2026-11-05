@@ -4,7 +4,7 @@ import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { OG_SIZE } from "@/lib/og/config";
 import { loadPublicImageAsDataUrl } from "@/lib/og/images";
 
-export const alt = "Sport event — Open Spot";
+export const alt = "Contest — Open Spot League";
 export const size = OG_SIZE;
 export const contentType = "image/png";
 export const runtime = "nodejs";
@@ -56,7 +56,7 @@ export default async function Image({
             letterSpacing: 1,
           }}
         >
-          Event unavailable
+          Contest unavailable
         </div>
       </div>,
       { ...size },

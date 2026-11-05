@@ -43,20 +43,20 @@ describe("buildStatusFilterUrl", () => {
   it("sets status while preserving unrelated query parameters", () => {
     expect(
       buildStatusFilterUrl(
-        "/sport-events",
+        "/league",
         new URLSearchParams("foo=bar"),
         "upcoming",
       ),
-    ).toBe("/sport-events?foo=bar&status=upcoming");
+    ).toBe("/league?foo=bar&status=upcoming");
   });
 
   it("removes the implicit all status", () => {
     expect(
       buildStatusFilterUrl(
-        "/sport-events",
+        "/league",
         new URLSearchParams("status=live&foo=bar"),
         "all",
       ),
-    ).toBe("/sport-events?foo=bar");
+    ).toBe("/league?foo=bar");
   });
 });

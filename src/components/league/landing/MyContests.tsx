@@ -1,16 +1,17 @@
 "use client";
 
 /**
- * League hub — my events grouped by my role, with payment-gate states
- * surfaced via PaymentGateNotice. Data comes from GET /api/league/events
- * (role-aware payload, see listMyLeagueEvents).
+ * "My contests" on the League landing: the signed-in viewer's contests
+ * grouped by role, with payment-gate states surfaced via PaymentGateNotice.
+ * Data comes from GET /api/league/events (role-aware payload, see
+ * listMyLeagueEvents). Rendered only for signed-in users.
  */
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Plus, Trophy } from "lucide-react";
-import { JoinByCodeEntry } from "@/components/league/JoinByCodeEntry";
 import { PaymentGateNotice } from "@/components/league/PaymentGateNotice";
+import { MyContestsSkeleton } from "@/components/league/landing/ContestSkeleton";
 import {
   alertClass,
   BODY,
@@ -18,10 +19,9 @@ import {
   CARD_TITLE,
   controlClass,
   EMPTY_STATE,
-  EYEBROW,
+  EYEBROW_ON_GRADIENT,
   META,
-  PAGE_TITLE,
-  pageContainer,
+  SECTION_TITLE,
   tagClass,
 } from "@/components/ui/recipes";
 import {
@@ -32,11 +32,16 @@ import {
   statusLabel,
 } from "@/lib/league/ui-state";
 import {
+  buildContestDetailUrl,
+  buildContestManageUrl,
+  CONTEST_NEW_PATH,
+} from "@/lib/league/urls";
+import {
   DEFAULT_READ_TIMEOUT_MS,
   fetchWithTimeout,
 } from "@/lib/utils/fetch-timeout";
 
-interface MyLeagueEventItem {
+interface MyContestItem {
   id: string;
   slug: string;
   name: string;
@@ -57,15 +62,15 @@ function planLabel(planSlug: string): string {
   return `${planSlug.charAt(0).toUpperCase()}${planSlug.slice(1)} plan`;
 }
 
-function EventCard({ item }: { item: MyLeagueEventItem }) {
-  const rolePath = isOrganizerRole(item.myRole)
-    ? `/sport-events/${item.slug}/manage`
-    : `/sport-events/${item.slug}`;
+function MyContestCard({ item }: { item: MyContestItem }) {
+  const href = isOrganizerRole(item.myRole)
+    ? buildContestManageUrl(item.slug)
+    : buildContestDetailUrl(item.slug);
   return (
     <li>
       <Link
-        href={rolePath}
-        className={`group flex flex-col gap-3 ${CARD} transition-colors duration-150 ease-out hover:border-on-surface`}
+        href={href}
+        className={`group flex flex-col gap-3 ${CARD} text-on-surface transition-colors duration-150 ease-out hover:border-on-surface`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -101,10 +106,10 @@ function EventCard({ item }: { item: MyLeagueEventItem }) {
             title="Payment required to move forward"
             message={
               item.paymentState === "pending"
-                ? "Register this event's plan payment to unlock features."
+                ? "Register this contest's plan payment to unlock features."
                 : item.paymentState === "locked"
-                  ? "The event is read-only until a payment is registered."
-                  : "This event was disabled definitively because no payment was registered in time."
+                  ? "The contest is read-only until a payment is registered."
+                  : "This contest was disabled definitively because no payment was registered in time."
             }
             paymentDueAt={item.paymentDueAt}
             paymentDeadlineAt={item.paymentDeadlineAt}
@@ -115,8 +120,8 @@ function EventCard({ item }: { item: MyLeagueEventItem }) {
   );
 }
 
-export default function LeagueHub() {
-  const [items, setItems] = useState<MyLeagueEventItem[]>([]);
+export function MyContests() {
+  const [items, setItems] = useState<MyContestItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadTick, setReloadTick] = useState(0);
@@ -131,15 +136,15 @@ export default function LeagueHub() {
         });
         if (cancelled) return;
         if (response.ok) {
-          const data = (await response.json()) as { items: MyLeagueEventItem[] };
+          const data = (await response.json()) as { items: MyContestItem[] };
           if (cancelled) return;
           setItems(data.items);
         } else {
-          setError("Your events could not be loaded. Try again shortly.");
+          setError("Your contests could not be loaded. Try again shortly.");
         }
       } catch {
         if (cancelled) return;
-        setError("Your events could not be loaded. Try again shortly.");
+        setError("Your contests could not be loaded. Try again shortly.");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -160,42 +165,23 @@ export default function LeagueHub() {
   const { organizing, judging, riding } = groupLeagueEvents(items);
 
   return (
-    <div className={pageContainer("3xl")}>
-      <header className="mb-8 flex flex-col gap-5">
-        <div>
-          <p className={EYEBROW}>League</p>
-          <h1 className={`mt-1 ${PAGE_TITLE} text-on-surface`}>
-            My sport events
-          </h1>
-          <p className={`mt-2 max-w-xl ${BODY}`}>
-            Events you organize, judge or ride in. Join one with an invite code
-            or create your own.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href="/league/new" className={controlClass("primary")}>
-            <Plus size={14} aria-hidden="true" />
-            New event
-          </Link>
-          <JoinByCodeEntry variant="compact" />
-          <Link href="/sport-events" className={controlClass("outline")}>
-            Browse sport events
-          </Link>
-        </div>
-      </header>
+    <section
+      id="my-contests"
+      aria-labelledby="my-contests-heading"
+      className="space-y-4"
+    >
+      <div>
+        <p className={EYEBROW_ON_GRADIENT}>Organizing, judging and riding</p>
+        <h2
+          id="my-contests-heading"
+          className={`mt-1 ${SECTION_TITLE} text-on-gradient`}
+        >
+          My contests
+        </h2>
+      </div>
 
       {loading ? (
-        <div aria-busy="true">
-          <p className="sr-only">Loading your events…</p>
-          <div className="flex flex-col gap-3" aria-hidden="true">
-            {[0, 1, 2].map((index) => (
-              <div
-                key={index}
-                className="h-28 animate-pulse rounded-container border border-outline-variant bg-surface-container-lowest"
-              />
-            ))}
-          </div>
-        </div>
+        <MyContestsSkeleton />
       ) : error ? (
         <div
           role="alert"
@@ -211,21 +197,23 @@ export default function LeagueHub() {
           </button>
         </div>
       ) : items.length === 0 ? (
-        <div className={`flex flex-col items-center gap-3 ${EMPTY_STATE}`}>
+        <div
+          className={`flex flex-col items-center gap-3 ${EMPTY_STATE} text-on-surface`}
+        >
           <div className="flex h-12 w-12 items-center justify-center rounded-control border border-outline-variant bg-surface-container-high text-secondary">
             <Trophy size={20} aria-hidden="true" />
           </div>
-          <h2 className={`${CARD_TITLE} text-on-surface`}>No events yet</h2>
+          <h3 className={`${CARD_TITLE} text-on-surface`}>No contests yet</h3>
           <p className={`max-w-sm ${BODY}`}>
-            Create your first competition — you can judge too, invite riders
-            with a link, and the engine handles schedule and results.
+            Create your first contest — you can judge too, invite riders with a
+            QR code or link, and the engine handles schedule and results.
           </p>
           <Link
-            href="/league/new"
+            href={CONTEST_NEW_PATH}
             className={`mt-1 ${controlClass("primary")}`}
           >
             <Plus size={14} aria-hidden="true" />
-            Create an event
+            Create a contest
           </Link>
         </div>
       ) : (
@@ -235,7 +223,7 @@ export default function LeagueHub() {
           <RoleGroup title="Riding" items={riding} />
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -244,17 +232,17 @@ function RoleGroup({
   items,
 }: {
   title: string;
-  items: MyLeagueEventItem[];
+  items: MyContestItem[];
 }) {
   if (items.length === 0) return null;
   return (
     <section aria-label={title}>
-      <h2 className={`mb-3 ${EYEBROW}`}>
+      <h3 className={`mb-3 ${EYEBROW_ON_GRADIENT}`}>
         {title} · {items.length}
-      </h2>
+      </h3>
       <ul className="flex flex-col gap-3">
         {items.map((item) => (
-          <EventCard key={item.id} item={item} />
+          <MyContestCard key={item.id} item={item} />
         ))}
       </ul>
     </section>

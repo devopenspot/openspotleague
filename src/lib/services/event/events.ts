@@ -160,7 +160,7 @@ export async function listEvents(
   return runListEvents(query)
 }
 
-export interface SportEventsDirectoryData {
+export interface ContestDirectoryData {
   events: readonly ContestEnriched[]
   featured: ContestEnriched | undefined
 }
@@ -178,7 +178,7 @@ export interface SportEventsDirectoryData {
  */
 const EVENT_DIRECTORY_MAX_PAGES = 5
 
-export async function runListEventDirectory(): Promise<SportEventsDirectoryData> {
+export async function runListContestDirectory(): Promise<ContestDirectoryData> {
   const items: ContestEnriched[] = []
   let cursor: string | undefined
   for (let page = 0; page < EVENT_DIRECTORY_MAX_PAGES; page++) {
@@ -191,11 +191,11 @@ export async function runListEventDirectory(): Promise<SportEventsDirectoryData>
   return { events: items, featured: selectFeaturedEvent(items) }
 }
 
-export async function listEventDirectory(): Promise<SportEventsDirectoryData> {
+export async function listContestDirectory(): Promise<ContestDirectoryData> {
   "use cache: remote"
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
-  return runListEventDirectory()
+  return runListContestDirectory()
 }
 
 // Marquee: 12 random events, seeded per-visit. Routes through the
@@ -353,8 +353,8 @@ function revalidateEventCaches(eventId: string, slug: string | null = null): voi
   revalidateTag("events:featured", ITEM_CACHE_LIFE)
   revalidateTag(`events:item:${eventId}`, ITEM_CACHE_LIFE)
   revalidateTag("event-images", IMAGE_CACHE_LIFE)
-  if (slug) revalidatePath(`/sport-events/${slug}`)
-  revalidatePath("/sport-events")
+  if (slug) revalidatePath(`/league/${slug}`)
+  revalidatePath("/league")
   revalidatePath("/explore")
   revalidatePath(`/admin/events/${eventId}`)
   revalidatePath("/admin/events")

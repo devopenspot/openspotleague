@@ -7,7 +7,7 @@ const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
-  usePathname: () => "/sport-events",
+  usePathname: () => "/league",
 }));
 
 beforeEach(() => {
@@ -42,7 +42,7 @@ describe("JoinByCodeEntry", () => {
     await userEvent.type(input, "  abcDEF123456  ");
     await userEvent.click(screen.getByRole("button", { name: /^join$/i }));
 
-    expect(push).toHaveBeenCalledWith("/sport-events/join/abcDEF123456");
+    expect(push).toHaveBeenCalledWith("/league/join/abcDEF123456");
   });
 
   it("shows an invalid link alert when a foreign non-event URL is submitted", async () => {
@@ -67,7 +67,7 @@ describe("JoinByCodeEntry", () => {
         readText: vi
           .fn()
           .mockResolvedValue(
-            "https://openspotleague.com/sport-events/join/pasteCode99",
+            "https://openspotleague.com/league/join/pasteCode99",
           ),
       },
       configurable: true,
@@ -83,6 +83,6 @@ describe("JoinByCodeEntry", () => {
     );
     await userEvent.click(pasteBtn);
 
-    expect(push).toHaveBeenCalledWith("/sport-events/join/pasteCode99");
+    expect(push).toHaveBeenCalledWith("/league/join/pasteCode99");
   });
 });

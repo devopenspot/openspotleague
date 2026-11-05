@@ -11,7 +11,7 @@ import {
   pageContainer,
 } from "@/components/ui/recipes";
 
-export default function SportEventsError({
+export default function LeagueError({
   error,
   reset,
 }: {
@@ -20,7 +20,7 @@ export default function SportEventsError({
 }) {
   useEffect(() => {
     try {
-      log.error("Sport events route error", error);
+      log.error("League route error", error);
     } catch {
       // Must not throw in error boundary
     }
@@ -35,7 +35,7 @@ export default function SportEventsError({
       /Importing a module script failed/i.test(error.message);
 
     if (isChunkError) {
-      const key = `osp_events_chunk_reload_${error.digest || error.message}`;
+      const key = `osp_league_chunk_reload_${error.digest || error.message}`;
       if (!sessionStorage.getItem(key)) {
         sessionStorage.setItem(key, "1");
         window.location.reload();
@@ -53,11 +53,10 @@ export default function SportEventsError({
           <AlertTriangle size={20} aria-hidden="true" />
         </div>
         <h2 className={`${CARD_TITLE} text-on-surface`}>
-          Events are temporarily unavailable
+          The league is temporarily unavailable
         </h2>
         <p className={`${BODY} mt-2`}>
-          We could not load the event circuit. Try again without leaving this
-          page.
+          We could not load this page. Try again without leaving it.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button

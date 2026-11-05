@@ -3,6 +3,7 @@ import { makeSeededRng } from "@/lib/utils/seeded-random";
 import type { SportDiscipline } from "@/types/disciplines";
 import type { TvCard } from "@/types/tv";
 import { ROUTES } from "@/lib/navigation/nav";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
 export type MarqueeKind = "spot" | "event" | "video";
 
@@ -106,7 +107,7 @@ function buildEventItem(event: MarqueeEventInput): MarqueeItem {
     id: event.id,
     title: event.name,
     imageUrl: event.image,
-    href: `/sport-events/${encodeURIComponent(event.slug)}`,
+    href: buildContestDetailUrl(event.slug),
     meta: event.dateRangeLabel,
     disciplines: event.sports,
     disciplineSlug: event.sports[0]?.toLowerCase() ?? null,

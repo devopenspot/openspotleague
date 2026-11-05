@@ -78,7 +78,7 @@ export interface Spot extends MapSpot {
 export type TabType =
   | "saved"
   | "map"
-  | "events"
+  | "league"
   | "games"
   | "support"
   | "admin"
