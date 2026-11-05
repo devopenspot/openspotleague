@@ -8,7 +8,7 @@ import {
   PlusCircle,
   ArrowRight,
   ShieldCheck,
-  BookmarkCheck,
+  Gamepad2,
 } from "lucide-react";
 import { ROUTES } from "@/lib/navigation/nav";
 
@@ -25,27 +25,28 @@ interface FeatureCardProps {
 const FEATURES: readonly FeatureCardProps[] = [
   {
     icon: MapPin,
-    title: "Every Spot Worth Riding",
-    badge: "15k+ Spots",
-    description:
-      "Skateparks, street spots and DIYs on one map, with obstacles, surface, bust risk and live weather for each one.",
+    title: "Explore worldwide spots",
+    badge: "18+ Spots",
+    description: "Skateparks, street spots and DIYs on one map.",
     bullets: [
       "Filter by region, country or city",
       "Ledges, rails, stairs, bowls, vert and DIY builds",
       "Checked by the locals who ride them",
+      "Live weather and surface conditions for each spot",
     ],
     ctaText: "Open the Map",
     ctaHref: ROUTES.map,
   },
   {
-    icon: Trophy,
-    title: "Trick Games, Live",
+    icon: Gamepad2,
+    title: "Trick Game, Live",
     badge: "Train or Battle",
     description:
-      "Play S.K.A.T.E., B.I.K.E., B.L.A.D.E. or S.C.O.O.T. against your crew or a rider across the world.",
+      "Game of S.K.A.T.E. B.I.K.E. B.L.A.D.E. S.C.O.O.T. against a rider.",
     bullets: [
       "Miss a trick, take a letter, last rider standing wins",
       "Share a QR code to start a game in person or online",
+      "Battle mode awards points to the winner",
       "Trick lists by difficulty and terrain to train for your next session",
     ],
     ctaText: "Start a Game",
@@ -56,28 +57,30 @@ const FEATURES: readonly FeatureCardProps[] = [
     title: "Open Spot TV",
     badge: "500+ Videos",
     description:
-      "Non-stop action sports video: FISE contests, classic parts and athlete profiles, no noise in between.",
+      "Non-stop action sports video: Contests, classic parts and rider profiles, no noise in between.",
     bullets: [
-      "Continuous autoplay across every discipline",
+      "Continuous autoplay of curated action sports videos",
       "Filter by discipline and category",
-      "20 years of legendary parts, contests and profiles",
+      "+20 years of legendary parts, contests, profiles and more",
+      "The most sport-events, news and videos from the action sports world, all in one place",
     ],
     ctaText: "Watch Open Spot TV",
     ctaHref: ROUTES.tv,
   },
   {
-    icon: BookmarkCheck,
-    title: "Level Up in the League",
-    badge: "Your Progress",
+    icon: Trophy,
+    title: "Judges, riders, Podiums & Scores",
+    badge: "Create your own contests",
     description:
-      "Save the spots you ride, build your trick bag and put new street spots on the map for everyone.",
+      "All you need to manage your own contests, from start to finish.",
     bullets: [
-      "Bookmark spots and pull them up on your phone",
-      "Keep your game history and trick progression",
-      "Add new spots and earn curator status",
+      "See the results in real time & save them for later",
+      "Easy to use scoring system for judges and riders",
+      "Shareable contest pages with live results and podiums",
+      "Award scores to each rider and see them ranked on a general leaderboard",
     ],
-    ctaText: "Join the League, Free",
-    ctaHref: ROUTES.login,
+    ctaText: "Join the League",
+    ctaHref: ROUTES.events,
   },
 ] as const;
 
