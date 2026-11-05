@@ -69,8 +69,10 @@ Inputs, selects, and textareas must render at 16px or larger on mobile, otherwis
   - `landing/`: `LeagueLanding`, `LeagueWash`, `MyContests`, and the `Contest*` parts (directory, card, cover fallback, featured hero, status filter, empty state, skeleton, results summary).
   - `cover/`: `ContestCoverField` and `upload-contest-cover.ts`, which uploads the cover after the contest is created.
   - `create/LeagueCreateForm.tsx`, also used in curator mode by `/admin/league/contests/new`. Shared fieldset parts live in `form-parts.tsx`.
-  - `manage/ManageConsole.tsx` with `manage-parts.tsx`, `judge/JudgeQueue.tsx`, and `hooks/useLeagueRealtime.ts`.
+  - `hub/`: the members' contest hub on `/league/[slug]` — `ContestHub` (next-step card, `LifecycleStepper`, role tabs), `useContestState` (one state fetch + realtime + versioned mutations), `FormatBrief`, `StandingsBoard`, `MyRunsPanel`, `JudgingPanel`, `RatedScoreForm` and `useNow`. Derived state lives in `src/lib/league/next-step.ts` and `src/lib/league/hub-state.ts` (tested).
+  - `manage/ManageConsole.tsx` (the hub's Run the contest tab, fed by `useContestState`) with `manage-parts.tsx`, and `hooks/useLeagueRealtime.ts`.
   - Join entry points: `JoinByCodeEntry` and `JoinWithInvite`.
+- `src/components/profile/league/ProfileLeagueCard.tsx`: League stats and recent results on the profile Overview.
 - `src/components/admin/league/contests/`: `AdminContestsTable`, `AdminContestFilters` and `ContestCurationPanel`, for curator browsing and curation actions. See `docs/league.md`.
 - Overlays pick their initial focus from a `data-autofocus` element (`useFocusTrap`); mark the dialog's main action with it.
 - `src/components/feedback/`: `BottomSheet` is the non-modal game-sheet, `SideDrawer` plus `DrawerParts` are for anything opened on purpose. See `DESIGN.md`, `components.overlays`.

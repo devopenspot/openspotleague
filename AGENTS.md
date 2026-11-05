@@ -41,6 +41,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 | `src/lib/services/*` | Orchestration and the single writers. |
 | `src/lib/repositories/*` | Repository interfaces plus Drizzle implementations, resolved through `repositories/index.ts`. |
 | `src/lib/games/*`, `src/lib/league/*` | Pure domain engines (state machines, scoring, capabilities). No DB or IO; unit-tested. |
+| `src/lib/league/rating/*` | League rating engine from Article 9 (Res. 082/2026): Park/Street/Vert formats, the five criteria, required elements per discipline, 0–10 scoring, trimmed-mean panel, division ranking. |
 | `src/lib/db/client.ts` | `withDbRead`, `withDbWrite`, `withDbRetry`, pool configuration, global concurrency gate. |
 | `src/lib/cache/` | `lifetimes.ts` (cache profiles), `deferred.ts` (post-commit invalidation). |
 | `src/db/schema.ts` | Barrel re-export of `src/db/schema/*` (`auth`, `spots`, `games`, `taxonomy`, `index`). Schema source of truth. Migrations live in `supabase/migrations/`. |
@@ -55,6 +56,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - Get repositories from `@/lib/repositories` (proxies or `get<Entity>RepositoryAsync()`), never by constructing a Drizzle implementation.
 - Game and league mutations go through their services: `withDbWrite` + `db.transaction` + `expectedVersion` OCC + an idempotent `requestFingerprint` + a realtime signal row. Contest curators reuse the league writers with `{ asCurator: true }`; never add parallel curator writers.
 - Build every contest URL with `src/lib/league/urls.ts` (`/league/**`). Free-plan contests stay unlisted (QR/invite only); public listing needs a paid or comped non-free plan (`canListPublicly`).
+- League scores come from the rating engine (`src/lib/league/rating/`). Before results are published, members see panel totals only: project per-judge scores with `src/lib/league/visibility.ts`, never send raw score rows to riders.
 - Any new `RESTRICT` foreign key to `spots` must be handled in `detachSpotDependents`.
 - Import canonical paths. About 65 files in `src/lib`, `src/lib/services`, and `src/lib/repositories` are `@deprecated` one-line re-export shims, for example `@/lib/safe-fetch` → `@/lib/utils/safe-fetch` and `@/lib/supabase/storage` → `@/lib/storage`.
 - Storage errors are `UploadValidationError`. Check them with `instanceof`, never by matching the message.
@@ -95,7 +97,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
   - Locked exception: the `TvMarqueeCard` corner tab (flush top-left, `rounded-tl-sm rounded-br-sm`) is an owner decision. Never restyle it into a pill or `tagClass`. The spec is in `DESIGN.md` `components.tv-card`.
 - Build UI from the class recipes in `src/components/ui/recipes.ts` (`controlClass`, `chipClass`, `tagClass`, `INPUT`, `EYEBROW`, `PAGE_TITLE`, `CARD`, `pageContainer`, …). `cn` does not merge Tailwind classes: pick a variant, never override a recipe's radius, height or colour from the call site, and never restyle a shared component with `!important` classes.
 - Pages share one gutter: `px-5 md:px-10` (`pageContainer`).
-- One wash per route: warm `bg-gradient-primary` for the Home hero and the Games landing page, lime `bg-gradient-profile` for Profile, cyan `bg-gradient-support` for Support, electric-blue `bg-gradient-league` (`LeagueWash`) for the League landing, contest page and join page. Everything else is monochrome surface, including the League create form, organizer console and judge queue (TV is the navy wire).
+- One wash per route: warm `bg-gradient-primary` for the Home hero and the Games landing page, lime `bg-gradient-profile` for Profile, cyan `bg-gradient-support` for Support, electric-blue `bg-gradient-league` (`LeagueWash`) for the League landing, contest page, result card and join page. Everything else is monochrome surface, including the League create form, the ranking and the contest hub panel that sits on the contest page (TV is the navy wire).
 - The nav is a "pill track" on the black chrome: the active item is an inverted `bg-on-wire text-wire` pill on desktop, the bottom bar and the drawer alike. NavLink variants own those styles.
 - Keep Next image optimization off (`unoptimized: true`); images come straight from the R2 CDN.
 
@@ -104,5 +106,5 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - `docs/architecture.md`: request lifecycle, layers, repositories, write path, deletion lifecycle, error mapping, security headers.
 - `docs/caching-and-egress.md`: Cache Components, invalidation, the Supabase egress budget, RSC payloads, polling.
 - `docs/database.md`: environment, migrations, seeding, RBAC/RLS, realtime, storage.
-- `docs/league.md`: League contests — routes, public listing rule, plans and payment gate, covers, contest curation, write path, errors.
+- `docs/league.md`: League contests — routes, the contest hub, divisions and video contests, the Article 9 rating, leaderboards, public listing rule, plans and payment gate, covers, contest curation, write path, errors.
 - `docs/ui-conventions.md`: UI rules and component organization.
