@@ -1,9 +1,8 @@
 import Link from "next/link"
-import { Bookmark, MapPin, Trophy } from "lucide-react"
+import { Bookmark, MapPin } from "lucide-react"
 import { SurfaceCard } from "@/components/ui"
 import { getServerUserFromCookies } from "@/lib/auth/auth"
 import { runListSpots } from "@/lib/services/spot/spots"
-import { runListEventsRaw } from "@/lib/services/event/events"
 import { runListSavedSpots } from "@/lib/services/spot/saved-spots"
 
 interface OverviewCard {
@@ -17,10 +16,9 @@ interface OverviewCard {
 const COUNT_LIMIT = 500
 
 export async function AdminOverviewCards() {
-  const [user, spotsResult, eventsResult] = await Promise.all([
+  const [user, spotsResult] = await Promise.all([
     getServerUserFromCookies(),
     runListSpots({ limit: COUNT_LIMIT }),
-    runListEventsRaw({ limit: COUNT_LIMIT }),
   ])
 
   const savedResult = user
@@ -36,15 +34,6 @@ export async function AdminOverviewCards() {
         ? `${spotsResult.items.length}+ — refine your search to count precisely`
         : "Curated spots across the network",
       Icon: MapPin,
-    },
-    {
-      href: "/admin/events",
-      label: "Total events",
-      value: eventsResult.items.length,
-      hint: eventsResult.nextCursor
-        ? `${eventsResult.items.length}+ — refine your search to count precisely`
-        : "Sport events on the circuit",
-      Icon: Trophy,
     },
     {
       href: "/saved",

@@ -1,15 +1,8 @@
-import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache"
+import { cacheLife, cacheTag } from "next/cache"
 import { getEventRepositoryAsync } from "@/lib/repositories"
 import type { MapEvent, Contest, ContestEnriched } from "@/types/league"
-import type {
-  NewSportEvent,
-  EventShuffleFilters,
-  SportEventPatch,
-} from "@/lib/repositories/core/types"
-import type {
-  SportEventListResult,
-  SportEventQuery,
-} from "@/lib/repositories/event/event-repository"
+import type { EventShuffleFilters } from "@/lib/repositories/core/types"
+import type { SportEventQuery } from "@/lib/repositories/event/event-repository"
 import { decodeRandomSpotCursor, encodeRandomSpotCursor } from "@/lib/repositories/spot/spot-pagination"
 import { seededShuffle } from "@/lib/utils/seeded-random"
 import { EVENT_LIST_HARD_CAP } from "@/lib/config/constants"
@@ -69,11 +62,7 @@ function enrichAll(
   return Object.freeze(items.map((e) => enrich(e, now)))
 }
 
-import {
-  IMAGE_CACHE_LIFE,
-  ITEM_CACHE_LIFE,
-  LIST_CACHE_LIFE,
-} from "@/lib/cache/lifetimes"
+import { LIST_CACHE_LIFE } from "@/lib/cache/lifetimes"
 
 // ---------- list ----------
 
@@ -198,44 +187,6 @@ export async function listContestDirectory(): Promise<ContestDirectoryData> {
   return runListContestDirectory()
 }
 
-// Marquee: 12 random events, seeded per-visit. Routes through the
-// shuffle-ID cache (`runListEventsRandom`) — no full-table ID scan.
-export async function runGetMarqueeEvents(seed?: string): Promise<readonly ContestEnriched[]> {
-  const { items } = await runListEvents(seed ? { limit: 12, random: true, seed } : { limit: 12 })
-  return items
-}
-
-export async function getMarqueeEvents(seed?: string): Promise<readonly ContestEnriched[]> {
-  "use cache"
-  cacheTag("events:list")
-  cacheLife(LIST_CACHE_LIFE)
-  return runGetMarqueeEvents(seed)
-}
-
-export async function getEventsCount(): Promise<number> {
-  "use cache"
-  cacheTag("events:list")
-  cacheLife(LIST_CACHE_LIFE)
-  const repo = await getEventRepositoryAsync()
-  return repo.count()
-}
-
-export async function runListEventsRaw(
-  query?: SportEventQuery,
-): Promise<SportEventListResult> {
-  const repo = await getEventRepositoryAsync()
-  return repo.list(query)
-}
-
-export async function listEventsRaw(
-  query?: SportEventQuery,
-): Promise<SportEventListResult> {
-  "use cache"
-  cacheTag("events:list")
-  cacheLife(LIST_CACHE_LIFE)
-  return runListEventsRaw(query)
-}
-
 // ---------- map projection ----------
 //
 // `listEventsForMap` is the read path the `/map` layout uses to render
@@ -273,28 +224,6 @@ export async function listEventsForMap(
   return projectMapEvents(events, EVENTS_FOR_MAP_LIMIT);
 }
 
-// ---------- featured ----------
-// Derives the featured event from the cached list (no separate DB
-// call). Mutations that touch `featured` revalidate the
-// `events:list` tag, which transitively invalidates this function.
-
-export async function runFindFeaturedEvent(): Promise<
-  ContestEnriched | undefined
-> {
-  const { items } = await runListEvents()
-  return selectFeaturedEvent(items)
-}
-
-export async function findFeaturedEvent(): Promise<
-  ContestEnriched | undefined
-> {
-  "use cache"
-  cacheTag("events:list")
-  cacheTag("events:featured")
-  cacheLife(ITEM_CACHE_LIFE)
-  return runFindFeaturedEvent()
-}
-
 // ---------- findById ----------
 
 export async function runFindEventById(
@@ -305,20 +234,6 @@ export async function runFindEventById(
   if (!event) return null
   const events = enrichAll([event], new Date())
   return events[0] ?? null
-}
-
-export async function findEventById(
-  id: string,
-): Promise<ContestEnriched | null> {
-  "use cache"
-  cacheTag(`events:item:${id}`)
-  cacheLife(ITEM_CACHE_LIFE)
-  return runFindEventById(id)
-}
-
-export async function findEventMediaState(id: string) {
-  const repo = await getEventRepositoryAsync()
-  return repo.findMediaState(id)
 }
 
 // ---------- findBySlug ----------
@@ -341,82 +256,4 @@ export async function findEventBySlug(
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
   return runFindEventBySlug(slug)
-}
-
-// ---------- mutators ----------
-
-// Shared invalidation for every event mutation. Tags must match the ones
-// declared by the `"use cache"` read services; profiles come from
-// `@/lib/cache/lifetimes` (Next 16 requires the exact object reference).
-function revalidateEventCaches(eventId: string, slug: string | null = null): void {
-  revalidateTag("events:list", LIST_CACHE_LIFE)
-  revalidateTag("events:featured", ITEM_CACHE_LIFE)
-  revalidateTag(`events:item:${eventId}`, ITEM_CACHE_LIFE)
-  revalidateTag("event-images", IMAGE_CACHE_LIFE)
-  if (slug) revalidatePath(`/league/${slug}`)
-  revalidatePath("/league")
-  revalidatePath("/explore")
-  revalidatePath(`/admin/events/${eventId}`)
-  revalidatePath("/admin/events")
-}
-
-export async function runCreateEvent(
-  input: NewSportEvent,
-): Promise<Contest> {
-  const repo = await getEventRepositoryAsync()
-  return repo.create(input)
-}
-
-export async function createEvent(input: NewSportEvent): Promise<Contest> {
-  const event = await runCreateEvent(input)
-  revalidateEventCaches(event.id, event.slug)
-  return event
-}
-
-export async function runUpdateEvent(
-  id: string,
-  patch: SportEventPatch,
-  expectedUpdatedAt?: string,
-  actorId?: string | null,
-): Promise<Contest> {
-  const repo = await getEventRepositoryAsync()
-  return repo.update(id, patch, expectedUpdatedAt, actorId)
-}
-
-export async function updateEvent(
-  id: string,
-  patch: SportEventPatch,
-  expectedUpdatedAt?: string,
-  actorId?: string | null,
-): Promise<Contest> {
-  const event = await runUpdateEvent(id, patch, expectedUpdatedAt, actorId)
-  revalidateEventCaches(id, event.slug)
-  return event
-}
-
-export async function runDeleteEvent(
-  id: string,
-  expectedUpdatedAt?: string,
-  actorId?: string | null,
-) {
-  const repo = await getEventRepositoryAsync()
-  return repo.delete(id, expectedUpdatedAt, actorId)
-}
-
-export async function deleteEvent(
-  id: string,
-  expectedUpdatedAt?: string,
-  actorId?: string | null,
-) {
-  // Fetch slug before delete for path revalidation
-  let slug: string | null = null
-  try {
-    const existing = await runFindEventById(id)
-    slug = existing?.slug ?? null
-  } catch (_err) {
-    void _err
-  }
-  const result = await runDeleteEvent(id, expectedUpdatedAt, actorId)
-  revalidateEventCaches(id, slug)
-  return result
 }

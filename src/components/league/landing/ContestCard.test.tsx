@@ -14,7 +14,6 @@ const EVENT: ContestEnriched = {
   startDate: "2026-12-01",
   location: { city: "Paris", country: "France" },
   category: "world-tour",
-  origin: "seed",
   visibility: "public",
   lifecycleStatus: "scheduled",
   timezone: "UTC",

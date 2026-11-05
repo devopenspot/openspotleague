@@ -255,7 +255,6 @@ interface LockedEventRow {
   id: string;
   slug: string;
   name: string;
-  origin: string;
   status: string;
   createdAt: Date;
   version: number;
@@ -271,7 +270,6 @@ async function lockEvent(tx: Tx, eventId: string): Promise<LockedEventRow> {
       id: sportEvents.id,
       slug: sportEvents.slug,
       name: sportEvents.name,
-      origin: sportEvents.origin,
       status: sportEvents.status,
       createdAt: sportEvents.createdAt,
       version: sportEvents.version,
@@ -363,12 +361,11 @@ async function loadPaymentByStatuses(
 
 async function gateFor(
   tx: Tx,
-  row: Pick<LockedEventRow, "origin" | "createdAt">,
+  row: Pick<LockedEventRow, "createdAt">,
   eventId: string,
 ): Promise<PaymentGate> {
   const active = await loadActivePayment(tx, eventId);
   return paymentGate({
-    origin: row.origin as "seed" | "community",
     createdAt: row.createdAt,
     hasActivePayment: Boolean(active),
     now: new Date(),
@@ -406,7 +403,7 @@ export async function createLeagueEvent(
         if (replay) return replay as LeagueCreateEventResponse;
       }
       const plan = await accountPlan(tx, userId);
-      const createdThisMonth = await countCommunityEventsThisMonth(
+      const createdThisMonth = await countContestsThisMonth(
         tx,
         userId,
         now,
@@ -445,7 +442,6 @@ export async function createLeagueEvent(
         name: input.name,
         shortName: input.shortName ?? null,
         description: input.description,
-        origin: "community",
         visibility: "unlisted",
         status: "draft",
         timezone: input.timezone,
@@ -544,7 +540,6 @@ export interface LeagueEventState {
     description: string;
     status: string;
     planSlug: string;
-    origin: string;
     visibility: string;
     timezone: string;
     category: ContestCategory;
@@ -681,7 +676,6 @@ export async function getLeagueEventState(
       if (!myRole) return null;
       const activePayment = await loadActivePayment(tx, eventId);
       const gate = paymentGate({
-        origin: event.origin as "seed" | "community",
         createdAt: event.createdAt,
         hasActivePayment: Boolean(activePayment),
         now: new Date(),
@@ -801,7 +795,6 @@ export async function getLeagueEventState(
           description: event.description,
           status: event.status,
           planSlug: event.planSlug,
-          origin: event.origin,
           visibility: event.visibility,
           timezone: event.timezone,
           category: event.categorySlug as ContestCategory,
@@ -1236,7 +1229,6 @@ export async function registerEventPayment(
       assertCapability(role, "config.edit");
       const activePayment = await loadActivePayment(tx, locked.id);
       const gate = paymentGate({
-        origin: locked.origin as "seed" | "community",
         createdAt: locked.createdAt,
         hasActivePayment: Boolean(activePayment),
         now: new Date(),
@@ -1892,7 +1884,6 @@ export async function getInvitePreview(
             slug: sportEvents.slug,
             name: sportEvents.name,
             status: sportEvents.status,
-            origin: sportEvents.origin,
             createdAt: sportEvents.createdAt,
             startAt: sportEvents.startAt,
             timezone: sportEvents.timezone,
@@ -1905,7 +1896,6 @@ export async function getInvitePreview(
         .limit(1);
       if (!row) return null;
       const gate = paymentGate({
-        origin: row.event.origin as "seed" | "community",
         createdAt: row.event.createdAt,
         hasActivePayment: Boolean(await loadActivePayment(tx, row.event.id)),
         now: new Date(),
@@ -3707,7 +3697,6 @@ export async function listMyLeagueEvents(
       return rows.map((row) => {
         const event = row.event;
         const gate = paymentGate({
-          origin: event.origin as "seed" | "community",
           createdAt: event.createdAt,
           hasActivePayment: paidEventIds.has(event.id),
           now: new Date(),
@@ -3759,7 +3748,7 @@ async function accountPlan(tx: Tx, userId: string): Promise<AccountPlan> {
   return { slug, monthlyEventLimit: plan?.monthlyEventLimit ?? 8 };
 }
 
-async function countCommunityEventsThisMonth(
+async function countContestsThisMonth(
   tx: Tx,
   userId: string,
   now: Date,
@@ -3770,7 +3759,6 @@ async function countCommunityEventsThisMonth(
     .where(
       and(
         eq(sportEvents.createdBy, userId),
-        eq(sportEvents.origin, "community"),
         gte(sportEvents.createdAt, startOfUtcMonth(now)),
       ),
     );
@@ -3946,7 +3934,6 @@ export async function getLeagueEventDashboard(
         )
         .limit(1);
       const gate = paymentGate({
-        origin: event.origin as "seed" | "community",
         createdAt: event.createdAt,
         hasActivePayment: Boolean(activePayment),
         now: new Date(),

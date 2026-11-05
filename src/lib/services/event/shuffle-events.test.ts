@@ -51,7 +51,6 @@ function event(id: string): Contest {
     },
     category: "festival",
     categoryName: "Festival",
-    origin: "seed",
     visibility: "public",
     lifecycleStatus: "scheduled",
     timezone: "UTC",

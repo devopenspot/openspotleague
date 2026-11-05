@@ -56,8 +56,6 @@ export function assertVisibilityAllowed(
 // ---------- payment gate ----------
 
 export interface PaymentGateInput {
-  /** Editorial events have no payment deadlines and are always settled. */
-  origin: "seed" | "community";
   createdAt: Date;
   hasActivePayment: boolean;
   now: Date;
@@ -65,9 +63,9 @@ export interface PaymentGateInput {
 
 export interface PaymentGate {
   state: PaymentGateState;
-  /** When the event locks (read-only). Null for editorial events. */
+  /** When the event locks (read-only). Null once settled. */
   paymentDueAt: Date | null;
-  /** When the event is disabled definitively. Null for editorial events. */
+  /** When the event is disabled definitively. Null once settled. */
   paymentDeadlineAt: Date | null;
 }
 
@@ -79,7 +77,7 @@ export interface PaymentGate {
  * registration is rejected past that point.
  */
 export function paymentGate(input: PaymentGateInput): PaymentGate {
-  if (input.origin === "seed" || input.hasActivePayment) {
+  if (input.hasActivePayment) {
     return { state: "settled", paymentDueAt: null, paymentDeadlineAt: null };
   }
   const due = addDays(input.createdAt, PAYMENT_LOCK_AFTER_DAYS);

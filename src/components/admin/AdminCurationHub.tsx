@@ -2,7 +2,6 @@ import Link from "next/link"
 import {
   ArrowUpRight,
   BadgeDollarSign,
-  CalendarDays,
   ClipboardList,
   MapPin,
   Plus,
@@ -11,7 +10,6 @@ import {
 } from "lucide-react"
 import { connection } from "next/server"
 import { getServerUserFromCookies } from "@/lib/auth/auth"
-import { runListEventsRaw } from "@/lib/services/event/events"
 import { runListSpots } from "@/lib/services/spot/spots"
 import { runListCurrentTrickCatalogs } from "@/lib/services/taxonomy/trick-catalogs"
 import { runListTvVideos } from "@/lib/services/tv/tv"
@@ -29,14 +27,12 @@ export async function AdminCurationHub({
 }) {
   await connection()
   const user = await getServerUserFromCookies()
-  const [spotsResult, eventsResult, catalogs, tvVideos] = await Promise.all([
+  const [spotsResult, catalogs, tvVideos] = await Promise.all([
     runListSpots({ limit: COUNT_LIMIT }),
-    runListEventsRaw({ limit: COUNT_LIMIT }),
     runListCurrentTrickCatalogs(),
     runListTvVideos({}).catch(() => [] as unknown as readonly { id: string }[]),
   ])
   const canCurateSpots = Boolean(user?.isAdministrator || user?.canCurateSpots)
-  const canCurateEvents = Boolean(user?.isAdministrator || user?.canCurateEvents)
   const canCurateTricks = Boolean(user?.isAdministrator || user?.canCurateTricks)
   const canCurateTv = Boolean(
     user?.isAdministrator || (user as unknown as { canCurateTv?: boolean })?.canCurateTv,
@@ -64,7 +60,7 @@ export async function AdminCurationHub({
           <p className="font-mono text-[10px] font-bold uppercase tracking-eyebrow">Administrator access required</p>
           <p className="mt-1 leading-6">
             That section is reserved for administrators. You can continue
-            curating spots, events, and tricks here.
+            curating spots and tricks here.
           </p>
         </div>
       ) : null}
@@ -96,15 +92,6 @@ export async function AdminCurationHub({
               New spot
             </Link>
           ) : null}
-          {canCurateEvents ? (
-            <Link
-              href="/admin/events/new"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-5 py-2 font-display text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-on-surface transition-colors duration-150 ease-out hover:bg-surface-container-highest active:scale-[0.99]"
-            >
-              <Plus size={13} aria-hidden="true" />
-              New event
-            </Link>
-          ) : null}
         </div>
       </header>
 
@@ -117,17 +104,6 @@ export async function AdminCurationHub({
             </dt>
             <dd className="mt-2 font-display text-3xl font-bold tracking-tight text-on-surface">
               {countLabel(spotsResult.items.length, Boolean(spotsResult.nextCursor))}
-            </dd>
-          </div>
-        ) : null}
-        {canCurateEvents ? (
-          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
-            <dt className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-eyebrow text-secondary">
-              <CalendarDays size={14} aria-hidden="true" />
-              Events
-            </dt>
-            <dd className="mt-2 font-display text-3xl font-bold tracking-tight text-on-surface">
-              {countLabel(eventsResult.items.length, eventsResult.hasMore)}
             </dd>
           </div>
         ) : null}
@@ -175,15 +151,6 @@ export async function AdminCurationHub({
               label="Spots"
               description="Search by place, filter by sport and type, and keep location details accurate."
               count={countLabel(spotsResult.items.length, Boolean(spotsResult.nextCursor))}
-            />
-          ) : null}
-          {canCurateEvents ? (
-            <HubLink
-              href="/admin/events"
-              Icon={CalendarDays}
-              label="Events"
-              description="Maintain the calendar, dates, tiers, locations, and featured listings."
-              count={countLabel(eventsResult.items.length, eventsResult.hasMore)}
             />
           ) : null}
           {canCurateTricks ? (

@@ -24,7 +24,7 @@ import type {
   SpotTypeSnapshot,
 } from "@/lib/schemas/game";
 import type { LeagueMutationResponse } from "@/lib/schemas/league";
-import type { EventLifecycleStatus, EventMembershipStatus, EventOrigin, EventPaymentStatus, EventRole, EventRunStatus, EventSignalType, EventVisibility, NotificationPayload, NotificationType } from "@/types/league";
+import type { EventLifecycleStatus, EventMembershipStatus, EventPaymentStatus, EventRole, EventRunStatus, EventSignalType, EventVisibility, NotificationPayload, NotificationType } from "@/types/league";
 
 const geographyPoint = customType<{
   data: { lat: number; lon: number };
@@ -206,7 +206,7 @@ export const sportEvents = pgTable(
     name: text("name").notNull(),
     shortName: text("short_name"),
     description: text("description").notNull().default(""),
-    origin: text("origin").$type<EventOrigin>().notNull().default("community"),
+    origin: text("origin").$type<"seed" | "community">().notNull().default("community"),
     visibility: text("visibility").$type<EventVisibility>().notNull().default("unlisted"),
     status: text("status").$type<EventLifecycleStatus>().notNull().default("draft"),
     timezone: text("timezone").notNull(),

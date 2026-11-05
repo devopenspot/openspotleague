@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  CalendarDays,
   ClipboardList,
   FileVideo,
   Globe,
@@ -27,7 +26,6 @@ interface SidebarItem {
 const CURATION_ITEMS: readonly SidebarItem[] = [
   { href: "/admin/curation", label: "Overview", Icon: ClipboardList },
   { href: "/admin/spots", label: "Spots", Icon: MapPin },
-  { href: "/admin/events", label: "Events", Icon: CalendarDays },
   { href: "/admin/taxonomy/tricks", label: "Tricks", Icon: Trophy },
   { href: "/admin/tv", label: "TV", Icon: FileVideo },
 ]
@@ -124,7 +122,6 @@ export function AdminSidebar() {
     if (user.isAdministrator) return true
     // Fallback: use explicit booleans if present
     if (item.href === "/admin/spots") return Boolean(user.canCurateSpots ?? true)
-    if (item.href === "/admin/events") return Boolean(user.canCurateEvents ?? true)
     if (item.href === "/admin/taxonomy/tricks") return Boolean(user.canCurateTricks ?? true)
     if (item.href === "/admin/tv") return Boolean((user as unknown as { canCurateTv?: boolean }).canCurateTv ?? true)
     return true // Overview visible to any curator
