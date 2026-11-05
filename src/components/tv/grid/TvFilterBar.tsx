@@ -35,7 +35,7 @@ export function TvFilterBar({
     >
       <div className="relative min-w-0 flex-1">
         <label htmlFor={searchInputId} className="sr-only">
-          Search by rider, trick or event
+          Search by rider, event
         </label>
         <Search
           size={16}
@@ -47,7 +47,7 @@ export function TvFilterBar({
           type="search"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Search riders or tricks"
+          placeholder="Type your search..."
           autoComplete="off"
           spellCheck="false"
           className={cn(
