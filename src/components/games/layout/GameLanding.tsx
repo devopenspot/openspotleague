@@ -12,7 +12,6 @@ import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
 import { ResponsibilityPolicyModal } from "@/components/games/shared/ResponsibilityPolicyModal";
-import { MatchList } from "@/components/games/matches/MatchList";
 import { ResumeGameCard } from "@/components/games/matches/ResumeGameCard";
 import {
   useMyGames,
@@ -122,7 +121,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   return (
     <>
       <div className="flex flex-1 flex-col bg-gradient-primary px-5 py-4 sm:px-6 sm:py-6 lg:px-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col">
+        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col mb-20 md:mb-0">
           <div className={`flex justify-center gap-2 py-2`}>
             {/* One instance: pinned above the start buttons on phones. */}
             <div className="fixed inset-x-3 bottom-[calc(var(--mobile-nav-h)+6rem)] z-50 md:bottom-[calc(6rem+env(safe-area-inset-bottom))] lg:static">
@@ -160,7 +159,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               ) : isAllDisciplines ? (
                 <>
                   All disciplines selected. Choose a sport below to start a
-                  training or challenge game.
+                  training or battle game.
                 </>
               ) : (
                 <>{`${UI_COPY.disciplineWordDescription.fallback}`}</>
@@ -194,34 +193,6 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               <GameCreateForm signedIn={signedIn} initialPrefill={prefill} />
             </div>
           </section>
-          {signedIn ? (
-            <section
-              aria-labelledby="recent-matches-title"
-              className="mt-6 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-5 sm:p-6 text-on-surface shadow-[0_8px_24px_rgba(18,18,18,0.06)]"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-4">
-                <div>
-                  <p className="font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-secondary">
-                    Your matches
-                  </p>
-                  <h2
-                    id="recent-matches-title"
-                    className="mt-1 font-display text-2xl font-bold uppercase leading-none"
-                  >
-                    Active & Recent
-                  </h2>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setGamesOpen(true)}
-                  className="inline-flex min-h-12 items-center rounded-lg border-2 border-on-surface px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-                >
-                  View all
-                </button>
-              </div>
-              <MatchList bare limit={5} list={myGames} />
-            </section>
-          ) : null}
           <LandingInfo
             onOpenRules={() => setRulesOpen(true)}
             onOpenPolicy={() => setPolicyOpen(true)}
@@ -260,7 +231,7 @@ function LandingInfo({
     <footer
       role="contentinfo"
       aria-label="Game information and rules"
-      className="mt-auto mx-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8"
+      className="mx-auto pb-6 text-on-gradient sm:pt-10 sm:pb-8"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="mb-12 flex flex-wrap items-center justify-center gap-2">
@@ -315,7 +286,7 @@ function RiderProgressContent({
   return (
     <>
       <div
-        className={`min-w-0 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5`}
+        className={`min-w-0 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 mb-20`}
       >
         <div className={`flex items-start justify-between gap-3 sm:gap-4`}>
           <p
@@ -330,9 +301,7 @@ function RiderProgressContent({
           </span>
         </div>
 
-        <div
-          className={`mt-4`}
-        >
+        <div className={`mt-4`}>
           <p
             className={`font-display text-4xl font-bold uppercase leading-none sm:text-5xl`}
           >

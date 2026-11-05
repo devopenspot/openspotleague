@@ -219,7 +219,9 @@ export function GameCreateForm({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
-  const [queuedStart, setQueuedStart] = useState<"solo" | "friend" | null>(null);
+  const [queuedStart, setQueuedStart] = useState<"solo" | "friend" | null>(
+    null,
+  );
   const submittingRef = useRef(false);
   const setupStepHeadingRef = useRef<HTMLHeadingElement>(null);
   const setupContentRef = useRef<HTMLDivElement>(null);
@@ -327,11 +329,14 @@ export function GameCreateForm({
     setPrefillError(null);
     void (async () => {
       try {
-        let response = await fetchWithTimeout(`/api/spots/${encodeURIComponent(spotId)}`, {
-          signal: controller.signal,
-          cache: "no-store",
-          timeoutMs: DEFAULT_READ_TIMEOUT_MS,
-        });
+        let response = await fetchWithTimeout(
+          `/api/spots/${encodeURIComponent(spotId)}`,
+          {
+            signal: controller.signal,
+            cache: "no-store",
+            timeoutMs: DEFAULT_READ_TIMEOUT_MS,
+          },
+        );
         let data: unknown = await response.json().catch(() => null);
         let rawSpot: unknown = null;
         if (response.ok && data && typeof data === "object") {
@@ -1113,7 +1118,9 @@ export function GameCreateForm({
         sessionStorage.setItem(GUEST_NAME_STORAGE_KEY, name);
       } catch {
         submittingRef.current = false;
-        return { error: "Your rider name could not be stored in this browser." };
+        return {
+          error: "Your rider name could not be stored in this browser.",
+        };
       }
     }
 
@@ -1207,7 +1214,9 @@ export function GameCreateForm({
       });
       const rawData = await response.json().catch(() => null);
       if (!response.ok) {
-        return { error: String(rawData?.error ?? "Game could not be created.") };
+        return {
+          error: String(rawData?.error ?? "Game could not be created."),
+        };
       }
       const data = gameMutationResponseSchema.parse(rawData);
       saveLastSetup(discipline, {
@@ -1219,7 +1228,8 @@ export function GameCreateForm({
       return data;
     } catch {
       return {
-        error: "Game could not be created. Check your connection and try again.",
+        error:
+          "Game could not be created. Check your connection and try again.",
       };
     } finally {
       submittingRef.current = false;
@@ -1310,7 +1320,7 @@ export function GameCreateForm({
   return (
     <section
       aria-labelledby="game-create-title"
-      className="pb-44 pt-2 sm:pt-10 lg:py-12"
+      className="pt-2 sm:pt-10 lg:py-12"
     >
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-10">
@@ -1365,7 +1375,9 @@ export function GameCreateForm({
                         label={sportName}
                         role="radio"
                         ariaChecked={active}
-                        tabIndex={active || (!discipline && index === 0) ? 0 : -1}
+                        tabIndex={
+                          active || (!discipline && index === 0) ? 0 : -1
+                        }
                         invalid={Boolean(fieldErrors.discipline) && index === 0}
                         onClick={() => handleDisciplineChange(slug)}
                       />
@@ -1423,7 +1435,7 @@ export function GameCreateForm({
                 <OptionChip
                   id="game-mode-challenge"
                   active={mode === "challenge"}
-                  label="Challenge"
+                  label="Battle"
                   role="radio"
                   ariaChecked={mode === "challenge"}
                   tabIndex={mode === "challenge" ? 0 : -1}
@@ -1465,8 +1477,8 @@ export function GameCreateForm({
                 role="note"
                 className="rounded-[8px] border border-outline-variant bg-surface-container px-3 py-2 text-xs"
               >
-                This spot was opened as a Challenge. Sign in to create a
-                Challenge here — or start a Training now.
+                This spot was opened as a Battle. Sign in to create a Battle
+                here — or start a Training now.
               </p>
             ) : null}
 
