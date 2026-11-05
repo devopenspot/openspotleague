@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
         parsed.data.idempotencyKey ??
         request.headers.get("x-idempotency-key") ??
         undefined,
+      entry: parsed.data.entry,
     })
     return NextResponse.json(result, { status: 201 })
   } catch (error) {

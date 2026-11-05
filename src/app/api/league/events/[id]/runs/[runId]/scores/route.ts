@@ -8,8 +8,10 @@ import { leagueScoreInputSchema } from "@/lib/schemas/league"
 
 /**
  * Judge score submission (capability `scores.submit`; organizers judge
- * implicitly): valid only inside an open judging window, validated against
- * the event's active scoring criteria. Resubmission upserts.
+ * implicitly). Live contests: inside an open judging window. Video contests:
+ * any submitted run while live. Rated divisions take the 5 Article 9
+ * criteria, the element checklist and (Street) the best trick; legacy
+ * divisions keep their stored criteria. Resubmission upserts.
  */
 export async function POST(
   request: NextRequest,
@@ -38,6 +40,8 @@ export async function POST(
       eventId: id,
       runId,
       scores: parsed.data.scores,
+      elements: parsed.data.elements,
+      bestTrick: parsed.data.bestTrick,
       expectedVersion: parsed.data.expectedVersion,
       idempotencyKey: parsed.data.idempotencyKey,
     })

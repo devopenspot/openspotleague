@@ -33,6 +33,8 @@ import {
   eventActionRequests,
   eventCategories,
   eventDisciplines,
+  eventDivisionEntries,
+  eventDivisions,
   eventInvites,
   eventMemberships,
   eventPayments,
@@ -59,6 +61,7 @@ import {
   IMAGE_CACHE_LIFE,
   ITEM_CACHE_LIFE,
   LIST_CACHE_LIFE,
+  PROFILE_CACHE_LIFE,
 } from "@/lib/cache/lifetimes";
 import {
   ATTENDANCE_POINTS,
@@ -84,7 +87,9 @@ import {
   assertScheduleReorderable,
   assertValidLeagueDateRange,
   assertVisibilityAllowed,
+  assertVideoDeadline,
   buildDefaultCriteria,
+  SETUP_STATUSES,
   canListPublicly,
   buildRescheduledSlots,
   buildSchedule,
@@ -93,8 +98,6 @@ import {
   ledgerEventKey,
   paymentGate,
   pointsForRank,
-  rankRuns,
-  runTotal,
   judgeTotal,
   type PaymentGate,
 } from "@/lib/league/engine";
@@ -104,10 +107,31 @@ import {
   resolveEventRecipients,
 } from "@/lib/notifications/service";
 import { normalizeCitySlug } from "@/lib/league/validation";
+import {
+  assertElementTicks,
+  bestTrickTotal,
+  judgeRunTotal,
+  panelScore,
+} from "@/lib/league/rating/scoring";
+import { elementIdsFor } from "@/lib/league/rating/elements";
+import { normalizeVideoUrl } from "@/lib/league/rating/video-links";
+import {
+  assertVideoSubmissionOpen,
+  canSeeRunVideo,
+  visibleJudgeScores,
+} from "@/lib/league/visibility";
+import {
+  FORMAT_TEMPLATES,
+  divisionLabel,
+  isRatingDiscipline,
+  type ContestFormat,
+} from "@/lib/league/rating/formats";
 import type {
   CreateLeagueEventInput,
   LeagueConfigPatch,
   LeagueCreateEventResponse,
+  LeagueDivisionInput,
+  LeagueRiderEntry,
   LeagueInviteInput,
   LeagueMemberAddInput,
   LeagueMutationResponse,
@@ -115,6 +139,13 @@ import type {
 } from "@/lib/schemas/league";
 import type { ContestCategory, ContestEnriched, EventPaymentStatus, EventRole, EventSignalType, NotificationType } from "@/types/league";
 import { log } from "@/lib/utils/log";
+import { profileTag } from "@/lib/services/profile/profile";
+import { rankContestDivisions, ledgerDivisionRankKey } from "@/lib/league/rating/contest-ranking";
+
+/** League points and history feed the profile summary (activity, stats). */
+function revalidateProfileTagsFor(userId: string): void {
+  queueTagRevalidate(profileTag(userId), PROFILE_CACHE_LIFE);
+}
 
 type Db = ReturnType<typeof getDbClient>["db"];
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -144,6 +175,8 @@ const CANCEL_ACTION = "cancel";
 const PUBLISH_RESULTS_ACTION = "publish-results";
 const RUN_WINDOW_ACTION = "run-window";
 const SUBMIT_SCORE_ACTION = "submit-score";
+const UPDATE_ENTRY_ACTION = "update-entry";
+const SUBMIT_VIDEO_ACTION = "submit-video";
 
 // ---------- fingerprint idempotency (canonical JSON + SHA-256) ----------
 
@@ -270,6 +303,9 @@ interface LockedEventRow {
   startAt: Date;
   endAt: Date | null;
   createdBy: string | null;
+  submissionMode: "live" | "video";
+  submissionDeadlineAt: Date | null;
+  countryCode: string;
 }
 
 async function lockEvent(tx: Tx, eventId: string): Promise<LockedEventRow> {
@@ -285,6 +321,9 @@ async function lockEvent(tx: Tx, eventId: string): Promise<LockedEventRow> {
       startAt: sportEvents.startAt,
       endAt: sportEvents.endAt,
       createdBy: sportEvents.createdBy,
+      submissionMode: sportEvents.submissionMode,
+      submissionDeadlineAt: sportEvents.submissionDeadlineAt,
+      countryCode: sportEvents.countryCode,
     })
     .from(sportEvents)
     .where(eq(sportEvents.id, eventId))
@@ -381,6 +420,177 @@ async function gateFor(
 }
 
 // ---------- create ----------
+
+
+// ---------- divisions (0007) ----------
+
+export interface DivisionRow {
+  id: string;
+  disciplineSlug: string;
+  format: ContestFormat;
+  runSeconds: number | null;
+  hasBestTrick: boolean;
+  sortOrder: number;
+}
+
+async function loadDivisions(tx: Tx, eventId: string): Promise<DivisionRow[]> {
+  const rows = await tx
+    .select({
+      id: eventDivisions.id,
+      disciplineSlug: eventDivisions.disciplineSlug,
+      format: eventDivisions.format,
+      runSeconds: eventDivisions.runSeconds,
+      hasBestTrick: eventDivisions.hasBestTrick,
+      sortOrder: eventDivisions.sortOrder,
+    })
+    .from(eventDivisions)
+    .where(eq(eventDivisions.eventId, eventId))
+    .orderBy(eventDivisions.sortOrder, eventDivisions.id);
+  return rows;
+}
+
+function ratedDivisionValues(eventId: string, divisions: readonly LeagueDivisionInput[], offset = 0) {
+  return divisions.map((division, index) => {
+    const template = FORMAT_TEMPLATES[division.format];
+    return {
+      eventId,
+      disciplineSlug: division.discipline,
+      format: division.format,
+      runSeconds: template.runSeconds,
+      hasBestTrick: template.hasBestTrick,
+      sortOrder: offset + index,
+    };
+  });
+}
+
+/**
+ * Seeds the divisions of a new contest. Rated divisions come from the
+ * Article 9 templates; without them each sport gets a legacy `open`
+ * division with the old 4 criteria (kept for API compatibility).
+ */
+async function insertContestDivisions(
+  tx: Tx,
+  eventId: string,
+  divisions: readonly LeagueDivisionInput[] | undefined,
+  sportSlugs: readonly string[],
+): Promise<void> {
+  if (divisions && divisions.length > 0) {
+    await tx.insert(eventDivisions).values(ratedDivisionValues(eventId, divisions));
+    return;
+  }
+  const inserted = await tx
+    .insert(eventDivisions)
+    .values(
+      sportSlugs.map((disciplineSlug, index) => ({
+        eventId,
+        disciplineSlug,
+        format: "open" as const,
+        sortOrder: index,
+      })),
+    )
+    .returning({ id: eventDivisions.id, sortOrder: eventDivisions.sortOrder });
+  const first = inserted.sort((a, b) => a.sortOrder - b.sortOrder)[0];
+  const criteriaRows: NewEventScoringCriterionRow[] = buildDefaultCriteria().map(
+    (criterion, index) => ({
+      eventId,
+      divisionId: first?.id ?? null,
+      key: criterion.key,
+      label: criterion.label,
+      weight: String(criterion.weight),
+      maxScore: String(criterion.maxScore),
+      sortOrder: index,
+    }),
+  );
+  await tx.insert(eventScoringCriteria).values(criteriaRows);
+}
+
+/**
+ * Replaces the rated divisions before any run exists. Kept divisions keep
+ * their ids (and rider entries); removed ones drop their entries.
+ */
+async function replaceContestDivisions(
+  tx: Tx,
+  eventId: string,
+  divisions: readonly LeagueDivisionInput[],
+): Promise<void> {
+  const [anyRun] = await tx
+    .select({ id: eventRuns.id })
+    .from(eventRuns)
+    .where(eq(eventRuns.eventId, eventId))
+    .limit(1);
+  if (anyRun) {
+    throw new LeagueDomainError(
+      "INVALID_TRANSITION",
+      "Divisions are fixed once runs are prepared",
+    );
+  }
+  const current = await loadDivisions(tx, eventId);
+  const wanted = new Map(divisions.map((division, index) => [`${division.discipline}:${division.format}`, index]));
+  const removed = current.filter((row) => !wanted.has(`${row.disciplineSlug}:${row.format}`));
+  if (removed.length > 0) {
+    await tx.delete(eventDivisions).where(inArray(eventDivisions.id, removed.map((row) => row.id)));
+  }
+  const kept = new Set(current.map((row) => `${row.disciplineSlug}:${row.format}`));
+  for (const row of current) {
+    const index = wanted.get(`${row.disciplineSlug}:${row.format}`);
+    if (index !== undefined && index !== row.sortOrder) {
+      await tx.update(eventDivisions).set({ sortOrder: index }).where(eq(eventDivisions.id, row.id));
+    }
+  }
+  const added = divisions
+    .map((division, index) => ({ division, index }))
+    .filter(({ division }) => !kept.has(`${division.discipline}:${division.format}`));
+  if (added.length > 0) {
+    await tx.insert(eventDivisions).values(
+      added.map(({ division, index }) => ratedDivisionValues(eventId, [division], index)[0]!),
+    );
+  }
+  const slugs = Array.from(new Set(divisions.map((division) => division.discipline)));
+  await tx.delete(eventDisciplines).where(eq(eventDisciplines.eventId, eventId));
+  await tx.insert(eventDisciplines).values(slugs.map((disciplineSlug) => ({ eventId, disciplineSlug })));
+}
+
+/** Validates and stores a rider's division entries (replacing previous ones). */
+async function writeRiderEntries(
+  tx: Tx,
+  eventId: string,
+  membershipId: string,
+  divisionIds: readonly string[] | undefined,
+): Promise<void> {
+  const divisions = await loadDivisions(tx, eventId);
+  let chosen: string[];
+  if (!divisionIds || divisionIds.length === 0) {
+    if (divisions.length !== 1) {
+      throw new LeagueDomainError("INVALID_INPUT", "Pick at least one division");
+    }
+    chosen = [divisions[0]!.id];
+  } else {
+    const valid = new Set(divisions.map((division) => division.id));
+    chosen = Array.from(new Set(divisionIds));
+    if (chosen.some((id) => !valid.has(id))) {
+      throw new LeagueDomainError("INVALID_INPUT", "That division is not part of this contest");
+    }
+  }
+  await tx.delete(eventDivisionEntries).where(eq(eventDivisionEntries.membershipId, membershipId));
+  await tx
+    .insert(eventDivisionEntries)
+    .values(chosen.map((divisionId) => ({ eventId, divisionId, membershipId })));
+}
+
+/** Panel score for one run: Article 9 trimmed mean, legacy plain mean. */
+function runPanelScore(format: ContestFormat, totals: readonly number[]): number | null {
+  if (totals.length === 0) return null;
+  if (format === "open") {
+    return Math.round((totals.reduce((acc, value) => acc + value, 0) / totals.length) * 100) / 100;
+  }
+  return panelScore(totals);
+}
+
+function divisionDisplay(division: Pick<DivisionRow, "disciplineSlug" | "format">): string {
+  return isRatingDiscipline(division.disciplineSlug)
+    ? divisionLabel(division.disciplineSlug, division.format)
+    : `${division.disciplineSlug} · ${division.format}`;
+}
 
 export interface CreateLeagueEventOptions {
   idempotencyKey?: string;
@@ -540,6 +750,10 @@ export async function createLeagueEvent(
         createdAt: now,
         paymentDueAt: addDays(now, 3),
         paymentDeadlineAt: addDays(now, 6),
+        submissionMode: input.submissionMode ?? "live",
+        submissionDeadlineAt: input.submissionDeadlineAt
+          ? assertVideoDeadline(new Date(input.submissionDeadlineAt), startAt)
+          : null,
       };
       await tx.insert(sportEvents).values(insertValues);
 
@@ -569,19 +783,11 @@ export async function createLeagueEvent(
         });
       }
 
-      const criteriaRows: NewEventScoringCriterionRow[] =
-        buildDefaultCriteria().map((criterion, index) => ({
-          eventId: id,
-          key: criterion.key,
-          label: criterion.label,
-          weight: String(criterion.weight),
-          maxScore: String(criterion.maxScore),
-          sortOrder: index,
-        }));
-      await tx.insert(eventScoringCriteria).values(criteriaRows);
-
       const disciplineSlugs = Array.from(
-        new Set(input.sports.map((title) => title.toLowerCase())),
+        new Set([
+          ...input.sports.map((title) => title.toLowerCase()),
+          ...(input.divisions ?? []).map((division) => division.discipline),
+        ]),
       );
       await tx
         .insert(eventDisciplines)
@@ -591,6 +797,12 @@ export async function createLeagueEvent(
             disciplineSlug,
           })),
         );
+      await insertContestDivisions(
+        tx,
+        id,
+        input.divisions,
+        input.sports.map((title) => title.toLowerCase()),
+      );
 
       await recordEventSignal(tx, {
         eventId: id,
@@ -652,9 +864,28 @@ export interface LeagueEventState {
     longitude: number | null;
     version: number;
     startAt: string;
+    submissionMode: "live" | "video";
+    submissionDeadlineAt: string | null;
+    resultsPublished: boolean;
   };
   myRole: EventRole | null;
   counts: { riders: number; judges: number; organizers: number };
+  divisions: {
+    id: string;
+    disciplineSlug: string;
+    format: ContestFormat;
+    label: string;
+    runSeconds: number | null;
+    hasBestTrick: boolean;
+    sortOrder: number;
+  }[];
+  /** The viewer's rider entry (riders only). */
+  myEntry: {
+    divisionIds: string[];
+    ageCategory: "junior" | "senior" | null;
+    gender: string | null;
+    city: string | null;
+  } | null;
   criteria: {
     key: string;
     label: string;
@@ -664,25 +895,44 @@ export interface LeagueEventState {
   }[];
   runs: {
     id: string;
+    divisionId: string;
     sequence: number;
     riderUserId: string;
     riderName: string;
+    riderAgeCategory: "junior" | "senior" | null;
+    riderCity: string | null;
     status: string;
     scheduledAt: string | null;
     windowStartedAt: string | null;
     windowEndsAt: string | null;
+    /** Visible to organizers, judges and the run's own rider. */
+    videoUrl: string | null;
+    bestTrickVideoUrl: string | null;
+    videoSubmittedAt: string | null;
+    /** Panel score so far (trimmed mean; legacy: plain mean). */
+    panelScore: number | null;
+    judgedCount: number;
+    /**
+     * Per-judge detail, projected by role: organizers see all, a judge sees
+     * only their own, riders see none until results are published.
+     */
     scores: {
       judgeUserId: string;
       judgeName: string;
       criteria: Record<string, number>;
       total: number;
+      bestTrick: { difficulty: number; execution: number } | null;
+      bestTrickTotal: number | null;
+      elements: string[];
     }[];
   }[];
   results: {
     userId: string;
+    divisionId: string;
     riderName: string;
     rank: number;
     totalScore: number;
+    bestTrickScore: number | null;
     pointsAwarded: number;
   }[];
   invites: {
@@ -810,18 +1060,49 @@ export async function getLeagueEventState(
       const runRows = await tx
         .select({
           id: eventRuns.id,
+          divisionId: eventRuns.divisionId,
           sequence: eventRuns.sequence,
           riderUserId: eventRuns.userId,
           riderName: profiles.displayName,
+          riderAgeCategory: eventMemberships.ageCategory,
+          riderCity: eventMemberships.riderCity,
           status: eventRuns.status,
           scheduledAt: eventRuns.scheduledAt,
           windowStartedAt: eventRuns.windowStartedAt,
           windowEndsAt: eventRuns.windowEndsAt,
+          videoUrl: eventRuns.videoUrl,
+          bestTrickVideoUrl: eventRuns.bestTrickVideoUrl,
+          videoSubmittedAt: eventRuns.videoSubmittedAt,
         })
         .from(eventRuns)
         .leftJoin(profiles, eq(profiles.id, eventRuns.userId))
+        .leftJoin(eventMemberships, eq(eventMemberships.id, eventRuns.membershipId))
         .where(eq(eventRuns.eventId, eventId))
         .orderBy(eventRuns.sequence);
+      const divisionRows = await loadDivisions(tx, eventId);
+      const divisionFormat = new Map(divisionRows.map((division) => [division.id, division.format] as const));
+      const entryRows =
+        myRole === "rider"
+          ? await tx
+              .select({
+                divisionId: eventDivisionEntries.divisionId,
+                ageCategory: eventMemberships.ageCategory,
+                gender: eventMemberships.gender,
+                city: eventMemberships.riderCity,
+              })
+              .from(eventMemberships)
+              .leftJoin(
+                eventDivisionEntries,
+                eq(eventDivisionEntries.membershipId, eventMemberships.id),
+              )
+              .where(
+                and(
+                  eq(eventMemberships.eventId, eventId),
+                  eq(eventMemberships.userId, userId),
+                  eq(eventMemberships.status, "active"),
+                ),
+              )
+          : [];
       const scoreRows = await tx
         .select({
           runId: eventScores.runId,
@@ -829,19 +1110,14 @@ export async function getLeagueEventState(
           judgeName: profiles.displayName,
           criteria: eventScores.scores,
           total: eventScores.total,
+          bestTrick: eventScores.bestTrick,
+          bestTrickTotal: eventScores.bestTrickTotal,
+          elements: eventScores.elements,
         })
         .from(eventScores)
         .leftJoin(profiles, eq(profiles.id, eventScores.judgeUserId))
         .where(eq(eventScores.eventId, eventId));
-      const scoresByRun = new Map<
-        string,
-        {
-          judgeUserId: string;
-          judgeName: string;
-          criteria: Record<string, number>;
-          total: number;
-        }[]
-      >();
+      const scoresByRun = new Map<string, LeagueEventState["runs"][number]["scores"]>();
       for (const score of scoreRows) {
         const list = scoresByRun.get(score.runId) ?? [];
         list.push({
@@ -850,23 +1126,37 @@ export async function getLeagueEventState(
             score.judgeName ?? `Judge ${score.judgeUserId.slice(0, 6)}`,
           criteria: score.criteria,
           total: Number(score.total),
+          bestTrick: score.bestTrick ?? null,
+          bestTrickTotal: score.bestTrickTotal === null ? null : Number(score.bestTrickTotal),
+          elements: score.elements,
         });
         scoresByRun.set(score.runId, list);
       }
+      const viewer = {
+        role: myRole,
+        userId,
+        asCurator: Boolean(options.asCurator),
+        resultsPublished: Boolean(event.resultsPublishedAt),
+      };
+      const visibleScores = (runId: string) =>
+        visibleJudgeScores(viewer, scoresByRun.get(runId) ?? []);
+      const seesVideo = (riderUserId: string) => canSeeRunVideo(viewer, riderUserId);
 
       const publishedResults = event.resultsPublishedAt
         ? await tx
             .select({
               userId: eventResults.userId,
+              divisionId: eventResults.divisionId,
               riderName: profiles.displayName,
               rank: eventResults.rank,
               totalScore: eventResults.totalScore,
+              bestTrickScore: eventResults.bestTrickScore,
               pointsAwarded: eventResults.pointsAwarded,
             })
             .from(eventResults)
             .leftJoin(profiles, eq(profiles.id, eventResults.userId))
             .where(eq(eventResults.eventId, eventId))
-            .orderBy(eventResults.rank)
+            .orderBy(eventResults.divisionId, eventResults.rank)
         : [];
       const inviteRows =
         myRole === "main_organizer" || myRole === "organizer"
@@ -908,9 +1198,27 @@ export async function getLeagueEventState(
           longitude: location?.lon ?? null,
           version: event.version,
           startAt: event.startAt.toISOString(),
+          submissionMode: event.submissionMode,
+          submissionDeadlineAt: event.submissionDeadlineAt?.toISOString() ?? null,
+          resultsPublished: Boolean(event.resultsPublishedAt),
         },
         myRole,
         counts,
+        divisions: divisionRows.map((division) => ({
+          ...division,
+          label: divisionDisplay(division),
+        })),
+        myEntry:
+          myRole === "rider" && entryRows[0]
+            ? {
+                divisionIds: entryRows
+                  .map((entry) => entry.divisionId)
+                  .filter((id): id is string => Boolean(id)),
+                ageCategory: entryRows[0].ageCategory ?? null,
+                gender: entryRows[0].gender ?? null,
+                city: entryRows[0].city ?? null,
+              }
+            : null,
         criteria: criteriaRows.map((criterion) => ({
           key: criterion.key,
           label: criterion.label,
@@ -918,22 +1226,36 @@ export async function getLeagueEventState(
           maxScore: Number(criterion.maxScore),
           sortOrder: criterion.sortOrder,
         })),
-        runs: runRows.map((run) => ({
-          id: run.id,
-          sequence: run.sequence,
-          riderUserId: run.riderUserId,
-          riderName: run.riderName ?? `Rider ${run.riderUserId.slice(0, 6)}`,
-          status: run.status,
-          scheduledAt: run.scheduledAt?.toISOString() ?? null,
-          windowStartedAt: run.windowStartedAt?.toISOString() ?? null,
-          windowEndsAt: run.windowEndsAt?.toISOString() ?? null,
-          scores: scoresByRun.get(run.id) ?? [],
-        })),
+        runs: runRows.map((run) => {
+          const totals = (scoresByRun.get(run.id) ?? []).map((score) => score.total);
+          const video = seesVideo(run.riderUserId);
+          return {
+            id: run.id,
+            divisionId: run.divisionId,
+            sequence: run.sequence,
+            riderUserId: run.riderUserId,
+            riderName: run.riderName ?? `Rider ${run.riderUserId.slice(0, 6)}`,
+            riderAgeCategory: run.riderAgeCategory ?? null,
+            riderCity: run.riderCity ?? null,
+            status: run.status,
+            scheduledAt: run.scheduledAt?.toISOString() ?? null,
+            windowStartedAt: run.windowStartedAt?.toISOString() ?? null,
+            windowEndsAt: run.windowEndsAt?.toISOString() ?? null,
+            videoUrl: video ? run.videoUrl : null,
+            bestTrickVideoUrl: video ? run.bestTrickVideoUrl : null,
+            videoSubmittedAt: run.videoSubmittedAt?.toISOString() ?? null,
+            panelScore: runPanelScore(divisionFormat.get(run.divisionId) ?? "open", totals),
+            judgedCount: totals.length,
+            scores: visibleScores(run.id),
+          };
+        }),
         results: publishedResults.map((result) => ({
           userId: result.userId,
+          divisionId: result.divisionId,
           riderName: result.riderName ?? `Rider ${result.userId.slice(0, 6)}`,
           rank: result.rank,
           totalScore: Number(result.totalScore),
+          bestTrickScore: result.bestTrickScore === null ? null : Number(result.bestTrickScore),
           pointsAwarded: result.pointsAwarded,
         })),
         invites: inviteRows.map((invite) => ({
@@ -1145,6 +1467,32 @@ export async function updateLeagueEventConfig(
       if (patch.instagram !== undefined) setValues.instagram = patch.instagram;
       if (patch.youtube !== undefined) setValues.youtube = patch.youtube;
       if (patch.featured !== undefined) setValues.featured = patch.featured;
+      const nextMode = patch.submissionMode ?? locked.submissionMode;
+      if (patch.submissionMode !== undefined) setValues.submissionMode = patch.submissionMode;
+      if (patch.submissionDeadlineAt !== undefined) {
+        setValues.submissionDeadlineAt = patch.submissionDeadlineAt
+          ? assertVideoDeadline(new Date(patch.submissionDeadlineAt), nextStartAt)
+          : null;
+      }
+      const nextDeadline =
+        patch.submissionDeadlineAt === undefined
+          ? locked.submissionDeadlineAt
+          : setValues.submissionDeadlineAt ?? null;
+      if (nextMode === "video" && !nextDeadline) {
+        throw new LeagueDomainError("INVALID_INPUT", "Video contests need a submission deadline");
+      }
+      if (
+        (patch.submissionMode !== undefined || patch.divisions !== undefined) &&
+        !SETUP_STATUSES.has(locked.status)
+      ) {
+        throw new LeagueDomainError(
+          "INVALID_TRANSITION",
+          "Format and divisions can only change before runs are prepared",
+        );
+      }
+      if (patch.divisions !== undefined) {
+        await replaceContestDivisions(tx, locked.id, patch.divisions);
+      }
 
       const [updated] = await tx
         .update(sportEvents)
@@ -2064,7 +2412,7 @@ export interface JoinLeagueEventResult extends LeagueMutationResponse {
 export async function joinEventByCode(
   userId: string,
   code: string,
-  options: { idempotencyKey?: string } = {},
+  options: { idempotencyKey?: string; entry?: Partial<LeagueRiderEntry> } = {},
 ): Promise<JoinLeagueEventResult> {
   const { db } = getDbClient();
   return withDbWrite("league.joinByCode", () =>
@@ -2097,7 +2445,7 @@ export async function joinEventByCode(
           `Invite not found: ${code}`,
         );
       }
-      const fingerprint = await fingerprintFor({ userId, code });
+      const fingerprint = await fingerprintFor({ userId, code, entry: options.entry ?? null });
       if (options.idempotencyKey) {
         const replay = await findIdempotentResult(tx, {
           userId,
@@ -2147,8 +2495,21 @@ export async function joinEventByCode(
         status: "active",
         joinedViaInviteId: invite.invite.id,
         addedBy: userId,
+        ...(inviteRole === "rider"
+          ? {
+              ageCategory: options.entry?.ageCategory ?? null,
+              gender: options.entry?.gender ?? null,
+              riderCity: options.entry?.city ?? null,
+            }
+          : {}),
       };
-      await tx.insert(eventMemberships).values(membershipValues);
+      const [insertedMembership] = await tx
+        .insert(eventMemberships)
+        .values(membershipValues)
+        .returning({ id: eventMemberships.id });
+      if (inviteRole === "rider" && insertedMembership) {
+        await writeRiderEntries(tx, locked.id, insertedMembership.id, options.entry?.divisionIds);
+      }
       await tx
         .update(eventInvites)
         .set({ useCount: invite.invite.useCount + 1 })
@@ -2830,18 +3191,42 @@ export async function generateEventSchedule(
       const userIdByMembership = new Map(
         riderUserIds.map((row) => [row.id, row.userId] as const),
       );
+      // One run per rider per entered division: division order, then join
+      // order. Riders without an entry (pre-0007 joins) ride the first one.
+      const divisions = await loadDivisions(tx, locked.id);
+      const entries = await tx
+        .select({
+          membershipId: eventDivisionEntries.membershipId,
+          divisionId: eventDivisionEntries.divisionId,
+        })
+        .from(eventDivisionEntries)
+        .where(eq(eventDivisionEntries.eventId, locked.id));
+      const entered = new Set(entries.map((entry) => `${entry.divisionId}:${entry.membershipId}`));
+      const enteredAny = new Set(entries.map((entry) => entry.membershipId));
+      const slots: { membershipId: string; divisionId: string }[] = [];
+      divisions.forEach((division, divisionIndex) => {
+        for (const rider of riderUserIds) {
+          const inDivision =
+            entered.has(`${division.id}:${rider.id}`) ||
+            (divisionIndex === 0 && !enteredAny.has(rider.id));
+          if (inDivision) slots.push({ membershipId: rider.id, divisionId: division.id });
+        }
+      });
       const planned = buildSchedule({
-        riderMembershipIds: riderUserIds.map((row) => row.id),
+        riderMembershipIds: slots.map((slot) => slot.membershipId),
         startAt: locked.startAt,
         slotMinutes: input.slotMinutes,
       });
-      const runRows: NewEventRunRow[] = planned.map((slot) => ({
+      const video = locked.submissionMode === "video";
+      const runRows: NewEventRunRow[] = planned.map((slot, index) => ({
         eventId: locked.id,
         membershipId: slot.membershipId,
+        divisionId: slots[index]!.divisionId,
         userId: userIdByMembership.get(slot.membershipId) ?? "",
         stage: "final",
         sequence: slot.sequence,
-        scheduledAt: slot.scheduledAt,
+        // Video runs have no slot: riders submit until the deadline.
+        scheduledAt: video ? null : slot.scheduledAt,
       }));
       await tx.insert(eventRuns).values(runRows);
 
@@ -3081,6 +3466,17 @@ export async function completeEvent(
       const gate = await gateFor(tx, locked, locked.id);
       assertEventWritable(gate);
       assertTransition(locked.status as EventStatus, "completed");
+      if (
+        locked.submissionMode === "video" &&
+        locked.submissionDeadlineAt &&
+        locked.submissionDeadlineAt.getTime() <= Date.now()
+      ) {
+        // Past the deadline, runs that never got a video are skipped.
+        await tx
+          .update(eventRuns)
+          .set({ status: "skipped", updatedAt: new Date() })
+          .where(and(eq(eventRuns.eventId, locked.id), eq(eventRuns.status, "scheduled")));
+      }
       const unfinished = await tx
         .select({ count: sql<number>`count(*)::int` })
         .from(eventRuns)
@@ -3093,7 +3489,9 @@ export async function completeEvent(
       if (Number(unfinished[0]?.count ?? 0) > 0) {
         throw new LeagueDomainError(
           "INVALID_TRANSITION",
-          "Every run must be scored or skipped before completing",
+          locked.submissionMode === "video"
+            ? "Every submitted video needs a score, and missing videos are skipped once the deadline passes"
+            : "Every run must be scored or skipped before completing",
         );
       }
       const fingerprint = await fingerprintFor({ userId, ...input });
@@ -3233,6 +3631,7 @@ export async function publishEventResults(
           id: eventRuns.id,
           membershipId: eventRuns.membershipId,
           userId: eventRuns.userId,
+          divisionId: eventRuns.divisionId,
           sequence: eventRuns.sequence,
           status: eventRuns.status,
         })
@@ -3245,38 +3644,20 @@ export async function publishEventResults(
         )
         .orderBy(eventRuns.sequence);
       const scoreRows = await tx
-        .select({ runId: eventScores.runId, total: eventScores.total })
+        .select({
+          runId: eventScores.runId,
+          total: eventScores.total,
+          scores: eventScores.scores,
+          bestTrickTotal: eventScores.bestTrickTotal,
+        })
         .from(eventScores)
         .where(eq(eventScores.eventId, locked.id));
-      const totalsByRun = new Map<string, number[]>();
-      for (const row of scoreRows) {
-        const list = totalsByRun.get(row.runId) ?? [];
-        list.push(Number(row.total));
-        totalsByRun.set(row.runId, list);
-      }
-      const rankable = runRows
-        .filter((row) => (totalsByRun.get(row.id) ?? []).length > 0)
-        .map((row) => {
-          const judgeTotals = totalsByRun.get(row.id) ?? [];
-          return {
-            runId: row.id,
-            userId: row.userId,
-            sequence: row.sequence,
-            total: runTotal(judgeTotals),
-            bestJudgeTotal: Math.max(...judgeTotals),
-          };
-        });
-      if (rankable.length === 0) {
+      const divisions = await loadDivisions(tx, locked.id);
+      const ranked = rankContestDivisions(divisions, runRows, scoreRows);
+      if (ranked.length === 0) {
         throw new LeagueDomainError("NOT_SCORED", "No scored runs to rank");
       }
-      const ranked = rankRuns(
-        rankable.map(({ runId, total, bestJudgeTotal, sequence }) => ({
-          runId,
-          total,
-          bestJudgeTotal,
-          sequence,
-        })),
-      );
+      const divisionById = new Map(divisions.map((division) => [division.id, division] as const));
 
       const now = new Date();
       const resultRows: NewEventResultRow[] = [];
@@ -3286,38 +3667,45 @@ export async function publishEventResults(
         eventType: "event_attended" | "event_rank_bonus";
         points: number;
         rank: number | null;
+        divisionId: string | null;
+        disciplineSlug: string | null;
+        format: string | null;
       }[] = [];
-      // Every run rider attended the event (scored or skipped): attendance.
-      for (const run of runRows) {
+      // Attendance once per contest for every rider with a scored or skipped run.
+      for (const attendeeId of new Set(runRows.map((run) => run.userId))) {
         ledgerRows.push({
-          userId: run.userId,
-          eventKey: ledgerEventKey(locked.id, run.userId, "attended"),
+          userId: attendeeId,
+          eventKey: ledgerEventKey(locked.id, attendeeId, "attended"),
           eventType: "event_attended",
           points: ATTENDANCE_POINTS,
           rank: null,
+          divisionId: null,
+          disciplineSlug: null,
+          format: null,
         });
       }
-      // Scored runs get ranked results + the rank-bonus ledger row.
-      const userIdByRunId = new Map(
-        rankable.map((run) => [run.runId, run.userId] as const),
-      );
+      // Each division ranks on its own: a result + rank bonus per division.
       for (const entry of ranked) {
-        const runUserId = userIdByRunId.get(entry.runId);
-        if (!runUserId) continue;
+        const division = divisionById.get(entry.divisionId);
         resultRows.push({
           eventId: locked.id,
-          userId: runUserId,
+          divisionId: entry.divisionId,
+          userId: entry.userId,
           runId: entry.runId,
-          totalScore: String(entry.total),
+          totalScore: String(entry.score),
+          bestTrickScore: entry.bestTrickScore === null ? null : String(entry.bestTrickScore),
           rank: entry.rank,
           pointsAwarded: pointsForRank(entry.rank),
         });
         ledgerRows.push({
-          userId: runUserId,
-          eventKey: ledgerEventKey(locked.id, runUserId, "rank"),
+          userId: entry.userId,
+          eventKey: ledgerDivisionRankKey(locked.id, entry.divisionId, entry.userId),
           eventType: "event_rank_bonus",
           points: pointsForRank(entry.rank) - ATTENDANCE_POINTS,
           rank: entry.rank,
+          divisionId: entry.divisionId,
+          disciplineSlug: division?.disciplineSlug ?? null,
+          format: division?.format ?? null,
         });
       }
       await tx.insert(eventResults).values(resultRows);
@@ -3331,6 +3719,10 @@ export async function publishEventResults(
             eventType: row.eventType,
             points: row.points,
             rank: row.rank,
+            divisionId: row.divisionId,
+            disciplineSlug: row.disciplineSlug,
+            format: row.format,
+            countryCode: locked.countryCode,
           })),
         )
         .onConflictDoNothing({ target: eventPointsLedger.eventKey });
@@ -3350,11 +3742,12 @@ export async function publishEventResults(
         if (row.eventType === "event_attended") current.attended += 1;
         stats.set(row.userId, current);
       }
-      const winnerUserId = ranked.find((entry) => entry.rank === 1)
-        ? userIdByRunId.get(ranked.find((entry) => entry.rank === 1)!.runId)
-        : undefined;
+      // A contest counts once as won when the rider wins any division.
+      const winnerUserIds = new Set(
+        ranked.filter((entry) => entry.rank === 1).map((entry) => entry.userId),
+      );
       for (const [statUserId, value] of stats) {
-        const won = statUserId === winnerUserId ? 1 : 0;
+        const won = winnerUserIds.has(statUserId) ? 1 : 0;
         await tx
           .insert(riderStats)
           .values({
@@ -3396,9 +3789,8 @@ export async function publishEventResults(
       await createNotifications(
         tx,
         ranked.map((entry) => {
-          const runUserId = userIdByRunId.get(entry.runId) ?? "";
           return {
-            userId: runUserId,
+            userId: entry.userId,
             type: "league_results_published" as NotificationType,
             payload: {
               eventId: locked.id,
@@ -3432,6 +3824,7 @@ export async function publishEventResults(
       queueTagRevalidate("ranking:global", LIST_CACHE_LIFE);
       for (const statUserId of stats.keys()) {
         queueTagRevalidate(`ranking:user:${statUserId}`, LIST_CACHE_LIFE);
+        revalidateProfileTagsFor(statUserId);
       }
       log.info("league.results_published", {
         eventId: locked.id,
@@ -3584,6 +3977,8 @@ export async function submitRunScore(
   input: LifecycleMutationInput & {
     runId: string;
     scores: Record<string, number>;
+    elements?: string[];
+    bestTrick?: { difficulty: number; execution: number };
   },
 ): Promise<LeagueMutationResponse> {
   const { db } = getDbClient();
@@ -3629,23 +4024,60 @@ export async function submitRunScore(
           `Run not found: ${input.runId}`,
         );
       }
-      if (run.status !== "judging") {
-        throw new LeagueDomainError(
-          "RUN_WINDOW_CLOSED",
-          "This run is not in an active judging window",
-        );
+      if (locked.submissionMode === "video") {
+        // Video runs have no window: judges score any submitted run while
+        // the contest is live (revisions allowed until it completes).
+        if ((run.status !== "submitted" && run.status !== "scored") || !run.videoUrl) {
+          throw new LeagueDomainError(
+            "RUN_WINDOW_CLOSED",
+            "This run has no video to judge yet",
+          );
+        }
+      } else {
+        if (run.status !== "judging") {
+          throw new LeagueDomainError(
+            "RUN_WINDOW_CLOSED",
+            "This run is not in an active judging window",
+          );
+        }
+        if (
+          run.windowEndsAt === null ||
+          run.windowEndsAt.getTime() < Date.now()
+        ) {
+          throw new LeagueDomainError(
+            "RUN_WINDOW_CLOSED",
+            "The judging window has closed",
+          );
+        }
       }
-      if (
-        run.windowEndsAt === null ||
-        run.windowEndsAt.getTime() < Date.now()
-      ) {
-        throw new LeagueDomainError(
-          "RUN_WINDOW_CLOSED",
-          "The judging window has closed",
+      const division = (await loadDivisions(tx, locked.id)).find(
+        (row) => row.id === run.divisionId,
+      );
+      let total: number;
+      let bestTrick: { difficulty: number; execution: number } | null = null;
+      let trickTotal: number | null = null;
+      let elements: string[] = [];
+      if (!division || division.format === "open" || !isRatingDiscipline(division.disciplineSlug)) {
+        const criteria = await loadCriteria(tx, locked.id);
+        total = judgeTotal(input.scores, criteria);
+      } else {
+        total = judgeRunTotal(input.scores);
+        elements = assertElementTicks(
+          input.elements ?? [],
+          elementIdsFor(division.disciplineSlug, division.format),
         );
+        if (division.hasBestTrick) {
+          if (!input.bestTrick) {
+            throw new LeagueDomainError(
+              "SCORE_INVALID",
+              "Score the best trick too: difficulty and execution",
+            );
+          }
+          trickTotal = bestTrickTotal(input.bestTrick);
+          bestTrick = input.bestTrick;
+        }
       }
-      const criteria = await loadCriteria(tx, locked.id);
-      const total = judgeTotal(input.scores, criteria);
+      const scoredAt = new Date();
       await tx
         .insert(eventScores)
         .values({
@@ -3654,18 +4086,27 @@ export async function submitRunScore(
           judgeUserId: userId,
           scores: input.scores,
           total: String(total),
+          bestTrick,
+          bestTrickTotal: trickTotal === null ? null : String(trickTotal),
+          elements,
         })
         .onConflictDoUpdate({
           target: [eventScores.runId, eventScores.judgeUserId],
           set: {
             scores: input.scores,
             total: String(total),
-            updatedAt: new Date(),
+            bestTrick,
+            bestTrickTotal: trickTotal === null ? null : String(trickTotal),
+            elements,
+            updatedAt: scoredAt,
           },
         });
       await tx
         .update(eventRuns)
-        .set({ updatedAt: new Date() })
+        .set({
+          updatedAt: scoredAt,
+          ...(locked.submissionMode === "video" ? { status: "scored" as const } : {}),
+        })
         .where(eq(eventRuns.id, run.id));
 
       const response = await bumpEventVersion(tx, locked.id, userId);
@@ -3684,6 +4125,160 @@ export async function submitRunScore(
         signalType: "score_submitted",
       });
       queueEventTags(locked.id);
+      return response;
+    }),
+  );
+}
+
+// ---------- rider entries & video submissions (0007) ----------
+
+export async function updateMyEntry(
+  userId: string,
+  input: LifecycleMutationInput & { entry: LeagueRiderEntry },
+): Promise<LeagueMutationResponse> {
+  const { db } = getDbClient();
+  return withDbWrite("league.updateEntry", () =>
+    db.transaction(async (tx): Promise<LeagueMutationResponse> => {
+      const locked = await lockEvent(tx, input.eventId);
+      if (locked.version !== input.expectedVersion) {
+        throw new LeagueDomainError("STALE_VERSION", "The event changed since you loaded it");
+      }
+      const role = await loadMembership(tx, locked.id, userId);
+      if (role !== "rider") {
+        throw new LeagueDomainError("NOT_AUTHORIZED", "Only riders have an entry");
+      }
+      if (locked.status !== "draft" && locked.status !== "registration_open") {
+        throw new LeagueDomainError(
+          "INVALID_TRANSITION",
+          "Entries can only change while registration is open",
+        );
+      }
+      const fingerprint = await fingerprintFor({ userId, ...input });
+      const replay = await findIdempotentResult(tx, {
+        userId,
+        action: UPDATE_ENTRY_ACTION,
+        idempotencyKey: input.idempotencyKey,
+        fingerprint,
+      });
+      if (replay) return replay;
+      const [membership] = await tx
+        .select({ id: eventMemberships.id })
+        .from(eventMemberships)
+        .where(
+          and(
+            eq(eventMemberships.eventId, locked.id),
+            eq(eventMemberships.userId, userId),
+            eq(eventMemberships.status, "active"),
+          ),
+        )
+        .limit(1);
+      if (!membership) {
+        throw new LeagueDomainError("NOT_AUTHORIZED", "You are not in this contest");
+      }
+      await writeRiderEntries(tx, locked.id, membership.id, input.entry.divisionIds);
+      await tx
+        .update(eventMemberships)
+        .set({
+          ageCategory: input.entry.ageCategory,
+          gender: input.entry.gender ?? null,
+          riderCity: input.entry.city ?? null,
+        })
+        .where(eq(eventMemberships.id, membership.id));
+      const response = await bumpEventVersion(tx, locked.id, userId);
+      await recordActionRequest(tx, {
+        eventId: locked.id,
+        userId,
+        action: UPDATE_ENTRY_ACTION,
+        idempotencyKey: input.idempotencyKey,
+        fingerprint,
+        resultingVersion: response.version,
+        response,
+      });
+      await recordEventSignal(tx, {
+        eventId: locked.id,
+        version: response.version,
+        signalType: "registration_changed",
+      });
+      queueEventTags(locked.id);
+      return response;
+    }),
+  );
+}
+
+export async function submitRunVideo(
+  userId: string,
+  input: LifecycleMutationInput & {
+    runId: string;
+    videoUrl: string;
+    bestTrickVideoUrl?: string;
+  },
+): Promise<LeagueMutationResponse> {
+  const { db } = getDbClient();
+  return withDbWrite("league.submitVideo", () =>
+    db.transaction(async (tx): Promise<LeagueMutationResponse> => {
+      const locked = await lockEvent(tx, input.eventId);
+      if (locked.version !== input.expectedVersion) {
+        throw new LeagueDomainError("STALE_VERSION", "The event changed since you loaded it");
+      }
+      const gate = await gateFor(tx, locked, locked.id);
+      assertEventWritable(gate);
+      const fingerprint = await fingerprintFor({ userId, ...input });
+      const replay = await findIdempotentResult(tx, {
+        userId,
+        action: SUBMIT_VIDEO_ACTION,
+        idempotencyKey: input.idempotencyKey,
+        fingerprint,
+      });
+      if (replay) return replay;
+      const [run] = await tx
+        .select()
+        .from(eventRuns)
+        .where(and(eq(eventRuns.id, input.runId), eq(eventRuns.eventId, locked.id)))
+        .for("update")
+        .limit(1);
+      if (!run) {
+        throw new LeagueDomainError("INVALID_INPUT", `Run not found: ${input.runId}`);
+      }
+      assertVideoSubmissionOpen({
+        submissionMode: locked.submissionMode,
+        eventStatus: locked.status,
+        deadline: locked.submissionDeadlineAt,
+        now: new Date(),
+        runUserId: run.userId,
+        userId,
+        runStatus: run.status,
+      });
+      const division = (await loadDivisions(tx, locked.id)).find((row) => row.id === run.divisionId);
+      const videoUrl = normalizeVideoUrl(input.videoUrl);
+      let bestTrickVideoUrl: string | null = null;
+      if (division?.hasBestTrick) {
+        if (!input.bestTrickVideoUrl) {
+          throw new LeagueDomainError("INVALID_INPUT", "Add your best trick video too");
+        }
+        bestTrickVideoUrl = normalizeVideoUrl(input.bestTrickVideoUrl);
+      }
+      const now = new Date();
+      await tx
+        .update(eventRuns)
+        .set({ videoUrl, bestTrickVideoUrl, videoSubmittedAt: now, status: "submitted", updatedAt: now })
+        .where(eq(eventRuns.id, run.id));
+      const response = await bumpEventVersion(tx, locked.id, userId);
+      await recordActionRequest(tx, {
+        eventId: locked.id,
+        userId,
+        action: SUBMIT_VIDEO_ACTION,
+        idempotencyKey: input.idempotencyKey,
+        fingerprint,
+        resultingVersion: response.version,
+        response,
+      });
+      await recordEventSignal(tx, {
+        eventId: locked.id,
+        version: response.version,
+        signalType: "event_state_changed",
+      });
+      queueEventTags(locked.id);
+      revalidateProfileTagsFor(userId);
       return response;
     }),
   );

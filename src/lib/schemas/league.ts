@@ -10,6 +10,7 @@ import {
   SportEventCategorySchema,
   TimezoneSchema,
 } from "./event";
+import { RATED_FORMATS, RATING_DISCIPLINES } from "@/lib/league/rating/formats";
 
 /**
  * Mutation response contract shared by every league action — mirrors
@@ -38,6 +39,47 @@ export const leagueMutationInputSchema = z.object({
 });
 
 export type LeagueMutationInput = z.infer<typeof leagueMutationInputSchema>;
+
+// ---------- divisions & submission mode (0007) ----------
+
+/** One division = discipline × format (src/lib/league/rating/formats.ts). */
+export const leagueDivisionInputSchema = z
+  .object({
+    discipline: z.enum(RATING_DISCIPLINES),
+    format: z.enum(RATED_FORMATS),
+  })
+  .strict();
+
+export type LeagueDivisionInput = z.infer<typeof leagueDivisionInputSchema>;
+
+export const leagueDivisionsSchema = z
+  .array(leagueDivisionInputSchema)
+  .min(1)
+  .max(12)
+  .superRefine((divisions, ctx) => {
+    const keys = divisions.map((division) => `${division.discipline}:${division.format}`);
+    if (new Set(keys).size !== keys.length) {
+      ctx.addIssue({ code: "custom", message: "Each division can be added only once" });
+    }
+  });
+
+export const leagueSubmissionModeSchema = z.enum(["live", "video"]);
+export type LeagueSubmissionMode = z.infer<typeof leagueSubmissionModeSchema>;
+
+export const leagueAgeCategorySchema = z.enum(["junior", "senior"]);
+export type LeagueAgeCategory = z.infer<typeof leagueAgeCategorySchema>;
+
+/** Rider entry info supplied when joining (and editable until registration closes). */
+export const leagueRiderEntrySchema = z
+  .object({
+    divisionIds: z.array(z.string().uuid()).min(1).max(12),
+    ageCategory: leagueAgeCategorySchema,
+    gender: z.string().trim().min(1).max(40).optional(),
+    city: z.string().trim().min(1).max(80).optional(),
+  })
+  .strict();
+
+export type LeagueRiderEntry = z.infer<typeof leagueRiderEntrySchema>;
 
 // ---------- create ----------
 
@@ -75,6 +117,14 @@ export const leagueCreateEventInputSchema = z
     url: HttpUrlSchema.optional(),
     instagram: HttpUrlSchema.optional(),
     youtube: HttpUrlSchema.optional(),
+    /**
+     * Rated divisions (Article 9 formats). Omitted → one legacy `open`
+     * division per sport with the old 4-criteria scoring.
+     */
+    divisions: leagueDivisionsSchema.optional(),
+    submissionMode: leagueSubmissionModeSchema.optional(),
+    /** Required in video mode: riders submit links until this instant. */
+    submissionDeadlineAt: z.string().datetime({ offset: true }).optional(),
   })
   .strict()
   .superRefine((event, ctx) => {
@@ -83,6 +133,20 @@ export const leagueCreateEventInputSchema = z
         code: "custom",
         message: "latitude and longitude must both be set or both be omitted",
         path: ["latitude"],
+      });
+    }
+    if (event.submissionMode === "video" && !event.submissionDeadlineAt) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Video contests need a submission deadline",
+        path: ["submissionDeadlineAt"],
+      });
+    }
+    if (event.submissionMode === "video" && !event.divisions) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Video contests need at least one division",
+        path: ["divisions"],
       });
     }
   });
@@ -113,6 +177,10 @@ const leagueConfigPatchShape = {
     url: HttpUrlSchema.nullable().optional(),
     instagram: HttpUrlSchema.nullable().optional(),
     youtube: HttpUrlSchema.nullable().optional(),
+    /** Replaces the rated divisions; only before the contest goes live. */
+    divisions: leagueDivisionsSchema.optional(),
+    submissionMode: leagueSubmissionModeSchema.optional(),
+    submissionDeadlineAt: z.string().datetime({ offset: true }).nullable().optional(),
 };
 
 function refineCoordinatePair(
@@ -257,6 +325,8 @@ export type LeagueInviteInput = z.infer<typeof leagueInviteInputSchema>;
 export const leagueJoinInputSchema = z.object({
   code: z.string().min(6).max(32),
   idempotencyKey: z.string().uuid().optional(),
+  /** Riders: divisions and category. Optional for single-division contests. */
+  entry: leagueRiderEntrySchema.partial({ divisionIds: true }).optional(),
 });
 
 export type LeagueJoinInput = z.infer<typeof leagueJoinInputSchema>;
@@ -298,8 +368,29 @@ export const leagueRunWindowInputSchema = leagueMutationInputSchema.extend({
 export type LeagueRunWindowInput = z.infer<typeof leagueRunWindowInputSchema>;
 
 export const leagueScoreInputSchema = leagueMutationInputSchema.extend({
+  /** Rated divisions: the 5 criteria, 0–10 in 0.5 steps (engine validates). */
   scores: z.record(z.string().min(1), z.number().finite().min(0).max(100)),
+  /** Required-element ids the judge saw (checklist only). */
+  elements: z.array(z.string().min(1).max(40)).max(20).default([]),
+  /** Street best trick, 0–10 each in 0.5 steps. */
+  bestTrick: z
+    .object({ difficulty: z.number().finite(), execution: z.number().finite() })
+    .strict()
+    .optional(),
 });
+
+export const leagueEntryUpdateInputSchema = leagueMutationInputSchema.extend({
+  entry: leagueRiderEntrySchema,
+});
+
+export type LeagueEntryUpdateInput = z.infer<typeof leagueEntryUpdateInputSchema>;
+
+export const leagueRunVideoInputSchema = leagueMutationInputSchema.extend({
+  videoUrl: z.string().min(1).max(500),
+  bestTrickVideoUrl: z.string().min(1).max(500).optional(),
+});
+
+export type LeagueRunVideoInput = z.infer<typeof leagueRunVideoInputSchema>;
 
 export type LeagueScoreInput = z.infer<typeof leagueScoreInputSchema>;
 
@@ -377,3 +468,15 @@ export type LeagueAccountPlanAction = z.infer<
 // ---------- misc ----------
 
 export { EventLifecycleStatusSchema, EventVisibilitySchema };
+
+// ---------- League ranking ----------
+
+export const leagueRankingQuerySchema = z
+  .object({
+    discipline: z.enum(RATING_DISCIPLINES).optional(),
+    format: z.enum(RATED_FORMATS).optional(),
+    country: z.string().regex(/^[A-Z]{2}$/).optional(),
+  })
+  .strict();
+
+export type LeagueRankingQuery = z.infer<typeof leagueRankingQuerySchema>;
