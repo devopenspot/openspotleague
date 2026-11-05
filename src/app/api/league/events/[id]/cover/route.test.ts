@@ -118,12 +118,16 @@ describe("POST cover", () => {
     )
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ id: "e1", version: 4 })
-    expect(mocks.setContestCover).toHaveBeenCalledWith(USER.id, {
-      eventId: "e1",
-      expectedVersion: 3,
-      idempotencyKey: KEY,
-      imageUrl: "events/e1/new.webp",
-    })
+    expect(mocks.setContestCover).toHaveBeenCalledWith(
+      USER.id,
+      {
+        eventId: "e1",
+        expectedVersion: 3,
+        idempotencyKey: KEY,
+        imageUrl: "events/e1/new.webp",
+      },
+      undefined,
+    )
     expect(mocks.deleteEventImage).toHaveBeenCalledWith("events/e1/old.webp")
   })
 
@@ -186,6 +190,7 @@ describe("DELETE cover", () => {
     expect(mocks.setContestCover).toHaveBeenCalledWith(
       USER.id,
       expect.objectContaining({ imageUrl: null, expectedVersion: 4 }),
+      undefined,
     )
     expect(mocks.deleteEventImage).toHaveBeenCalledWith("events/e1/old.webp")
   })

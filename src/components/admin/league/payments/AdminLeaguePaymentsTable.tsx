@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { BadgeDollarSign, Check, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { money } from "@/lib/league/ui-state";
-import { buildContestDetailUrl } from "@/lib/league/urls";
 
 interface PaymentQueueItem {
   id: string;
@@ -180,7 +179,7 @@ export function AdminLeaguePaymentsTable() {
             >
               <div className="min-w-0">
                 <Link
-                  href={buildContestDetailUrl(item.eventSlug)}
+                  href={`/admin/league/contests/${item.eventId}`}
                   className="font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface hover:underline"
                 >
                   {item.eventName}

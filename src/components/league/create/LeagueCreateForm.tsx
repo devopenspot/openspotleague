@@ -12,7 +12,7 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
-import { ArrowLeft, CalendarClock, Link2, MapPin, Trophy } from "lucide-react";
+import { ArrowLeft, CalendarClock, Eye, Link2, MapPin, Trophy } from "lucide-react";
 import type { CountrySelection } from "@/components/admin/spots/form/CountryAutocomplete";
 import { CountryAutocomplete } from "@/components/admin/spots/form/CountryAutocomplete";
 import { DateField } from "@/components/league/DateField";
@@ -64,8 +64,32 @@ function browserTimezone(): string {
   }
 }
 
-export function LeagueCreateForm({ organizerName }: { organizerName?: string }) {
+export interface CuratorPlanOption {
+  slug: string;
+  name: string;
+  maxRiders: number;
+}
+
+interface LeagueCreateFormProps {
+  organizerName?: string;
+  /**
+   * Curator mode (`/admin/league/contests/new`): pick a comped plan, the
+   * listing and featuring; posts to the curation API instead.
+   */
+  curator?: { plans: readonly CuratorPlanOption[] };
+}
+
+export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormProps) {
   const router = useRouter();
+  const [planSlug, setPlanSlug] = useState(
+    curator?.plans.find((plan) => plan.slug !== "free")?.slug ??
+      curator?.plans[0]?.slug ??
+      "free",
+  );
+  const [listPublicly, setListPublicly] = useState(false);
+  const [featured, setFeatured] = useState(false);
+  const canList = planSlug !== "free";
+  const backHref = curator ? "/admin/league/contests" : ROUTES.league;
   const [name, setName] = useState("");
   const [shortName, setShortName] = useState("");
   const [description, setDescription] = useState("");
@@ -164,21 +188,35 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
     }
     setBusy(true);
     try {
-      const response = await fetch("/api/league/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idempotencyKey: crypto.randomUUID(),
-          ...payload(),
-        }),
-      });
+      const response = curator
+        ? await fetch("/api/admin/league/contests", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              idempotencyKey: crypto.randomUUID(),
+              contest: payload(),
+              planSlug,
+              visibility: canList && listPublicly ? "public" : "unlisted",
+              featured: canList && listPublicly && featured,
+            }),
+          })
+        : await fetch("/api/league/events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              idempotencyKey: crypto.randomUUID(),
+              ...payload(),
+            }),
+          });
       const raw = await response.json().catch(() => null);
       if (!response.ok) {
         setSubmitError(raw?.message ?? raw?.error ?? "Contest could not be created.");
         return;
       }
       const data = raw as LeagueCreateEventResponse;
-      const manageUrl = buildContestManageUrl(data.slug);
+      const manageUrl = curator
+        ? `/admin/league/contests/${data.id}`
+        : buildContestManageUrl(data.slug);
       if (coverFile) {
         // The contest exists now; a failed cover upload must not block the
         // organizer — the console offers the upload again.
@@ -209,9 +247,9 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
       aria-labelledby="league-create-title"
       className="space-y-6"
     >
-      <Link href={ROUTES.league} className={controlClass("outline", "sm")}>
+      <Link href={backHref} className={controlClass("outline", "sm")}>
         <ArrowLeft size={14} aria-hidden="true" />
-        League
+        {curator ? "Contests" : "League"}
       </Link>
 
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -221,7 +259,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             id="league-create-title"
             className={`mt-1 ${PAGE_TITLE} text-on-surface`}
           >
-            Create a contest
+            {curator ? "New curated contest" : "Create a contest"}
           </h1>
           {organizerName ? (
             <p className={`mt-2 max-w-xl ${BODY}`}>
@@ -230,7 +268,11 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             </p>
           ) : null}
         </div>
-        <span className={tagClass("neutral")}>Free plan · up to 3 riders</span>
+        <span className={tagClass("neutral")}>
+          {curator
+            ? `Comped ${curator.plans.find((plan) => plan.slug === planSlug)?.name ?? planSlug} plan`
+            : "Free plan · up to 3 riders"}
+        </span>
       </header>
 
       <FormSection
@@ -407,6 +449,48 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
         </div>
       </FormSection>
 
+      {curator ? (
+        <FormSection
+          icon={Eye}
+          title="Plan & listing"
+          intro="Curated contests are comped. Public listing (directory, map, search) needs a paid plan."
+        >
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <SelectField
+              id="league-plan"
+              label="Plan"
+              value={planSlug}
+              onChange={setPlanSlug}
+              options={curator.plans.map((plan) => ({
+                value: plan.slug,
+                label: `${plan.name} · up to ${plan.maxRiders} riders`,
+              }))}
+              required
+            />
+            <div className="flex flex-col justify-end gap-3">
+              <label className="inline-flex items-center gap-2 text-sm text-on-surface">
+                <input
+                  type="checkbox"
+                  checked={canList && listPublicly}
+                  disabled={!canList}
+                  onChange={(event) => setListPublicly(event.target.checked)}
+                />
+                List publicly
+              </label>
+              <label className="inline-flex items-center gap-2 text-sm text-on-surface">
+                <input
+                  type="checkbox"
+                  checked={canList && listPublicly && featured}
+                  disabled={!canList || !listPublicly}
+                  onChange={(event) => setFeatured(event.target.checked)}
+                />
+                Feature on the League page
+              </label>
+            </div>
+          </div>
+        </FormSection>
+      ) : null}
+
       <FormSection
         icon={Link2}
         title="Links"
@@ -454,7 +538,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
       ) : null}
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Link href={ROUTES.league} className={controlClass("outline")}>
+        <Link href={backHref} className={controlClass("outline")}>
           Cancel
         </Link>
         <button

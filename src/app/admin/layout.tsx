@@ -6,7 +6,7 @@ import "./admin.css"
 
 export const metadata: Metadata = {
   title: "Admin",
-  description: "Manage skate spots and sport events.",
+  description: "Manage skate spots and league contests.",
   robots: { index: false, follow: false },
 }
 

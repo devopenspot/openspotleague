@@ -8,7 +8,6 @@ import {
   hasPermission,
   hasRole,
   hasSpotCuratorRole,
-  hasContestCuratorRole,
   hasTrickCuratorRole,
   hasTvCuratorRole,
 } from "@/lib/services/profile/authorization"
@@ -121,7 +120,7 @@ export async function getServerUserFromCookies(): Promise<User | null> {
     const curatedCountryCodes = [...authorization.countryScopes]
     const curatedDisciplineSlugs = [...authorization.disciplineScopes]
     const canCurateSpots = isAdministrator || hasSpotCuratorRole(authorization)
-    const canCurateContests = isAdministrator || hasContestCuratorRole(authorization)
+    const canCurateContests = isAdministrator || hasPermission(authorization, "league.curate")
     const canCurateTricks = isAdministrator || hasTrickCuratorRole(authorization)
     const canCurateTv = isAdministrator || hasTvCuratorRole(authorization)
     const canManageLeague = isAdministrator || hasPermission(authorization, "league.manage")

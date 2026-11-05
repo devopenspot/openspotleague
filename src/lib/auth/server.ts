@@ -9,6 +9,7 @@ import {
   AuthorizationError,
   type AuthorizationRequirement,
   getAuthorizationSnapshotCached,
+  hasPermission,
   hasRole,
   isScopedCurator,
   hasContestCuratorRole,
@@ -64,7 +65,7 @@ export function authorizationErrorResponse(error: unknown): NextResponse {
   return NextResponse.json({ error: "Service temporarily unavailable" }, { status: 503 })
 }
 
-const SAFE_NEXT_RE = /^\/(?:admin|map|profile|spots|events)(?:\/|$)|^\/$/
+const SAFE_NEXT_RE = /^\/(?:admin|map|profile|spots|events|league)(?:\/|$)|^\/$/
 
 export function sanitizeNext(value: unknown): string {
   if (typeof value !== "string" || value.length === 0) return DEFAULT_NEXT
@@ -266,7 +267,13 @@ export async function requireSpotCurationRoleOrRedirect(
 export async function requireContestCurationRoleOrRedirect(
   nextPath: string,
 ): Promise<User> {
-  return requireScopedRoleOrRedirect(nextPath, hasContestCuratorRole)
+  // Permission, not role: the legacy curator role has no league.curate.
+  return requireScopedRoleOrRedirect(
+    nextPath,
+    (snapshot) =>
+      hasRole(snapshot, "admin") ||
+      (hasContestCuratorRole(snapshot) && hasPermission(snapshot, "league.curate")),
+  )
 }
 
 export async function requireTrickCurationRoleOrRedirect(

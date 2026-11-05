@@ -7,6 +7,7 @@ import {
   FileVideo,
   Globe,
   MapPin,
+  Medal,
   Tags,
   Trophy,
   Users,
@@ -26,6 +27,7 @@ interface SidebarItem {
 const CURATION_ITEMS: readonly SidebarItem[] = [
   { href: "/admin/curation", label: "Overview", Icon: ClipboardList },
   { href: "/admin/spots", label: "Spots", Icon: MapPin },
+  { href: "/admin/league/contests", label: "Contests", Icon: Medal },
   { href: "/admin/taxonomy/tricks", label: "Tricks", Icon: Trophy },
   { href: "/admin/tv", label: "TV", Icon: FileVideo },
 ]
@@ -122,6 +124,7 @@ export function AdminSidebar() {
     if (user.isAdministrator) return true
     // Fallback: use explicit booleans if present
     if (item.href === "/admin/spots") return Boolean(user.canCurateSpots ?? true)
+    if (item.href === "/admin/league/contests") return Boolean(user.canCurateContests)
     if (item.href === "/admin/taxonomy/tricks") return Boolean(user.canCurateTricks ?? true)
     if (item.href === "/admin/tv") return Boolean((user as unknown as { canCurateTv?: boolean }).canCurateTv ?? true)
     return true // Overview visible to any curator
