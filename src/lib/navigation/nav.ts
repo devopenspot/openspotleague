@@ -38,22 +38,22 @@ export const NAV_ITEMS: readonly {
   group: NavGroup;
 }[] = [
   {
+    id: "events",
+    path: "/sport-events",
+    label: "League",
+    shortLabel: "League",
+    drawerLabel: "League",
+    Icon: Trophy,
+    placements: ["header", "bottom", "drawer"],
+    group: "discover",
+  },
+  {
     id: "tv",
     path: "/tv",
     label: "TV",
     shortLabel: "TV",
     drawerLabel: "TV",
     Icon: Tv,
-    placements: ["header", "bottom", "drawer"],
-    group: "discover",
-  },
-  {
-    id: "events",
-    path: "/sport-events",
-    label: "OS League",
-    shortLabel: "League",
-    drawerLabel: "OS League",
-    Icon: Trophy,
     placements: ["header", "bottom", "drawer"],
     group: "discover",
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Tv, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { NearbyCtaButton } from "@/components/shell/NearbyCtaButton";
 import { JoinWithCode } from "@/components/shell/JoinWithCode";
 import { ROUTES } from "@/lib/navigation/nav";
@@ -69,22 +69,11 @@ export function Hero() {
 
           {/* Action Pills Row */}
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-            <Link
-              href={ROUTES.events}
-              className={`${controlClass("onWash")} focus-visible:outline-white`}
-            >
-              <Trophy size={14} aria-hidden="true" />
-              League
-            </Link>
             <NearbyCtaButton />
-            <Link
-              href={ROUTES.tv}
-              className={`${controlClass("onWash")} focus-visible:outline-white`}
-            >
-              <Tv size={14} aria-hidden="true" />
-              TV
-            </Link>
-
+            <JoinWithCode
+              variant="landing"
+              className={`${controlClass("onWashDark")}`}
+            />
             <Link
               href={ROUTES.spotsNew}
               data-testid="create-spot-hero"
@@ -94,8 +83,6 @@ export function Hero() {
               <Plus size={14} aria-hidden="true" />
               Spot
             </Link>
-
-            <JoinWithCode variant="landing" />
           </div>
         </div>
       </div>

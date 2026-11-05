@@ -42,7 +42,7 @@ interface JoinWithCodeProps {
 }
 
 const VARIANT_TRIGGER_CLASSES: Record<JoinWithCodeVariant, string> = {
-  landing: `${controlClass("onWash")} focus-visible:outline-white`,
+  landing: `${controlClass("onWashDark")} focus-visible:outline-white`,
   games:
     "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,transform] hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px",
 };
