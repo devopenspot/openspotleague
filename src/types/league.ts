@@ -35,6 +35,7 @@ export type EventRole = "main_organizer" | "organizer" | "judge" | "rider";
 export type EventMembershipStatus = "active" | "removed" | "withdrawn";
 export type EventRunStatus =
   | "scheduled"
+  | "submitted"
   | "judging"
   | "scored"
   | "skipped"

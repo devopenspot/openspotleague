@@ -226,6 +226,10 @@ export const sportEvents = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
     cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
     resultsPublishedAt: timestamp("results_published_at", { withTimezone: true }),
+    // Live = in-person runs in organizer-opened windows; video = riders
+    // submit links until `submission_deadline_at` (0007, docs/league.md).
+    submissionMode: text("submission_mode").$type<"live" | "video">().notNull().default("live"),
+    submissionDeadlineAt: timestamp("submission_deadline_at", { withTimezone: true }),
     city: text("city").notNull(),
     citySlug: text("city_slug"),
     address: text("address"),
@@ -286,6 +290,11 @@ export const sportEvents = pgTable(
       sql`lower(${t.city}) gin_trgm_ops`,
     ),
     check("sport_events_visibility_check", sql`${t.visibility} in ('public','unlisted')`),
+    check("sport_events_submission_mode_check", sql`${t.submissionMode} in ('live','video')`),
+    check(
+      "sport_events_video_deadline_check",
+      sql`${t.submissionMode} = 'live' or ${t.submissionDeadlineAt} is not null`,
+    ),
     check(
       "sport_events_status_check",
       sql`${t.status} in ('draft','registration_open','registration_closed','scheduled','live','completed','cancelled')`,
@@ -1612,6 +1621,10 @@ export const eventMemberships = pgTable(
     joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
     removedAt: timestamp("removed_at", { withTimezone: true }),
     removedBy: uuid("removed_by").references(() => authUsers.id, { onDelete: "set null" }),
+    // Rider entry info (0007). Labels shown in standings, not ranking splits.
+    ageCategory: text("age_category").$type<"junior" | "senior">(),
+    gender: text("gender"),
+    riderCity: text("rider_city"),
   },
   (t) => [
     uniqueIndex("event_memberships_event_user_active_unique")
@@ -1627,6 +1640,63 @@ export const eventMemberships = pgTable(
       sql`${t.role} in ('main_organizer','organizer','judge','rider')`,
     ),
     check("event_memberships_status_check", sql`${t.status} in ('active','removed','withdrawn')`),
+    check(
+      "event_memberships_age_category_check",
+      sql`${t.ageCategory} is null or ${t.ageCategory} in ('junior','senior')`,
+    ),
+    check("event_memberships_gender_check", sql`${t.gender} is null or length(${t.gender}) between 1 and 40`),
+    check("event_memberships_rider_city_check", sql`${t.riderCity} is null or length(${t.riderCity}) between 1 and 80`),
+  ],
+);
+
+// ---------- League divisions (0007): discipline × format ----------
+
+export const eventDivisions = pgTable(
+  "event_divisions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references((): AnyPgColumn => sportEvents.id, { onDelete: "cascade" }),
+    disciplineSlug: text("discipline_slug")
+      .notNull()
+      .references(() => sportDisciplines.slug, { onDelete: "restrict" }),
+    // park | street | vert (src/lib/league/rating/formats.ts); `open` is the
+    // backfilled legacy format that keeps its stored criteria.
+    format: text("format").$type<"park" | "street" | "vert" | "open">().notNull(),
+    runSeconds: integer("run_seconds"),
+    hasBestTrick: boolean("has_best_trick").notNull().default(false),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("event_divisions_event_discipline_format_unique").on(t.eventId, t.disciplineSlug, t.format),
+    index("event_divisions_event_idx").on(t.eventId, t.sortOrder),
+    check("event_divisions_format_check", sql`${t.format} in ('park','street','vert','open')`),
+    check("event_divisions_run_seconds_check", sql`${t.runSeconds} is null or ${t.runSeconds} > 0`),
+    check("event_divisions_sort_order_check", sql`${t.sortOrder} >= 0`),
+  ],
+);
+
+export const eventDivisionEntries = pgTable(
+  "event_division_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    eventId: uuid("event_id")
+      .notNull()
+      .references((): AnyPgColumn => sportEvents.id, { onDelete: "cascade" }),
+    divisionId: uuid("division_id")
+      .notNull()
+      .references((): AnyPgColumn => eventDivisions.id, { onDelete: "cascade" }),
+    membershipId: uuid("membership_id")
+      .notNull()
+      .references((): AnyPgColumn => eventMemberships.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("event_division_entries_membership_division_unique").on(t.membershipId, t.divisionId),
+    index("event_division_entries_division_idx").on(t.divisionId),
+    index("event_division_entries_event_idx").on(t.eventId),
   ],
 );
 
@@ -1637,6 +1707,10 @@ export const eventScoringCriteria = pgTable(
     eventId: uuid("event_id")
       .notNull()
       .references((): AnyPgColumn => sportEvents.id, { onDelete: "cascade" }),
+    // Legacy `open` divisions only; rated divisions read RATING_CRITERIA.
+    divisionId: uuid("division_id").references((): AnyPgColumn => eventDivisions.id, {
+      onDelete: "cascade",
+    }),
     key: text("key").notNull(),
     label: text("label").notNull(),
     weight: numeric("weight", { precision: 6, scale: 3 }).notNull().default("1"),
@@ -1669,24 +1743,45 @@ export const eventRuns = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => authUsers.id, { onDelete: "cascade" }),
+    divisionId: uuid("division_id")
+      .notNull()
+      .references((): AnyPgColumn => eventDivisions.id, { onDelete: "cascade" }),
     stage: text("stage").notNull().default("final"),
     sequence: integer("sequence").notNull(),
     status: text("status").$type<EventRunStatus>().notNull().default("scheduled"),
     scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
     windowStartedAt: timestamp("window_started_at", { withTimezone: true }),
     windowEndsAt: timestamp("window_ends_at", { withTimezone: true }),
+    // Video contests (0007): links only, replaceable until the deadline.
+    videoUrl: text("video_url"),
+    bestTrickVideoUrl: text("best_trick_video_url"),
+    videoSubmittedAt: timestamp("video_submitted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    unique("event_runs_event_membership_stage_unique").on(t.eventId, t.membershipId, t.stage),
+    unique("event_runs_event_membership_division_stage_unique").on(
+      t.eventId,
+      t.membershipId,
+      t.divisionId,
+      t.stage,
+    ),
     unique("event_runs_event_stage_sequence_unique").on(t.eventId, t.stage, t.sequence),
     index("event_runs_event_status_idx").on(t.eventId, t.status),
+    index("event_runs_division_idx").on(t.divisionId),
     check("event_runs_stage_check", sql`length(${t.stage}) > 0`),
     check("event_runs_sequence_check", sql`${t.sequence} > 0`),
     check(
       "event_runs_status_check",
-      sql`${t.status} in ('scheduled','judging','scored','skipped','completed')`,
+      sql`${t.status} in ('scheduled','submitted','judging','scored','skipped','completed')`,
+    ),
+    check(
+      "event_runs_video_url_check",
+      sql`${t.videoUrl} is null or length(${t.videoUrl}) between 1 and 500`,
+    ),
+    check(
+      "event_runs_best_trick_video_url_check",
+      sql`${t.bestTrickVideoUrl} is null or length(${t.bestTrickVideoUrl}) between 1 and 500`,
     ),
     check(
       "event_runs_window_after_start_check",
@@ -1709,7 +1804,14 @@ export const eventScores = pgTable(
       .notNull()
       .references(() => authUsers.id, { onDelete: "cascade" }),
     scores: jsonb("scores").$type<Record<string, number>>().notNull(),
+    // Rated divisions: 0-100 (mean of 5 criteria × 10). Legacy `open`: the
+    // weighted 0-10 total of the stored criteria.
     total: numeric("total", { precision: 8, scale: 2 }).notNull(),
+    // Street only: { difficulty, execution } and its 0-100 total.
+    bestTrick: jsonb("best_trick").$type<{ difficulty: number; execution: number }>(),
+    bestTrickTotal: numeric("best_trick_total", { precision: 8, scale: 2 }),
+    // Required-element ids this judge saw (checklist; never changes the score).
+    elements: text("elements").array().notNull().default(sql`'{}'`),
     submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -1731,15 +1833,20 @@ export const eventResults = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => authUsers.id, { onDelete: "cascade" }),
+    divisionId: uuid("division_id")
+      .notNull()
+      .references((): AnyPgColumn => eventDivisions.id, { onDelete: "cascade" }),
     runId: uuid("run_id").references((): AnyPgColumn => eventRuns.id, { onDelete: "set null" }),
     totalScore: numeric("total_score", { precision: 8, scale: 2 }).notNull(),
+    bestTrickScore: numeric("best_trick_score", { precision: 8, scale: 2 }),
     rank: integer("rank").notNull(),
     pointsAwarded: integer("points_awarded").notNull(),
     publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    unique("event_results_event_user_unique").on(t.eventId, t.userId),
-    unique("event_results_event_rank_unique").on(t.eventId, t.rank),
+    unique("event_results_division_user_unique").on(t.divisionId, t.userId),
+    unique("event_results_division_rank_unique").on(t.divisionId, t.rank),
+    index("event_results_event_idx").on(t.eventId),
     index("event_results_user_published_idx").on(t.userId, t.publishedAt),
     check("event_results_total_check", sql`${t.totalScore} >= 0`),
     check("event_results_rank_check", sql`${t.rank} > 0`),
@@ -1761,10 +1868,19 @@ export const eventPointsLedger = pgTable(
     eventType: text("event_type").$type<"event_attended" | "event_rank_bonus">().notNull(),
     points: integer("points").notNull(),
     rank: integer("rank"),
+    // Ranking filter dimensions (0007). Null on attendance rows and on rows
+    // written before divisions existed (country is always set from 0007 on).
+    divisionId: uuid("division_id").references((): AnyPgColumn => eventDivisions.id, {
+      onDelete: "set null",
+    }),
+    disciplineSlug: text("discipline_slug"),
+    format: text("format"),
+    countryCode: text("country_code"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     unique("event_points_ledger_event_key_key").on(t.eventKey),
+    index("event_points_ledger_filters_idx").on(t.disciplineSlug, t.format, t.countryCode, t.userId),
     index("event_points_ledger_user_created_idx").on(t.userId, t.createdAt),
     index("event_points_ledger_event_idx").on(t.eventId),
     check("event_points_ledger_event_type_check", sql`${t.eventType} in ('event_attended','event_rank_bonus')`),

@@ -526,3 +526,33 @@ export function addMonths(date: Date, months: number): Date {
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
+
+// ---------- video contests (0007) ----------
+
+/** Video submissions may stay open at most this long after the start. */
+export const MAX_VIDEO_WINDOW_MONTHS = 2;
+
+/** The video deadline must fall after the start and within the window. */
+export function assertVideoDeadline(deadline: Date, startAt: Date): Date {
+  if (Number.isNaN(deadline.getTime()) || deadline.getTime() <= startAt.getTime()) {
+    throw new LeagueDomainError(
+      "INVALID_INPUT",
+      "The video deadline must be after the contest starts",
+    );
+  }
+  if (deadline.getTime() > addMonths(startAt, MAX_VIDEO_WINDOW_MONTHS).getTime()) {
+    throw new LeagueDomainError(
+      "INVALID_INPUT",
+      `The video deadline must be within ${MAX_VIDEO_WINDOW_MONTHS} months of the start`,
+    );
+  }
+  return deadline;
+}
+
+/** Statuses where divisions and the submission mode can still change. */
+export const SETUP_STATUSES: ReadonlySet<string> = new Set([
+  "draft",
+  "registration_open",
+  "registration_closed",
+]);
+

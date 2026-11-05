@@ -22,7 +22,7 @@ import { getSpotRepositoryAsync } from "@/lib/repositories"
 import type { Spot } from "@/lib/types"
 import { PROFILE_CACHE_LIFE } from "@/lib/cache/lifetimes"
 
-function profileTag(userId: string): string {
+export function profileTag(userId: string): string {
   return `profile:user:${userId}`
 }
 function profileGamesTag(userId: string): string {
