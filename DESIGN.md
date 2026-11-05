@@ -134,7 +134,7 @@ pages:
   tv:
     shell: "inverse-surface"
     overlay: "tv-overlay"
-    note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Shares the shell gutter (px-5 md:px-10). Row headings are the wire-rail heading (font-display uppercase tracking-eyebrow text-on-wire). Discipline pills are chipClass(active, 'wire'); CTAs are controlClass('onWire' | 'onWireOutline'); the search field is INPUT_ON_WIRE. Text uses on-wire and wire-muted only — no text-black or white/* literals. Video cards are rounded-inner with a full-radius tag. Panels use PANEL_ON_WIRE (tv-overlay). All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
+    note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Shares the shell gutter (px-5 md:px-10). Row headings are the wire-rail heading (font-display uppercase tracking-eyebrow text-on-wire). Discipline pills are chipClass(active, 'wire'); CTAs are controlClass('onWire' | 'onWireOutline'); the search field is INPUT_ON_WIRE. Text uses on-wire and wire-muted only — no text-black or white/* literals. Video cards are rounded-inner with the locked corner tab (components.tv-card) — never a full-radius tag. Panels use PANEL_ON_WIRE (tv-overlay). All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
   sport-events:
     shell: "gradient-events"
     hero: "on-surface"
@@ -201,10 +201,10 @@ shape:
     - "container (16px) — SpotCard, EventCard, CARD, panels, fieldsets, textareas, empty states, toasts, overlay panels, drawer footer cards"
     - "inner (14px) — rows/blocks nested inside a 16px container (CARD_NESTED), MarqueeCard and TV video cards, skeleton inner blocks. Never top-level."
     - "card (12px) — stat and glance tiles (TILE), alerts (alertClass), TV queue items"
-    - "sm (4px) — map pins, clusters and the event tier pill only"
+    - "sm (4px) — map pins, clusters, the event tier pill, and the locked TvMarqueeCard corner tab (rounded-tl-sm rounded-br-sm, see components.tv-card) only"
     - "chassis 20px / xl 24px — game PanelShell chassis only"
   literal-map: "rounded-[4px]→rounded-sm · rounded-[8px] on a tag→rounded-control · rounded-[12px]→rounded-card · rounded-[14px]→rounded-inner · rounded-[16px]→rounded-container · rounded-[9999px]→rounded-control — no new rounded-[*] literals"
-  exceptions: "Game sessions (/games/:id) keep 48px+ outdoor targets (LocationBlockedCallout size lg). Map pins stay 4px."
+  exceptions: "Game sessions (/games/:id) keep 48px+ outdoor targets (LocationBlockedCallout size lg). Map pins stay 4px. The 4px TvMarqueeCard corner tab (rounded-tl-sm rounded-br-sm, flush top-left) is a LOCKED exception to the full-radius tag rule — see components.tv-card."
 spacing:
   margin-mobile: 20px
   margin-desktop: 40px
@@ -244,7 +244,7 @@ components:
       onPhoto: "scrim pill: border-white/15 bg-on-surface/55 text-surface backdrop-blur-md"
     inputs: "INPUT matches the button: rounded-control, min-h-control, 1px outline-variant border, text-base sm:text-sm. INPUT_ON_WIRE for dark rails. TEXTAREA is a container (rounded-container)."
     chips: "chipClass(active, 'light'|'wire') — min-h-control-sm, text-xs bold tracking-label; active is solid primary (light) or on-wire (wire)"
-    tags: "tagClass(tone, size) — non-interactive full-radius labels, 10px bold tracking-label (size lg is 14px for /games/:id sessions): neutral, outline, solid, onWire, onPhoto"
+    tags: "tagClass(tone, size) — non-interactive full-radius labels, 10px bold tracking-label (size lg is 14px for /games/:id sessions): neutral, outline, solid, onWire, onPhoto (exception: the TV card corner tab is not a tagClass, see components.tv-card)"
     segments: "SEGMENTED_TRACK + segmentClass(active): a rounded-control track (p-1) with an inverted active pill — the light-surface twin of the nav pill track"
     rule: "Never place a primary-solid control on a dark panel (bg-on-surface) — use onWire there. cn does not merge classes: pick a tone, never override radius/height/colour at the call site."
   cards:
@@ -292,11 +292,21 @@ components:
       footer: "Light drawers: border-t border-outline-variant bg-surface-container-low px-5 py-5. MobileDrawer: border-t border-wire-border bg-primary, see components.nav.drawer."
       rule: "NavLink variants own their own styles — never restyle [data-nav-tab] from the drawer/header parent."
   scrim-pills:
-    note: "Pills floating over photography (MarqueeCard kind/meta/title, spot heroes). Blessed exception to monochrome: translucent dark pills on image."
+    note: "Pills floating over photography (MarqueeCard kind/meta/title, spot heroes). Blessed exception to monochrome: translucent dark pills on image. TV video cards (TvMarqueeCard) do NOT use scrim pills — they keep the locked solid corner tab (components.tv-card)."
     pill: "rounded-full border border-white/15 bg-on-surface/55 text-surface backdrop-blur-md, micro 9px bold uppercase 0.08em"
     spot-photos: "On the spot hero, controls are controlClass('onPhoto') (full, 44px, white focus outline) and labels are tagClass('onPhoto') or TypeBadges variant overlay size md — all full radius."
     wash: "bg-gradient-to-t from-on-surface/45 via-transparent to-transparent over the image bottom"
     rule: "Scrim pills live on photos only — never on flat surfaces (use badges there)."
+  tv-card:
+    component: "src/components/tv/marquee/TvMarqueeCard.tsx (TV rows, Continue watching, search grid)"
+    status: "LOCKED — owner decision (2026-11-04). Keep this exact style until the owner says otherwise. Do not restyle, tokenise or 'normalise' it in consistency passes; if a rule seems to conflict, flag it instead of changing the card."
+    frame: "button w-[240px] sm:w-[270px] (fluid: w-full), flex-col gap-2; thumb is aspect-video rounded-inner overflow-hidden bg-wire-border, active:scale-[0.99], focus-visible ring-2 ring-white ring-offset-2 ring-offset-wire, active card ring-2 ring-on-wire"
+    corner-tab: "absolute left-0 top-0 rounded-tl-sm rounded-br-sm inline-flex items-center bg-on-wire px-2 py-1 font-display text-[10px] font-bold uppercase leading-none tracking-label text-wire — flush to the thumb's top-left corner (no inset), 4px (radius-sm) on the top-left and bottom-right corners only. Content: 'New' or the discipline slug, truncate max-w-[14ch]."
+    wash: "absolute inset-0 bg-gradient-to-t from-on-surface/45 via-transparent to-transparent"
+    brand-mark: "TvBrandMark — 24px round mark, bottom-right (bottom-2 right-2)"
+    progress: "Continue watching only: absolute inset-x-0 bottom-0 h-1 bg-wire-border-strong track with bg-on-wire fill"
+    text: "title line-clamp-2 text-sm font-semibold leading-snug text-on-wire; meta truncate text-xs text-wire-muted"
+    rule: "The corner tab is NOT a tagClass, NOT a scrim pill, NOT rounded-control/full radius and NOT inset (no left-2 top-2). It is the one sanctioned exception to the shape rule for tags."
   skeleton:
     note: "Loading mirrors of Hero + wire rail (HomeSkeleton). Pulse blocks only (animate-pulse is blessed strictly and solely for skeletons and loading components), no spinners; keep layout dimensions identical to the loaded component."
     on-light: " rounded bg-surface-container-high (blocks) / bg-surface-container-lowest (inner cards)"
@@ -361,9 +371,8 @@ guidelines:
   - "Outdoor session rule — inside /games/:id on phones: text at least 14px (the 10-12px label convention does not apply here), controls at least 48px, gaps at least 12px, result buttons 72px with 18px bold labels. Use controlClass(tone, 'lg') and tagClass(tone, 'lg') there. Landed is solid primary with a check, Failed is white with a 3px on-surface border and an X: they differ by fill, shape, and icon, never by hue alone. Status is text plus icon, never colour alone. No CRT scanline."
   - "Shadows are the exception, not the rule — Panel chassis + Marquee hover are the only 8-24px + shadow sits. Else flat border."
   - "New pages/sections must declare their pages.* entry first — if not listed, default to surface monochrome."
+  - "Locked styles (components.tv-card) are owner decisions: never 'normalise' them in consistency or refactor passes — flag the conflict instead. Only the owner unlocks them."
 open-follow-ups:
   # Outside the consistency pass; each is UI-only unless noted.
   - "pages not yet on the recipes: spot create, admin."
-  - "links to /explore (spots error/not-found) point at a route that no longer exists — behaviour fix, not styling."
-  - "MarqueeCard corner labels are solid white, not the scrim-pill spec."
----
+  - "links to /explore (spots error/not-found) point at a route that no longer exists — behaviour fix, not styling."---

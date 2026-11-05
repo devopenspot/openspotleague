@@ -82,7 +82,8 @@ export const TvMarqueeCard = memo(function TvMarqueeCard({
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-t from-on-surface/45 via-transparent to-transparent"
         />
-        <span className="absolute left-2 top-2 inline-flex items-center rounded-control bg-on-wire px-2 py-1 font-display text-[10px] font-bold uppercase leading-none tracking-label text-wire">
+        {/* Locked corner tab — owner decision, see DESIGN.md components.tv-card. Do not convert to a pill/tagClass. */}
+        <span className="absolute left-0 top-0 rounded-tl-sm rounded-br-sm inline-flex items-center bg-on-wire px-2 py-1 font-display text-[10px] font-bold uppercase leading-none tracking-label text-wire">
           <span className="truncate max-w-[14ch]">
             {item.isNew ? "New" : item.disciplineSlug}
           </span>

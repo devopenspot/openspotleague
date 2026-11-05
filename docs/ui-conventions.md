@@ -21,6 +21,7 @@ Controls and containers are told apart by shape, never by colour.
 
 - Buttons match inputs: same height, same 1px border.
 - Exceptions: game sessions (`/games/:id`) keep their 48px+ outdoor targets, and map pins stay 4px.
+- Locked: the `TvMarqueeCard` corner tab is a flush top-left tab (`left-0 top-0 rounded-tl-sm rounded-br-sm bg-on-wire text-wire`), not a full-radius tag. It is an owner decision: do not convert it to `tagClass`, a scrim pill or `rounded-control`, and do not "fix" it in consistency passes. The spec is in `DESIGN.md` `components.tv-card`.
 - No new `rounded-[*]` literals.
 
 ## Recipes
