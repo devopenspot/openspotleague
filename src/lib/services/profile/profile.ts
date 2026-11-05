@@ -21,6 +21,11 @@ import type { Preferences } from "@/lib/schemas/preferences"
 import { getSpotRepositoryAsync } from "@/lib/repositories"
 import type { Spot } from "@/lib/types"
 import { PROFILE_CACHE_LIFE } from "@/lib/cache/lifetimes"
+import {
+  listLeagueHistory,
+  loadLeagueActivityEvents,
+  type LeagueHistoryItem,
+} from "@/lib/services/league/activity"
 
 export function profileTag(userId: string): string {
   return `profile:user:${userId}`
@@ -47,7 +52,11 @@ export interface ProfileSummary {
     gamesWon: number
     tricksLanded: number
     tricksFailed: number
+    eventsAttended: number
+    eventsWon: number
   }
+  /** Latest published League results (contests ridden). */
+  leagueHistory: LeagueHistoryItem[]
   counts: {
     saved: number
     verified: number
@@ -99,7 +108,10 @@ function streakFromActivity(days: readonly RiderActivityDay[]): number {
 export async function runGetProfileSummary(userId: string): Promise<ProfileSummary> {
   const { db } = getDbClient()
 
-  const [profileRow, statsRow, savedCountRows, verifiedCountRows, visitedRows, activityEvents] =
+  const activityStart = new Date()
+  activityStart.setUTCDate(activityStart.getUTCDate() - 84 + 1)
+  activityStart.setUTCHours(0, 0, 0, 0)
+  const [profileRow, statsRow, savedCountRows, verifiedCountRows, visitedRows, activityEvents, leagueHistory] =
     await Promise.all([
       withDbRead("profile.summary.profile", () =>
         db.transaction((tx) => tx.select().from(profiles).where(eq(profiles.id, userId)).limit(1)),
@@ -167,11 +179,14 @@ export async function runGetProfileSummary(userId: string): Promise<ProfileSumma
               .where(and(eq(gameSessions.createdBy, userId), isNotNull(gameSessions.spotId), gte(gameSessions.createdAt, start))),
           )
         }),
-      ]).then(([scoreEvents, verifiedEvents, gameSpotEvents]) => [
+        loadLeagueActivityEvents(userId, activityStart),
+      ]).then(([scoreEvents, verifiedEvents, gameSpotEvents, leagueEvents]) => [
         ...scoreEvents,
         ...verifiedEvents.map((row) => ({ createdAt: row.createdAt, points: 0 })),
         ...gameSpotEvents.map((row) => ({ createdAt: row.createdAt, points: 0 })),
+        ...leagueEvents,
       ]),
+      listLeagueHistory(userId),
     ])
 
   const stats = statsRow ?? {
@@ -181,6 +196,8 @@ export async function runGetProfileSummary(userId: string): Promise<ProfileSumma
     gamesWon: 0,
     tricksLanded: 0,
     tricksFailed: 0,
+    eventsAttended: 0,
+    eventsWon: 0,
     updatedAt: new Date(0),
   }
   const totalPoints = stats.totalPoints ?? 0
@@ -213,7 +230,10 @@ export async function runGetProfileSummary(userId: string): Promise<ProfileSumma
       gamesWon: stats.gamesWon ?? 0,
       tricksLanded: stats.tricksLanded ?? 0,
       tricksFailed: stats.tricksFailed ?? 0,
+      eventsAttended: stats.eventsAttended ?? 0,
+      eventsWon: stats.eventsWon ?? 0,
     },
+    leagueHistory,
     counts: {
       saved: Number(saved),
       verified: Number(verified),

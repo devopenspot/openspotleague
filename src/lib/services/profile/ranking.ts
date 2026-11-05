@@ -3,6 +3,7 @@ import { and, desc, eq, gte, isNotNull } from "drizzle-orm"
 import { getDbClient, withDbRead } from "@/lib/db/client"
 import { gameSessions, riderScoreEvents, riderStats, verifiedSpots } from "@/db/schema"
 import { LIST_CACHE_LIFE } from "@/lib/cache/lifetimes"
+import { loadLeagueActivityEvents } from "@/lib/services/league/activity"
 
 export const RANK_THRESHOLDS = [
   { minimum: 2584, label: "Blade Master" },
@@ -24,7 +25,7 @@ export async function runGetRiderRanking(userId: string) {
       tx.select().from(riderStats).where(eq(riderStats.userId, userId)),
     ),
   )
-  const value = stats ?? { userId, totalPoints: 0, gamesPlayed: 0, gamesWon: 0, tricksLanded: 0, tricksFailed: 0, updatedAt: new Date(0) }
+  const value = stats ?? { userId, totalPoints: 0, gamesPlayed: 0, gamesWon: 0, tricksLanded: 0, tricksFailed: 0, eventsAttended: 0, eventsWon: 0, updatedAt: new Date(0) }
   return { ...value, rank: rankForPoints(value.totalPoints) }
 }
 
@@ -128,5 +129,6 @@ export async function getRiderActivity(userId: string, dayCount = 84) {
     ...verifiedEvents.map((row) => ({ createdAt: row.createdAt, points: 0 })),
     ...gameSpotEvents.map((row) => ({ createdAt: row.createdAt, points: 0 })),
   ]
-  return buildRiderActivityGrid([...scoreEvents, ...spotEvents], end, dayCount)
+  const leagueEvents = await loadLeagueActivityEvents(userId, start)
+  return buildRiderActivityGrid([...scoreEvents, ...spotEvents, ...leagueEvents], end, dayCount)
 }
