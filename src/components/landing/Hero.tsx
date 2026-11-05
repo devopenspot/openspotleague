@@ -58,7 +58,7 @@ export function Hero() {
                   aria-hidden="true"
                 />
                 <span className="truncate text-left text-sm font-semibold text-secondary group-hover:text-on-surface">
-                  Search spots, skateparks, or cities...
+                  Search spots by name or cities...
                 </span>
               </div>
               <kbd className="hidden sm:inline-flex shrink-0 items-center gap-1 rounded-control border border-outline-variant/60 bg-surface-container-high px-2.5 py-0.5 font-mono text-[10px] font-semibold text-secondary">
