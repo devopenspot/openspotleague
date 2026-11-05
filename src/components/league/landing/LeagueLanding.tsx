@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Medal, Plus } from "lucide-react";
 import { JoinByCodeEntry } from "@/components/league/JoinByCodeEntry";
 import { ContestDirectory } from "@/components/league/landing/ContestDirectory";
 import { ContestResultsSummary } from "@/components/league/landing/ContestResultsSummary";
@@ -18,7 +18,7 @@ import {
 import { useUser } from "@/lib/contexts/user-context";
 import { orderEventsForDirectory } from "@/lib/league/directory-order";
 import { useEventStatusFilter } from "@/lib/league/status-filter";
-import { CONTEST_NEW_PATH } from "@/lib/league/urls";
+import { CONTEST_NEW_PATH, LEAGUE_RANKING_PATH } from "@/lib/league/urls";
 import type { ContestEnriched } from "@/types/league";
 
 interface LeagueLandingProps {
@@ -68,8 +68,8 @@ export function LeagueLanding({ featured, events }: LeagueLandingProps) {
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-on-gradient/85">
             Run your own skate, BMX, scooter and roller contests: invite riders
-            with a QR code, judge live runs, publish results and earn league
-            points.
+            with a QR code or run video contests, judge on the five World Skate
+            criteria, publish results and earn league points.
           </p>
         </div>
 
@@ -79,6 +79,12 @@ export function LeagueLanding({ featured, events }: LeagueLandingProps) {
             <Link href={CONTEST_NEW_PATH} className={controlClass("onWashDark")}>
               <Plus size={14} aria-hidden="true" />
               Create a contest
+            </Link>
+          ) : null}
+          {user ? (
+            <Link href={LEAGUE_RANKING_PATH} className={controlClass("onWash")}>
+              <Medal size={14} aria-hidden="true" />
+              Ranking
             </Link>
           ) : null}
         </div>
