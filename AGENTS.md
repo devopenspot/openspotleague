@@ -8,11 +8,13 @@ This file keeps the commands, the map, and the hard rules. Detailed explanations
 
 ## Commands
 
-There is no CI in this repo. The local gate is the only verification:
+**CI is not set up yet (pending task).** Until it exists, the local gate is the only verification:
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm test
 ```
+
+The Vercel GitHub check that runs on pull requests is a leftover integration. It does not build this app (the app deploys to Cloudflare Workers) and it is not a gate, so ignore its result until the CI work replaces or removes it.
 
 - `pnpm lint`: `eslint src` (flat config).
 - `pnpm typecheck`: `tsc --noEmit`, strict, with `noUncheckedIndexedAccess`, `noUnusedLocals`, and `noUnusedParameters`.
@@ -41,7 +43,7 @@ pnpm lint && pnpm typecheck && pnpm test
 | `src/lib/games/*`, `src/lib/league/*` | Pure domain engines (state machines, scoring, capabilities). No DB or IO; unit-tested. |
 | `src/lib/db/client.ts` | `withDbRead`, `withDbWrite`, `withDbRetry`, pool configuration, global concurrency gate. |
 | `src/lib/cache/` | `lifetimes.ts` (cache profiles), `deferred.ts` (post-commit invalidation). |
-| `src/db/schema.ts` | Schema source of truth. Migrations live in `supabase/migrations/`. |
+| `src/db/schema.ts` | Barrel re-export of `src/db/schema/*` (`auth`, `spots`, `games`, `taxonomy`, `index`). Schema source of truth. Migrations live in `supabase/migrations/`. |
 | `src/data/` | JSON seed fixtures (spots, TV, tricks, taxonomy, RBAC). |
 | `DESIGN.md` | Design tokens and UI system. |
 
