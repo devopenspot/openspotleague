@@ -7,10 +7,10 @@
 
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, QrCode, Trash2, Users } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { Overlay } from "@/components/feedback/Overlay";
-import { RunScoreForm } from "@/components/league/RunScoreForm";
+import { runStatusLabel } from "@/lib/league/hub-state";
 import type { LeagueEventState } from "@/lib/services/league";
 import {
   BODY,
@@ -254,41 +254,22 @@ export function MemberRow({
   );
 }
 
+/**
+ * Read-only run overview for the organizer console: who, which division,
+ * readable status, time in the contest timezone, the video link and each
+ * judge's total. Windows and scoring live in the hub's Judging tab.
+ */
 export function RunRow({
   run,
-  criteria,
-  eventStatus,
-  canJudge,
-  onOpenWindow,
-  onExtendWindow,
-  onCloseWindow,
-  onSubmitScore,
-  disabled,
+  divisionLabel,
+  submissionMode,
+  timezone,
 }: {
   run: LeagueEventState["runs"][number];
-  criteria: LeagueEventState["criteria"];
-  eventStatus: string;
-  canJudge: boolean;
-  onOpenWindow: () => void;
-  onExtendWindow: () => void;
-  onCloseWindow: () => void;
-  /** Return true when the submission succeeded; false keeps the scores. */
-  onSubmitScore: (scores: Record<string, number>) => boolean | Promise<boolean>;
-  disabled?: boolean;
+  divisionLabel: string;
+  submissionMode: "live" | "video";
+  timezone: string;
 }) {
-  const [nowMs, setNowMs] = useState<number | null>(null);
-  useEffect(() => {
-    if (run.status !== "judging" || run.windowEndsAt === null) return;
-    const timer = setInterval(() => setNowMs(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, [run.status, run.windowEndsAt]);
-  const isLive = eventStatus === "live";
-  const canOpenWindow = isLive && run.status === "scheduled" && !disabled;
-  const isJudging = run.status === "judging";
-  const windowActive =
-    run.windowEndsAt !== null &&
-    (nowMs === null || new Date(run.windowEndsAt).getTime() > nowMs);
-
   return (
     <li className={`flex flex-col gap-3 ${CARD_NESTED}`}>
       <div className="flex items-center justify-between gap-3">
@@ -301,43 +282,21 @@ export function RunRow({
               {run.riderName}
             </p>
             <p className={LABEL}>
-              {run.status}
+              {divisionLabel} · {runStatusLabel(run.status, submissionMode)}
               {run.scheduledAt
-                ? ` · ${new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(new Date(run.scheduledAt))} UTC`
+                ? ` · ${new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", timeZone: timezone }).format(new Date(run.scheduledAt))}`
                 : ""}
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-          {run.status === "scheduled" ? (
-            <button
-              type="button"
-              disabled={!canJudge || !canOpenWindow}
-              onClick={onOpenWindow}
-              className={controlClass("primary", "sm")}
-            >
-              Open window
-            </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {run.videoUrl ? (
+            <a href={run.videoUrl} target="_blank" rel="noopener noreferrer" className={controlClass("outline", "sm")}>
+              Video
+            </a>
           ) : null}
-          {isJudging ? (
-            <>
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={onExtendWindow}
-                className={controlClass("outline", "sm")}
-              >
-                Extend
-              </button>
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={onCloseWindow}
-                className={controlClass("outline", "sm")}
-              >
-                Close
-              </button>
-            </>
+          {run.panelScore !== null ? (
+            <span className={tagClass("solid")}>{run.panelScore.toFixed(2)}</span>
           ) : null}
         </div>
       </div>
@@ -345,34 +304,11 @@ export function RunRow({
       {run.scores.length > 0 ? (
         <ul className="flex flex-wrap gap-2">
           {run.scores.map((score) => (
-            <li
-              key={`${run.id}-${score.judgeName}`}
-              className={tagClass("neutral")}
-            >
+            <li key={`${run.id}-${score.judgeUserId}`} className={tagClass("neutral")}>
               {score.judgeName}: {score.total.toFixed(2)}
             </li>
           ))}
         </ul>
-      ) : null}
-
-      {isJudging ? (
-        <div className="flex flex-col gap-3">
-          <p
-            className={LABEL}
-            aria-live="polite"
-          >
-            {windowActive
-              ? `Window open until ${new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(new Date(run.windowEndsAt!))} UTC`
-              : "Window closed — extend to score"}
-          </p>
-          {canJudge && windowActive && !disabled ? (
-            <RunScoreForm
-              criteria={criteria}
-              disabled={disabled}
-              onSubmit={onSubmitScore}
-            />
-          ) : null}
-        </div>
       ) : null}
     </li>
   );

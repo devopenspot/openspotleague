@@ -39,7 +39,7 @@ import { SportDisciplineSchema, SportEventCategorySchema } from "@/lib/schemas/e
 import type { ContestCategory } from "@/types/league";
 import { leagueCreateEventInputSchema } from "@/lib/schemas/league";
 import type { LeagueCreateEventResponse } from "@/lib/schemas/league";
-import { buildContestManageUrl } from "@/lib/league/urls";
+import { buildContestDetailUrl, buildContestManageUrl } from "@/lib/league/urls";
 import { ROUTES } from "@/lib/navigation/nav";
 
 const CATEGORY_OPTIONS: { value: ContestCategory; label: string }[] =
@@ -226,7 +226,11 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
           expectedVersion: data.version,
         }).catch(() => null);
         if (!uploaded?.ok) {
-          router.push(`${manageUrl}?cover=failed`);
+          router.push(
+            curator
+              ? `${manageUrl}?cover=failed`
+              : `${buildContestDetailUrl(data.slug)}?tab=run&cover=failed#hub`,
+          );
           return;
         }
       }

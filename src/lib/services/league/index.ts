@@ -869,7 +869,10 @@ export interface LeagueEventState {
     resultsPublished: boolean;
   };
   myRole: EventRole | null;
+  /** The signed-in viewer (to find their own runs and scores). */
+  myUserId: string;
   counts: { riders: number; judges: number; organizers: number };
+  plan: { maxRiders: number | null };
   divisions: {
     id: string;
     disciplineSlug: string;
@@ -1054,6 +1057,7 @@ export async function getLeagueEventState(
         .from(eventScoringCriteria)
         .where(eq(eventScoringCriteria.eventId, eventId))
         .orderBy(eventScoringCriteria.sortOrder);
+      const planCaps = await eventPlanCaps(tx, event.planSlug);
 
       // Live console data: runs with per-judge score summaries, published
       // results (when frozen) and organizer-only invite list.
@@ -1203,7 +1207,9 @@ export async function getLeagueEventState(
           resultsPublished: Boolean(event.resultsPublishedAt),
         },
         myRole,
+        myUserId: userId,
         counts,
+        plan: { maxRiders: planCaps.maxRiders },
         divisions: divisionRows.map((division) => ({
           ...division,
           label: divisionDisplay(division),

@@ -2,7 +2,7 @@
 
 /**
  * Shared per-criterion scoring form (organizer console RunRow + judge queue).
- * Steppers clamp 0..maxScore; submit requires at least one entered value.
+ * Steppers clamp 0..maxScore; submit unlocks once every criterion is set.
  * The form only resets when `onSubmit` reports success — a failed POST
  * must never wipe the judge's entered scores.
  */
@@ -31,7 +31,9 @@ export function RunScoreForm({
   onSubmit: (scores: Record<string, number>) => boolean | Promise<boolean>;
 }) {
   const [scores, setScores] = useState<Record<string, number>>(initialScores ?? {});
-  const canScore = !disabled && Object.keys(scores).length > 0;
+  // Every criterion is required server-side; never send a partial score.
+  const canScore =
+    !disabled && criteria.every((criterion) => typeof scores[criterion.key] === "number");
 
   const setScore = (key: string, value: number) =>
     setScores((current) => ({ ...current, [key]: value }));

@@ -37,15 +37,31 @@ export function buildContestDetailUrl(slug: string): string {
   return `${ROUTES.league}/${encodeURIComponent(slug)}`;
 }
 
-/** Organizer console (`/league/[slug]/manage`). */
-export function buildContestManageUrl(slug: string): string {
-  return `${buildContestDetailUrl(slug)}/manage`;
+/** Hub tabs on the contest page (`/league/[slug]?tab=…`). */
+export type ContestHubTab = "overview" | "standings" | "my-runs" | "judging" | "run";
+
+/** A contest hub tab, anchored to the hub section. */
+export function buildContestHubUrl(slug: string, tab: ContestHubTab): string {
+  return `${buildContestDetailUrl(slug)}?tab=${tab}#hub`;
 }
 
-/** Judge queue (`/league/[slug]/judge`). */
-export function buildContestJudgeUrl(slug: string): string {
-  return `${buildContestDetailUrl(slug)}/judge`;
+/** Organizer tools: the hub's "Run the contest" tab. */
+export function buildContestManageUrl(slug: string): string {
+  return buildContestHubUrl(slug, "run");
 }
+
+/** Judging: the hub's "Judging" tab. */
+export function buildContestJudgeUrl(slug: string): string {
+  return buildContestHubUrl(slug, "judging");
+}
+
+/** A rider's shareable result card page (`/league/[slug]/r/[userId]`). */
+export function buildContestResultUrl(slug: string, userId: string): string {
+  return `${buildContestDetailUrl(slug)}/r/${encodeURIComponent(userId)}`;
+}
+
+/** Global League ranking (`/league/ranking`). */
+export const LEAGUE_RANKING_PATH = `${ROUTES.league}/ranking`;
 
 /** Invite landing (`/league/join/[code]`) shared by link and QR code. */
 export function buildContestJoinUrl(code: string): string {
