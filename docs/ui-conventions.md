@@ -6,7 +6,7 @@
 
 - The UI is monochrome and set in Plus Jakarta Sans.
 - `--color-primary` (`#0a0a0a`) is reserved for CTAs, active nav, critical states, and the wire rail. Never use it on dark panels.
-- One wash per route (`DESIGN.md` `pages.*`): `bg-gradient-primary` (warm, `#ea580c` → `#dc2626` → `#b91c1c`) on the Home hero and the Games landing page only; `bg-gradient-profile` (lime) on Profile; `bg-gradient-support` (cyan) on Support, data-curator and thank-you; `bg-gradient-league` (electric blue, via `LeagueWash`) on `/league`, `/league/[slug]` and `/league/join/[code]` only — the create form, organizer console and judge queue stay on `bg-surface`. TV is the navy wire (`--color-wire: #060912`). Everything else sits on `bg-surface`.
+- One wash per route (`DESIGN.md` `pages.*`): `bg-gradient-primary` (warm, `#ea580c` → `#dc2626` → `#b91c1c`) on the Home hero and the Games landing page only; `bg-gradient-profile` (lime) on Profile; `bg-gradient-support` (cyan) on Support, data-curator and thank-you; `bg-gradient-league` (electric blue, via `LeagueWash`) on `/league`, `/league/[slug]`, `/league/[slug]/r/[userId]` and `/league/join/[code]` only — the create form, the ranking, the error page and the contest hub panel stay on `bg-surface`. TV is the navy wire (`--color-wire: #060912`). Everything else sits on `bg-surface`.
 
 ## Shape rule
 
@@ -20,9 +20,9 @@ Controls and containers are told apart by shape, never by colour.
 | Tile | stat and glance tiles | `rounded-card` (12px) | — |
 
 - Buttons match inputs: same height, same 1px border.
-- Exceptions: game sessions (`/games/:id`) keep their 48px+ outdoor targets, and map pins stay 4px.
-- Locked: the `TvMarqueeCard` corner tab is a flush top-left tab (`left-0 top-0 rounded-tl-sm rounded-br-sm bg-on-wire text-wire`), not a full-radius tag. It is an owner decision: do not convert it to `tagClass`, a scrim pill or `rounded-control`, and do not "fix" it in consistency passes. The spec is in `DESIGN.md` `components.tv-card`.
-- No new `rounded-[*]` literals.
+- Exceptions: game sessions (`/games/:id`) keep their 48px+ outdoor targets. The only 4px shapes are listed in `DESIGN.md` `shape.usage` (map pins, map event markers, the TV corner tab).
+- Locked: the `TvMarqueeCard` corner tab is an owner decision. Never convert it to `tagClass`, a scrim pill or `rounded-control`, and never "fix" it in consistency passes (`DESIGN.md` `components.tv-card`).
+- No new `rounded-[*]` literals (`DESIGN.md` `shape.literal-map`).
 
 ## Recipes
 
@@ -30,7 +30,7 @@ Controls and containers are told apart by shape, never by colour.
 
 - Controls: `controlClass(tone, size)` (`md` 44px, `sm` 36px, `lg` 48px for game sessions) with `primary`, `secondary`, `outline`, `onWash`, `onWashDark`, `onWire`, `onWireOutline`, `onPhoto`; `iconButtonClass`; `INPUT`, `INPUT_ON_WIRE`, `TEXTAREA`.
 - Chips, tags, tabs: `chipClass(active, surface)`, `tagClass(tone, size)` (`lg` is the 14px game-session tag), `SEGMENTED_TRACK` + `segmentClass(active)`.
-- Type: `EYEBROW` (and `EYEBROW_ON_WASH`, `EYEBROW_ON_WIRE`), `PAGE_TITLE`, `SECTION_TITLE`, `CARD_TITLE`, `META`, `LABEL`, `BODY`. Title recipes carry no colour; add it at the call site.
+- Type: `EYEBROW` (and `EYEBROW_ON_WASH`, `EYEBROW_ON_GRADIENT`, `EYEBROW_ON_WIRE`), `PAGE_TITLE`, `SECTION_TITLE`, `CARD_TITLE`, `META` (and `META_ON_GRADIENT`), `LABEL`, `BODY`. Title recipes carry no colour; add it at the call site.
 - Containers: `CARD`, `CARD_FRAME`, `CARD_NESTED`, `TILE`, `EMPTY_STATE`, `PANEL_ON_WIRE`, `alertClass(tone)`.
 - Layout: `pageContainer(width)` gives `mx-auto max-w-* px-5 md:px-10` plus the default vertical rhythm.
 
@@ -44,21 +44,12 @@ Controls and containers are told apart by shape, never by colour.
 - Nav is a "pill track" on the black chrome. Inactive items are `text-wire-muted`; the active item is an inverted `bg-on-wire text-wire` pill. Desktop items sit in a `rounded-control bg-wire-border p-1` track, the bottom bar draws the pill behind the icon, and drawer rows are full-width pills. `NavLink` variants own these styles; never restyle them from a parent.
 - `AppShell` owns the `<main>` landmark. Pages render a `<div>`, never a nested `<main>`.
 
-## Map palette
+## Other rules
 
-The maps (`LeafletCanvas`, `SpotStaticMap`, `SpotMapFallback`) use the dark `--color-map-*` tokens and `--map-tile-filter` (on `.leaflet-tile-pane` / `.map-tile-dark`). That palette applies only to the map canvas, its tiles, and on-map markers and overlays. Never apply it to surrounding layouts, headers, sidebars, drawers, or cards.
-
-## No pulse animations
-
-`animate-pulse` and any continuous pulse loop are banned in UI components, because they keep the GPU compositor repainting and drain battery. The only exception is transient loading UI that unmounts once data arrives: `*Skeleton.tsx`, `loading.tsx`, and Suspense fallbacks.
-
-## Mobile inputs
-
-Inputs, selects, and textareas must render at 16px or larger on mobile, otherwise iOS Safari auto-zooms. A global guard in `src/app/globals.css` (`@media (max-width: 639px)`, `!important`) covers existing controls. For new inputs, prefer `text-base sm:text-sm`. Never fix zoom with `maximum-scale` or `user-scalable=no`.
-
-## Images
-
-`unoptimized: true` is set in `next.config.mjs`, and images are served directly from the R2 CDN domains. Do not turn on Next image optimization.
+- **Map palette.** The dark `--color-map-*` tokens and `--map-tile-filter` apply only to the map canvas (`LeafletCanvas`, `SpotStaticMap`, `SpotMapFallback`), its tiles and on-map overlays, never to the layout around them (`DESIGN.md` `guidelines`).
+- **No pulse animations.** `animate-pulse` and continuous pulse loops are banned, because they keep the compositor repainting. The only exception is transient loading UI that unmounts once data arrives: `*Skeleton.tsx`, `loading.tsx` and Suspense fallbacks.
+- **Mobile inputs.** Inputs, selects and textareas render at 16px or larger on mobile, or iOS Safari zooms. A guard in `src/app/globals.css` (`@media (max-width: 639px)`) covers existing controls; new ones use `text-base sm:text-sm`. Never use `maximum-scale` or `user-scalable=no`.
+- **Images.** `unoptimized: true` stays on in `next.config.mjs`; images come straight from the R2 CDN.
 
 ## Component organization
 
@@ -68,12 +59,14 @@ Inputs, selects, and textareas must render at 16px or larger on mobile, otherwis
 - `src/components/league/`: the League section. Every contest link is built with `src/lib/league/urls.ts`.
   - `landing/`: `LeagueLanding`, `LeagueWash`, `MyContests`, and the `Contest*` parts (directory, card, cover fallback, featured hero, status filter, empty state, skeleton, results summary).
   - `cover/`: `ContestCoverField` and `upload-contest-cover.ts`, which uploads the cover after the contest is created.
-  - `create/LeagueCreateForm.tsx`, also used in curator mode by `/admin/league/contests/new`. Shared fieldset parts live in `form-parts.tsx`.
-  - `hub/`: the members' contest hub on `/league/[slug]` — `ContestHub` (next-step card, `LifecycleStepper`, role tabs), `useContestState` (one state fetch + realtime + versioned mutations), `FormatBrief`, `StandingsBoard`, `MyRunsPanel`, `JudgingPanel`, `RatedScoreForm` and `useNow`. Derived state lives in `src/lib/league/next-step.ts` and `src/lib/league/hub-state.ts` (tested).
-  - `manage/ManageConsole.tsx` (the hub's Run the contest tab, fed by `useContestState`) with `manage-parts.tsx`, and `hooks/useLeagueRealtime.ts`.
+  - `create/LeagueCreateForm.tsx`, also used in curator mode by `/admin/league/contests/new`. Shared fieldset parts live in `src/components/league/form-parts.tsx`, with `DateField.tsx` beside it.
+  - `hub/`: the members' contest hub on `/league/[slug]` — `ContestHub` (next-step card, `LifecycleStepper`, role tabs), `useContestState` (the shared state fetch, realtime refresh and versioned mutations; Standings and the console add their own reads), `FormatBrief`, `StandingsBoard`, `MyRunsPanel`, `JudgingPanel`, `RatedScoreForm` and `useNow`. Derived state lives in `src/lib/league/next-step.ts` and `src/lib/league/hub-state.ts` (tested).
+  - `RunScoreForm.tsx`: the legacy 4-criteria form, used by `JudgingPanel` only for pre-0007 `open` divisions.
+  - `manage/ManageConsole.tsx` (the hub's Run the contest tab) with `manage-parts.tsx`, and `hooks/useLeagueRealtime.ts`.
+  - `PaymentGateNotice.tsx`: the pending/locked/disabled payment notice in the console (copy from `src/lib/league/notices.ts`).
   - Join entry points: `JoinByCodeEntry` and `JoinWithInvite`.
 - `src/components/profile/league/ProfileLeagueCard.tsx`: League stats and recent results on the profile Overview.
-- `src/components/admin/league/contests/`: `AdminContestsTable`, `AdminContestFilters` and `ContestCurationPanel`, for curator browsing and curation actions. See `docs/league.md`.
+- `src/components/admin/league/`: `contests/` (`AdminContestsTable`, `AdminContestFilters`, `ContestCurationPanel`) for curation, `plans/` (`AdminLeaguePlansTable`, `AdminAccountPlansPanel`) and `payments/AdminLeaguePaymentsTable`. See `docs/league.md`.
 - Overlays pick their initial focus from a `data-autofocus` element (`useFocusTrap`); mark the dialog's main action with it.
 - `src/components/feedback/`: `BottomSheet` is the non-modal game-sheet, `SideDrawer` plus `DrawerParts` are for anything opened on purpose. See `DESIGN.md`, `components.overlays`.
 - When JSX dereferences `game`, keep the explicit `game &&` guard. TypeScript narrowing is lost across module boundaries.

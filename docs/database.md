@@ -28,10 +28,10 @@ How each tool picks its connection string:
 ## Migrations
 
 - SQL lives in `supabase/migrations/`. `0000_baseline.sql` creates the 59 baseline tables, and later numbered files apply on top of it. For example, `0003_drop_spot_disciplines.sql` moved disciplines into `spots.sports text[]`.
-- Generate a migration with `pnpm exec drizzle-kit generate`.
+- Write new migrations by hand as the next numbered file. `supabase/migrations/meta/_journal.json` stops at `0002` and there are no drizzle snapshots, so `drizzle-kit generate` would emit the whole schema; `0003`–`0007` were all hand-written.
 - Apply migrations with `pnpm db:apply` (`src/db/apply-sql.ts`). It holds a session advisory lock (`hashtextextended('openspot:database-apply', 0)`) and records progress in `schema_migrations` using normalized per-statement SHA-256 hashes (`detectMigrationDrift`). Old-format ledger hashes are rewritten in place and logged with `↻`.
 - **Applied migrations are immutable.** Ship any fix as a new migration file.
-- Recent League migrations: `0005_contests_drop_origin`, `0006_contest_curator_role` and `0007_league_divisions_rating` (divisions, video submissions, Article 9 scoring, per-division results, ranking dimensions on `event_points_ledger`; backfills existing contests into legacy `open` divisions). They are hand-written because the drizzle snapshots stop at `0002`. Details in `docs/league.md`.
+- League migrations `0005_contests_drop_origin`, `0006_contest_curator_role` and `0007_league_divisions_rating` are described in [`docs/league.md`](league.md#data-model).
 
 ## Seeding
 
@@ -69,7 +69,7 @@ Trick catalogs use replace-and-snapshot semantics: the JSON fixture is the sourc
 - Roles:
   - `admin`
   - `curator` (legacy)
-  - `spot_curator` and `contest_curator`, scoped by country through `curator_country_scopes`. `contest_curator` (formerly `event_curator`, renamed in `0006_contest_curator_role`) holds `content.read`, `media.manage` and `league.curate`; admins also hold `league.curate`. See `docs/league.md`.
+  - `spot_curator` and `contest_curator`, scoped by country through `curator_country_scopes`. For `contest_curator` permissions see [`docs/league.md`](league.md#contest-curation).
   - `trick_curator`, scoped by discipline through `curator_discipline_scopes`
 - RLS policies:
   - `spots_public_read`: public spots that are not admin-hidden; personal spots only for their creator.

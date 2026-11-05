@@ -24,7 +24,7 @@ Next.js 16 uses `proxy.ts` in place of `middleware.ts`. For every request, the p
    | `/api/saved-spots`, `/api/verified-spots`, `/api/spot-verifications` | profile-read | 60 |
 
    The `health` tier never fires today, because `/api/health` is caught by the bypass in step 2 first.
-4. **Seed cookie.** `osp_seed` (7 days, `SameSite=Lax`) gives each visit its own shuffle for random pagination on the landing and explore pages. Every other path stays cookie-free, so the CDN can cache anonymous responses.
+4. **Seed cookie.** `osp_seed` (7 days, `SameSite=Lax`) gives each visit its own shuffle for random pagination on the landing page (`needsSeedForPath` still matches the removed `/explore`). Every other path stays cookie-free, so the CDN can cache anonymous responses.
 5. **Supabase session refresh.** It is skipped for anonymous requests (no `sb-*-auth-token` cookie) and for prefetches (`isPrefetchRequest`). JWT verification uses a cached JWKS (`getCachedJwks`).
 6. **Security headers.** See [Security headers](#security-headers).
 
@@ -33,17 +33,17 @@ Next.js 16 uses `proxy.ts` in place of `middleware.ts`. For every request, the p
 ```
 page / route handler ──► src/lib/services/* ──► src/lib/repositories/* (interface) ──► Drizzle implementation
                               │
-                              └─► src/lib/games/*, src/lib/league/*  (pure engines, no IO)
+                              └─► src/lib/games/*, src/lib/league/*  (pure engines, no DB)
 ```
 
 - Pages and route handlers never import Drizzle or `@/db/schema`.
-- **Pure engines** (`src/lib/games`, `src/lib/league`) hold the state machines, scoring, capability checks, location verification, training limits, and trick selection. Trick selection uses a seeded Mulberry32 shuffle. Each module has a sibling `*.test.ts`.
+- **Pure engines** (`src/lib/games`, `src/lib/league`) hold the state machines, scoring, capability checks, location verification, training limits, and trick selection. Trick selection uses a seeded Mulberry32 shuffle. The engines are unit-tested; static definition modules (criteria, element lists, plan definitions) may have no test of their own.
 - **Services** (`src/lib/services/games/*`, `src/lib/services/league/*`) are the only writers for games and league contests. Contest curators reuse the league writers with `{ asCurator: true }` (see `docs/league.md`). Every mutation:
   - runs inside `withDbWrite` + `db.transaction`;
   - checks `expectedVersion` (optimistic concurrency);
   - is replayed idempotently using a canonical-JSON `requestFingerprint`, stored in `game_action_requests` or `event_action_requests`;
   - writes a realtime signal row to `game_realtime_signals` or `event_realtime_signals`.
-- **Deprecated shims.** About 65 one-line `@deprecated — moved to …` re-export files remain at the top level of `src/lib`, `src/lib/services`, and `src/lib/repositories`. Always import the canonical path that the shim names.
+- **Deprecated shims.** One-line `@deprecated — moved to …` re-export files remain in `src/lib` (see `AGENTS.md`). Always import the canonical path that the shim names.
 
 ## Repositories: `src/lib/repositories/index.ts`
 

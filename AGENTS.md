@@ -40,11 +40,11 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 | `src/app/**` | Pages and route handlers. They only call services. |
 | `src/lib/services/*` | Orchestration and the single writers. |
 | `src/lib/repositories/*` | Repository interfaces plus Drizzle implementations, resolved through `repositories/index.ts`. |
-| `src/lib/games/*`, `src/lib/league/*` | Pure domain engines (state machines, scoring, capabilities). No DB or IO; unit-tested. |
+| `src/lib/games/*`, `src/lib/league/*` | Pure domain engines (state machines, scoring, capabilities). No DB or IO, except `src/lib/league/realtime.ts` (Supabase browser channel); unit-tested. |
 | `src/lib/league/rating/*` | League rating engine from Article 9 (Res. 082/2026): Park/Street/Vert formats, the five criteria, required elements per discipline, 0–10 scoring, trimmed-mean panel, division ranking. |
 | `src/lib/db/client.ts` | `withDbRead`, `withDbWrite`, `withDbRetry`, pool configuration, global concurrency gate. |
 | `src/lib/cache/` | `lifetimes.ts` (cache profiles), `deferred.ts` (post-commit invalidation). |
-| `src/db/schema.ts` | Barrel re-export of `src/db/schema/*` (`auth`, `spots`, `games`, `taxonomy`, `index`). Schema source of truth. Migrations live in `supabase/migrations/`. |
+| `src/db/schema.ts` | Schema source of truth: re-exports `src/db/schema/index.ts`, which holds every table (League tables included). `auth`, `spots`, `games` and `taxonomy` are per-domain barrels over it. Migrations live in `supabase/migrations/`. |
 | `src/data/` | JSON seed fixtures (spots, TV, tricks, taxonomy, RBAC). |
 | `DESIGN.md` | Design tokens and UI system. |
 
@@ -58,7 +58,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - Build every contest URL with `src/lib/league/urls.ts` (`/league/**`). Free-plan contests stay unlisted (QR/invite only); public listing needs a paid or comped non-free plan (`canListPublicly`).
 - League scores come from the rating engine (`src/lib/league/rating/`). Before results are published, members see panel totals only: project per-judge scores with `src/lib/league/visibility.ts`, never send raw score rows to riders.
 - Any new `RESTRICT` foreign key to `spots` must be handled in `detachSpotDependents`.
-- Import canonical paths. About 65 files in `src/lib`, `src/lib/services`, and `src/lib/repositories` are `@deprecated` one-line re-export shims, for example `@/lib/safe-fetch` → `@/lib/utils/safe-fetch` and `@/lib/supabase/storage` → `@/lib/storage`.
+- Import canonical paths. About 65 files in `src/lib`, `src/lib/services`, and `src/lib/repositories` are `@deprecated` one-line re-export shims, for example `@/lib/safe-fetch` → `@/lib/utils/safe-fetch`; `@/lib/supabase/storage` → `@/lib/storage` is one more.
 - Storage errors are `UploadValidationError`. Check them with `instanceof`, never by matching the message.
 - Security headers are defined in two places that must stay in sync: `next.config.mjs` `headers()` and `src/lib/security/headers.ts`.
 
@@ -85,7 +85,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 
 ### Database (`docs/database.md`)
 
-- Applied migrations are immutable; fixes ship as new files. Generate them with `pnpm exec drizzle-kit generate`.
+- Applied migrations are immutable; fixes ship as new files. Write new migrations by hand as the next numbered SQL file: there are no drizzle snapshots, so `drizzle-kit generate` would emit the whole schema.
 - Never expose `SUPABASE_SECRET_KEY`. Only `getAdminClient()` (`src/lib/auth/auth.ts`) and `src/lib/supabase/admin.ts` may read it.
 
 ### UI (`docs/ui-conventions.md`, `DESIGN.md`)
@@ -93,7 +93,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - No `animate-pulse` outside skeleton and loading components.
 - Form controls are at least 16px on mobile (`text-base sm:text-sm`). Never set `maximum-scale` or `user-scalable=no`.
 - The dark map palette applies only to the map canvas and on-map overlays.
-- Shape rule: controls (buttons, inputs, selects, pills, chips, tabs, tags, icon buttons) are `rounded-control` (full) and `h-control` (44px), and buttons match inputs (same height, 1px border). Containers (cards, panels, fieldsets, textareas, empty states) are `rounded-container` (16px); nested rows are `rounded-inner` (14px); small tiles are `rounded-card` (12px). Map pins (and the locked TV card corner tab) are the only 4px. No new `rounded-[*]` literals.
+- Shape rule: controls (buttons, inputs, selects, pills, chips, tabs, tags, icon buttons) are `rounded-control` (full) and `h-control` (44px), and buttons match inputs (same height, 1px border). Containers (cards, panels, fieldsets, textareas, empty states) are `rounded-container` (16px); nested rows are `rounded-inner` (14px); small tiles are `rounded-card` (12px). The only 4px shapes are map pins, map event markers and the locked TV card corner tab (`DESIGN.md` `shape.usage`). No new `rounded-[*]` literals.
   - Locked exception: the `TvMarqueeCard` corner tab (flush top-left, `rounded-tl-sm rounded-br-sm`) is an owner decision. Never restyle it into a pill or `tagClass`. The spec is in `DESIGN.md` `components.tv-card`.
 - Build UI from the class recipes in `src/components/ui/recipes.ts` (`controlClass`, `chipClass`, `tagClass`, `INPUT`, `EYEBROW`, `PAGE_TITLE`, `CARD`, `pageContainer`, …). `cn` does not merge Tailwind classes: pick a variant, never override a recipe's radius, height or colour from the call site, and never restyle a shared component with `!important` classes.
 - Pages share one gutter: `px-5 md:px-10` (`pageContainer`).

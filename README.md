@@ -27,12 +27,13 @@ pnpm dev
 | --- | --- |
 | `pnpm dev` / `pnpm build` / `pnpm start` | Vite dev server, production build (needs no DB), and production preview in `workerd` |
 | `pnpm deploy` / `pnpm deploy:secrets` | Deploy to Cloudflare; the second also uploads the declared secrets from `.env.local` |
+| `pnpm deploy:response-store` | Deploy the cache Worker |
 | `pnpm lint` | ESLint on `src` |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` / `pnpm test:watch` | Vitest |
 | `pnpm db:*` | Migrations, seeding, and diagnostics; see [docs/database.md](docs/database.md) |
 
-CI is not set up yet (see Pending work). Run `pnpm lint && pnpm typecheck && pnpm test` before pushing. The Vercel check on pull requests is a leftover integration and not a gate; the app deploys to Cloudflare Workers.
+CI is not set up yet (see Pending work), so run `pnpm lint && pnpm typecheck && pnpm test` before pushing. See [AGENTS.md](AGENTS.md#commands) for the full command reference.
 
 ## Project layout
 

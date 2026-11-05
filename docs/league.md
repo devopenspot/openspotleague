@@ -13,18 +13,22 @@ It replaced the old **Sport Events** section in November 2026. The editorial eve
 | Create | `/league/new` (`LeagueCreateForm`, sign-in) | Essentials (name, short name, description, category, optional cover), **Format** (Live or Video, video deadline, divisions as discipline × format chips), schedule, location, links. Calls `POST /api/league/events`, then the optional cover upload, then opens the hub's Run the contest tab. |
 | Contest page + hub | `/league/[slug]` | Public contests: open to everyone. Unlisted (free) contests: **active members only**, `noindex`, everyone else gets 404. The hero, details and links are server-rendered. Members get the **contest hub** below it (`src/components/league/hub/ContestHub.tsx`, see [Contest hub](#contest-hub)); visitors of a public contest see the final standings once published. |
 | Old console / judge URLs | `/league/[slug]/manage`, `/league/[slug]/judge` | Redirect to `?tab=run#hub` and `?tab=judging#hub`. |
-| Result card | `/league/[slug]/r/[userId]` (+ `opengraph-image`) | A rider's published results with share and download. Same visibility as the standings. |
+| Result card | `/league/[slug]/r/[userId]` (+ `opengraph-image`; the contest page has its own `/league/[slug]/opengraph-image`) | A rider's published results with share and download. Same visibility as the standings. |
 | Ranking | `/league/ranking` (sign-in) | Top 50 by league points, filter by discipline, format and country, plus the viewer's position. |
 | Invite | `/league/join/[code]` (`JoinWithInvite`) | Invite preview. Guests sign in and come back (`sanitizeNext` allows `/league`). Signed-in users join and land on `/league/[slug]`. |
 | Curation | `/admin/league/contests[/new\|/[id]]` | See [Contest curation](#contest-curation). |
+| Plans and payments (admin) | `/admin/league/plans`, `/admin/league/account-plans`, `/admin/league/payments` | Edit plan limits and prices, account plans, and review contest payments (`/api/admin/league/{plans,plans/[slug],account-plans,payments,payments/[id]}`). |
+| Errors | `src/app/league/error.tsx` | One `CARD` on the surface (no wash). |
 
 Every contest path is built in `src/lib/league/urls.ts` (`buildContestDetailUrl`, `buildContestHubUrl`, `buildContestManageUrl`, `buildContestJudgeUrl`, `buildContestResultUrl`, `buildContestJoinUrl`, `buildContestMapUrl`, `CONTEST_NEW_PATH`, `LEAGUE_RANKING_PATH`). Never hand-write `/league/...` strings.
 
-The wash (`bg-gradient-league`, via `LeagueWash`) covers the landing, contest page (the hub sits in a surface panel on it), result card and join page. Create and ranking stay on the monochrome surface (`DESIGN.md` `pages.league-landing` / `pages.league`).
+The wash (`bg-gradient-league`, via `LeagueWash`) covers `/league`, `/league/[slug]` (the hub sits in a surface panel on it), `/league/[slug]/r/[userId]` and `/league/join/[code]`. Create, ranking and the error page stay on the monochrome surface (`DESIGN.md` `pages.league-landing` / `pages.league`).
 
 ## Contest hub
 
-One client component per contest (`ContestHub`) for every member role. `useContestState` makes one `GET /api/league/events/[id]` and refreshes on the realtime signal channel; every tab reads it.
+One client component per contest (`ContestHub`) for every member role. `useContestState` makes one shared `GET /api/league/events/[id]`, refreshes it on the realtime signal channel, and sends versioned mutations. Some tabs add their own reads: Standings fetches `/standings`, and the Run the contest console fetches `/members`, `/dashboard` and `/payment`.
+
+The hub's actions live under `/api/league/events/[id]/*`: `registration/{open,close}`, `schedule`, `start`, `complete`, `results/publish`, `cancel`, `invites[/[inviteId]]`, `members[/[membershipId]]`, `entry`, `leave`, `runs/[runId]/{window,scores,video}`, `cover`, `payment`, `dashboard`, `standings` (`history` has no caller yet). Joining uses `POST /api/league/join` and the invite preview `GET /api/league/invites/[code]`.
 
 - **Your next step.** One card with one primary action, from `nextStepFor` (`src/lib/league/next-step.ts`, tested) fed by `buildNextStepInput` (`src/lib/league/hub-state.ts`). Examples: "Invite riders", "Submit your Roller · Park video", "3 runs waiting for your score", "Publish the results".
 - **Tabs** (`hubTabsFor`, deep-link with `?tab=`):
@@ -78,7 +82,7 @@ The engine is pure and lives in `src/lib/league/rating/`. It follows Article 9 (
 
 ## Plans, quota and payment gate
 
-Plans live in `src/data/event_plans.json`:
+Plans are seeded from `src/data/event_plans.json` (through `src/db/seed-data/taxonomy.ts`) and admins edit them at `/admin/league/plans`. The seeded values:
 
 | Plan | Price | Contests / month | Riders | Judges | Organizers |
 | --- | --- | --- | --- | --- | --- |
@@ -105,7 +109,7 @@ Plans live in `src/data/event_plans.json`:
 
 ## Covers and links
 
-- **Links.** `url`, `instagram` and `youtube` are http(s) URLs. Organizers set them in the create form and the console's Event tab, and curators can edit them. They render on cards, the featured hero and the contest page.
+- **Links.** `url`, `instagram` and `youtube` are http(s) URLs. Organizers set them in the create form and the console's Contest tab, and curators can edit them. They render on cards, the featured hero and the contest page.
 - **Covers.** `POST /api/league/events/[id]/cover` (multipart `image`, `expectedVersion`, `idempotencyKey`) and `DELETE` (JSON) are organizer routes. `/api/admin/league/contests/[id]/cover` is the curator route. Both use `src/app/api/league/cover-handlers.ts`:
   - The caller is authorized before the upload, so a rejected caller never writes to storage.
   - The file goes to the R2 events bucket through `uploadEventImage`.
