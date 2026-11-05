@@ -65,6 +65,13 @@ Inputs, selects, and textareas must render at 16px or larger on mobile, otherwis
 - `src/components/games/create/GameCreateForm.tsx`: helper subcomponents live in `form-parts.tsx`. Trick-catalog filtering (AND logic) lives in `trick-catalog-filters.ts`, which has tests.
 - `src/components/games/board/GameBoardControls.tsx`: renders the desktop deck and `GameSheet`, the phone action surface. Each phase's next step comes from `deriveGameSheetView` in `sheet-state.ts` (tested), derived game state from `layout/header-state.ts` (tested), and presentational parts are in `layout/header-parts.tsx`.
 - `src/components/games/award/`: the end-of-game results dialog. `AwardDialog` renders it and `AwardResultsTable` the standings; the copy, ranking and viewer row come from `buildAwardResult` in `src/lib/games/award-result.ts` (tested), which also feeds the board's end bar through `layout/header-state.ts`. `src/components/games/shared/LetterTrack.tsx` draws elimination letters for both the dialog and the live crew board.
+- `src/components/league/`: the League section. Every contest link is built with `src/lib/league/urls.ts`.
+  - `landing/`: `LeagueLanding`, `LeagueWash`, `MyContests`, and the `Contest*` parts (directory, card, cover fallback, featured hero, status filter, empty state, skeleton, results summary).
+  - `cover/`: `ContestCoverField` and `upload-contest-cover.ts`, which uploads the cover after the contest is created.
+  - `create/LeagueCreateForm.tsx`, also used in curator mode by `/admin/league/contests/new`. Shared fieldset parts live in `form-parts.tsx`.
+  - `manage/ManageConsole.tsx` with `manage-parts.tsx`, `judge/JudgeQueue.tsx`, and `hooks/useLeagueRealtime.ts`.
+  - Join entry points: `JoinByCodeEntry` and `JoinWithInvite`.
+- `src/components/admin/league/contests/`: `AdminContestsTable`, `AdminContestFilters` and `ContestCurationPanel`, for curator browsing and curation actions. See `docs/league.md`.
 - Overlays pick their initial focus from a `data-autofocus` element (`useFocusTrap`); mark the dialog's main action with it.
 - `src/components/feedback/`: `BottomSheet` is the non-modal game-sheet, `SideDrawer` plus `DrawerParts` are for anything opened on purpose. See `DESIGN.md`, `components.overlays`.
 - When JSX dereferences `game`, keep the explicit `game &&` guard. TypeScript narrowing is lost across module boundaries.
