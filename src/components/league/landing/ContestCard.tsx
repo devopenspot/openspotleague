@@ -7,7 +7,7 @@ import {
   MapPin,
   Youtube,
 } from "lucide-react";
-import { AppImage } from "@/components/ui/AppImage";
+import { ContestCover } from "@/components/league/landing/ContestCover";
 import type { ContestEnriched, ContestStatus } from "@/types/league";
 import {
   BODY,
@@ -18,15 +18,15 @@ import {
   tagClass,
 } from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
-import { buildEventDetailUrl } from "@/lib/league/urls";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
-export type EventCardVariant = "default" | "compact";
+export type ContestCardVariant = "default" | "compact";
 
-interface EventCardProps {
+interface ContestCardProps {
   event: ContestEnriched;
   priority?: boolean;
-  /** `compact` is the quieter Past-events card: shorter photo, no description. */
-  variant?: EventCardVariant;
+  /** `compact` is the quieter Past-contests card: shorter photo, no description. */
+  variant?: ContestCardVariant;
 }
 
 const STATUS_LABEL: Record<ContestStatus, string> = {
@@ -42,25 +42,25 @@ const STATUS_DOT: Record<ContestStatus, string> = {
 };
 
 /**
- * Directory card. The whole card opens the internal event page through a
+ * Directory card. The whole card opens the contest page through a
  * stretched title link; the official site and socials are the only other
  * targets, as icon buttons in the footer (raised above the stretched link).
  */
-export function EventCard({
+export function ContestCard({
   event,
   priority = false,
   variant = "default",
-}: EventCardProps) {
+}: ContestCardProps) {
   const { location } = event;
   const compact = variant === "compact";
   const isCompleted = event.status === "completed";
-  const href = buildEventDetailUrl(event.slug);
+  const href = buildContestDetailUrl(event.slug);
   const place = [location.city, location.country].filter(Boolean).join(", ");
 
   return (
     <article
-      data-event-card={event.id}
-      data-event-status={event.status}
+      data-contest-card={event.id}
+      data-contest-status={event.status}
       className={`group relative flex h-full w-full flex-col overflow-hidden ${CARD_FRAME} text-on-surface transition-colors duration-150 ease-out hover:border-on-surface focus-within:border-on-surface`}
     >
       <div
@@ -69,10 +69,10 @@ export function EventCard({
           compact ? "h-36" : "h-48 sm:h-52",
         )}
       >
-        <AppImage
-          src={event.image}
-          alt=""
-          fill
+        <ContestCover
+          image={event.image}
+          categoryName={event.categoryName}
+          sports={event.sports}
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className={cn(
             "pointer-events-none object-cover",
@@ -80,9 +80,8 @@ export function EventCard({
               "transition-transform duration-300 ease-out group-hover:scale-102",
             isCompleted && "opacity-60 grayscale",
           )}
-          referrerPolicy="no-referrer"
-          unoptimized
           priority={priority}
+          dimmed={isCompleted}
         />
         <div
           aria-hidden="true"
@@ -189,20 +188,20 @@ export function EventCard({
             aria-hidden="true"
             className="inline-flex items-center gap-1.5 font-display text-xs font-bold uppercase tracking-pill text-on-surface"
           >
-            View event
+            View contest
             <ArrowRight
               size={14}
               className="transition-transform duration-150 ease-out group-hover:translate-x-0.5"
             />
           </span>
-          <EventCardLinks event={event} />
+          <ContestCardLinks event={event} />
         </div>
       </div>
     </article>
   );
 }
 
-function EventCardLinks({ event }: { event: ContestEnriched }) {
+function ContestCardLinks({ event }: { event: ContestEnriched }) {
   if (!event.url && !event.instagram && !event.youtube) return null;
   const button = `relative z-10 ${iconButtonClass("outline")}`;
   return (

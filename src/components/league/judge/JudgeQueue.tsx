@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Touch-first judge queue (`/sport-events/[slug]/judge`): current run with
+ * Touch-first judge queue (`/league/[slug]/judge`): current run with
  * window countdown, one stepper per criterion (shared RunScoreForm), submit +
  * revise, past submissions list. Same state-driven, realtime-refreshed model
  * as the organizer console.
@@ -40,6 +40,7 @@ import {
   DEFAULT_READ_TIMEOUT_MS,
   fetchWithTimeout,
 } from "@/lib/utils/fetch-timeout";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
 type RunState = LeagueEventState["runs"][number];
 type ScoreSummary = RunState["scores"][number];
@@ -248,7 +249,7 @@ export function JudgeQueue({
         </div>
         <button
           type="button"
-          onClick={() => router.push(`/sport-events/${slug}`)}
+          onClick={() => router.push(buildContestDetailUrl(slug))}
           className={controlClass("outline")}
         >
           Event page

@@ -159,7 +159,7 @@ export const EYEBROW =
 /** Eyebrow on a route wash (support cyan, profile lime): full-contrast ink. */
 export const EYEBROW_ON_WASH =
   "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-surface";
-/** Eyebrow on a saturated wash (sport-events blue, warm hero): white ink. */
+/** Eyebrow on a saturated wash (league blue, warm hero): white ink. */
 export const EYEBROW_ON_GRADIENT =
   "font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-gradient/80";
 export const EYEBROW_ON_WIRE =
@@ -181,7 +181,7 @@ export const CARD_TITLE =
 export const META =
   "font-display text-xs font-semibold uppercase leading-tight tracking-label text-secondary";
 
-/** META on a saturated wash (sport-events blue). */
+/** META on a saturated wash (league blue). */
 export const META_ON_GRADIENT =
   "font-display text-xs font-semibold uppercase leading-tight tracking-label text-on-gradient/80";
 

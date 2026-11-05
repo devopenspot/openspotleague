@@ -57,7 +57,7 @@ describe("notificationHref", () => {
   it("deep-links member alerts to the event page", () => {
     expect(
       notificationHref("league_schedule_published", { eventSlug: "night-jam" }),
-    ).toBe("/sport-events/night-jam");
+    ).toBe("/league/night-jam");
     expect(notificationHref("league_points_earned", {})).toBeNull();
   });
 });

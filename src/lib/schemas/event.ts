@@ -214,7 +214,7 @@ export const SportEventListResponseSchema = z.object({
 }).strict();
 
 /**
- * Status filter for `/sport-events?status=…`. The status field is
+ * Status filter for `/league?status=…`. The status field is
  * derived from `event.startDate` / `event.endDate`, so this is a
  * client-side projection, not a DB column. The default is `all`
  * (no param) and is not serialized in the URL.

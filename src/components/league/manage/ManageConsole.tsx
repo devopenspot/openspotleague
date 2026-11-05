@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Organizer console for a league event (`/sport-events/[slug]/manage`).
+ * Organizer console for a contest (`/league/[slug]/manage`).
  * One GET state payload (version-gated ETag) drives every tab; mutations
  * carry `expectedVersion` + a UUID idempotency key and refresh the state.
  * Polls every 5 s while the event is live (dedicated realtime channel
@@ -47,6 +47,7 @@ import {
   DEFAULT_READ_TIMEOUT_MS,
   fetchWithTimeout,
 } from "@/lib/utils/fetch-timeout";
+import { buildContestDetailUrl } from "@/lib/league/urls";
 
 const CATEGORY_OPTIONS: readonly {
   value: LeagueEventState["event"]["category"];
@@ -323,10 +324,10 @@ export function ManageConsole({ eventId }: { eventId: string }) {
         </div>
         <button
           type="button"
-          onClick={() => router.push(`/sport-events/${event.slug}`)}
+          onClick={() => router.push(buildContestDetailUrl(event.slug))}
           className={controlClass("outline")}
         >
-          View public page
+          View contest page
         </button>
       </div>
 

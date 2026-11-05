@@ -1,9 +1,12 @@
-const JOIN_PATH = /^\/sport-events\/join\/([^/?#]+)/;
+import { buildContestJoinUrl } from "@/lib/league/urls";
+
+const JOIN_PATH = /^\/league\/join\/([^/?#]+)/;
 
 /**
- * Where a pasted invite code or event invite link should go. Only this app's
- * own sport-events join paths are followed, so pasted text can never navigate
- * somewhere else. Invite codes are case-sensitive, so they pass through unchanged.
+ * Where a pasted invite code or contest invite link should go. Only this
+ * app's own `/league/join/<code>` paths are followed, so pasted text can never
+ * navigate somewhere else. Invite codes are case-sensitive, so they pass
+ * through unchanged.
  */
 export function resolveEventJoinPath(input: string): string | null {
   const value = input.trim();
@@ -20,10 +23,8 @@ export function resolveEventJoinPath(input: string): string | null {
     }
   }
 
-  if (pathname === null) {
-    return `/sport-events/join/${encodeURIComponent(value)}`;
-  }
+  if (pathname === null) return buildContestJoinUrl(value);
   const joinCode = JOIN_PATH.exec(pathname)?.[1];
-  if (joinCode) return `/sport-events/join/${joinCode}`;
+  if (joinCode) return `/league/join/${joinCode}`;
   return null;
 }

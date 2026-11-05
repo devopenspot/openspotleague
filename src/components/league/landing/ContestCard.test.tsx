@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import type { ContestEnriched } from "@/types/league";
-import { EventCard } from "./EventCard";
+import { ContestCard } from "./ContestCard";
 
 const EVENT: ContestEnriched = {
   id: "e1",
@@ -26,16 +26,16 @@ const EVENT: ContestEnriched = {
   dateRangeLabel: "DEC 1, 2026",
 };
 
-describe("EventCard", () => {
-  it("links the card title to the internal event page", () => {
-    render(<EventCard event={EVENT} />);
+describe("ContestCard", () => {
+  it("links the card title to the contest page", () => {
+    render(<ContestCard event={EVENT} />);
     expect(
       screen.getByRole("link", { name: "Street League Paris" }),
-    ).toHaveAttribute("href", "/sport-events/street%20league%2Fparis");
+    ).toHaveAttribute("href", "/league/street%20league%2Fparis");
   });
 
   it("keeps exactly one official-site link, opening in a new tab", () => {
-    render(<EventCard event={EVENT} />);
+    render(<ContestCard event={EVENT} />);
     const official = screen.getAllByRole("link", { name: /official site/i });
     expect(official).toHaveLength(1);
     expect(official[0]).toHaveAttribute("href", "https://example.com/sls");
@@ -46,7 +46,25 @@ describe("EventCard", () => {
   });
 
   it("drops the description in the compact variant", () => {
-    render(<EventCard event={EVENT} variant="compact" />);
+    render(<ContestCard event={EVENT} variant="compact" />);
     expect(screen.queryByText("Test event")).not.toBeInTheDocument();
+  });
+});
+
+describe("ContestCard cover", () => {
+  it("renders the designed fallback when the contest has no uploaded cover", () => {
+    const { container } = render(
+      <ContestCard event={{ ...EVENT, image: "/opengraph.png" }} />,
+    );
+    expect(
+      container.querySelector('[data-contest-cover="fallback"]'),
+    ).not.toBeNull();
+  });
+
+  it("renders the uploaded cover photo when there is one", () => {
+    const { container } = render(<ContestCard event={EVENT} />);
+    expect(
+      container.querySelector('[data-contest-cover="fallback"]'),
+    ).toBeNull();
   });
 });

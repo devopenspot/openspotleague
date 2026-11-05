@@ -151,29 +151,29 @@ describe("AppNavList", () => {
     );
   });
 
-  it("exposes Events (/sport-events) across desktop, mobile-tab, and mobile-drawer variants", () => {
-    navigation.pathname = "/sport-events";
+  it("exposes League (/league) across desktop, mobile-tab, and mobile-drawer variants", () => {
+    navigation.pathname = "/league/night-jam";
 
     const { rerender } = render(
       <AppNavList variant="desktop" savedCount={0} onSelect={vi.fn()} />,
     );
-    const desktopLink = screen.getByRole("link", { name: "Events" });
-    expect(desktopLink).toHaveAttribute("href", "/sport-events");
-    expect(desktopLink).toHaveAttribute("id", "nav-btn-events");
+    const desktopLink = screen.getByRole("link", { name: "League" });
+    expect(desktopLink).toHaveAttribute("href", "/league");
+    expect(desktopLink).toHaveAttribute("id", "nav-btn-league");
     expect(desktopLink).toHaveAttribute("aria-current", "page");
 
     rerender(
       <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
     );
-    const mobileTabLink = screen.getByRole("link", { name: "Events" });
-    expect(mobileTabLink).toHaveAttribute("href", "/sport-events");
+    const mobileTabLink = screen.getByRole("link", { name: "League" });
+    expect(mobileTabLink).toHaveAttribute("href", "/league");
     expect(mobileTabLink).toHaveAttribute("aria-current", "page");
 
     rerender(
       <AppNavList variant="mobile-drawer" savedCount={0} onSelect={vi.fn()} />,
     );
-    const drawerLink = screen.getByRole("link", { name: "Events" });
-    expect(drawerLink).toHaveAttribute("href", "/sport-events");
+    const drawerLink = screen.getByRole("link", { name: "League" });
+    expect(drawerLink).toHaveAttribute("href", "/league");
     expect(drawerLink).toHaveAttribute("aria-current", "page");
   });
 });

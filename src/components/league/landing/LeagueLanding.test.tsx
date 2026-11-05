@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import SportEventsLayout from "@/app/sport-events/layout";
+import { LeagueWash } from "./LeagueWash";
 import type { ContestEnriched } from "@/types/league";
-import { SportEventsTab } from "./SportEventsTab";
+import { LeagueLanding } from "./LeagueLanding";
 
 const { push, replace, user, search } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -13,12 +13,16 @@ const { push, replace, user, search } = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push, replace }),
-  usePathname: () => "/sport-events",
+  usePathname: () => "/league",
   useSearchParams: () => new URLSearchParams(search.current),
 }));
 
 vi.mock("@/lib/contexts/user-context", () => ({
   useUser: () => user.current,
+}));
+
+vi.mock("./MyContests", () => ({
+  MyContests: () => <section aria-label="My contests stub" />,
 }));
 
 function event(
@@ -55,46 +59,55 @@ const EVENTS = [
   event("c", "completed", "2026-06-01"),
 ];
 
-describe("SportEventsTab league entries", () => {
-  it("hides the create CTA from guests but keeps join-by-code and My league", () => {
+describe("LeagueLanding entries", () => {
+  it("shows guests join-by-code but no create CTA and no My contests", () => {
     user.current = null;
-    render(<SportEventsTab featured={undefined} events={[]} />);
+    render(<LeagueLanding featured={undefined} events={[]} />);
     expect(
-      screen.queryByRole("link", { name: /create event/i }),
+      screen.queryByRole("link", { name: /create a contest/i }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /my league/i })).toHaveAttribute(
-      "href",
-      "/league",
-    );
+    expect(
+      screen.queryByRole("region", { name: /my contests stub/i }),
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /join with code/i }),
     ).toBeInTheDocument();
   });
 
-  it("shows the create CTA only for signed-in users", () => {
+  it("shows signed-in users the create CTA and their own contests", () => {
     user.current = { id: "u1", name: "Organizer", email: "u@x.dev" };
-    render(<SportEventsTab featured={undefined} events={[]} />);
+    render(<LeagueLanding featured={undefined} events={[]} />);
     expect(
-      screen.getByRole("link", { name: /create event/i }),
+      screen.getByRole("link", { name: /create a contest/i }),
     ).toHaveAttribute("href", "/league/new");
-    expect(screen.getByRole("link", { name: /my league/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /my contests stub/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("explains that public listings arrive with paid tiers when the directory is empty", () => {
+    user.current = null;
+    search.current = "";
+    render(<LeagueLanding featured={undefined} events={[]} />);
+    expect(screen.getByText("No public contests yet")).toBeInTheDocument();
+    expect(screen.getByText(/arrive with the paid tiers/i)).toBeInTheDocument();
   });
 });
 
-describe("SportEventsTab directory", () => {
-  it("wraps routes in the events wash with a visible h1 and segmented filter", () => {
+describe("LeagueLanding directory", () => {
+  it("renders on the league wash with a visible h1 and segmented filter", () => {
     search.current = "";
     const { container } = render(
-      <SportEventsLayout>
-        <SportEventsTab featured={undefined} events={EVENTS} />
-      </SportEventsLayout>,
+      <LeagueWash>
+        <LeagueLanding featured={undefined} events={EVENTS} />
+      </LeagueWash>,
     );
-    expect(container.firstElementChild).toHaveClass("bg-gradient-events");
+    expect(container.firstElementChild).toHaveClass("bg-gradient-league");
     expect(
-      screen.getByRole("heading", { level: 1, name: "Sport Events" }),
+      screen.getByRole("heading", { level: 1, name: "Contests" }),
     ).toBeVisible();
     const filter = screen.getByRole("group", {
-      name: /filter events by status/i,
+      name: /filter contests by status/i,
     });
     expect(
       within(filter).getByRole("button", { name: /^all/i }),
@@ -103,47 +116,44 @@ describe("SportEventsTab directory", () => {
     expect(
       within(filter).queryByRole("button", { name: /^live/i }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /browse the federations/i }),
-    ).toBeInTheDocument();
   });
 
-  it("features the first active event and splits past events into their own section", () => {
+  it("features the first active contest and splits past contests into their own section", () => {
     search.current = "";
-    render(<SportEventsTab featured={undefined} events={EVENTS} />);
+    render(<LeagueLanding featured={undefined} events={EVENTS} />);
     expect(
-      screen.getByRole("link", { name: /view event/i }),
-    ).toHaveAttribute("href", "/sport-events/a-slug");
+      screen.getByRole("link", { name: /view contest/i }),
+    ).toHaveAttribute("href", "/league/a-slug");
     const upcoming = screen.getByRole("region", { name: /live & upcoming/i });
     expect(within(upcoming).getByRole("link", { name: "Event b" })).toHaveAttribute(
       "href",
-      "/sport-events/b-slug",
+      "/league/b-slug",
     );
-    const past = screen.getByRole("region", { name: /past events/i });
+    const past = screen.getByRole("region", { name: /past contests/i });
     expect(within(past).getByRole("link", { name: "Event c" })).toHaveAttribute(
       "href",
-      "/sport-events/c-slug",
+      "/league/c-slug",
     );
     expect(within(upcoming).queryByText("Event c")).not.toBeInTheDocument();
   });
 
-  it("shows only past events, with no featured hero, under the Past filter", () => {
+  it("shows only past contests, with no featured hero, under the Past filter", () => {
     search.current = "status=completed";
-    render(<SportEventsTab featured={undefined} events={EVENTS} />);
+    render(<LeagueLanding featured={undefined} events={EVENTS} />);
     expect(
       screen.queryByRole("region", { name: /featured/i }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: /live & upcoming/i }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /past events/i })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /past contests/i })).toBeInTheDocument();
   });
 
   it("offers a reset when a filter has no results", () => {
     search.current = "status=live";
-    render(<SportEventsTab featured={undefined} events={EVENTS} />);
+    render(<LeagueLanding featured={undefined} events={EVENTS} />);
     expect(
-      screen.getByRole("link", { name: /show all events/i }),
-    ).toHaveAttribute("href", "/sport-events");
+      screen.getByRole("link", { name: /show all contests/i }),
+    ).toHaveAttribute("href", "/league");
   });
 });

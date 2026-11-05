@@ -1,6 +1,11 @@
 import { notFound, redirect } from "next/navigation";
+import { LeagueWash } from "@/components/league/landing/LeagueWash";
 import { JudgeQueue } from "@/components/league/judge/JudgeQueue";
 import { getSessionUser } from "@/lib/auth/server";
+import {
+  buildContestDetailUrl,
+  buildContestJudgeUrl,
+} from "@/lib/league/urls";
 import {
   getLeagueEventState,
   resolveLeagueEventIdBySlug,
@@ -8,7 +13,8 @@ import {
 
 export const metadata = {
   title: "Judge queue",
-  description: "Score live runs for this league sport event.",
+  description: "Score live runs for this contest.",
+  robots: { index: false, follow: false },
 };
 
 export default async function JudgePage({
@@ -19,7 +25,7 @@ export default async function JudgePage({
   const { slug } = await params;
   const user = await getSessionUser();
   if (!user) {
-    redirect(`/login?next=${encodeURIComponent(`/sport-events/${slug}/judge`)}`);
+    redirect(`/login?next=${encodeURIComponent(buildContestJudgeUrl(slug))}`);
   }
   const resolved = await resolveLeagueEventIdBySlug(slug);
   if (!resolved) notFound();
@@ -27,7 +33,11 @@ export default async function JudgePage({
   if (!state) notFound();
   const role = state.myRole;
   if (role !== "main_organizer" && role !== "organizer" && role !== "judge") {
-    redirect(`/sport-events/${slug}`);
+    redirect(buildContestDetailUrl(slug));
   }
-  return <JudgeQueue eventId={resolved.id} slug={slug} />;
+  return (
+    <LeagueWash>
+      <JudgeQueue eventId={resolved.id} slug={slug} />
+    </LeagueWash>
+  );
 }

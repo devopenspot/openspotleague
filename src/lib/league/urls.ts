@@ -1,7 +1,13 @@
 import { ROUTES } from "@/lib/navigation/nav";
 import { slugify } from "@/lib/utils/slug";
 
-export interface BuildEventMapUrlInput {
+/**
+ * Every contest path in the app is built here, so the `/league/**` URL
+ * space has a single source of truth. Pure functions: safe on server and
+ * client, no URL reads, no clock.
+ */
+
+export interface BuildContestMapUrlInput {
   location: {
     country: string;
     region?: string;
@@ -9,21 +15,13 @@ export interface BuildEventMapUrlInput {
 }
 
 /**
- * Build the deep-link URL an event card sends the rider to. The URL
- * is the single source of truth for the map's layer + filter state —
- * `useMapLayer` and `useMapFilter` are the only readers, and changes
- * to the contract happen here. The `?country=` (and optional
- * `?region=`) param reuses the existing `useMapFilter` logic, which
- * is the "spots in the same country / region of the event" filter.
- *
- * The layer param explicitly keeps both spots and events visible, so this
- * deep link remains stable if the map's default layer set changes later.
- *
- * The function never reads from the URL, never calls `Date.now()`,
- * and never imports server-only modules — it is safe to call from
- * both server and client components.
+ * Deep link from a contest to the map, filtered to the contest's country
+ * (and optional region). The URL is the single source of truth for the
+ * map's layer + filter state — `useMapLayer` and `useMapFilter` are the only
+ * readers. The layer param keeps both spots and events visible, so this link
+ * stays stable if the map's default layer set changes later.
  */
-export function buildEventMapUrl(input: BuildEventMapUrlInput): string {
+export function buildContestMapUrl(input: BuildContestMapUrlInput): string {
   const countrySlug = slugify(input.location.country);
   const params = new URLSearchParams();
   params.set("layer", "spots,events");
@@ -34,7 +32,25 @@ export function buildEventMapUrl(input: BuildEventMapUrlInput): string {
   return `${ROUTES.map}?${params.toString()}`;
 }
 
-/** Internal event page (`/sport-events/[slug]`). */
-export function buildEventDetailUrl(slug: string): string {
-  return `/sport-events/${encodeURIComponent(slug)}`;
+/** Contest detail page (`/league/[slug]`). */
+export function buildContestDetailUrl(slug: string): string {
+  return `${ROUTES.league}/${encodeURIComponent(slug)}`;
 }
+
+/** Organizer console (`/league/[slug]/manage`). */
+export function buildContestManageUrl(slug: string): string {
+  return `${buildContestDetailUrl(slug)}/manage`;
+}
+
+/** Judge queue (`/league/[slug]/judge`). */
+export function buildContestJudgeUrl(slug: string): string {
+  return `${buildContestDetailUrl(slug)}/judge`;
+}
+
+/** Invite landing (`/league/join/[code]`) shared by link and QR code. */
+export function buildContestJoinUrl(code: string): string {
+  return `${ROUTES.league}/join/${encodeURIComponent(code)}`;
+}
+
+/** Contest creation form (`/league/new`). */
+export const CONTEST_NEW_PATH = `${ROUTES.league}/new`;

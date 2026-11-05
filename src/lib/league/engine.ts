@@ -121,7 +121,7 @@ export function maxScheduleDate(now: Date): Date {
 // ---------- calendar date range ----------
 
 /**
- * League-owned date-range validation: unlike the shared sport-events helper
+ * League-owned date-range validation: unlike the shared league validation helper
  * (which throws a plain Error the route layer cannot classify), this maps to
  * the typed 400 INVALID_INPUT contract.
  */

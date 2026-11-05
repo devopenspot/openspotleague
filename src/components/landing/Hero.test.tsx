@@ -11,18 +11,18 @@ vi.mock("@/components/shell/JoinWithCode", () => ({
 }));
 
 describe("Hero", () => {
-  it("renders action pill links including Events (/sport-events)", () => {
+  it("renders the hero action pills without a league link", () => {
     render(<Hero />);
 
-    const eventsLink = screen.getByRole("link", { name: /events/i });
-    expect(eventsLink).toHaveAttribute("href", "/sport-events");
-
-    const tvLink = screen.getByRole("link", { name: /^tv$/i });
-    expect(tvLink).toHaveAttribute("href", "/tv");
-
-    const gamesLink = screen.getByRole("link", {
-      name: /training - challenges - league/i,
-    });
-    expect(gamesLink).toHaveAttribute("href", "/games");
+    expect(screen.getByRole("button", { name: "Nearby" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Join with code" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Create new spot" }),
+    ).toHaveAttribute("href", "/spots/new");
+    expect(
+      screen.queryByRole("link", { name: /league|events/i }),
+    ).not.toBeInTheDocument();
   });
 });

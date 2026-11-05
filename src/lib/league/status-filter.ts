@@ -64,7 +64,7 @@ export function filterEventsByStatus<T extends Contest>(
 }
 
 /**
- * Status filter for `/sport-events?status=…`. The status field is
+ * Status filter for `/league?status=…`. The status field is
  * derived from the event's start/end dates (see
  * `src/lib/league/status.ts`) and the filter is applied on
  * the client after the cached `listEvents()` returns.

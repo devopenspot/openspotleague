@@ -22,6 +22,7 @@ import {
   iconButtonClass,
   tagClass,
 } from "@/components/ui/recipes";
+import { buildContestJoinUrl } from "@/lib/league/urls";
 
 /**
  * @deprecated Admin league panels still use this square control. League
@@ -134,7 +135,7 @@ export function InviteRow({
   disabled?: boolean;
 }) {
   const [copied, setCopied] = useState<"link" | "qr" | "failed" | null>(null);
-  const url = `${joinBase}/sport-events/join/${invite.code}`;
+  const url = `${joinBase}${buildContestJoinUrl(invite.code)}`;
   return (
     <li
       className={cn(

@@ -37,6 +37,8 @@ import { SportDisciplineSchema, SportEventCategorySchema } from "@/lib/schemas/e
 import type { ContestCategory } from "@/types/league";
 import { leagueCreateEventInputSchema } from "@/lib/schemas/league";
 import type { LeagueCreateEventResponse } from "@/lib/schemas/league";
+import { buildContestManageUrl } from "@/lib/league/urls";
+import { ROUTES } from "@/lib/navigation/nav";
 
 const CATEGORY_OPTIONS: { value: ContestCategory; label: string }[] =
   SportEventCategorySchema.options.map((value) => ({
@@ -174,7 +176,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
         return;
       }
       const data = raw as LeagueCreateEventResponse;
-      router.push(`/sport-events/${data.slug}/manage`);
+      router.push(buildContestManageUrl(data.slug));
     } catch {
       setSubmitError(
         "Event could not be created. Check your connection and try again.",
@@ -191,7 +193,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
       aria-labelledby="league-create-title"
       className="space-y-6"
     >
-      <Link href="/league" className={controlClass("outline", "sm")}>
+      <Link href={ROUTES.league} className={controlClass("outline", "sm")}>
         <ArrowLeft size={14} aria-hidden="true" />
         My league
       </Link>
@@ -203,7 +205,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             id="league-create-title"
             className={`mt-1 ${PAGE_TITLE} text-on-surface`}
           >
-            Create a sport event
+            Create a contest
           </h1>
           {organizerName ? (
             <p className={`mt-2 max-w-xl ${BODY}`}>
@@ -385,7 +387,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
       ) : null}
 
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Link href="/league" className={controlClass("outline")}>
+        <Link href={ROUTES.league} className={controlClass("outline")}>
           Cancel
         </Link>
         <button

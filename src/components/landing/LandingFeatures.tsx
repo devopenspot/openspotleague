@@ -79,7 +79,7 @@ const FEATURES: readonly FeatureCardProps[] = [
       "Award scores to each rider and see them ranked on a general leaderboard",
     ],
     ctaText: "Join the League",
-    ctaHref: ROUTES.events,
+    ctaHref: ROUTES.league,
   },
 ] as const;
 

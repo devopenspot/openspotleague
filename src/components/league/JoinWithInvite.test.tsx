@@ -6,7 +6,7 @@ const fetchMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => "/sport-events/join/abcdefgh1234",
+  usePathname: () => "/league/join/abcdefgh1234",
   useSearchParams: () => new URLSearchParams(),
 }));
 

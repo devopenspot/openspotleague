@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Invite landing for shared league links/QR (`/sport-events/join/[code]`).
+ * Invite landing for shared league links/QR (`/league/join/[code]`).
  * Public preview → sign-in gate for guests → join confirm for riders →
  * redirect to the event page.
  */
@@ -27,6 +27,8 @@ import {
   DEFAULT_READ_TIMEOUT_MS,
   fetchWithTimeout,
 } from "@/lib/utils/fetch-timeout";
+import { buildContestDetailUrl, buildContestJoinUrl } from "@/lib/league/urls";
+import { ROUTES } from "@/lib/navigation/nav";
 
 interface InvitePreview {
   eventSlug: string;
@@ -95,7 +97,7 @@ export function JoinWithInvite({ code }: { code: string }) {
         return;
       }
       setJoinState("done");
-      router.push(`/sport-events/${preview.eventSlug}`);
+      router.push(buildContestDetailUrl(preview.eventSlug));
     } catch {
       setError("Joining did not work. Check your connection and try again.");
       setJoinState("idle");
@@ -162,7 +164,7 @@ export function JoinWithInvite({ code }: { code: string }) {
               <div className="mt-2">
                 <SignInLink
                   variant="dialog"
-                  next={`/sport-events/join/${code}`}
+                  next={buildContestJoinUrl(code)}
                 />
                 <p className="mt-2 text-center text-xs text-secondary">
                   Sign in to join as {roleLabel(preview.role)}.
@@ -176,10 +178,10 @@ export function JoinWithInvite({ code }: { code: string }) {
           </div>
         )}
         <Link
-          href="/sport-events"
+          href={ROUTES.league}
           className={`mt-5 w-full ${controlClass("outline")}`}
         >
-          All events
+          All contests
         </Link>
       </div>
     </div>
