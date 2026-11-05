@@ -32,7 +32,8 @@ import {
   statusLabel,
 } from "@/lib/league/ui-state";
 import {
-  buildContestDetailUrl,
+  buildContestHubUrl,
+  buildContestJudgeUrl,
   buildContestManageUrl,
   CONTEST_NEW_PATH,
 } from "@/lib/league/urls";
@@ -63,9 +64,12 @@ function planLabel(planSlug: string): string {
 }
 
 function MyContestCard({ item }: { item: MyContestItem }) {
+  // Straight to the role's working tab in the contest hub.
   const href = isOrganizerRole(item.myRole)
     ? buildContestManageUrl(item.slug)
-    : buildContestDetailUrl(item.slug);
+    : item.myRole === "judge"
+      ? buildContestJudgeUrl(item.slug)
+      : buildContestHubUrl(item.slug, "my-runs");
   return (
     <li>
       <Link

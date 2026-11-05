@@ -1,22 +1,19 @@
 "use client";
 
 /**
- * Organizer console for a contest (`/league/[slug]/manage`).
- * One GET state payload (version-gated ETag) drives every tab; mutations
- * carry `expectedVersion` + a UUID idempotency key and refresh the state.
- * Polls every 5 s while the event is live (dedicated realtime channel
- * wiring lands with Phase 3d).
+ * Organizer tools for a contest, rendered in the hub's "Run the contest"
+ * tab: contest details and lifecycle, people and invites, a read-only run
+ * overview and metrics. State comes from the hub (`useContestState`).
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { BarChart3, ClipboardList, Crown, Settings, Users } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { BarChart3, ClipboardList, Settings, Users } from "lucide-react";
 import { PaymentGateNotice } from "@/components/league/PaymentGateNotice";
 import { FormSection, SelectField, TextField } from "@/components/league/form-parts";
 import { ContestCoverField } from "@/components/league/cover/ContestCoverField";
 import { uploadContestCover } from "@/components/league/cover/upload-contest-cover";
-import { useLeagueRealtime } from "@/components/league/hooks/useLeagueRealtime";
+import type { ContestStateApi } from "@/components/league/hub/useContestState";
 import {
   ConfirmButton,
   InviteRow,
@@ -27,20 +24,16 @@ import {
 import {
   BODY,
   CARD,
-  CARD_NESTED,
   CARD_TITLE,
   EMPTY_STATE,
   EYEBROW,
   LABEL,
   META,
-  PAGE_TITLE,
   SEGMENTED_TRACK,
   TILE,
   alertClass,
   controlClass,
-  pageContainer,
   segmentClass,
-  tagClass,
 } from "@/components/ui/recipes";
 import { isOrganizerRole } from "@/lib/league/ui-state";
 import type { LeagueDashboard, LeagueEventState } from "@/lib/services/league";
@@ -49,7 +42,6 @@ import {
   DEFAULT_READ_TIMEOUT_MS,
   fetchWithTimeout,
 } from "@/lib/utils/fetch-timeout";
-import { buildContestDetailUrl } from "@/lib/league/urls";
 
 const CATEGORY_OPTIONS: readonly {
   value: LeagueEventState["event"]["category"];
@@ -74,30 +66,23 @@ const VISIBILITY_OPTIONS = [
   { value: "public", label: "Public directory" },
 ] as const;
 
-type Tab = "config" | "roster" | "live" | "results" | "metrics";
+type Tab = "config" | "roster" | "live" | "metrics";
 
 const TABS: { id: Tab; label: string; icon: typeof Settings }[] = [
   { id: "config", label: "Contest", icon: Settings },
   { id: "roster", label: "People", icon: Users },
   { id: "live", label: "Runs", icon: ClipboardList },
   { id: "metrics", label: "Metrics", icon: BarChart3 },
-  { id: "results", label: "Results", icon: Crown },
 ];
 
-/** Judges see the run queue + results; riders see them read-only. */
-function visibleTabs(
-  organizer: boolean,
-): { id: Tab; label: string; icon: typeof Settings }[] {
-  if (organizer) return TABS;
-  return TABS.filter(
-    (entry) =>
-      entry.id !== "config" && entry.id !== "roster" && entry.id !== "metrics",
-  );
-}
-
-export function ManageConsole({ eventId }: { eventId: string }) {
-  const router = useRouter();
-  const [state, setState] = useState<LeagueEventState | null>(null);
+/**
+ * Organizer tools inside the contest hub's "Run the contest" tab. Shares
+ * the hub's contest state (one fetch + realtime); judging, windows and
+ * standings live in their own hub tabs.
+ */
+export function ManageConsole({ api }: { api: ContestStateApi }) {
+  const state = api.state!;
+  const eventId = state.event.id;
   const [members, setMembers] = useState<
     {
       membershipId: string;
@@ -107,128 +92,23 @@ export function ManageConsole({ eventId }: { eventId: string }) {
     }[]
   >([]);
   const [tab, setTab] = useState<Tab>("config");
-  const [error, setError] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [inviteRole, setInviteRole] = useState<"organizer" | "judge" | "rider">(
     "rider",
   );
   const [inviteExpiry, setInviteExpiry] = useState("7");
-  const [reloadTick, setReloadTick] = useState(0);
-  const stateRef = useRef<LeagueEventState | null>(null);
-
-  const load = useCallback(
-    async (opts: { isCancelled?: () => boolean } = {}) => {
-      try {
-        const response = await fetchWithTimeout(
-          `/api/league/events/${eventId}`,
-          {
-            cache: "no-store",
-            timeoutMs: DEFAULT_READ_TIMEOUT_MS,
-          },
-        );
-        if (opts.isCancelled?.()) return;
-        if (!response.ok) {
-          if (!stateRef.current) {
-            setError("This contest could not be loaded. Try again shortly.");
-          }
-          return;
-        }
-        const data = (await response.json()) as LeagueEventState;
-        if (opts.isCancelled?.()) return;
-        stateRef.current = data;
-        setError(null);
-        setState(data);
-      } catch (err) {
-        if (opts.isCancelled?.()) return;
-        if (!stateRef.current) {
-          setError("This contest could not be loaded. Try again shortly.");
-        }
-        throw err;
-      }
-    },
-    [eventId],
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        await load({ isCancelled: () => cancelled });
-      } catch {
-        // Error state already set by load() when stateRef.current is null.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [load, reloadTick]);
-
-  const retry = useCallback(() => {
-    setError(null);
-    setReloadTick((tick) => tick + 1);
-  }, []);
-
-  // Realtime refetch via the league event signal channel (polling fallback
-  // inside the subscription) — replaces a plain interval.
-  const connection = useLeagueRealtime(eventId, load);
-
-  const run = useCallback(
-    async (
-      action: (version: number) => Promise<Response>,
-      options?: { onDone?: () => Promise<void> | void },
-    ): Promise<boolean> => {
-      const current = stateRef.current;
-      if (!current) return false;
-      setBusy(true);
-      setActionError(null);
-      try {
-        const response = await action(current.event.version);
-        const raw = await response.json().catch(() => null);
-        if (!response.ok) {
-          setActionError(raw?.message ?? raw?.error ?? "Action failed.");
-          return false;
-        }
-        await load();
-        await options?.onDone?.();
-        return true;
-      } catch {
-        setActionError("Action failed. Check your connection and try again.");
-        return false;
-      } finally {
-        setBusy(false);
-      }
-    },
-    [load],
-  );
 
   const lifecycleAction = useCallback(
-    (
-      path: string,
-      method: "POST" | "PATCH" | "DELETE" = "POST",
-      body?: unknown,
-    ) =>
-      run(async (version) =>
-        fetchWithTimeout(`/api/league/events/${eventId}${path}`, {
-          method,
-          timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            expectedVersion: version,
-            idempotencyKey: crypto.randomUUID(),
-            ...((body as Record<string, unknown>) ?? {}),
-          }),
-        }),
-      ),
-    [eventId, run],
+    (path: string, method: "POST" | "PATCH" | "DELETE" = "POST", body?: unknown) =>
+      api.mutate(path, method, body as Record<string, unknown> | undefined),
+    [api],
   );
 
   const uploadCover = useCallback(
     (file: File) =>
-      run((version) =>
+      api.run((version) =>
         uploadContestCover({ eventId, file, expectedVersion: version }),
       ),
-    [eventId, run],
+    [api, eventId],
   );
 
   const loadMembers = useCallback(async () => {
@@ -248,98 +128,28 @@ export function ManageConsole({ eventId }: { eventId: string }) {
     }
   }, [eventId]);
 
+  const organizer = isOrganizerRole(state.myRole);
   useEffect(() => {
-    if (!isOrganizerRole(state?.myRole ?? null)) return;
+    if (!organizer) return;
     void (async () => {
       await loadMembers();
     })();
-  }, [state?.myRole, loadMembers]);
-
-  const refreshMembers = useCallback(async () => {
-    await load();
-    await loadMembers();
-  }, [load, loadMembers]);
-
-  if (error || !state) {
-    return (
-      <div className={`${pageContainer("5xl")} text-on-surface`}>
-        {error ? (
-          <div
-            role="alert"
-            className={`flex flex-col items-start gap-3 text-sm ${alertClass("error")}`}
-          >
-            {error}
-            <button
-              type="button"
-              onClick={retry}
-              className={controlClass("outline", "sm")}
-            >
-              Retry
-            </button>
-          </div>
-        ) : (
-          <div aria-busy="true">
-            <p className="sr-only">Loading the console…</p>
-            <div className="flex flex-col gap-3" aria-hidden="true">
-              <div className="h-16 w-2/3 animate-pulse rounded-card bg-surface-container-high" />
-              <div className="h-11 w-full animate-pulse rounded-control bg-surface-container-high" />
-              {[0, 1, 2].map((index) => (
-                <div
-                  key={index}
-                  className="h-24 animate-pulse rounded-container border border-outline-variant bg-surface-container-lowest"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
+  }, [organizer, loadMembers, state.counts.riders, state.counts.judges, state.counts.organizers]);
 
   const event = state.event;
-  const organizer = isOrganizerRole(state.myRole);
   const readOnly = state.readOnly;
-  const judgeCapable = state.myRole === "judge" || organizer;
+  const busy = api.busy;
 
   return (
-    <div className={`${pageContainer("5xl")} text-on-surface`}>
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className={EYEBROW}>
-            {organizer ? "Organizer console" : "Contest console"}
-          </p>
-          <h1 className={`mt-1 ${PAGE_TITLE}`}>{event.name}</h1>
-          <p className={`mt-3 flex flex-wrap items-center gap-2 ${META}`}>
-            <StateBadge status={event.status} />
-            <span>
-              {event.city}, {event.country}
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>
-              {event.planSlug === "free" ? "Free plan" : `${event.planSlug} plan`}
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>v{event.version}</span>
-            <span className={tagClass("outline")} data-realtime={connection}>
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "h-1.5 w-1.5 rounded-control",
-                  connection === "connected" ? "bg-primary" : "bg-outline",
-                )}
-              />
-              {connection}
-            </span>
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push(buildContestDetailUrl(event.slug))}
-          className={controlClass("outline")}
-        >
-          View contest page
-        </button>
-      </div>
+    <div className="text-on-surface">
+      <p className={`mb-4 flex flex-wrap items-center gap-2 ${META}`}>
+        <StateBadge status={event.status} />
+        <span>
+          {event.planSlug === "free" ? "Free plan" : `${event.planSlug} plan`}
+        </span>
+        <span aria-hidden="true">·</span>
+        <span>{event.submissionMode === "video" ? "Video contest" : "Live contest"}</span>
+      </p>
 
       {state.notice ? (
         <div className="mb-5">
@@ -360,26 +170,20 @@ export function ManageConsole({ eventId }: { eventId: string }) {
                 eventId={eventId}
                 version={event.version}
                 disabled={busy || state.payment.state === "disabled"}
-                onError={(message) => setActionError(message)}
-                onDone={() => void load()}
+                onError={() => undefined}
+                onDone={() => void api.load()}
               />
             }
           />
         </div>
       ) : null}
 
-      {actionError ? (
-        <div role="alert" className={`mb-5 text-sm ${alertClass("error")}`}>
-          {actionError}
-        </div>
-      ) : null}
-
       <div
         role="tablist"
-        aria-label="Manage sections"
+        aria-label="Organizer sections"
         className={`mb-6 ${SEGMENTED_TRACK}`}
       >
-        {visibleTabs(organizer).map((entry) => (
+        {TABS.map((entry) => (
           <button
             key={entry.id}
             role="tab"
@@ -423,52 +227,20 @@ export function ManageConsole({ eventId }: { eventId: string }) {
                   ? undefined
                   : expiresInDays,
             });
-            await refreshMembers();
+            await loadMembers();
           }}
           onRevokeInvite={async (inviteId) => {
             await lifecycleAction(`/invites/${inviteId}`, "DELETE");
-            await refreshMembers();
+            await loadMembers();
           }}
           onRemoveMember={async (membershipId) => {
             await lifecycleAction(`/members/${membershipId}`, "DELETE");
-            await refreshMembers();
+            await loadMembers();
           }}
         />
       ) : null}
-      {tab === "live" ? (
-        <LivePanel
-          state={state}
-          canJudge={judgeCapable}
-          disabled={readOnly || busy}
-          lifecycleAction={lifecycleAction}
-          onSubmitScore={async (runId, scores) => {
-            const ok = await run(async (version) =>
-              fetchWithTimeout(
-                `/api/league/events/${eventId}/runs/${runId}/scores`,
-                {
-                  method: "POST",
-                  timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    expectedVersion: version,
-                    idempotencyKey: crypto.randomUUID(),
-                    scores,
-                  }),
-                },
-              ),
-            );
-            return ok;
-          }}
-        />
-      ) : null}
-      {tab === "results" ? (
-        <ResultsPanel
-          state={state}
-          disabled={readOnly || busy}
-          lifecycleAction={lifecycleAction}
-        />
-      ) : null}
-      {tab === "metrics" ? <MetricsPanel eventId={eventId} /> : null}
+      {tab === "live" ? <LivePanel state={state} /> : null}
+      {tab === "metrics" ? <MetricsPanel eventId={eventId} refreshKey={event.version} /> : null}
     </div>
   );
 }
@@ -697,9 +469,13 @@ function ConfigPanel({
         ) : null}
         {event.status === "registration_closed" ? (
           <ConfirmButton
-            label="Generate schedule"
-            confirmTitle="Generate the run schedule?"
-            confirmBody="Creates one judging slot per active rider, ordered by join time, 10 minutes apart."
+            label={event.submissionMode === "video" ? "Prepare runs" : "Generate schedule"}
+            confirmTitle={event.submissionMode === "video" ? "Prepare the runs?" : "Generate the run schedule?"}
+            confirmBody={
+              event.submissionMode === "video"
+                ? "Creates one run per rider and division so riders can submit their videos once the contest starts."
+                : "Creates one slot per rider and division, in division order then join order, 10 minutes apart."
+            }
             disabled={disabled}
             variant="primary"
             onConfirm={() =>
@@ -881,26 +657,9 @@ function RosterPanel({
   );
 }
 
-function LivePanel({
-  state,
-  canJudge,
-  lifecycleAction,
-  onSubmitScore,
-  disabled,
-}: {
-  state: LeagueEventState;
-  canJudge: boolean;
-  disabled: boolean;
-  lifecycleAction: (
-    path: string,
-    method?: "POST" | "PATCH" | "DELETE",
-    body?: unknown,
-  ) => Promise<unknown>;
-  onSubmitScore: (
-    runId: string,
-    scores: Record<string, number>,
-  ) => Promise<boolean>;
-}) {
+function LivePanel({ state }: { state: LeagueEventState }) {
+  const labelFor = (divisionId: string) =>
+    state.divisions.find((division) => division.id === divisionId)?.label ?? "Division";
   return (
     <section
       id="manage-panel-live"
@@ -908,14 +667,17 @@ function LivePanel({
       className="flex flex-col gap-4"
     >
       <h2 className={EYEBROW}>
-        Run queue · {state.runs.length} {state.runs.length === 1 ? "run" : "runs"}
+        Runs · {state.runs.length} {state.runs.length === 1 ? "run" : "runs"}
       </h2>
+      <p className={BODY}>
+        Open windows and score runs from the Judging tab. Standings update live in the Standings tab.
+      </p>
       {state.runs.length === 0 ? (
         <div className={EMPTY_STATE}>
           <ClipboardList size={24} aria-hidden="true" className="mx-auto text-secondary" />
           <p className={`mt-3 ${CARD_TITLE}`}>No runs yet</p>
           <p className={`mx-auto mt-2 max-w-sm ${BODY}`}>
-            Close registration and generate the schedule first.
+            Close registration, then prepare the runs from the Contest section.
           </p>
         </div>
       ) : (
@@ -924,116 +686,18 @@ function LivePanel({
             <RunRow
               key={run.id}
               run={run}
-              criteria={state.criteria}
-              eventStatus={state.event.status}
-              canJudge={canJudge}
-              disabled={disabled}
-              onOpenWindow={() =>
-                void lifecycleAction(`/runs/${run.id}/window`, "POST", {
-                  mode: "open",
-                  windowMinutes: 10,
-                })
-              }
-              onExtendWindow={() =>
-                void lifecycleAction(`/runs/${run.id}/window`, "POST", {
-                  mode: "extend",
-                  windowMinutes: 5,
-                })
-              }
-              onCloseWindow={() =>
-                void lifecycleAction(`/runs/${run.id}/window`, "POST", {
-                  mode: "close",
-                })
-              }
-              onSubmitScore={(scores) => onSubmitScore(run.id, scores)}
+              divisionLabel={labelFor(run.divisionId)}
+              submissionMode={state.event.submissionMode}
+              timezone={state.event.timezone}
             />
           ))}
         </ul>
       )}
-      {state.event.status === "completed" && state.results.length === 0 ? (
-        <ConfirmButton
-          label="Publish results"
-          confirmTitle="Publish results?"
-          confirmBody="Freezes the ranking and awards attendance + rank points. This cannot be undone."
-          variant="primary"
-          disabled={disabled}
-          onConfirm={() => void lifecycleAction("/results/publish")}
-        />
-      ) : null}
     </section>
   );
 }
 
-function ResultsPanel({
-  state,
-  lifecycleAction,
-  disabled,
-}: {
-  state: LeagueEventState;
-  disabled: boolean;
-  lifecycleAction: (
-    path: string,
-    method?: "POST" | "PATCH" | "DELETE",
-    body?: unknown,
-  ) => Promise<unknown>;
-}) {
-  return (
-    <section
-      id="manage-panel-results"
-      aria-labelledby="manage-tab-results"
-      className="flex flex-col gap-4"
-    >
-      {state.results.length > 0 ? (
-        <ol className="flex flex-col gap-2">
-          {state.results.map((result) => (
-            <li
-              key={result.userId}
-              className={`flex flex-wrap items-center justify-between gap-3 ${CARD_NESTED}`}
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary font-display text-xs font-bold tabular-nums text-on-primary">
-                  {result.rank}
-                </span>
-                <p className="min-w-0 truncate text-sm font-semibold text-on-surface">
-                  {result.riderName}
-                </p>
-              </div>
-              <p className={`tabular-nums ${META}`}>
-                {result.totalScore.toFixed(2)} run · +{result.pointsAwarded}{" "}
-                league pts
-              </p>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <div className={`flex flex-col items-center gap-3 ${EMPTY_STATE}`}>
-          <Crown size={24} aria-hidden="true" className="text-secondary" />
-          <p className={CARD_TITLE}>No results yet</p>
-          <p className={`max-w-sm ${BODY}`}>
-            Results appear once the event completes and you publish them.
-          </p>
-          {state.event.status === "completed" ? (
-            <ConfirmButton
-              label="Publish results"
-              confirmTitle="Publish results?"
-              confirmBody="Freezes the ranking and awards attendance + rank points. This cannot be undone."
-              variant="primary"
-              disabled={disabled}
-              onConfirm={() => void lifecycleAction("/results/publish")}
-            />
-          ) : null}
-        </div>
-      )}
-    </section>
-  );
-}
-
-/**
- * Organizer metrics (spec `GET /events/[id]/dashboard`): role counts, run
- * progress, per-judge submissions, per-criterion averages. Fetched lazily
- * when the tab is opened; refreshes via the Runs tab or realtime.
- */
-function MetricsPanel({ eventId }: { eventId: string }) {
+function MetricsPanel({ eventId, refreshKey }: { eventId: string; refreshKey: number }) {
   const [dashboard, setDashboard] = useState<LeagueDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -1065,7 +729,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [eventId]);
+  }, [eventId, refreshKey]);
 
   if (error) {
     return (

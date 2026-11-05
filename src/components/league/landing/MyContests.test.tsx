@@ -48,7 +48,7 @@ describe("MyContests", () => {
     );
   });
 
-  it("groups contests by role and deep-links organizers to manage", async () => {
+  it("groups contests by role and deep-links each role to its hub tab", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -70,9 +70,9 @@ describe("MyContests", () => {
     expect(screen.getByRole("heading", { name: /judging · 1/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /riding · 1/i })).toBeInTheDocument();
     const manageLink = screen.getByRole("link", { name: /night jam/i });
-    expect(manageLink).toHaveAttribute("href", "/league/night-jam/manage");
+    expect(manageLink).toHaveAttribute("href", "/league/night-jam?tab=run#hub");
     const riderLink = screen.getByRole("link", { name: /city cup/i });
-    expect(riderLink).toHaveAttribute("href", "/league/city-cup");
+    expect(riderLink).toHaveAttribute("href", "/league/city-cup?tab=my-runs#hub");
   });
 
   it("surfaces the payment notice for gated contests", async () => {

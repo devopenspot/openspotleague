@@ -132,7 +132,7 @@ function organizerStep(input: NextStepInput): NextStep {
           id: "org-open-window",
           title: "Open the next run",
           body: `${runs.scoredOrSkipped} of ${runs.total} runs done. Open the next rider's judging window.`,
-          action: run("Open next run"),
+          action: { label: "Open next run", tab: "judging" },
           tone: "action",
         };
       }

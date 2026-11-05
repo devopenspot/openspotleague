@@ -15,7 +15,10 @@ import {
   Trophy,
   Youtube,
 } from "lucide-react";
+import { Suspense } from "react";
 import { ContestCover } from "@/components/league/landing/ContestCover";
+import { ContestHub } from "@/components/league/hub/ContestHub";
+import { StandingsBoard } from "@/components/league/hub/StandingsBoard";
 import { LeagueWash } from "@/components/league/landing/LeagueWash";
 import { Countdown } from "@/components/ui/Countdown";
 import { ShareActions } from "@/components/ui/ShareActions";
@@ -40,7 +43,6 @@ import {
 } from "@/lib/league/urls";
 import { ROUTES } from "@/lib/navigation/nav";
 import { getContestDetailBySlug } from "@/lib/services/league";
-import type { MyEventHistory } from "@/lib/services/league";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import { truncate } from "@/lib/og/formatters";
 
@@ -304,7 +306,6 @@ export default async function ContestPage({
                 </section>
               ) : null}
 
-              {myHistory ? <MyPerformance history={myHistory} /> : null}
             </div>
 
             <aside
@@ -316,7 +317,7 @@ export default async function ContestPage({
                   href={buildContestManageUrl(event.slug)}
                   className={`${controlClass("primary")} w-full`}
                 >
-                  Manage contest
+                  Run the contest
                   <Settings2 size={14} aria-hidden="true" />
                 </Link>
               ) : null}
@@ -326,7 +327,7 @@ export default async function ContestPage({
                   href={buildContestJudgeUrl(event.slug)}
                   className={`${controlClass(canManage ? "secondary" : "primary")} w-full`}
                 >
-                  Judge queue
+                  Judging
                   <ClipboardCheck size={14} aria-hidden="true" />
                 </Link>
               ) : null}
@@ -423,91 +424,27 @@ export default async function ContestPage({
             </aside>
           </div>
         </article>
+
+        {myRole ? (
+          <section
+            id="hub"
+            aria-label="Your contest dashboard"
+            className="-mx-5 mt-6 scroll-mt-[calc(var(--app-header-h)+1rem)] border-y border-outline-variant bg-surface-container-lowest p-5 text-on-surface sm:p-6 md:mx-0 md:rounded-container md:border md:p-8"
+          >
+            <Suspense fallback={null}>
+              <ContestHub eventId={event.id} />
+            </Suspense>
+          </section>
+        ) : isPublic ? (
+          <section
+            id="standings"
+            aria-label="Results"
+            className="-mx-5 mt-6 border-y border-outline-variant bg-surface-container-lowest p-5 text-on-surface empty:hidden sm:p-6 md:mx-0 md:rounded-container md:border md:p-8"
+          >
+            <StandingsBoard eventId={event.id} viewerId={null} hideWhenUnavailable />
+          </section>
+        ) : null}
       </div>
     </LeagueWash>
-  );
-}
-
-const ROLE_LABELS: Record<string, string> = {
-  main_organizer: "Main organizer",
-  organizer: "Organizer",
-  judge: "Judge",
-  rider: "Rider",
-};
-
-/**
- * Member-only summary card (spec `GET /events/[id]/history`): riders see
- * their runs + published result, judges their submissions. Rendered only
- * when the viewer is an active member.
- */
-function MyPerformance({ history }: { history: MyEventHistory }) {
-  const role = ROLE_LABELS[history.myRole] ?? history.myRole;
-  const hasRuns =
-    history.myRuns.length > 0 ||
-    history.myJudgements.length > 0 ||
-    history.result !== null;
-
-  return (
-    <section
-      aria-labelledby="event-my-performance"
-      className="space-y-3 border-t border-outline-variant pt-6"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="event-my-performance" className={EYEBROW}>
-          My performance
-        </h2>
-        <span className={tagClass("neutral")}>{role}</span>
-      </div>
-      {!hasRuns ? (
-        <p className={BODY}>Your activity for this event will appear here.</p>
-      ) : (
-        <div className="space-y-3">
-          {history.result ? (
-            <dl className="grid grid-cols-3 gap-2 sm:max-w-md">
-              <div className={TILE}>
-                <dt className={LABEL}>Rank</dt>
-                <dd className="mt-1 font-display text-xl font-bold tabular-nums">
-                  #{history.result.rank}
-                </dd>
-              </div>
-              <div className={TILE}>
-                <dt className={LABEL}>Best run</dt>
-                <dd className="mt-1 font-display text-xl font-bold tabular-nums">
-                  {history.result.totalScore.toFixed(2)}
-                </dd>
-              </div>
-              <div className={TILE}>
-                <dt className={LABEL}>League pts</dt>
-                <dd className="mt-1 font-display text-xl font-bold tabular-nums">
-                  +{history.result.pointsAwarded}
-                </dd>
-              </div>
-            </dl>
-          ) : null}
-          {history.myRuns.length > 0 ? (
-            <ul aria-label="My runs" className="flex flex-wrap gap-1.5">
-              {history.myRuns.map((run) => (
-                <li key={run.runId} className={tagClass("neutral")}>
-                  Run {run.sequence} · {run.status}
-                  {run.myTotal !== null ? ` · ${run.myTotal.toFixed(2)}` : ""}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {history.myJudgements.length > 0 ? (
-            <ul aria-label="My judgements" className="flex flex-wrap gap-1.5">
-              {history.myJudgements.map((entry) => (
-                <li
-                  key={`${entry.runId}-${entry.total}`}
-                  className={tagClass("neutral")}
-                >
-                  Run {entry.sequence} judged · {entry.total.toFixed(2)}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      )}
-    </section>
   );
 }
