@@ -9,11 +9,13 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BarChart3, ClipboardList, Crown, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { PaymentGateNotice } from "@/components/league/PaymentGateNotice";
 import { FormSection, SelectField, TextField } from "@/components/league/form-parts";
+import { ContestCoverField } from "@/components/league/cover/ContestCoverField";
+import { uploadContestCover } from "@/components/league/cover/upload-contest-cover";
 import { useLeagueRealtime } from "@/components/league/hooks/useLeagueRealtime";
 import {
   ConfirmButton,
@@ -221,6 +223,14 @@ export function ManageConsole({ eventId }: { eventId: string }) {
     [eventId, run],
   );
 
+  const uploadCover = useCallback(
+    (file: File) =>
+      run((version) =>
+        uploadContestCover({ eventId, file, expectedVersion: version }),
+      ),
+    [eventId, run],
+  );
+
   const loadMembers = useCallback(async () => {
     try {
       const response = await fetchWithTimeout(
@@ -392,6 +402,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
           state={state}
           disabled={readOnly || busy}
           lifecycleAction={lifecycleAction}
+          uploadCover={uploadCover}
         />
       ) : null}
       {tab === "roster" ? (
@@ -465,6 +476,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
 function ConfigPanel({
   state,
   lifecycleAction,
+  uploadCover,
   disabled,
 }: {
   state: LeagueEventState;
@@ -473,9 +485,16 @@ function ConfigPanel({
     method?: "POST" | "PATCH" | "DELETE",
     body?: unknown,
   ) => Promise<unknown>;
+  uploadCover: (file: File) => Promise<boolean>;
   disabled: boolean;
 }) {
   const event = state.event;
+  const searchParams = useSearchParams();
+  const coverFailed = searchParams.get("cover") === "failed";
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const categoryLabel =
+    CATEGORY_OPTIONS.find((option) => option.value === event.category)?.label ??
+    "";
   const [form, setForm] = useState({
     name: event.name,
     shortName: event.shortName ?? "",
@@ -487,6 +506,9 @@ function ConfigPanel({
     venue: event.venue ?? "",
     category: event.category,
     visibility: event.visibility,
+    url: event.url ?? "",
+    instagram: event.instagram ?? "",
+    youtube: event.youtube ?? "",
   });
   const canEdit = !disabled && isOrganizerRole(state.myRole);
 
@@ -498,7 +520,7 @@ function ConfigPanel({
     >
       <FormSection
         icon={Settings}
-        title="Event details"
+        title="Contest details"
         intro={
           canEdit
             ? "Edits apply together when you save."
@@ -538,21 +560,98 @@ function ConfigPanel({
             onChange={(value) => setForm({ ...form, category: value })}
             options={CATEGORY_OPTIONS}
           />
-          <SelectField
-            id="cfg-visibility"
-            label="Visibility"
-            value={form.visibility}
+          {state.canListPublicly ? (
+            <SelectField
+              id="cfg-visibility"
+              label="Visibility"
+              value={form.visibility}
+              disabled={!canEdit}
+              onChange={(value) => setForm({ ...form, visibility: value })}
+              options={VISIBILITY_OPTIONS}
+            />
+          ) : (
+            <div>
+              <p className={`mb-1.5 ${LABEL}`}>Visibility</p>
+              <p className={BODY}>
+                Private — free contests are shared with riders by QR code or
+                invite link. Public listing comes with the paid plans.
+              </p>
+            </div>
+          )}
+          <TextField
+            id="cfg-url"
+            type="url"
+            label="Official site"
+            value={form.url}
             disabled={!canEdit}
-            onChange={(value) => setForm({ ...form, visibility: value })}
-            options={VISIBILITY_OPTIONS}
+            placeholder="https://"
+            onChange={(value) => setForm({ ...form, url: value })}
+            className="sm:col-span-2"
+          />
+          <TextField
+            id="cfg-instagram"
+            type="url"
+            label="Instagram"
+            value={form.instagram}
+            disabled={!canEdit}
+            placeholder="https://instagram.com/…"
+            onChange={(value) => setForm({ ...form, instagram: value })}
+          />
+          <TextField
+            id="cfg-youtube"
+            type="url"
+            label="YouTube"
+            value={form.youtube}
+            disabled={!canEdit}
+            placeholder="https://youtube.com/…"
+            onChange={(value) => setForm({ ...form, youtube: value })}
           />
         </div>
+      </FormSection>
+
+      <FormSection
+        icon={Settings}
+        title="Cover"
+        intro="Shown on the contest page and, once public, in the directory."
+      >
+        {coverFailed ? (
+          <div role="status" className={`mb-4 text-sm ${alertClass("neutral")}`}>
+            The contest was created, but its cover could not be uploaded. Add it
+            again here.
+          </div>
+        ) : null}
+        <ContestCoverField
+          id="cfg-cover"
+          file={coverFile}
+          onFileChange={setCoverFile}
+          currentImage={event.imageUrl}
+          onRemoveCurrent={
+            canEdit ? () => void lifecycleAction("/cover", "DELETE") : undefined
+          }
+          categoryName={categoryLabel}
+          sports={[]}
+          disabled={!canEdit}
+        />
+        {coverFile ? (
+          <button
+            type="button"
+            disabled={!canEdit}
+            onClick={() =>
+              void uploadCover(coverFile).then((ok) => {
+                if (ok) setCoverFile(null);
+              })
+            }
+            className={`mt-3 ${controlClass("primary", "sm")}`}
+          >
+            Save cover
+          </button>
+        ) : null}
       </FormSection>
 
       <div className="flex flex-wrap items-center gap-2">
         <ConfirmButton
           label="Save changes"
-          confirmTitle="Save event details?"
+          confirmTitle="Save contest details?"
           confirmBody="Applies every edited field at once."
           disabled={!canEdit}
           variant="primary"
@@ -568,7 +667,12 @@ function ConfigPanel({
                 city: form.city,
                 venue: form.venue || undefined,
                 category: form.category,
-                visibility: form.visibility,
+                ...(state.canListPublicly
+                  ? { visibility: form.visibility }
+                  : {}),
+                url: form.url.trim() || null,
+                instagram: form.instagram.trim() || null,
+                youtube: form.youtube.trim() || null,
               },
             })
           }

@@ -15,7 +15,9 @@ import {
   assertPaymentWindowOpen,
   assertScheduleAdvanceWindow,
   assertScheduleReorderable,
+  assertVisibilityAllowed,
   buildDefaultCriteria,
+  canListPublicly,
   buildRescheduledSlots,
   buildSchedule,
   clampSlotMinutes,
@@ -319,5 +321,32 @@ describe("invites & membership", () => {
     expect(clampedSlots[0]?.scheduledAt).toEqual(
       new Date(startAt.getTime() + 240 * 60_000),
     );
+  });
+});
+
+describe("public listing rule", () => {
+  it("keeps free-plan and unpaid contests off the public listing", () => {
+    expect(canListPublicly(null)).toBe(false);
+    expect(canListPublicly("free")).toBe(false);
+    expect(canListPublicly("starter")).toBe(true);
+    expect(canListPublicly("pro")).toBe(true);
+  });
+
+  it("rejects public visibility without a paid plan", () => {
+    expect(() => assertVisibilityAllowed("public", null)).toThrow(
+      LeagueDomainError,
+    );
+    try {
+      assertVisibilityAllowed("public", "free");
+    } catch (error) {
+      expect((error as LeagueDomainError).code).toBe(
+        "VISIBILITY_REQUIRES_PAID_PLAN",
+      );
+    }
+  });
+
+  it("always allows unlisted, and public on a paid plan", () => {
+    expect(() => assertVisibilityAllowed("unlisted", null)).not.toThrow();
+    expect(() => assertVisibilityAllowed("public", "starter")).not.toThrow();
   });
 });

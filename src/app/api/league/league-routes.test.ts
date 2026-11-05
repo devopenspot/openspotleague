@@ -389,6 +389,42 @@ describe("state + config patch", () => {
       }),
     )
   })
+
+  it("maps VISIBILITY_REQUIRES_PAID_PLAN to 403 when a free contest goes public", async () => {
+    serviceMocks.updateLeagueEventConfig.mockRejectedValue(
+      new LeagueDomainError("VISIBILITY_REQUIRES_PAID_PLAN", "Public listing is a paid-plan feature"),
+    )
+    const response = await patchEventConfig(
+      jsonRequest("/api/league/events/e1", { ...validBody, patch: { visibility: "public" } }, "PATCH"),
+      routeContext({ id: "e1" }),
+    )
+    expect(response.status).toBe(403)
+    expect(await response.json()).toMatchObject({ error: "VISIBILITY_REQUIRES_PAID_PLAN" })
+  })
+
+  it("forwards organizer links on PATCH and rejects non-URLs", async () => {
+    serviceMocks.updateLeagueEventConfig.mockResolvedValue({ id: "e1", version: 9 })
+    const ok = await patchEventConfig(
+      jsonRequest(
+        "/api/league/events/e1",
+        { ...validBody, patch: { url: "https://jam.example", instagram: null } },
+        "PATCH",
+      ),
+      routeContext({ id: "e1" }),
+    )
+    expect(ok.status).toBe(200)
+    expect(serviceMocks.updateLeagueEventConfig).toHaveBeenCalledWith(
+      USER.id,
+      expect.objectContaining({
+        patch: expect.objectContaining({ url: "https://jam.example", instagram: null }),
+      }),
+    )
+    const bad = await patchEventConfig(
+      jsonRequest("/api/league/events/e1", { ...validBody, patch: { youtube: "not a url" } }, "PATCH"),
+      routeContext({ id: "e1" }),
+    )
+    expect(bad.status).toBe(400)
+  })
 })
 
 describe("payment + schedule + runs", () => {
