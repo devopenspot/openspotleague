@@ -25,29 +25,30 @@ interface FeatureCardProps {
 const FEATURES: readonly FeatureCardProps[] = [
   {
     icon: MapPin,
-    title: "Global Spot Directory",
+    title: "Every Spot Worth Riding",
     badge: "15k+ Spots",
     description:
-      "Interactive map with coordinates, obstacles, surface ratings, security bust index, and live weather at every spot.",
+      "Skateparks, street spots and DIYs on one map, with obstacles, surface, bust risk and live weather for each one.",
     bullets: [
-      "Filter by Regions, Countries, and Cities",
-      "Skateparks, ledges, handrails, stair sets, bowls, verticals & DIYs",
-      "Crowd-sourced verifications from local riders",
+      "Filter by region, country or city",
+      "Ledges, rails, stairs, bowls, vert and DIY builds",
+      "Checked by the locals who ride them",
     ],
-    ctaText: "Explore Spot Map",
+    ctaText: "Open the Map",
     ctaHref: ROUTES.map,
   },
   {
     icon: Trophy,
-    title: "Live Tricks-Game Engine",
-    badge: "Training/Challenge Mode",
-    description: "Play Game of S.K.A.T.E., B.I.K.E., B.L.A.D.E. or S.C.O.O.T.",
+    title: "Trick Games, Live",
+    badge: "Train or Battle",
+    description:
+      "Play S.K.A.T.E., B.I.K.E., B.L.A.D.E. or S.C.O.O.T. against your crew or a rider across the world.",
     bullets: [
-      "Elimination word games with friends or random opponents",
-      "Quick Share QR codes to challenge friends in person or online",
-      "Trick catalogs with difficulty levels & spot types to train at your local terrain",
+      "Miss a trick, take a letter, last rider standing wins",
+      "Share a QR code to start a game in person or online",
+      "Trick lists by difficulty and terrain to train for your next session",
     ],
-    ctaText: "Launch Training/Challenges Games",
+    ctaText: "Start a Game",
     ctaHref: ROUTES.games,
   },
   {
@@ -55,27 +56,27 @@ const FEATURES: readonly FeatureCardProps[] = [
     title: "Open Spot TV",
     badge: "500+ Videos",
     description:
-      "Curated non-stop action sports cinema. Watch FISE Tours, video parts, and athlete profile sessions without noise.",
+      "Non-stop action sports video: FISE contests, classic parts and athlete profiles, no noise in between.",
     bullets: [
-      "Zero-friction continuous autoplay across disciplines",
-      "Filtered Options",
-      "Legendary video parts, contests, and athlete profiles from the past 20 years",
+      "Continuous autoplay across every discipline",
+      "Filter by discipline and category",
+      "20 years of legendary parts, contests and profiles",
     ],
     ctaText: "Watch Open Spot TV",
     ctaHref: ROUTES.tv,
   },
   {
     icon: BookmarkCheck,
-    title: "Rider Progression",
-    badge: "Activity Tracking",
+    title: "Level Up in the League",
+    badge: "Your Progress",
     description:
-      "Save your favorite training grounds, track your trick bag, and contribute new unmapped street spots to the community.",
+      "Save the spots you ride, build your trick bag and put new street spots on the map for everyone.",
     bullets: [
-      "Bookmark spots to ride and access them on mobile",
-      "Record match history and personal trick progression",
-      "Submit new spots to the global map and earn curator status",
+      "Bookmark spots and pull them up on your phone",
+      "Keep your game history and trick progression",
+      "Add new spots and earn curator status",
     ],
-    ctaText: "Sign In / Join Free",
+    ctaText: "Join the League, Free",
     ctaHref: ROUTES.login,
   },
 ] as const;
@@ -90,17 +91,18 @@ export function LandingFeatures() {
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto space-y-2.5">
           <p className="font-display text-xs font-bold uppercase tracking-[0.12em] text-secondary">
-            Core Platform Pillars
+            Join the League
           </p>
           <h2
             id="landing-features-title"
-            className="font-display text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-on-surface"
+            className="font-display text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-balance text-on-surface"
           >
-            Built for Riders Worldwide
+            Your Spots. Your Tricks. Your League.
           </h2>
           <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
-            Everything you need to discover terrain, train tricks with friends,
-            and stay plugged into global action sports.
+            Map the spots you ride, challenge friends to trick games, join
+            community events and track how far you&apos;ve come, across skate,
+            BMX, scooter and blade.
           </p>
         </div>
 
@@ -167,11 +169,11 @@ export function LandingFeatures() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-lg border border-outline-variant bg-surface-container-low p-6 sm:p-8">
           <div className="space-y-1 text-center sm:text-left">
             <h3 className="font-display text-base sm:text-lg font-bold uppercase tracking-tight text-on-surface">
-              Know a local spot that isn&apos;t on the map?
+              Your local spot isn&apos;t on the map yet?
             </h3>
             <p className="text-xs sm:text-sm text-on-surface-variant">
-              Help map your city. Submit photos, coordinates, and obstacles to
-              earn curator status.
+              Put it there. Add photos, the exact location and its obstacles,
+              and earn curator status in the league.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
@@ -186,7 +188,7 @@ export function LandingFeatures() {
               href={ROUTES.login}
               className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-2 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-surface transition-colors hover:bg-surface-container-high"
             >
-              Join the Community
+              Join the League
             </Link>
           </div>
         </div>
