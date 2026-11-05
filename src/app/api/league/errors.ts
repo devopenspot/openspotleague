@@ -27,6 +27,7 @@ const DOMAIN_ERROR_STATUS: Record<LeagueErrorCode, number> = {
   PLAN_EXISTS: 409,
   PLAN_NOT_FOUND: 404,
   USER_NOT_FOUND: 404,
+  VISIBILITY_REQUIRES_PAID_PLAN: 403,
 }
 
 /**

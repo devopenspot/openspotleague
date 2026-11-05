@@ -72,6 +72,9 @@ export const leagueCreateEventInputSchema = z
     timezone: TimezoneSchema,
     category: SportEventCategorySchema,
     imageUrl: HttpUrlSchema.optional(),
+    url: HttpUrlSchema.optional(),
+    instagram: HttpUrlSchema.optional(),
+    youtube: HttpUrlSchema.optional(),
   })
   .strict()
   .superRefine((event, ctx) => {
@@ -107,6 +110,10 @@ export const leagueConfigPatchSchema = z
     timezone: TimezoneSchema.optional(),
     category: SportEventCategorySchema.optional(),
     visibility: EventVisibilitySchema.optional(),
+    /** Organizer links; null clears the link. */
+    url: HttpUrlSchema.nullable().optional(),
+    instagram: HttpUrlSchema.nullable().optional(),
+    youtube: HttpUrlSchema.nullable().optional(),
   })
   .strict()
   .superRefine((patch, ctx) => {

@@ -9,6 +9,7 @@ import {
   DEFAULT_SCORING_CRITERIA,
   DEFAULT_SLOT_MINUTES,
   DEFAULT_WINDOW_MINUTES,
+  FREE_PLAN_SLUG,
   LeagueDomainError,
   MAX_SCHEDULE_ADVANCE_MONTHS,
   MAX_SLOT_MINUTES,
@@ -24,6 +25,33 @@ import {
   type PlanCaps,
   type ScoringCriterionDefinition,
 } from "./definitions";
+
+// ---------- public listing ----------
+
+/**
+ * Public listing rule: free-plan contests stay unlisted and are shared by QR
+ * code or invite link. Only a contest with an active paid or comped payment
+ * on a non-free plan may be listed publicly (directory, map, search).
+ * `activePaymentPlanSlug` is the plan of the event's active (paid|comped)
+ * payment, or null when there is none.
+ */
+export function canListPublicly(activePaymentPlanSlug: string | null): boolean {
+  return (
+    activePaymentPlanSlug !== null && activePaymentPlanSlug !== FREE_PLAN_SLUG
+  );
+}
+
+export function assertVisibilityAllowed(
+  visibility: "public" | "unlisted",
+  activePaymentPlanSlug: string | null,
+): void {
+  if (visibility === "public" && !canListPublicly(activePaymentPlanSlug)) {
+    throw new LeagueDomainError(
+      "VISIBILITY_REQUIRES_PAID_PLAN",
+      "Public listing is a paid-plan feature: free contests are shared by QR code or invite link",
+    );
+  }
+}
 
 // ---------- payment gate ----------
 

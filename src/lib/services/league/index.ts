@@ -51,7 +51,11 @@ import {
   type NewSportEventRow,
 } from "@/db/schema";
 import { queueTagRevalidate } from "@/lib/cache/deferred";
-import { ITEM_CACHE_LIFE, LIST_CACHE_LIFE } from "@/lib/cache/lifetimes";
+import {
+  IMAGE_CACHE_LIFE,
+  ITEM_CACHE_LIFE,
+  LIST_CACHE_LIFE,
+} from "@/lib/cache/lifetimes";
 import {
   ATTENDANCE_POINTS,
   FREE_PLAN_SLUG,
@@ -75,7 +79,9 @@ import {
   assertScheduleAdvanceWindow,
   assertScheduleReorderable,
   assertValidLeagueDateRange,
+  assertVisibilityAllowed,
   buildDefaultCriteria,
+  canListPublicly,
   buildRescheduledSlots,
   buildSchedule,
   clampWindowMinutes,
@@ -116,6 +122,7 @@ const READ_TX_OPTIONS = {
 
 const CREATE_ACTION = "create";
 const UPDATE_CONFIG_ACTION = "update-config";
+const SET_COVER_ACTION = "set-cover";
 const REGISTER_PAYMENT_ACTION = "register-payment";
 const CREATE_INVITE_ACTION = "create-invite";
 const REVOKE_INVITE_ACTION = "revoke-invite";
@@ -457,6 +464,9 @@ export async function createLeagueEvent(
         categorySlug: input.category,
         planSlug: FREE_PLAN_SLUG,
         imageUrl: input.imageUrl ?? DEFAULT_CONTEST_IMAGE,
+        url: input.url ?? null,
+        instagram: input.instagram ?? null,
+        youtube: input.youtube ?? null,
         version: 0,
         createdBy: userId,
         updatedBy: userId,
@@ -540,6 +550,10 @@ export interface LeagueEventState {
     category: ContestCategory;
     categoryName: string;
     imageUrl: string;
+    url: string | null;
+    instagram: string | null;
+    youtube: string | null;
+    featured: boolean;
     startDate: string;
     endDate: string | null;
     city: string;
@@ -605,6 +619,8 @@ export interface LeagueEventState {
       amountCents: number;
     } | null;
   };
+  /** Public listing allowed (active paid/comped payment on a non-free plan). */
+  canListPublicly: boolean;
   readOnly: boolean;
   notice: { title: string; message: string } | null;
 }
@@ -791,6 +807,10 @@ export async function getLeagueEventState(
           category: event.categorySlug as ContestCategory,
           categoryName: row.categoryName,
           imageUrl: event.imageUrl,
+          url: event.url,
+          instagram: event.instagram,
+          youtube: event.youtube,
+          featured: event.featured,
           startDate: event.startAt.toISOString().slice(0, 10),
           endDate: event.endAt ? event.endAt.toISOString().slice(0, 10) : null,
           city: event.city,
@@ -853,6 +873,7 @@ export async function getLeagueEventState(
               }
             : null,
         },
+        canListPublicly: canListPublicly(activePayment?.planSlug ?? null),
         readOnly: gate.state === "locked" || gate.state === "disabled",
         // The payment call-to-action is organizer-facing; members still
         // get the readOnly flag for action gating.
@@ -1001,8 +1022,14 @@ export async function updateLeagueEventConfig(
       }
       if (patch.timezone !== undefined) setValues.timezone = patch.timezone;
       if (patch.category !== undefined) setValues.categorySlug = patch.category;
-      if (patch.visibility !== undefined)
+      if (patch.visibility !== undefined) {
+        const active = await loadActivePayment(tx, locked.id);
+        assertVisibilityAllowed(patch.visibility, active?.planSlug ?? null);
         setValues.visibility = patch.visibility;
+      }
+      if (patch.url !== undefined) setValues.url = patch.url;
+      if (patch.instagram !== undefined) setValues.instagram = patch.instagram;
+      if (patch.youtube !== undefined) setValues.youtube = patch.youtube;
 
       const [updated] = await tx
         .update(sportEvents)
@@ -1053,6 +1080,138 @@ export async function updateLeagueEventConfig(
       });
       queueEventTags(locked.id);
       return response;
+    }),
+  );
+}
+
+// ---------- cover ----------
+
+/**
+ * Pre-upload guard for cover routes: the file goes to storage before the
+ * write transaction, so reject non-organizers first (no orphan uploads from
+ * callers who could never set a cover). The transaction re-checks.
+ */
+export async function assertCanEditContest(
+  eventId: string,
+  userId: string,
+): Promise<void> {
+  const { db } = getDbClient();
+  const [row] = await withDbRead("league.canEditContest", () =>
+    db
+      .select({ role: eventMemberships.role })
+      .from(eventMemberships)
+      .where(
+        and(
+          eq(eventMemberships.eventId, eventId),
+          eq(eventMemberships.userId, userId),
+          eq(eventMemberships.status, "active"),
+        ),
+      )
+      .limit(1),
+  );
+  assertCapability(row?.role ?? null, "config.edit");
+}
+
+export interface SetContestCoverInput {
+  eventId: string;
+  expectedVersion: number;
+  idempotencyKey: string;
+  /** Uploaded cover URL, or null to fall back to the designed cover. */
+  imageUrl: string | null;
+}
+
+export interface SetContestCoverResult extends LeagueMutationResponse {
+  /** Cover replaced by this call (storage cleanup is the caller's job). */
+  previousImageUrl: string | null;
+  /** True when the idempotency key replayed an earlier call. */
+  replayed: boolean;
+}
+
+/**
+ * Set or clear a contest cover (`sport_events.image_url`). The file is
+ * uploaded by the route before this runs; the fingerprint deliberately covers
+ * only the intent (set vs clear), so a retried upload with the same key
+ * replays instead of conflicting — the caller then discards its new file.
+ */
+export async function setContestCover(
+  userId: string,
+  input: SetContestCoverInput,
+): Promise<SetContestCoverResult> {
+  const { db } = getDbClient();
+  return withDbWrite("league.setCover", () =>
+    db.transaction(async (tx): Promise<SetContestCoverResult> => {
+      const locked = await lockEvent(tx, input.eventId);
+      const fingerprint = await fingerprintFor({
+        eventId: input.eventId,
+        expectedVersion: input.expectedVersion,
+        mode: input.imageUrl === null ? "clear" : "set",
+      });
+      const replay = await findIdempotentResult(tx, {
+        userId,
+        action: SET_COVER_ACTION,
+        idempotencyKey: input.idempotencyKey,
+        fingerprint,
+      });
+      if (replay) return { ...replay, previousImageUrl: null, replayed: true };
+      if (locked.version !== input.expectedVersion) {
+        throw new LeagueDomainError(
+          "STALE_VERSION",
+          "The event changed since you loaded it",
+        );
+      }
+      const role = await loadMembership(tx, locked.id, userId);
+      assertCapability(role, "config.edit");
+      const gate = await gateFor(tx, locked, locked.id);
+      assertEventWritable(gate);
+
+      const [current] = await tx
+        .select({ imageUrl: sportEvents.imageUrl })
+        .from(sportEvents)
+        .where(eq(sportEvents.id, locked.id))
+        .limit(1);
+      const previousImageUrl =
+        current && current.imageUrl !== DEFAULT_CONTEST_IMAGE
+          ? current.imageUrl
+          : null;
+
+      const [updated] = await tx
+        .update(sportEvents)
+        .set({
+          imageUrl: input.imageUrl ?? DEFAULT_CONTEST_IMAGE,
+          updatedAt: new Date(),
+          updatedBy: userId,
+          version: locked.version + 1,
+        })
+        .where(eq(sportEvents.id, locked.id))
+        .returning({ id: sportEvents.id, version: sportEvents.version });
+      if (!updated) {
+        throw new LeagueDomainError(
+          "INVALID_INPUT",
+          `Event not found: ${locked.id}`,
+        );
+      }
+
+      const response: LeagueMutationResponse = {
+        id: updated.id,
+        version: updated.version,
+      };
+      await recordActionRequest(tx, {
+        eventId: locked.id,
+        userId,
+        action: SET_COVER_ACTION,
+        idempotencyKey: input.idempotencyKey,
+        fingerprint,
+        resultingVersion: updated.version,
+        response,
+      });
+      await recordEventSignal(tx, {
+        eventId: locked.id,
+        version: updated.version,
+        signalType: "event_state_changed",
+      });
+      queueEventTags(locked.id);
+      queueTagRevalidate("event-images", IMAGE_CACHE_LIFE);
+      return { ...response, previousImageUrl, replayed: false };
     }),
   );
 }

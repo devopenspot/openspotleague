@@ -175,7 +175,8 @@ export type LeagueErrorCode =
   | "INVALID_INPUT"
   | "PLAN_EXISTS"
   | "PLAN_NOT_FOUND"
-  | "USER_NOT_FOUND";
+  | "USER_NOT_FOUND"
+  | "VISIBILITY_REQUIRES_PAID_PLAN";
 
 export class LeagueDomainError extends Error {
   readonly code: LeagueErrorCode;

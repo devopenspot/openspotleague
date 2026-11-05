@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * League event create flow (2-month advance window, free plan by default).
+ * Contest create flow (2-month advance window, free plan by default).
  * Built on the league form parts (shared recipes); submission posts to
  * `/api/league/events` with a UUID idempotency key in the body (league
  * convention — one key per submit attempt, so a retried POST replays
@@ -12,10 +12,12 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { flushSync } from "react-dom";
-import { ArrowLeft, CalendarClock, MapPin, Trophy } from "lucide-react";
+import { ArrowLeft, CalendarClock, Link2, MapPin, Trophy } from "lucide-react";
 import type { CountrySelection } from "@/components/admin/spots/form/CountryAutocomplete";
 import { CountryAutocomplete } from "@/components/admin/spots/form/CountryAutocomplete";
 import { DateField } from "@/components/admin/events/form/DateField";
+import { ContestCoverField } from "@/components/league/cover/ContestCoverField";
+import { uploadContestCover } from "@/components/league/cover/upload-contest-cover";
 import {
   FieldLabel,
   FieldMessages,
@@ -72,6 +74,10 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
   const [endDate, setEndDate] = useState("");
   const [city, setCity] = useState("");
   const [venue, setVenue] = useState("");
+  const [officialUrl, setOfficialUrl] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [youtube, setYoutube] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [country, setCountry] = useState<CountrySelection>({
     name: "",
     code: "",
@@ -105,8 +111,8 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
     );
   }
 
-  function validate(): boolean {
-    const parsed = leagueCreateEventInputSchema.safeParse({
+  function payload() {
+    return {
       name: name.trim(),
       shortName: shortName.trim() || undefined,
       description,
@@ -119,7 +125,14 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
       venue: venue.trim() || undefined,
       timezone: timezone.trim() || "UTC",
       category,
-    });
+      url: officialUrl.trim() || undefined,
+      instagram: instagram.trim() || undefined,
+      youtube: youtube.trim() || undefined,
+    };
+  }
+
+  function validate(): boolean {
+    const parsed = leagueCreateEventInputSchema.safeParse(payload());
     if (parsed.success) {
       setErrors({});
       return true;
@@ -156,30 +169,33 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           idempotencyKey: crypto.randomUUID(),
-          name: name.trim(),
-          shortName: shortName.trim() || undefined,
-          description: description,
-          sports,
-          startDate,
-          endDate: endDate || undefined,
-          city: city.trim(),
-          country: country.name.trim(),
-          countryCode: country.code.trim() || undefined,
-          venue: venue.trim() || undefined,
-          timezone: timezone.trim() || "UTC",
-          category,
+          ...payload(),
         }),
       });
       const raw = await response.json().catch(() => null);
       if (!response.ok) {
-        setSubmitError(raw?.message ?? raw?.error ?? "Event could not be created.");
+        setSubmitError(raw?.message ?? raw?.error ?? "Contest could not be created.");
         return;
       }
       const data = raw as LeagueCreateEventResponse;
-      router.push(buildContestManageUrl(data.slug));
+      const manageUrl = buildContestManageUrl(data.slug);
+      if (coverFile) {
+        // The contest exists now; a failed cover upload must not block the
+        // organizer — the console offers the upload again.
+        const uploaded = await uploadContestCover({
+          eventId: data.id,
+          file: coverFile,
+          expectedVersion: data.version,
+        }).catch(() => null);
+        if (!uploaded?.ok) {
+          router.push(`${manageUrl}?cover=failed`);
+          return;
+        }
+      }
+      router.push(manageUrl);
     } catch {
       setSubmitError(
-        "Event could not be created. Check your connection and try again.",
+        "Contest could not be created. Check your connection and try again.",
       );
     } finally {
       setBusy(false);
@@ -195,7 +211,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
     >
       <Link href={ROUTES.league} className={controlClass("outline", "sm")}>
         <ArrowLeft size={14} aria-hidden="true" />
-        My league
+        League
       </Link>
 
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -210,7 +226,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
           {organizerName ? (
             <p className={`mt-2 max-w-xl ${BODY}`}>
               You&apos;ll be the main organizer, {organizerName}, and you can
-              judge runs too. Invite riders and judges once the event exists.
+              judge runs too. Invite riders with a QR code once the contest exists.
             </p>
           ) : null}
         </div>
@@ -219,13 +235,13 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
 
       <FormSection
         icon={Trophy}
-        title="Event essentials"
-        intro="Name your competition and describe it for riders who join from the share link."
+        title="Contest essentials"
+        intro="Name your contest and describe it for riders who join from the QR code or invite link."
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <TextField
             id="league-name"
-            label="Event name"
+            label="Contest name"
             value={name}
             onChange={setName}
             placeholder="e.g. Riverside Night Jam"
@@ -265,7 +281,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             <FieldLabel required>Disciplines</FieldLabel>
             <ul
               className="flex flex-wrap gap-2"
-              aria-label="Event disciplines"
+              aria-label="Contest disciplines"
             >
               {DISCIPLINE_OPTIONS.map((value) => {
                 const active = sports.includes(value);
@@ -292,13 +308,24 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             </ul>
             <FieldMessages id="league-sports" error={errors.sports} />
           </div>
+          <ContestCoverField
+            id="league-cover"
+            file={coverFile}
+            onFileChange={setCoverFile}
+            categoryName={
+              CATEGORY_OPTIONS.find((option) => option.value === category)
+                ?.label ?? ""
+            }
+            sports={sports}
+            disabled={busy}
+          />
         </div>
       </FormSection>
 
       <FormSection
         icon={CalendarClock}
         title="Schedule"
-        intro="Community events can start at most two months ahead. Judging windows are set per run once the schedule is generated."
+        intro="Contests can start at most two months ahead. Judging windows are set per run once the schedule is generated."
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <DateField
@@ -380,6 +407,46 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
         </div>
       </FormSection>
 
+      <FormSection
+        icon={Link2}
+        title="Links"
+        intro="Optional — where riders follow the contest. Shown on the contest page."
+      >
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <TextField
+            id="league-url"
+            type="url"
+            label="Official site"
+            value={officialUrl}
+            onChange={setOfficialUrl}
+            placeholder="https://"
+            error={errors.url}
+            autoComplete="url"
+            className="sm:col-span-2"
+          />
+          <TextField
+            id="league-instagram"
+            type="url"
+            label="Instagram"
+            value={instagram}
+            onChange={setInstagram}
+            placeholder="https://instagram.com/…"
+            error={errors.instagram}
+            autoComplete="off"
+          />
+          <TextField
+            id="league-youtube"
+            type="url"
+            label="YouTube"
+            value={youtube}
+            onChange={setYoutube}
+            placeholder="https://youtube.com/…"
+            error={errors.youtube}
+            autoComplete="off"
+          />
+        </div>
+      </FormSection>
+
       {submitError ? (
         <div role="alert" className={`text-sm ${alertClass("error")}`}>
           {submitError}
@@ -396,7 +463,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
           aria-busy={busy || undefined}
           className={controlClass("primary")}
         >
-          {busy ? "Creating…" : "Create event"}
+          {busy ? "Creating…" : "Create contest"}
         </button>
       </div>
     </form>
