@@ -31,6 +31,7 @@ How each tool picks its connection string:
 - Generate a migration with `pnpm exec drizzle-kit generate`.
 - Apply migrations with `pnpm db:apply` (`src/db/apply-sql.ts`). It holds a session advisory lock (`hashtextextended('openspot:database-apply', 0)`) and records progress in `schema_migrations` using normalized per-statement SHA-256 hashes (`detectMigrationDrift`). Old-format ledger hashes are rewritten in place and logged with `↻`.
 - **Applied migrations are immutable.** Ship any fix as a new migration file.
+- Recent League migrations: `0005_contests_drop_origin`, `0006_contest_curator_role` and `0007_league_divisions_rating` (divisions, video submissions, Article 9 scoring, per-division results, ranking dimensions on `event_points_ledger`; backfills existing contests into legacy `open` divisions). They are hand-written because the drizzle snapshots stop at `0002`. Details in `docs/league.md`.
 
 ## Seeding
 
@@ -74,6 +75,7 @@ Trick catalogs use replace-and-snapshot semantics: the JSON fixture is the sourc
   - `spots_public_read`: public spots that are not admin-hidden; personal spots only for their creator.
   - `sport_events_public_read`: public contests; unlisted (free-plan) contests only for their creator. Members reach unlisted contests through the league service, never through RLS.
   - `user_notifications_owner`, `user_email_preferences_owner`: rows belong to the owner only.
+  - League child tables (`event_divisions`, `event_division_entries`, `event_runs`, `event_scores`, …) have no RLS policies: they are read and written only by the server through Drizzle, which applies the role projection (`src/lib/league/visibility.ts`).
 
 ## Realtime
 

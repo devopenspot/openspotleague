@@ -2,7 +2,7 @@
 
 OpenSpot is an interactive map of action-sports spots (skateboard, BMX, scooter, roller), with:
 
-- the League: user-created and curated contests with QR invites, live judging and league points (`/league`)
+- the League: user-created and curated contests with divisions, QR invites, live or video judging on the five World Skate criteria, standings, a global ranking and league points (`/league`)
 - multiplayer trick-challenge games
 - curated action sports TV
 
@@ -56,6 +56,7 @@ supabase/migrations/  SQL migrations
 
 - Set up CI that runs the local gate (`pnpm lint && pnpm typecheck && pnpm test`) on pull requests.
 - Remove or repurpose the leftover Vercel GitHub integration, whose check fails on pull requests.
+- Review the drafted required-element lists for Skateboard, BMX and Scooter (`src/lib/league/rating/elements.ts`, `REVIEW_PENDING`).
 
 ## Documentation
 
