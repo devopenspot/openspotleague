@@ -1,4 +1,5 @@
 import { slugify } from "@/lib/utils/slug";
+import { peekMapPreserveLocation } from "@/lib/map/preserve";
 import type { Region } from "@/lib/types";
 
 export const LAST_MAP_FILTER_KEY = "openspot-last-map-filter";
@@ -144,4 +145,48 @@ export function lastFilterResolvesGate(
 ): boolean {
   if (!isValidLastFilter(filter, regions)) return false;
   return Boolean(filter?.citySlug || filter?.countryScopeAll);
+}
+
+/**
+ * Apply a stored last filter to a `/map` query: region+country, plus the
+ * picked city or the no-cities country-wide escape. Nearby/saved modes are
+ * dropped because the geographic filter replaces them. Shared by the
+ * `MapPageClient` restore and the nav entry link so both build the same URL.
+ */
+export function applyLastMapFilter(
+  params: URLSearchParams,
+  last: LastMapFilter,
+): URLSearchParams {
+  const next = new URLSearchParams(params.toString());
+  next.set("region", last.regionSlug);
+  next.set("country", last.countrySlug);
+  // A fully complete last filter (picked city or the no-cities country-wide
+  // escape) resolves the mandatory-city gate on replay; city-less legacy
+  // payloads restore region+country only and leave the gate standing at
+  // the city step (one forced pick re-persists the field).
+  if (last.citySlug) next.set("city", last.citySlug);
+  if (last.countryScopeAll) next.set("scope", "country");
+  if (next.get("nearby") === "1" || next.get("saved") === "1") {
+    next.delete("nearby");
+    next.delete("saved");
+  }
+  return next;
+}
+
+/**
+ * Href for entering the map from the nav. Resolves the stored last filter
+ * before navigating, so the first request already carries the scope instead
+ * of loading bare `/map` and then `router.replace`-ing to the restored URL
+ * (two serial round trips). Falls back to `/map` whenever the restore in
+ * `MapPageClient` would not run: no catalog yet, a pending preserve flag, or
+ * no valid stored filter. Client-only: call it from event handlers, never
+ * during render.
+ */
+export function resolveMapEntryHref(regions: readonly Region[]): string {
+  if (!isClient() || regions.length === 0) return "/map";
+  if (peekMapPreserveLocation()) return "/map";
+  const last = getLastMapFilter();
+  if (!last || !isValidLastFilter(last, regions)) return "/map";
+  const query = applyLastMapFilter(new URLSearchParams(), last).toString();
+  return query ? `/map?${query}` : "/map";
 }

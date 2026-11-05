@@ -10,6 +10,7 @@ import {
 } from "@/components/map/shared/map-mode";
 import type { MapSpot, Region } from "@/lib/types";
 import { MapPageClient } from './MapPageClient';
+import { MapSkeleton } from './MapSkeleton';
 
 export const metadata = {
   title: 'Spot Map',
@@ -165,7 +166,7 @@ export default function MapPage({
   // function, which reads the proxy inside the cache scope and makes that
   // cached call throw. Pass a plain derived value instead.
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<MapSkeleton />}>
       <MapCountryScope query={searchParams.then(toQueryString)} />
     </Suspense>
   );

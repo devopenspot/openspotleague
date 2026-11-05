@@ -1,6 +1,11 @@
 "use client";
 
+import type { MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import { isActivePath, type NavGroup } from "@/lib/navigation/nav";
+import { resolveMapEntryHref } from "@/lib/map/last-filter";
+import { preloadMapCanvas } from "@/lib/map/preload";
+import { useSpotsStore } from "@/stores/spots-store";
 import { NavLink, type NavVariant } from "@/components/shell/NavLink";
 import { navLabelFor, renderNavBadge, useNavList } from "@/hooks/ui/useNavList";
 import { useUIStore } from "@/stores/ui-store";
@@ -27,6 +32,18 @@ const VARIANT_CONTAINER: Record<NavVariant, string> = {
   "mobile-drawer": "flex flex-col gap-2",
 };
 
+/** A plain primary click; modified clicks keep native link behaviour (new tab, etc.). */
+function isPlainClick(event: MouseEvent<HTMLAnchorElement>): boolean {
+  return (
+    event.button === 0 &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.defaultPrevented
+  );
+}
+
 export function AppNavList({
   variant,
   savedCount,
@@ -40,6 +57,27 @@ export function AppNavList({
     ? baseItems.filter((item) => groups.includes(item.group))
     : baseItems;
   const tryRun = useUIStore((s) => s.tryRun);
+  const router = useRouter();
+  const regions = useSpotsStore((s) => s.regions);
+
+  // Map entry: resolve the stored last filter at click time so the first
+  // request already carries region/country/city. Without this, bare `/map`
+  // loads first and `MapPageClient` then `router.replace`s to the restored
+  // URL — two serial round trips, slow on mobile networks. The href stays
+  // `/map` in the markup (no localStorage read during render).
+  const handleMapClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!isPlainClick(event)) return;
+    const href = resolveMapEntryHref(regions);
+    if (href === "/map") return;
+    event.preventDefault();
+    router.push(href);
+  };
+  // Intent only (hover, touch, focus) — never on render — so the egress
+  // policy behind `prefetch={false}` still holds.
+  const handleMapIntent = () => {
+    preloadMapCanvas();
+    router.prefetch(resolveMapEntryHref(regions));
+  };
 
   const containerLabel =
     label ??
@@ -64,6 +102,7 @@ export function AppNavList({
         const showBadge = item.id === "saved" && savedCount > 0;
         const Icon = item.Icon;
         const requiresOnboarding = item.id === "saved";
+        const isMapEntry = item.id === "map" && !isActive;
         return (
           <NavLink
             key={item.id}
@@ -79,8 +118,13 @@ export function AppNavList({
                     event.preventDefault();
                     tryRun(() => onSelect(item.path), item.path);
                   }
-                : undefined
+                : isMapEntry
+                  ? handleMapClick
+                  : undefined
             }
+            onPointerEnter={isMapEntry ? handleMapIntent : undefined}
+            onTouchStart={isMapEntry ? handleMapIntent : undefined}
+            onFocus={isMapEntry ? handleMapIntent : undefined}
             badge={
               showBadge
                 ? renderNavBadge({ variant, id: item.id, savedCount })

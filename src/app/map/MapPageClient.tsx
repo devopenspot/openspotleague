@@ -14,6 +14,7 @@ import { useMapStore } from '@/stores/map-store';
 import { useUserLocationStore } from '@/stores/user-location-store';
 import { consumeMapPreserveLocation, consumeMapPreserveNearbyEntry } from '@/lib/map/preserve';
 import {
+  applyLastMapFilter,
   clearLastMapFilter,
   getLastMapFilter,
   isValidLastFilter,
@@ -181,20 +182,7 @@ function MapPageInner({
       return;
     }
     hasRunRestoreRef.current = true;
-    const next = new URLSearchParams(params.toString());
-    next.set("region", last.regionSlug);
-    next.set("country", last.countrySlug);
-    // A fully complete last filter (picked city or the no-cities country-wide
-    // escape) resolves the mandatory-city gate on replay; city-less legacy
-    // payloads restore region+country only and leave the gate standing at
-    // the city step (one forced pick re-persists the field).
-    if (last.citySlug) next.set("city", last.citySlug);
-    if (last.countryScopeAll) next.set("scope", "country");
-    if (next.get("nearby") === "1" || next.get("saved") === "1") {
-      next.delete("nearby");
-      next.delete("saved");
-    }
-    const query = next.toString();
+    const query = applyLastMapFilter(params, last).toString();
     router.replace(query ? `/map?${query}` : "/map", { scroll: false });
   }, [pathname, regions, router, searchParams]);
 

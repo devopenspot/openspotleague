@@ -1,13 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 // The happy-dom global stubs localStorage per test run; key ops are
 // exercised through the module under test.
 import {
+  applyLastMapFilter,
   clearLastMapFilter,
   getLastMapFilter,
   lastFilterResolvesGate,
+  resolveMapEntryHref,
   setLastMapFilter,
 } from "./last-filter";
+import { setMapPreserveLocation, clearMapPreserveLocation } from "./preserve";
 import type { Region } from "@/lib/types";
 
 const regions: Region[] = [
@@ -121,5 +124,98 @@ describe("last-filter gate resolution", () => {
       updatedAt: 1,
     });
     expect(lastFilterResolvesGate(getLastMapFilter(), regions)).toBe(true);
+  });
+});
+
+describe("applyLastMapFilter", () => {
+  const base = {
+    region: "Europe",
+    country: "France",
+    regionSlug: "europe",
+    countrySlug: "france",
+    updatedAt: 1,
+  };
+
+  it("adds region, country and city, dropping nearby/saved modes", () => {
+    const next = applyLastMapFilter(
+      new URLSearchParams("nearby=1&saved=1&layer=sat"),
+      { ...base, city: "paris", citySlug: "paris" },
+    );
+    expect(next.get("region")).toBe("europe");
+    expect(next.get("country")).toBe("france");
+    expect(next.get("city")).toBe("paris");
+    expect(next.has("nearby")).toBe(false);
+    expect(next.has("saved")).toBe(false);
+    expect(next.get("layer")).toBe("sat");
+  });
+
+  it("maps the country-wide escape to scope=country", () => {
+    const next = applyLastMapFilter(new URLSearchParams(), {
+      ...base,
+      countryScopeAll: true,
+    });
+    expect(next.get("scope")).toBe("country");
+    expect(next.has("city")).toBe(false);
+  });
+
+  it("does not mutate the input params", () => {
+    const input = new URLSearchParams("nearby=1");
+    applyLastMapFilter(input, base);
+    expect(input.toString()).toBe("nearby=1");
+  });
+});
+
+describe("resolveMapEntryHref", () => {
+  afterEach(() => {
+    clearLastMapFilter();
+    clearMapPreserveLocation();
+  });
+
+  it("falls back to /map without a stored filter", () => {
+    clearLastMapFilter();
+    expect(resolveMapEntryHref(regions)).toBe("/map");
+  });
+
+  it("falls back to /map before the catalog hydrates", () => {
+    setLastMapFilter("Europe", "France", "paris");
+    expect(resolveMapEntryHref([])).toBe("/map");
+  });
+
+  it("falls back to /map for a filter the catalog no longer has", () => {
+    seedRaw({
+      region: "Nowhere",
+      country: "Atlantis",
+      regionSlug: "nowhere",
+      countrySlug: "atlantis",
+      updatedAt: 1,
+    });
+    expect(resolveMapEntryHref(regions)).toBe("/map");
+  });
+
+  it("falls back to /map while a preserve flag is pending", () => {
+    setLastMapFilter("Europe", "France", "paris");
+    setMapPreserveLocation();
+    expect(resolveMapEntryHref(regions)).toBe("/map");
+  });
+
+  it("resolves a complete filter with a city", () => {
+    setLastMapFilter("Europe", "France", "paris");
+    expect(resolveMapEntryHref(regions)).toBe(
+      "/map?region=europe&country=france&city=paris",
+    );
+  });
+
+  it("resolves the country-wide escape", () => {
+    setLastMapFilter("Europe", "France", null, true);
+    expect(resolveMapEntryHref(regions)).toBe(
+      "/map?region=europe&country=france&scope=country",
+    );
+  });
+
+  it("restores region+country only for a city-less legacy filter", () => {
+    setLastMapFilter("Europe", "France");
+    expect(resolveMapEntryHref(regions)).toBe(
+      "/map?region=europe&country=france",
+    );
   });
 });

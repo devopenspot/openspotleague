@@ -66,6 +66,25 @@ export function consumeMapPreserveLocation(): boolean {
   return false;
 }
 
+/**
+ * Read-only check for a pending preserve flag (does not consume it). Lets the
+ * nav skip the last-filter shortcut when `MapPageClient` will honour the
+ * preserve and skip the restore.
+ */
+export function peekMapPreserveLocation(): boolean {
+  try {
+    if (sessionStorage.getItem(KEY) === "1") return true;
+  } catch {
+    void 0;
+  }
+  try {
+    const state = history.state as Record<string, unknown> | null;
+    return Boolean(state && state[HISTORY_KEY] === 1);
+  } catch {
+    return false;
+  }
+}
+
 export function clearMapPreserveLocation(): void {
   try {
     sessionStorage.removeItem(KEY);

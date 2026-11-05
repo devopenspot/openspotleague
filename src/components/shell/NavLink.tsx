@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import type { MouseEventHandler, ReactNode } from "react";
+import type {
+  FocusEventHandler,
+  MouseEventHandler,
+  PointerEventHandler,
+  ReactNode,
+  TouchEventHandler,
+} from "react";
 import { cn } from "@/lib/utils/cn";
 import type { TabType } from "@/lib/types";
 
@@ -17,6 +23,10 @@ interface NavLinkProps {
   variant: NavVariant;
   className?: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
+  /** Navigation-intent hooks (warm a route before the click lands). */
+  onPointerEnter?: PointerEventHandler<HTMLAnchorElement>;
+  onTouchStart?: TouchEventHandler<HTMLAnchorElement>;
+  onFocus?: FocusEventHandler<HTMLAnchorElement>;
 }
 
 /**
@@ -58,6 +68,9 @@ export function NavLink({
   variant,
   className,
   onClick,
+  onPointerEnter,
+  onTouchStart,
+  onFocus,
 }: NavLinkProps) {
   const styles = VARIANT_STYLES[variant];
   const overlay = badgeOverlaysIcon(variant) && badge;
@@ -71,6 +84,9 @@ export function NavLink({
       prefetch={false}
       aria-current={active ? "page" : undefined}
       onClick={onClick}
+      onPointerEnter={onPointerEnter}
+      onTouchStart={onTouchStart}
+      onFocus={onFocus}
       className={cn(
         styles.base,
         active ? styles.active : styles.inactive,

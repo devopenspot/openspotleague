@@ -1,13 +1,35 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useUIStore } from "@/stores/ui-store";
+import { useSpotsStore } from "@/stores/spots-store";
+import { clearLastMapFilter, setLastMapFilter } from "@/lib/map/last-filter";
+import type { Region } from "@/lib/types";
 import { AppNavList } from "./AppNavList";
 
 const navigation = vi.hoisted(() => ({ pathname: "/saved" }));
+const router = vi.hoisted(() => ({ push: vi.fn(), prefetch: vi.fn() }));
+const preload = vi.hoisted(() => ({ preloadMapCanvas: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
   usePathname: () => navigation.pathname,
+  useRouter: () => router,
 }));
+
+vi.mock("@/lib/map/preload", () => preload);
+
+// Header/drawer say "Spots Map", the bottom bar says "Map".
+const MAP_LINK = /^(Spots )?Map$/;
+
+const regions: Region[] = [
+  {
+    name: "Europe",
+    desc: "Europe spots",
+    count: "1.0k Spots",
+    image: "",
+    link: "/map?region=europe",
+    countries: ["France"],
+  },
+];
 
 vi.mock("@/lib/contexts/user-context", () => ({
   useUser: () => ({
@@ -64,7 +86,7 @@ describe("AppNavList", () => {
     );
 
     const nav = screen.getByRole("navigation", { name: "Primary navigation" });
-    const link = screen.getByRole("link", { name: "Spots Map" });
+    const link = screen.getByRole("link", { name: MAP_LINK });
 
     expect(nav).toHaveClass(
       "items-center",
@@ -99,7 +121,7 @@ describe("AppNavList", () => {
     const { rerender } = render(
       <AppNavList variant="desktop" savedCount={0} onSelect={vi.fn()} />,
     );
-    expect(screen.getByRole("link", { name: "Spots Map" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: MAP_LINK })).toHaveAttribute(
       "id",
       "nav-btn-map",
     );
@@ -107,7 +129,7 @@ describe("AppNavList", () => {
     rerender(
       <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
     );
-    expect(screen.getByRole("link", { name: "Spots Map" })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: MAP_LINK })).not.toHaveAttribute(
       "id",
     );
   });
@@ -146,7 +168,7 @@ describe("AppNavList", () => {
       />,
     );
 
-    expect(screen.getByRole("link", { name: "Spots Map" })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: MAP_LINK })).not.toHaveAttribute(
       "aria-current",
     );
   });
@@ -175,5 +197,86 @@ describe("AppNavList", () => {
     const drawerLink = screen.getByRole("link", { name: "League" });
     expect(drawerLink).toHaveAttribute("href", "/league");
     expect(drawerLink).toHaveAttribute("aria-current", "page");
+  });
+
+  describe("map entry", () => {
+    beforeEach(() => {
+      navigation.pathname = "/league";
+      router.push.mockClear();
+      router.prefetch.mockClear();
+      preload.preloadMapCanvas.mockClear();
+      useSpotsStore.setState({ regions });
+    });
+
+    afterEach(() => {
+      clearLastMapFilter();
+      useSpotsStore.setState({ regions: [] });
+    });
+
+    it("navigates straight to the stored filter on a plain click", () => {
+      setLastMapFilter("Europe", "France", "paris");
+      render(
+        <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
+      );
+      const link = screen.getByRole("link", { name: MAP_LINK });
+
+      expect(link).toHaveAttribute("href", "/map");
+      const notPrevented = fireEvent.click(link);
+
+      expect(notPrevented).toBe(false);
+      expect(router.push).toHaveBeenCalledWith(
+        "/map?region=europe&country=france&city=paris",
+      );
+    });
+
+    it("keeps native link behaviour for modified clicks", () => {
+      setLastMapFilter("Europe", "France", "paris");
+      render(
+        <AppNavList variant="desktop" savedCount={0} onSelect={vi.fn()} />,
+      );
+      const notPrevented = fireEvent.click(
+        screen.getByRole("link", { name: MAP_LINK }),
+        { metaKey: true },
+      );
+
+      expect(notPrevented).toBe(true);
+      expect(router.push).not.toHaveBeenCalled();
+    });
+
+    it("follows the plain /map link when nothing is stored", () => {
+      render(
+        <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
+      );
+      fireEvent.click(screen.getByRole("link", { name: MAP_LINK }));
+
+      expect(router.push).not.toHaveBeenCalled();
+    });
+
+    it("warms the map on intent only", () => {
+      setLastMapFilter("Europe", "France", "paris");
+      render(
+        <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
+      );
+      expect(preload.preloadMapCanvas).not.toHaveBeenCalled();
+      expect(router.prefetch).not.toHaveBeenCalled();
+
+      fireEvent.touchStart(screen.getByRole("link", { name: MAP_LINK }));
+
+      expect(preload.preloadMapCanvas).toHaveBeenCalledTimes(1);
+      expect(router.prefetch).toHaveBeenCalledWith(
+        "/map?region=europe&country=france&city=paris",
+      );
+    });
+
+    it("leaves the Map link alone while already on the map", () => {
+      navigation.pathname = "/map";
+      setLastMapFilter("Europe", "France", "paris");
+      render(
+        <AppNavList variant="mobile-tab" savedCount={0} onSelect={vi.fn()} />,
+      );
+      fireEvent.click(screen.getByRole("link", { name: MAP_LINK }));
+
+      expect(router.push).not.toHaveBeenCalled();
+    });
   });
 });
