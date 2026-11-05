@@ -39,7 +39,7 @@ const FEATURES: readonly FeatureCardProps[] = [
   },
   {
     icon: Gamepad2,
-    title: "Trick Game, Live",
+    title: "Tricks Games",
     badge: "Train or Battle",
     description: "Game of S.K.A.T.E. - B.I.K.E. - B.L.A.D.E. - S.C.O.O.T.",
     bullets: [
@@ -68,7 +68,7 @@ const FEATURES: readonly FeatureCardProps[] = [
   },
   {
     icon: Trophy,
-    title: "Judges, riders, Podiums & Scores",
+    title: "riders, Judges, Scores, Podiums & Contests",
     badge: "Create your own contests",
     description:
       "All you need to manage your own contests, from start to finish.",
