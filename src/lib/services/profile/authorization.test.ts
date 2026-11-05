@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   hasCountryScope,
   hasDisciplineScope,
-  hasEventCuratorRole,
+  hasContestCuratorRole,
   hasPermission,
   hasAnyRole,
   hasRole,
@@ -60,7 +60,7 @@ describe("authorization matrix", () => {
       { countries: ["FR", "US"], disciplines: [] },
     )
     expect(hasSpotCuratorRole(spotCurator)).toBe(true)
-    expect(hasEventCuratorRole(spotCurator)).toBe(false)
+    expect(hasContestCuratorRole(spotCurator)).toBe(false)
     expect(hasTrickCuratorRole(spotCurator)).toBe(false)
     expect(hasCountryScope(spotCurator, "FR")).toBe(true)
     expect(hasCountryScope(spotCurator, "fr")).toBe(true) // case-insensitive
@@ -70,10 +70,10 @@ describe("authorization matrix", () => {
 
   it("enforces event curator country scopes", () => {
     const eventCurator = snapshotFromRows(
-      [{ roleSlug: "event_curator", permissionSlug: "content.write" }],
+      [{ roleSlug: "contest_curator", permissionSlug: "content.write" }],
       { countries: ["DE"], disciplines: [] },
     )
-    expect(hasEventCuratorRole(eventCurator)).toBe(true)
+    expect(hasContestCuratorRole(eventCurator)).toBe(true)
     expect(hasSpotCuratorRole(eventCurator)).toBe(false)
     expect(hasCountryScope(eventCurator, "DE")).toBe(true)
     expect(hasCountryScope(eventCurator, "FR")).toBe(false)

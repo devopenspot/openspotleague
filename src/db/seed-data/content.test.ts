@@ -101,7 +101,7 @@ describe("canonical content sources", () => {
     expect(EVENT_PLAN_SEED.some((p: { slug: string; isDefault: boolean }) => p.slug === "free" && p.isDefault)).toBe(true)
 
     // RBAC
-    expect(PERMISSION_SEED.length).toBe(10)
+    expect(PERMISSION_SEED.length).toBe(11)
     expect(ROLE_SEED.length).toBe(5)
     const permissionSlugs = new Set(PERMISSION_SEED.map((p: { slug: string }) => p.slug))
     for (const role of ROLE_SEED) {

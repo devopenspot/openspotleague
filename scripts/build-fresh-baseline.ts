@@ -368,8 +368,7 @@ BEGIN
     JOIN auth.users au ON au.id = e.created_by
     JOIN (VALUES (2), (3), (6)) AS d(day)
       ON (now() - e.created_at) >= make_interval(days => d.day)
-    WHERE e.origin = 'community'
-      AND e.status NOT IN ('completed', 'cancelled')
+    WHERE e.status NOT IN ('completed', 'cancelled')
       AND au.email IS NOT NULL AND au.email <> ''
       AND NOT EXISTS (
         SELECT 1 FROM event_payments p

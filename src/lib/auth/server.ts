@@ -11,13 +11,13 @@ import {
   getAuthorizationSnapshotCached,
   hasRole,
   isScopedCurator,
-  hasEventCuratorRole,
+  hasContestCuratorRole,
   hasSpotCuratorRole,
   hasTrickCuratorRole,
   hasTvCuratorRole,
   requireCurationForUser,
   requireAdministratorForUser,
-  requireEventCurationForUser,
+  requireContestCurationForUser,
   requirePermissionForUser,
   requireRoleForUser,
   requireSpotCurationForUser,
@@ -149,7 +149,7 @@ export async function requireAdministrator(): Promise<User> {
 }
 
 export async function requireRole(
-  role: "admin" | "curator" | "spot_curator" | "event_curator" | "trick_curator" | "tv_curator",
+  role: "admin" | "curator" | "spot_curator" | "contest_curator" | "trick_curator" | "tv_curator",
 ): Promise<User> {
   const user = await getSessionUser()
   if (!user) throw new AuthorizationError("UNAUTHENTICATED")
@@ -165,13 +165,13 @@ export async function requireSpotCurationAccess(
   return requireSpotCurationForUser(user, countryCode, requirement)
 }
 
-export async function requireEventCurationAccess(
+export async function requireContestCurationAccess(
   countryCode: string,
   requirement?: AuthorizationRequirement,
 ): Promise<User> {
   const user = await getSessionUser()
   if (!user) throw new AuthorizationError("UNAUTHENTICATED")
-  return requireEventCurationForUser(user, countryCode, requirement)
+  return requireContestCurationForUser(user, countryCode, requirement)
 }
 
 export async function requireTrickCurationAccess(
@@ -263,10 +263,10 @@ export async function requireSpotCurationRoleOrRedirect(
   return requireScopedRoleOrRedirect(nextPath, hasSpotCuratorRole)
 }
 
-export async function requireEventCurationRoleOrRedirect(
+export async function requireContestCurationRoleOrRedirect(
   nextPath: string,
 ): Promise<User> {
-  return requireScopedRoleOrRedirect(nextPath, hasEventCuratorRole)
+  return requireScopedRoleOrRedirect(nextPath, hasContestCuratorRole)
 }
 
 export async function requireTrickCurationRoleOrRedirect(

@@ -190,14 +190,15 @@ export const spotImages = pgTable(
   ],
 );
 
-// Unified sport events: editorial ("seed") directory entries and user-created
-// league events ("community") share this table, separated by `origin` /
-// `visibility`. Competition state lives in child tables (memberships, invites,
-// criteria, runs, scores, results) and the lifecycle is a stored `status`
-// (the public directory still derives upcoming/live/completed from dates).
-// `version` is the OCC counter every event mutation bumps — the league engine
-// uses it for optimistic concurrency (`SELECT … FOR UPDATE` + expectedVersion).
-// Specs: .agents/specs/league/*.spec.md.
+// League contests (table name kept from the sport-events era). Users and
+// contest curators create them; `visibility` gates the public listing
+// (public needs an active paid/comped payment on a non-free plan, see
+// `canListPublicly`). Competition state lives in child tables (memberships,
+// invites, criteria, runs, scores, results) and the lifecycle is a stored
+// `status` (the public directory still derives upcoming/live/completed from
+// dates). `version` is the OCC counter every contest mutation bumps — the
+// league engine uses it for optimistic concurrency (`SELECT … FOR UPDATE` +
+// expectedVersion). Docs: docs/league.md.
 export const sportEvents = pgTable(
   "sport_events",
   {
@@ -206,7 +207,6 @@ export const sportEvents = pgTable(
     name: text("name").notNull(),
     shortName: text("short_name"),
     description: text("description").notNull().default(""),
-    origin: text("origin").$type<"seed" | "community">().notNull().default("community"),
     visibility: text("visibility").$type<EventVisibility>().notNull().default("unlisted"),
     status: text("status").$type<EventLifecycleStatus>().notNull().default("draft"),
     timezone: text("timezone").notNull(),
@@ -214,11 +214,12 @@ export const sportEvents = pgTable(
     endAt: timestamp("end_at", { withTimezone: true }),
     registrationClosesAt: timestamp("registration_closes_at", { withTimezone: true }),
     schedulePublishedAt: timestamp("schedule_published_at", { withTimezone: true }),
-    // Payment gate deadlines (community events only; null for editorial).
-    // due = created_at + 3 days, deadline = created_at + 6 days. Between due
-    // and deadline the event is read-only (payment-only); after the deadline
-    // without a registered payment it is disabled definitively. See
-    // .agents/specs/league/engine.spec.md.
+    // Payment gate deadlines. due = created_at + 3 days, deadline =
+    // created_at + 6 days. Between due and deadline the contest is read-only
+    // (payment-only); after the deadline without a registered payment it is
+    // disabled definitively. An active paid/comped payment settles the gate
+    // (curator-created contests get a comped one). See `paymentGate` in
+    // src/lib/league/engine.ts.
     paymentDueAt: timestamp("payment_due_at", { withTimezone: true }),
     paymentDeadlineAt: timestamp("payment_deadline_at", { withTimezone: true }),
     startedAt: timestamp("started_at", { withTimezone: true }),
@@ -269,16 +270,11 @@ export const sportEvents = pgTable(
     index("sport_events_country_start_at_idx").on(t.countryCode, t.startAt),
     index("sport_events_city_slug_idx").on(t.citySlug),
     index("sport_events_location_gist_idx").using("gist", t.location),
-    index("sport_events_origin_idx").on(t.origin),
     index("sport_events_visibility_idx").on(t.visibility),
     index("sport_events_status_idx").on(t.status),
     index("sport_events_featured_idx").on(t.featured),
     index("sport_events_payment_deadline_idx").on(t.paymentDeadlineAt),
-    index("sport_events_created_by_origin_created_idx").on(
-      t.createdBy,
-      t.origin,
-      t.createdAt,
-    ),
+    index("sport_events_created_by_created_idx").on(t.createdBy, t.createdAt),
     // Trigram search support (0026): Drizzle has no gin_trgm_ops builder —
     // raw expression mirrors `USING gin (lower(name) gin_trgm_ops)`.
     index("sport_events_name_trgm_idx").using(
@@ -289,7 +285,6 @@ export const sportEvents = pgTable(
       "gin",
       sql`lower(${t.city}) gin_trgm_ops`,
     ),
-    check("sport_events_origin_check", sql`${t.origin} in ('seed','community')`),
     check("sport_events_visibility_check", sql`${t.visibility} in ('public','unlisted')`),
     check(
       "sport_events_status_check",

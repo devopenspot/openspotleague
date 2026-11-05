@@ -32,7 +32,7 @@ import {
 import {
   ADMIN_PERMISSION_SLUGS,
   CURATOR_PERMISSION_SLUGS,
-  EVENT_CURATOR_PERMISSION_SLUGS,
+  CONTEST_CURATOR_PERMISSION_SLUGS,
   PERMISSION_SEED,
   ROLE_SEED,
   SPOT_CURATOR_PERMISSION_SLUGS,
@@ -248,7 +248,7 @@ async function seedRoles(tx: Tx): Promise<void> {
     ...ADMIN_PERMISSION_SLUGS.map((slug) => ({ roleSlug: "admin", permissionSlug: slug })),
     ...CURATOR_PERMISSION_SLUGS.map((slug) => ({ roleSlug: "curator", permissionSlug: slug })),
     ...SPOT_CURATOR_PERMISSION_SLUGS.map((slug) => ({ roleSlug: "spot_curator", permissionSlug: slug })),
-    ...EVENT_CURATOR_PERMISSION_SLUGS.map((slug) => ({ roleSlug: "event_curator", permissionSlug: slug })),
+    ...CONTEST_CURATOR_PERMISSION_SLUGS.map((slug) => ({ roleSlug: "contest_curator", permissionSlug: slug })),
     ...TRICK_CURATOR_PERMISSION_SLUGS.map((slug) => ({ roleSlug: "trick_curator", permissionSlug: slug })),
   ]
 
