@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { authorizationErrorResponse, AuthConfigError } from "./server"
+import { authorizationErrorResponse, AuthConfigError, sanitizeNext } from "./server"
 import { AuthorizationError } from "@/lib/services/profile/authorization"
 
 describe("authorizationErrorResponse", () => {
@@ -22,5 +22,18 @@ describe("authorizationErrorResponse", () => {
 
   it("keeps the legacy Admin only mapping", () => {
     expect(authorizationErrorResponse(new Error("Admin only")).status).toBe(403)
+  })
+})
+
+describe("sanitizeNext", () => {
+  it("returns guests to League pages after sign-in (QR invites, create, console)", () => {
+    expect(sanitizeNext("/league/join/abcDEF123456")).toBe("/league/join/abcDEF123456")
+    expect(sanitizeNext(encodeURIComponent("/league/new"))).toBe("/league/new")
+    expect(sanitizeNext("/league/night-jam-1/manage")).toBe("/league/night-jam-1/manage")
+  })
+
+  it("still rejects paths outside the allow-list", () => {
+    expect(sanitizeNext("/leaguex")).toBe("/")
+    expect(sanitizeNext("//evil.example/league")).toBe("/")
   })
 })

@@ -4,12 +4,17 @@ import {
   BadgeDollarSign,
   ClipboardList,
   MapPin,
+  Medal,
   Plus,
   Trophy,
   Tv,
 } from "lucide-react"
 import { connection } from "next/server"
 import { getServerUserFromCookies } from "@/lib/auth/auth"
+import {
+  CONTEST_CURATION_LIMIT,
+  listContestsForCuration,
+} from "@/lib/services/league"
 import { runListSpots } from "@/lib/services/spot/spots"
 import { runListCurrentTrickCatalogs } from "@/lib/services/taxonomy/trick-catalogs"
 import { runListTvVideos } from "@/lib/services/tv/tv"
@@ -27,8 +32,14 @@ export async function AdminCurationHub({
 }) {
   await connection()
   const user = await getServerUserFromCookies()
-  const [spotsResult, catalogs, tvVideos] = await Promise.all([
+  const canCurateContests = Boolean(user?.isAdministrator || user?.canCurateContests)
+  const [spotsResult, contests, catalogs, tvVideos] = await Promise.all([
     runListSpots({ limit: COUNT_LIMIT }),
+    canCurateContests
+      ? listContestsForCuration(
+          user?.isAdministrator ? null : (user?.curatedCountryCodes ?? []),
+        ).catch(() => [])
+      : Promise.resolve([]),
     runListCurrentTrickCatalogs(),
     runListTvVideos({}).catch(() => [] as unknown as readonly { id: string }[]),
   ])
@@ -60,7 +71,7 @@ export async function AdminCurationHub({
           <p className="font-mono text-[10px] font-bold uppercase tracking-eyebrow">Administrator access required</p>
           <p className="mt-1 leading-6">
             That section is reserved for administrators. You can continue
-            curating spots and tricks here.
+            curating spots, contests and tricks here.
           </p>
         </div>
       ) : null}
@@ -92,6 +103,15 @@ export async function AdminCurationHub({
               New spot
             </Link>
           ) : null}
+          {canCurateContests ? (
+            <Link
+              href="/admin/league/contests/new"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-5 py-2 font-display text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-on-surface transition-colors duration-150 ease-out hover:bg-surface-container-highest active:scale-[0.99]"
+            >
+              <Plus size={13} aria-hidden="true" />
+              New contest
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -104,6 +124,17 @@ export async function AdminCurationHub({
             </dt>
             <dd className="mt-2 font-display text-3xl font-bold tracking-tight text-on-surface">
               {countLabel(spotsResult.items.length, Boolean(spotsResult.nextCursor))}
+            </dd>
+          </div>
+        ) : null}
+        {canCurateContests ? (
+          <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4">
+            <dt className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-eyebrow text-secondary">
+              <Medal size={14} aria-hidden="true" />
+              Contests
+            </dt>
+            <dd className="mt-2 font-display text-3xl font-bold tracking-tight text-on-surface">
+              {countLabel(contests.length, contests.length >= CONTEST_CURATION_LIMIT)}
             </dd>
           </div>
         ) : null}
@@ -153,6 +184,15 @@ export async function AdminCurationHub({
               count={countLabel(spotsResult.items.length, Boolean(spotsResult.nextCursor))}
             />
           ) : null}
+          {canCurateContests ? (
+            <HubLink
+              href="/admin/league/contests"
+              Icon={Medal}
+              label="Contests"
+              description="Create curated contests, feature them, hide or cancel contests and fix their details."
+              count={countLabel(contests.length, contests.length >= CONTEST_CURATION_LIMIT)}
+            />
+          ) : null}
           {canCurateTricks ? (
             <HubLink
               href="/admin/taxonomy/tricks"
@@ -176,7 +216,7 @@ export async function AdminCurationHub({
               href="/admin/league/payments"
               Icon={BadgeDollarSign}
               label="League"
-              description="Payment queue, plan pricing and account-plan grants for community sport events."
+              description="Payment queue, plan pricing and account-plan grants for contests."
               count="Payments · plans"
             />
           ) : null}

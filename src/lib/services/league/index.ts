@@ -7,8 +7,12 @@
  * invalidation. Reads run in read-only repeatable-read transactions and are
  * never cached (ETag/version gating happens at the route layer).
  *
- * Business rules implemented here (.agents/specs/league/engine.spec.md):
- * - community events may be scheduled at most 2 months in advance;
+ * Business rules implemented here (docs/league.md):
+ * - contests may be scheduled at most 2 months in advance;
+ * - free-plan contests stay unlisted (shared by QR code); public listing
+ *   needs an active paid/comped payment on a non-free plan;
+ * - contest curators (league.curate, country-scoped) create comped contests
+ *   and moderate any contest through the same write path (`asCurator`);
  * - payment gate: 3 days to register a plan payment (free included,
  *   self-registered), then the event is read-only (payment-only), and
  *   definitively disabled 3 days later without payment.
@@ -21,7 +25,7 @@ import {
   runFindEventById,
 } from "@/lib/services/event/events";
 
-import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, inArray, sql, type SQL } from "drizzle-orm";
 import { getDbClient, withDbRead, withDbWrite } from "@/lib/db/client";
 import {
   authUsers,
@@ -213,6 +217,8 @@ async function recordActionRequest(
     fingerprint: string;
     resultingVersion: number;
     response: LeagueMutationResponse | LeagueCreateEventResponse;
+    /** Audit extras stored next to the response (curator reason, …). */
+    metadata?: Record<string, unknown>;
   },
 ): Promise<void> {
   await tx
@@ -224,7 +230,9 @@ async function recordActionRequest(
       idempotencyKey: input.idempotencyKey,
       requestFingerprint: input.fingerprint,
       resultingVersion: input.resultingVersion,
-      responseMetadata: input.response,
+      responseMetadata: input.metadata
+        ? { ...input.response, ...input.metadata }
+        : input.response,
     })
     .onConflictDoNothing();
 }
@@ -377,7 +385,43 @@ async function gateFor(
 export interface CreateLeagueEventOptions {
   idempotencyKey?: string;
   ip?: string;
+  /**
+   * Curator create (contest_curator / admin, scope checked by the route):
+   * picks the plan, writes a comped payment so the gate is settled, may list
+   * publicly and feature the contest, and skips the creator's monthly quota.
+   */
+  curator?: {
+    planSlug: string;
+    visibility: "public" | "unlisted";
+    featured: boolean;
+  };
 }
+
+/** Curator moderation of a contest the actor may not be a member of. */
+export interface CuratorActionOptions {
+  asCurator?: boolean;
+  /** Free-text moderation note, stored with the action request. */
+  reason?: string;
+}
+
+function curatorMetadata(
+  options: CuratorActionOptions,
+): Record<string, unknown> | undefined {
+  if (!options.asCurator) return undefined;
+  return { curator: true, ...(options.reason ? { reason: options.reason } : {}) };
+}
+
+/** Fields curators may moderate in any non-terminal status. */
+const CURATOR_ANYTIME_PATCH_KEYS = new Set([
+  "name",
+  "shortName",
+  "description",
+  "url",
+  "instagram",
+  "youtube",
+  "featured",
+  "visibility",
+]);
 
 export async function createLeagueEvent(
   userId: string,
@@ -392,7 +436,11 @@ export async function createLeagueEvent(
       assertScheduleAdvanceWindow(startAt, now);
       assertValidLeagueDateRange(input.startDate, input.endDate);
 
-      const fingerprint = await fingerprintFor({ userId, ...input });
+      const fingerprint = await fingerprintFor({
+        userId,
+        ...input,
+        ...(options.curator ? { curator: options.curator } : {}),
+      });
       if (options.idempotencyKey) {
         const replay = await findIdempotentResult(tx, {
           userId,
@@ -402,17 +450,39 @@ export async function createLeagueEvent(
         });
         if (replay) return replay as LeagueCreateEventResponse;
       }
-      const plan = await accountPlan(tx, userId);
-      const createdThisMonth = await countContestsThisMonth(
-        tx,
-        userId,
-        now,
-      );
-      if (createdThisMonth >= plan.monthlyEventLimit) {
-        throw new LeagueDomainError(
-          "QUOTA_EXCEEDED",
-          `You reached your monthly limit of ${plan.monthlyEventLimit} events`,
+      let curatorPlan: { slug: string; currency: string } | null = null;
+      if (options.curator) {
+        const [planRow] = await tx
+          .select({ slug: eventPlans.slug, currency: eventPlans.currency })
+          .from(eventPlans)
+          .where(
+            and(
+              eq(eventPlans.slug, options.curator.planSlug),
+              eq(eventPlans.active, true),
+            ),
+          )
+          .limit(1);
+        if (!planRow) {
+          throw new LeagueDomainError(
+            "PLAN_NOT_FOUND",
+            `Payment plan not found: ${options.curator.planSlug}`,
+          );
+        }
+        assertVisibilityAllowed(options.curator.visibility, planRow.slug);
+        curatorPlan = planRow;
+      } else {
+        const plan = await accountPlan(tx, userId);
+        const createdThisMonth = await countContestsThisMonth(
+          tx,
+          userId,
+          now,
         );
+        if (createdThisMonth >= plan.monthlyEventLimit) {
+          throw new LeagueDomainError(
+            "QUOTA_EXCEEDED",
+            `You reached your monthly limit of ${plan.monthlyEventLimit} contests`,
+          );
+        }
       }
 
       const countryCode = await resolveCountryCode(
@@ -442,7 +512,8 @@ export async function createLeagueEvent(
         name: input.name,
         shortName: input.shortName ?? null,
         description: input.description,
-        visibility: "unlisted",
+        visibility: options.curator?.visibility ?? "unlisted",
+        featured: options.curator?.featured ?? false,
         status: "draft",
         timezone: input.timezone,
         startAt,
@@ -458,7 +529,7 @@ export async function createLeagueEvent(
             ? { lat: input.latitude, lon: input.longitude }
             : null,
         categorySlug: input.category,
-        planSlug: FREE_PLAN_SLUG,
+        planSlug: curatorPlan?.slug ?? FREE_PLAN_SLUG,
         imageUrl: input.imageUrl ?? DEFAULT_CONTEST_IMAGE,
         url: input.url ?? null,
         instagram: input.instagram ?? null,
@@ -480,6 +551,23 @@ export async function createLeagueEvent(
         addedBy: userId,
       };
       await tx.insert(eventMemberships).values(membershipValues);
+
+      if (curatorPlan) {
+        // Curated contests are comped: the gate settles immediately and the
+        // payment reminder sweep never picks them up.
+        await tx.insert(eventPayments).values({
+          eventId: id,
+          planSlug: curatorPlan.slug,
+          status: "comped",
+          amountCents: 0,
+          currency: curatorPlan.currency,
+          provider: "curator",
+          payerUserId: userId,
+          markedPaidBy: userId,
+          paidAt: now,
+          createdBy: userId,
+        });
+      }
 
       const criteriaRows: NewEventScoringCriterionRow[] =
         buildDefaultCriteria().map((criterion, index) => ({
@@ -523,7 +611,11 @@ export async function createLeagueEvent(
           response: { id, version: 0, slug },
         });
       }
-      log.info("league.event_created", { eventId: id, userId });
+      log.info("league.event_created", {
+        eventId: id,
+        userId,
+        curated: Boolean(options.curator),
+      });
       return { id, version: 0, slug };
     }),
   );
@@ -651,6 +743,7 @@ export async function getLeagueEventVersion(
 export async function getLeagueEventState(
   eventId: string,
   userId: string,
+  options: { asCurator?: boolean } = {},
 ): Promise<LeagueEventState | null> {
   const { db } = getDbClient();
   return withDbRead("league.eventState", () =>
@@ -673,7 +766,7 @@ export async function getLeagueEventState(
       const event = row.event;
 
       const myRole = await loadMembership(tx, eventId, userId);
-      if (!myRole) return null;
+      if (!myRole && !options.asCurator) return null;
       const activePayment = await loadActivePayment(tx, eventId);
       const gate = paymentGate({
         createdAt: event.createdAt,
@@ -908,12 +1001,14 @@ export interface UpdateLeagueConfigInput {
   eventId: string;
   expectedVersion: number;
   idempotencyKey: string;
-  patch: LeagueConfigPatch;
+  /** `featured` is curator-only. */
+  patch: LeagueConfigPatch & { featured?: boolean };
 }
 
 export async function updateLeagueEventConfig(
   userId: string,
   input: UpdateLeagueConfigInput,
+  options: CuratorActionOptions = {},
 ): Promise<LeagueMutationResponse> {
   const { db } = getDbClient();
   return withDbWrite("league.updateConfig", () =>
@@ -925,15 +1020,41 @@ export async function updateLeagueEventConfig(
           "The event changed since you loaded it",
         );
       }
-      const role = await loadMembership(tx, locked.id, userId);
-      assertCapability(role, "config.edit");
-      const gate = await gateFor(tx, locked, locked.id);
-      assertEventWritable(gate);
-      if (!PRE_LIVE_EVENT_STATUSES.has(locked.status as EventStatus)) {
-        throw new LeagueDomainError(
-          "INVALID_TRANSITION",
-          "Configuration can only be edited before the event goes live",
-        );
+      const patchKeys = Object.keys(input.patch).filter(
+        (key) => input.patch[key as keyof typeof input.patch] !== undefined,
+      );
+      if (options.asCurator) {
+        // Curators moderate regardless of membership or payment gate (the
+        // route checked their country scope). Copy, links, featured and
+        // visibility can be fixed until the contest ends; schedule and
+        // location follow the organizer rule below.
+        const terminal = locked.status === "completed" || locked.status === "cancelled";
+        const anytime = patchKeys.every((key) => CURATOR_ANYTIME_PATCH_KEYS.has(key));
+        if (terminal || (!anytime && !PRE_LIVE_EVENT_STATUSES.has(locked.status as EventStatus))) {
+          throw new LeagueDomainError(
+            "INVALID_TRANSITION",
+            terminal
+              ? "Finished contests can no longer be edited"
+              : "Schedule and location can only be edited before the contest goes live",
+          );
+        }
+      } else {
+        if (input.patch.featured !== undefined) {
+          throw new LeagueDomainError(
+            "NOT_AUTHORIZED",
+            "Only curators can feature a contest",
+          );
+        }
+        const role = await loadMembership(tx, locked.id, userId);
+        assertCapability(role, "config.edit");
+        const gate = await gateFor(tx, locked, locked.id);
+        assertEventWritable(gate);
+        if (!PRE_LIVE_EVENT_STATUSES.has(locked.status as EventStatus)) {
+          throw new LeagueDomainError(
+            "INVALID_TRANSITION",
+            "Configuration can only be edited before the event goes live",
+          );
+        }
       }
 
       const fingerprint = await fingerprintFor(input);
@@ -1023,6 +1144,7 @@ export async function updateLeagueEventConfig(
       if (patch.url !== undefined) setValues.url = patch.url;
       if (patch.instagram !== undefined) setValues.instagram = patch.instagram;
       if (patch.youtube !== undefined) setValues.youtube = patch.youtube;
+      if (patch.featured !== undefined) setValues.featured = patch.featured;
 
       const [updated] = await tx
         .update(sportEvents)
@@ -1065,6 +1187,7 @@ export async function updateLeagueEventConfig(
         fingerprint,
         resultingVersion: updated.version,
         response,
+        metadata: curatorMetadata(options),
       });
       await recordEventSignal(tx, {
         eventId: locked.id,
@@ -1129,6 +1252,7 @@ export interface SetContestCoverResult extends LeagueMutationResponse {
 export async function setContestCover(
   userId: string,
   input: SetContestCoverInput,
+  options: CuratorActionOptions = {},
 ): Promise<SetContestCoverResult> {
   const { db } = getDbClient();
   return withDbWrite("league.setCover", () =>
@@ -1152,10 +1276,12 @@ export async function setContestCover(
           "The event changed since you loaded it",
         );
       }
-      const role = await loadMembership(tx, locked.id, userId);
-      assertCapability(role, "config.edit");
-      const gate = await gateFor(tx, locked, locked.id);
-      assertEventWritable(gate);
+      if (!options.asCurator) {
+        const role = await loadMembership(tx, locked.id, userId);
+        assertCapability(role, "config.edit");
+        const gate = await gateFor(tx, locked, locked.id);
+        assertEventWritable(gate);
+      }
 
       const [current] = await tx
         .select({ imageUrl: sportEvents.imageUrl })
@@ -1196,6 +1322,7 @@ export async function setContestCover(
         fingerprint,
         resultingVersion: updated.version,
         response,
+        metadata: curatorMetadata(options),
       });
       await recordEventSignal(tx, {
         eventId: locked.id,
@@ -3005,6 +3132,7 @@ export async function completeEvent(
 export async function cancelEvent(
   userId: string,
   input: LifecycleMutationInput,
+  options: CuratorActionOptions = {},
 ): Promise<LeagueMutationResponse> {
   const { db } = getDbClient();
   return withDbWrite("league.cancelEvent", () =>
@@ -3016,10 +3144,12 @@ export async function cancelEvent(
           "The event changed since you loaded it",
         );
       }
-      const role = await loadMembership(tx, locked.id, userId);
-      assertCapability(role, "event.cancel");
-      const gate = await gateFor(tx, locked, locked.id);
-      assertEventWritable(gate);
+      if (!options.asCurator) {
+        const role = await loadMembership(tx, locked.id, userId);
+        assertCapability(role, "event.cancel");
+        const gate = await gateFor(tx, locked, locked.id);
+        assertEventWritable(gate);
+      }
       assertTransition(locked.status as EventStatus, "cancelled");
       const fingerprint = await fingerprintFor({ userId, ...input });
       const replay = await findIdempotentResult(tx, {
@@ -3042,6 +3172,7 @@ export async function cancelEvent(
         fingerprint,
         resultingVersion: response.version,
         response,
+        metadata: curatorMetadata(options),
       });
       await recordEventSignal(tx, {
         eventId: locked.id,
@@ -4152,6 +4283,137 @@ export async function getContestDetailBySlug(
   if (!resolved) return null;
   const contest = await runFindEventById(resolved.id);
   return contest ? { contest, history } : null;
+}
+
+// ---------- curation ----------
+
+export interface ContestCurationQuery {
+  /** Name search (case-insensitive substring). */
+  q?: string;
+  planSlug?: string;
+  visibility?: "public" | "unlisted";
+  status?: string;
+  countryCode?: string;
+  featured?: boolean;
+}
+
+export interface ContestCurationItem {
+  id: string;
+  slug: string;
+  name: string;
+  status: string;
+  planSlug: string;
+  visibility: string;
+  featured: boolean;
+  countryCode: string;
+  countryName: string;
+  city: string;
+  startDate: string;
+  createdAt: string;
+  version: number;
+  /** Active paid/comped payment exists (gate settled). */
+  settled: boolean;
+}
+
+export const CONTEST_CURATION_LIMIT = 200;
+
+/**
+ * Contest table for the admin curation section. `countryCodes` is the
+ * curator's scope (null = every country, for admins and legacy curators);
+ * every plan, visibility and status is included.
+ */
+export async function listContestsForCuration(
+  countryCodes: readonly string[] | null,
+  query: ContestCurationQuery = {},
+): Promise<ContestCurationItem[]> {
+  if (countryCodes !== null && countryCodes.length === 0) return [];
+  const { db } = getDbClient();
+  const conditions: SQL[] = [];
+  if (countryCodes !== null) {
+    conditions.push(inArray(sportEvents.countryCode, [...countryCodes]));
+  }
+  if (query.q?.trim()) {
+    conditions.push(ilike(sportEvents.name, `%${query.q.trim().replace(/[%_\\]/g, "\\$&")}%`));
+  }
+  if (query.planSlug) conditions.push(eq(sportEvents.planSlug, query.planSlug));
+  if (query.visibility) conditions.push(eq(sportEvents.visibility, query.visibility));
+  if (query.status) {
+    conditions.push(eq(sportEvents.status, query.status as EventStatus));
+  }
+  if (query.countryCode) {
+    conditions.push(eq(sportEvents.countryCode, query.countryCode.toUpperCase()));
+  }
+  if (query.featured !== undefined) {
+    conditions.push(eq(sportEvents.featured, query.featured));
+  }
+  const settled = sql<boolean>`exists (
+    select 1 from ${eventPayments}
+    where ${eventPayments.eventId} = ${sportEvents.id}
+      and ${eventPayments.status} in ('paid', 'comped')
+  )`;
+  const rows = await withDbRead("league.curationList", () =>
+    db
+      .select({
+        id: sportEvents.id,
+        slug: sportEvents.slug,
+        name: sportEvents.name,
+        status: sportEvents.status,
+        planSlug: sportEvents.planSlug,
+        visibility: sportEvents.visibility,
+        featured: sportEvents.featured,
+        countryCode: sportEvents.countryCode,
+        countryName: countries.name,
+        city: sportEvents.city,
+        startAt: sportEvents.startAt,
+        createdAt: sportEvents.createdAt,
+        version: sportEvents.version,
+        settled,
+      })
+      .from(sportEvents)
+      .innerJoin(countries, eq(countries.iso2, sportEvents.countryCode))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(sportEvents.createdAt))
+      .limit(CONTEST_CURATION_LIMIT),
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    status: row.status,
+    planSlug: row.planSlug,
+    visibility: row.visibility,
+    featured: row.featured,
+    countryCode: row.countryCode,
+    countryName: row.countryName,
+    city: row.city,
+    startDate: row.startAt.toISOString().slice(0, 10),
+    createdAt: row.createdAt.toISOString(),
+    version: row.version,
+    settled: Boolean(row.settled),
+  }));
+}
+
+/** Curator view of one contest: the full state, without needing membership. */
+export async function getContestForCuration(
+  eventId: string,
+  curatorId: string,
+): Promise<LeagueEventState | null> {
+  return getLeagueEventState(eventId, curatorId, { asCurator: true });
+}
+
+/** Country of a contest — routes resolve it to check the curator scope. */
+export async function getContestCountryCode(
+  eventId: string,
+): Promise<string | null> {
+  const { db } = getDbClient();
+  const [row] = await withDbRead("league.contestCountry", () =>
+    db
+      .select({ countryCode: sportEvents.countryCode })
+      .from(sportEvents)
+      .where(eq(sportEvents.id, eventId))
+      .limit(1),
+  );
+  return row?.countryCode ?? null;
 }
 
 // ---------- admin plans ----------

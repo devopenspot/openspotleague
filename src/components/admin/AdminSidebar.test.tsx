@@ -43,8 +43,22 @@ describe("AdminSidebar", () => {
     )
     expect(screen.getByRole("link", { name: "Spots" })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Events" })).not.toBeInTheDocument()
+    // No league.curate → no Contests entry.
+    expect(screen.queryByRole("link", { name: "Contests" })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Tricks" })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Sports" })).not.toBeInTheDocument()
+  })
+
+  it("shows Contests to curators holding league.curate", () => {
+    user.value = { ...user.value!, canCurateContests: true } as typeof user.value
+
+    render(<AdminSidebar />)
+
+    expect(screen.getByRole("link", { name: "Contests" })).toHaveAttribute(
+      "href",
+      "/admin/league/contests",
+    )
+    user.value = { ...user.value!, canCurateContests: false } as typeof user.value
   })
 
   it("adds structural administration sections for administrators", () => {

@@ -91,8 +91,7 @@ export type CreateLeagueEventInput = z.infer<typeof leagueCreateEventInputSchema
 
 // ---------- config patch ----------
 
-export const leagueConfigPatchSchema = z
-  .object({
+const leagueConfigPatchShape = {
     name: z.string().min(1).max(120).optional(),
     shortName: z.string().max(40).optional(),
     description: z.string().max(2000).optional(),
@@ -114,22 +113,69 @@ export const leagueConfigPatchSchema = z
     url: HttpUrlSchema.nullable().optional(),
     instagram: HttpUrlSchema.nullable().optional(),
     youtube: HttpUrlSchema.nullable().optional(),
-  })
+};
+
+function refineCoordinatePair(
+  patch: { latitude?: number; longitude?: number },
+  ctx: z.RefinementCtx,
+): void {
+  if ((patch.latitude === undefined) !== (patch.longitude === undefined)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "latitude and longitude must both be set or both be omitted",
+      path: ["latitude"],
+    });
+  }
+}
+
+export const leagueConfigPatchSchema = z
+  .object(leagueConfigPatchShape)
   .strict()
-  .superRefine((patch, ctx) => {
-    if ((patch.latitude === undefined) !== (patch.longitude === undefined)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "latitude and longitude must both be set or both be omitted",
-        path: ["latitude"],
-      });
-    }
-  });
+  .superRefine(refineCoordinatePair);
 
 export type LeagueConfigPatch = z.infer<typeof leagueConfigPatchSchema>;
 
 export const leagueConfigPatchInputSchema = leagueMutationInputSchema.extend({
   patch: leagueConfigPatchSchema,
+});
+
+// ---------- curation (contest_curator / admin) ----------
+
+/** Optional moderation note stored with the action request. */
+const curatorReasonSchema = z.string().trim().max(500).optional();
+
+/** Curator create: the organizer contest plus plan, listing and featuring. */
+export const curatorCreateContestInputSchema = z
+  .object({
+    idempotencyKey: z.string().uuid(),
+    contest: leagueCreateEventInputSchema,
+    planSlug: z.string().min(1).max(64),
+    visibility: EventVisibilitySchema.default("unlisted"),
+    featured: z.boolean().default(false),
+  })
+  .strict();
+
+export type CuratorCreateContestInput = z.infer<
+  typeof curatorCreateContestInputSchema
+>;
+
+export const curatorContestPatchSchema = z
+  .object({ ...leagueConfigPatchShape, featured: z.boolean().optional() })
+  .strict()
+  .superRefine(refineCoordinatePair);
+
+export const curatorContestPatchInputSchema = leagueMutationInputSchema.extend({
+  patch: curatorContestPatchSchema,
+  reason: curatorReasonSchema,
+});
+
+export const curatorVisibilityInputSchema = leagueMutationInputSchema.extend({
+  visibility: EventVisibilitySchema,
+  reason: curatorReasonSchema,
+});
+
+export const curatorCancelInputSchema = leagueMutationInputSchema.extend({
+  reason: curatorReasonSchema,
 });
 
 // ---------- payment ----------
