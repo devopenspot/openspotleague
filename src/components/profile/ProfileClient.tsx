@@ -3,6 +3,7 @@
 import { Settings, LogOut } from "lucide-react";
 import { ProfileHero } from "./layout/ProfileHero";
 import { ProfileStats } from "./layout/ProfileStats";
+import { ProfileLeagueCard } from "./league/ProfileLeagueCard";
 import { ProfileGamesList } from "./games/ProfileGamesList";
 import { ProfileSpotsGrid } from "./spots/ProfileSpotsGrid";
 import { ProfileTricksPanel } from "./settings/ProfileTricksPanel";
@@ -127,6 +128,8 @@ export function ProfileClient() {
                     </div>
                   </div>
                 </section>
+
+                <ProfileLeagueCard summary={summary} />
 
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                   <div className={CARD_CLASS}>
