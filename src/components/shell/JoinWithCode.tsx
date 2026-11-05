@@ -14,7 +14,7 @@ const JOIN_GAME_TITLE_ID = `join-game-title`;
 const JOIN_GAME_DESCRIPTION_ID = `join-game-description`;
 
 const UI_COPY = {
-  joinWithCode: `Join with code`,
+  joinWithCode: `Join a game`,
   joinEyebrow: `Join a game`,
   joinTitle: `Have a share code?`,
   joinDescription: `Scanning your friend's QR with your phone camera is fastest. Or paste the code or invite link they sent you.`,
