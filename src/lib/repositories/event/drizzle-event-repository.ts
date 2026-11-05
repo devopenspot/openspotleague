@@ -46,7 +46,6 @@ interface JoinedEventRow {
   sports: string[]
   category: string
   categoryName: string
-  origin: string
   visibility: string
   status: string
   timezone: string
@@ -154,7 +153,6 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
         sports: includeSports ? sportsAgg : sql<string[]>`'{}'::text[]`,
         category: eventCategories.slug,
         categoryName: eventCategories.name,
-        origin: sportEvents.origin,
         visibility: sportEvents.visibility,
         status: sportEvents.status,
         timezone: sportEvents.timezone,

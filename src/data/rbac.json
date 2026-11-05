@@ -49,6 +49,11 @@
       "slug": "league.manage",
       "name": "Manage league",
       "description": "Manage league plans, payments and account grants."
+    },
+    {
+      "slug": "league.curate",
+      "name": "Curate contests",
+      "description": "Create, edit, feature, hide and cancel league contests in scoped countries."
     }
   ],
   "roles": [
@@ -66,7 +71,8 @@
         "database.reset",
         "migrations.manage",
         "operational.settings",
-        "league.manage"
+        "league.manage",
+        "league.curate"
       ]
     },
     {
@@ -92,14 +98,13 @@
       ]
     },
     {
-      "slug": "event_curator",
-      "name": "Event Curator",
-      "description": "Manage events scoped by country.",
+      "slug": "contest_curator",
+      "name": "Contest Curator",
+      "description": "Create and curate league contests scoped by country.",
       "permissions": [
         "content.read",
-        "content.write",
         "media.manage",
-        "taxonomy.use"
+        "league.curate"
       ]
     },
     {

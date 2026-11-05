@@ -46,8 +46,8 @@ export const CURATOR_PERMISSION_SLUGS: readonly string[] =
 export const SPOT_CURATOR_PERMISSION_SLUGS: readonly string[] =
   parsed.roles.find((r) => r.slug === "spot_curator")?.permissions ?? [];
 
-export const EVENT_CURATOR_PERMISSION_SLUGS: readonly string[] =
-  parsed.roles.find((r) => r.slug === "event_curator")?.permissions ?? [];
+export const CONTEST_CURATOR_PERMISSION_SLUGS: readonly string[] =
+  parsed.roles.find((r) => r.slug === "contest_curator")?.permissions ?? [];
 
 export const TRICK_CURATOR_PERMISSION_SLUGS: readonly string[] =
   parsed.roles.find((r) => r.slug === "trick_curator")?.permissions ?? [];

@@ -8,7 +8,7 @@ import {
   hasPermission,
   hasRole,
   hasSpotCuratorRole,
-  hasEventCuratorRole,
+  hasContestCuratorRole,
   hasTrickCuratorRole,
   hasTvCuratorRole,
 } from "@/lib/services/profile/authorization"
@@ -68,7 +68,7 @@ export function userFromClaims(claims: AuthClaims): User | null {
     canCurate: false,
     isAdministrator: false,
     canCurateSpots: false,
-    canCurateEvents: false,
+    canCurateContests: false,
     canCurateTricks: false,
     canManageLeague: false,
     curatedCountryCodes: [],
@@ -117,11 +117,11 @@ export async function getServerUserFromCookies(): Promise<User | null> {
         "media.manage",
         "taxonomy.use",
       ])) ||
-      hasAnyRole(authorization, ["spot_curator", "event_curator", "trick_curator", "tv_curator"] as const)
+      hasAnyRole(authorization, ["spot_curator", "contest_curator", "trick_curator", "tv_curator"] as const)
     const curatedCountryCodes = [...authorization.countryScopes]
     const curatedDisciplineSlugs = [...authorization.disciplineScopes]
     const canCurateSpots = isAdministrator || hasSpotCuratorRole(authorization)
-    const canCurateEvents = isAdministrator || hasEventCuratorRole(authorization)
+    const canCurateContests = isAdministrator || hasContestCuratorRole(authorization)
     const canCurateTricks = isAdministrator || hasTrickCuratorRole(authorization)
     const canCurateTv = isAdministrator || hasTvCuratorRole(authorization)
     const canManageLeague = isAdministrator || hasPermission(authorization, "league.manage")
@@ -129,12 +129,12 @@ export async function getServerUserFromCookies(): Promise<User | null> {
       ...fromClaims,
       canAccessAdmin:
         isAdministrator ||
-        (hasAnyRole(authorization, ["admin", "curator", "spot_curator", "event_curator", "trick_curator", "tv_curator"] as const) &&
+        (hasAnyRole(authorization, ["admin", "curator", "spot_curator", "contest_curator", "trick_curator", "tv_curator"] as const) &&
           hasPermission(authorization, "content.read")),
       canCurate,
       isAdministrator,
       canCurateSpots,
-      canCurateEvents,
+      canCurateContests,
       canCurateTricks,
       canCurateTv,
       canManageLeague,

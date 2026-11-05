@@ -50,7 +50,7 @@ function roleSlugs(user: AdminUserSummary): RoleSlug[] {
 function roleLabel(slug: string): string {
   if (slug === "admin") return "Administrator"
   if (slug === "spot_curator") return "Spot Curator"
-  if (slug === "event_curator") return "Event Curator"
+  if (slug === "contest_curator") return "Contest Curator"
   if (slug === "trick_curator") return "Trick Curator"
   return "Curator"
 }
@@ -58,7 +58,7 @@ function roleLabel(slug: string): string {
 function roleBadgeClass(slug: string): string {
   if (slug === "admin") return "border-outline-variant bg-surface-container-high text-on-surface"
   if (slug === "spot_curator") return "border-outline-variant bg-surface-container-high text-on-surface"
-  if (slug === "event_curator") return "border-outline-variant bg-surface-container-high text-on-surface"
+  if (slug === "contest_curator") return "border-outline-variant bg-surface-container-high text-on-surface"
   if (slug === "trick_curator") return "border-outline-variant bg-surface-container-high text-on-surface"
   return "border-outline-variant bg-surface-container-high text-secondary"
 }
@@ -181,7 +181,7 @@ export function AdminUserManager({
     setPendingChange(null)
     setError(null)
     // preload scopes if user already has a scoped role or legacy curator
-    const hasScoped = roleSlugs(user).some((s) => ["spot_curator","event_curator","trick_curator","curator"].includes(s))
+    const hasScoped = roleSlugs(user).some((s) => ["spot_curator","contest_curator","trick_curator","curator"].includes(s))
     if (hasScoped && !scopesByUser[user.id]) {
       void loadScopes(user.id)
     } else if (scopesByUser[user.id]) {
@@ -543,7 +543,7 @@ export function AdminUserManager({
 
                     {/* Scoped curator scopes */}
                     {(() => {
-                      const needsCountry = draftRoles.some((r) => ["spot_curator","event_curator"].includes(r))
+                      const needsCountry = draftRoles.some((r) => ["spot_curator","contest_curator"].includes(r))
                       const needsDiscipline = draftRoles.includes("trick_curator")
                       if (!needsCountry && !needsDiscipline && !["curator"].some((r) => draftRoles.includes(r as RoleSlug))) return null
                       const isLoading = scopesLoading === user.id
@@ -637,7 +637,7 @@ export function AdminUserManager({
                                 </button>
                                 <button type="button" onClick={() => scopes && (setDraftCountryCodes(scopes.countryCodes), setDraftDisciplineSlugs(scopes.disciplineSlugs))} className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-outline-variant bg-surface-container-high px-5 py-2 font-display text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-on-surface transition-colors duration-150 ease-out hover:bg-surface-container-highest active:scale-[0.99]">Reset</button>
                               </div>
-                              <p className="text-[10px] leading-4 text-secondary">Scopes are enforced for spot_curator/event_curator (country) and trick_curator (discipline). Legacy curator bypasses scopes.</p>
+                              <p className="text-[10px] leading-4 text-secondary">Scopes are enforced for spot_curator/contest_curator (country) and trick_curator (discipline). Legacy curator bypasses scopes.</p>
                             </div>
                           ) : null}
                         </div>

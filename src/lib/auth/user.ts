@@ -9,7 +9,7 @@ export interface User {
   isAdministrator: boolean;
   // Scoped curation — always set at runtime; optional for test stubs
   canCurateSpots?: boolean;
-  canCurateEvents?: boolean;
+  canCurateContests?: boolean;
   canCurateTricks?: boolean;
   canCurateTv?: boolean;
   canManageLeague?: boolean;

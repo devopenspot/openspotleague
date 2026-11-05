@@ -30,6 +30,7 @@ export const PERMISSION_SLUGS = [
   "migrations.manage",
   "operational.settings",
   "league.manage",
+  "league.curate",
 ] as const
 export type PermissionSlug = (typeof PERMISSION_SLUGS)[number]
 
@@ -118,8 +119,8 @@ export function hasSpotCuratorRole(snapshot: AuthorizationSnapshot): boolean {
   return hasAnyRole(snapshot, ["spot_curator", "curator"] as const) || hasRole(snapshot, "admin")
 }
 
-export function hasEventCuratorRole(snapshot: AuthorizationSnapshot): boolean {
-  return hasAnyRole(snapshot, ["event_curator", "curator"] as const) || hasRole(snapshot, "admin")
+export function hasContestCuratorRole(snapshot: AuthorizationSnapshot): boolean {
+  return hasAnyRole(snapshot, ["contest_curator", "curator"] as const) || hasRole(snapshot, "admin")
 }
 
 export function hasTrickCuratorRole(snapshot: AuthorizationSnapshot): boolean {
@@ -293,25 +294,25 @@ export async function requireSpotCurationForUser(
   return user
 }
 
-export async function requireEventCurationForUser(
+export async function requireContestCurationForUser(
   user: User,
   countryCode: string,
   requirement?: AuthorizationRequirement,
 ): Promise<User> {
   const snapshot = await getAuthorizationSnapshot(user.id)
   if (hasRole(snapshot, "admin")) return user
-  if (!hasEventCuratorRole(snapshot)) throw new AuthorizationError("FORBIDDEN")
+  if (!hasContestCuratorRole(snapshot)) throw new AuthorizationError("FORBIDDEN")
   if (requirement !== undefined && !hasPermission(snapshot, requirement)) {
     throw new AuthorizationError("FORBIDDEN")
   }
   const legacyBypass = env.LEGACY_CURATOR_BYPASS
   if (hasRole(snapshot, "curator")) {
     const { log } = await import("@/lib/utils/log")
-    log.warn("auth.legacy_curator_bypass", { userId: user.id, scope: "event", countryCode: countryCode.toUpperCase() })
+    log.warn("auth.legacy_curator_bypass", { userId: user.id, scope: "contest", countryCode: countryCode.toUpperCase() })
     if (legacyBypass) return user
   }
   if (!hasCountryScope(snapshot, countryCode)) {
-    throw new AuthorizationError("FORBIDDEN", `Missing event curation scope for country ${countryCode.toUpperCase()}`)
+    throw new AuthorizationError("FORBIDDEN", `Missing contest curation scope for country ${countryCode.toUpperCase()}`)
   }
   return user
 }
