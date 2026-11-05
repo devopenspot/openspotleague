@@ -10,7 +10,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CalendarDays, MapPin, Rocket } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
+import {
+  alertClass,
+  BODY,
+  CARD,
+  controlClass,
+  EYEBROW,
+  PAGE_TITLE,
+  pageContainer,
+} from "@/components/ui/recipes";
 import { useUser } from "@/lib/contexts/user-context";
 import { SignInLink } from "@/components/shell/SignInLink";
 import { formatEventTimeInZone, roleLabel } from "@/lib/league/ui-state";
@@ -96,79 +104,65 @@ export function JoinWithInvite({ code }: { code: string }) {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-md px-5 py-16">
+      <div className={pageContainer("3xl")} aria-busy="true">
+        <p className="sr-only">Loading invite…</p>
         <div
-          className="h-32  rounded-lg bg-surface-container"
           aria-hidden="true"
+          className="mx-auto h-64 max-w-md animate-pulse rounded-container bg-white/20"
         />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-md px-5 py-12">
-      <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+    <div className={pageContainer("3xl")}>
+      <div className={`mx-auto max-w-md text-on-surface ${CARD} sm:p-6`}>
         {preview ? (
           <>
-            <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
-              League invite
-            </p>
-            <h1 className="mt-1 font-display text-xl font-bold tracking-tight text-on-surface">
-              {preview.eventName}
-            </h1>
-            <ul className="mt-4 flex flex-col gap-2 text-sm text-secondary">
+            <p className={EYEBROW}>League invite</p>
+            <h1 className={`mt-1 ${PAGE_TITLE}`}>{preview.eventName}</h1>
+            <ul className={`mt-4 flex flex-col gap-2 ${BODY}`}>
               <li className="flex items-center gap-2">
-                <CalendarDays size={14} aria-hidden="true" />
+                <CalendarDays size={14} aria-hidden="true" className="text-secondary" />
                 {formatEventTimeInZone(preview.eventStartAt, preview.timezone)}
               </li>
               <li className="flex items-center gap-2">
-                <MapPin size={14} aria-hidden="true" />
+                <MapPin size={14} aria-hidden="true" className="text-secondary" />
                 {preview.city}
               </li>
               <li className="flex items-center gap-2">
-                <Rocket size={14} aria-hidden="true" />
+                <Rocket size={14} aria-hidden="true" className="text-secondary" />
                 Invited as {roleLabel(preview.role)}
               </li>
             </ul>
 
             {!preview.usable ? (
-              <div
-                role="alert"
-                className="mt-5 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
-              >
+              <div role="alert" className={`mt-5 text-sm ${alertClass("error")}`}>
                 {preview.reason ?? "This invite is no longer usable."}
               </div>
             ) : error ? (
-              <div
-                role="alert"
-                className="mt-5 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
-              >
+              <div role="alert" className={`mt-5 text-sm ${alertClass("error")}`}>
                 {error}
               </div>
             ) : joinState === "done" ? (
-              <p
-                className="mt-5 rounded-lg border border-outline-variant bg-surface-container-low p-4 text-sm text-on-surface"
-                role="status"
-              >
+              <p className={`mt-5 text-sm ${alertClass("neutral")}`} role="status">
                 You&apos;re in — taking you to the event…
               </p>
             ) : user ? (
               <button
                 type="button"
                 disabled={joinState === "busy"}
+                aria-busy={joinState === "busy" || undefined}
                 onClick={() => void join()}
-                className={cn(
-                  "mt-5 min-h-11 w-full rounded-full bg-primary font-display text-xs font-semibold uppercase tracking-pill text-on-primary transition-opacity hover:opacity-90 disabled:opacity-50",
-                )}
+                className={`mt-5 w-full ${controlClass("primary")}`}
               >
                 {joinState === "busy" ? "Joining…" : "Join the event"}
               </button>
             ) : (
-              <div className="mt-5">
+              <div className="mt-2">
                 <SignInLink
-                  variant="drawer"
+                  variant="dialog"
                   next={`/sport-events/join/${code}`}
-                  className="!mt-0"
                 />
                 <p className="mt-2 text-center text-xs text-secondary">
                   Sign in to join as {roleLabel(preview.role)}.
@@ -177,13 +171,13 @@ export function JoinWithInvite({ code }: { code: string }) {
             )}
           </>
         ) : (
-          <div role="alert" className="text-sm text-error">
+          <div role="alert" className={`text-sm ${alertClass("error")}`}>
             {error ?? "This invite could not be found."}
           </div>
         )}
         <Link
           href="/sport-events"
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className={`mt-5 w-full ${controlClass("outline")}`}
         >
           All events
         </Link>

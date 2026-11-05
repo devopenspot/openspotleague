@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { BarChart3, ClipboardList, Crown, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { PaymentGateNotice } from "@/components/league/PaymentGateNotice";
+import { FormSection, SelectField, TextField } from "@/components/league/form-parts";
 import { useLeagueRealtime } from "@/components/league/hooks/useLeagueRealtime";
 import {
   ConfirmButton,
@@ -20,8 +21,25 @@ import {
   MemberRow,
   RunRow,
   StateBadge,
-  MANAGE_CONTROL_CLASSES,
 } from "./manage-parts";
+import {
+  BODY,
+  CARD,
+  CARD_NESTED,
+  CARD_TITLE,
+  EMPTY_STATE,
+  EYEBROW,
+  LABEL,
+  META,
+  PAGE_TITLE,
+  SEGMENTED_TRACK,
+  TILE,
+  alertClass,
+  controlClass,
+  pageContainer,
+  segmentClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import { isOrganizerRole } from "@/lib/league/ui-state";
 import type { LeagueDashboard, LeagueEventState } from "@/lib/services/league";
 import {
@@ -29,6 +47,29 @@ import {
   DEFAULT_READ_TIMEOUT_MS,
   fetchWithTimeout,
 } from "@/lib/utils/fetch-timeout";
+
+const CATEGORY_OPTIONS: readonly {
+  value: LeagueEventState["event"]["category"];
+  label: string;
+}[] = [
+  { value: "local-event", label: "Local Event" },
+  { value: "festival", label: "Festival" },
+  { value: "championship", label: "Championship" },
+  { value: "federation", label: "Federation" },
+  { value: "world-tour", label: "World Tour" },
+];
+
+const EXPIRY_OPTIONS = [
+  { value: "1", label: "1 day" },
+  { value: "7", label: "7 days" },
+  { value: "30", label: "30 days" },
+  { value: "0", label: "No expiry" },
+] as const;
+
+const VISIBILITY_OPTIONS = [
+  { value: "unlisted", label: "Unlisted (share link)" },
+  { value: "public", label: "Public directory" },
+] as const;
 
 type Tab = "config" | "roster" | "live" | "results" | "metrics";
 
@@ -210,29 +251,34 @@ export function ManageConsole({ eventId }: { eventId: string }) {
 
   if (error || !state) {
     return (
-      <div className="mx-auto w-full max-w-3xl px-5 py-12">
+      <div className={`${pageContainer("5xl")} text-on-surface`}>
         {error ? (
           <div
             role="alert"
-            className="flex flex-col items-start gap-3 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
+            className={`flex flex-col items-start gap-3 text-sm ${alertClass("error")}`}
           >
             {error}
             <button
               type="button"
               onClick={retry}
-              className="inline-flex min-h-11 items-center rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
+              className={controlClass("outline", "sm")}
             >
               Retry
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3" aria-hidden="true">
-            {[0, 1, 2, 3].map((index) => (
-              <div
-                key={index}
-                className="h-20  rounded-lg bg-surface-container"
-              />
-            ))}
+          <div aria-busy="true">
+            <p className="sr-only">Loading the console…</p>
+            <div className="flex flex-col gap-3" aria-hidden="true">
+              <div className="h-16 w-2/3 animate-pulse rounded-card bg-surface-container-high" />
+              <div className="h-11 w-full animate-pulse rounded-control bg-surface-container-high" />
+              {[0, 1, 2].map((index) => (
+                <div
+                  key={index}
+                  className="h-24 animate-pulse rounded-container border border-outline-variant bg-surface-container-lowest"
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -245,32 +291,29 @@ export function ManageConsole({ eventId }: { eventId: string }) {
   const judgeCapable = state.myRole === "judge" || organizer;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-5 py-8">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+    <div className={`${pageContainer("5xl")} text-on-surface`}>
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
-            Organizer console
+          <p className={EYEBROW}>
+            {organizer ? "Organizer console" : "Event console"}
           </p>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
-            {event.name}
-          </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-secondary">
+          <h1 className={`mt-1 ${PAGE_TITLE}`}>{event.name}</h1>
+          <p className={`mt-3 flex flex-wrap items-center gap-2 ${META}`}>
             <StateBadge status={event.status} />
             <span>
               {event.city}, {event.country}
             </span>
             <span aria-hidden="true">·</span>
-            <span>Plan: {event.planSlug}</span>
+            <span>
+              {event.planSlug === "free" ? "Free plan" : `${event.planSlug} plan`}
+            </span>
             <span aria-hidden="true">·</span>
             <span>v{event.version}</span>
-            <span
-              className="inline-flex items-center gap-1 rounded-full border border-outline-variant px-2 py-0.5"
-              data-realtime={connection}
-            >
+            <span className={tagClass("outline")} data-realtime={connection}>
               <span
                 aria-hidden="true"
                 className={cn(
-                  "h-1.5 w-1.5 rounded-full",
+                  "h-1.5 w-1.5 rounded-control",
                   connection === "connected" ? "bg-primary" : "bg-outline",
                 )}
               />
@@ -281,7 +324,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
         <button
           type="button"
           onClick={() => router.push(`/sport-events/${event.slug}`)}
-          className="min-h-11 rounded-full border border-outline-variant px-4 font-display text-xs font-semibold uppercase tracking-pill text-secondary transition-colors hover:border-outline hover:text-on-surface"
+          className={controlClass("outline")}
         >
           View public page
         </button>
@@ -315,10 +358,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
       ) : null}
 
       {actionError ? (
-        <div
-          role="alert"
-          className="mb-5 rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
-        >
+        <div role="alert" className={`mb-5 text-sm ${alertClass("error")}`}>
           {actionError}
         </div>
       ) : null}
@@ -326,7 +366,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
       <div
         role="tablist"
         aria-label="Manage sections"
-        className="mb-5 flex gap-2 overflow-x-auto"
+        className={`mb-6 ${SEGMENTED_TRACK}`}
       >
         {visibleTabs(organizer).map((entry) => (
           <button
@@ -338,12 +378,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
             aria-controls={`manage-panel-${entry.id}`}
             data-nav-tab
             onClick={() => setTab(entry.id)}
-            className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-display text-xs font-semibold uppercase tracking-pill transition-colors",
-              tab === entry.id
-                ? "border-primary bg-primary text-on-primary"
-                : "border-outline-variant bg-surface-container-high text-secondary hover:border-outline hover:text-on-surface",
-            )}
+            className={segmentClass(tab === entry.id)}
           >
             <entry.icon size={14} aria-hidden="true" />
             {entry.label}
@@ -460,113 +495,60 @@ function ConfigPanel({
       aria-labelledby="manage-tab-config"
       className="flex flex-col gap-5"
     >
-      <fieldset className="rounded-lg border border-outline-variant bg-surface-container-low p-5 sm:p-6">
-        <legend className="px-1 font-display text-sm font-bold tracking-label text-on-surface">
-          Event details
-        </legend>
+      <FormSection
+        icon={Settings}
+        title="Event details"
+        intro={
+          canEdit
+            ? "Edits apply together when you save."
+            : "Read-only — only organizers can edit while the event is unlocked."
+        }
+      >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label
-              htmlFor="cfg-name"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              Name
-            </label>
-            <input
-              id="cfg-name"
-              value={form.name}
-              disabled={!canEdit}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className={MANAGE_CONTROL_CLASSES}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="cfg-start"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              Start date
-            </label>
-            <input
-              id="cfg-start"
-              type="date"
-              value={form.startDate}
-              disabled={!canEdit}
-              onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className={MANAGE_CONTROL_CLASSES}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="cfg-end"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              End date
-            </label>
-            <input
-              id="cfg-end"
-              type="date"
-              value={form.endDate}
-              disabled={!canEdit}
-              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className={MANAGE_CONTROL_CLASSES}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="cfg-category"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              Category
-            </label>
-            <select
-              id="cfg-category"
-              value={form.category}
-              disabled={!canEdit}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  category: e.target
-                    .value as LeagueEventState["event"]["category"],
-                })
-              }
-              className={MANAGE_CONTROL_CLASSES}
-            >
-              {[
-                "local-event",
-                "festival",
-                "championship",
-                "federation",
-                "world-tour",
-              ].map((value) => (
-                <option key={value} value={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label
-              htmlFor="cfg-visibility"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              Visibility
-            </label>
-            <select
-              id="cfg-visibility"
-              value={form.visibility}
-              disabled={!canEdit}
-              onChange={(e) => setForm({ ...form, visibility: e.target.value })}
-              className={MANAGE_CONTROL_CLASSES}
-            >
-              <option value="unlisted">Unlisted (share link)</option>
-              <option value="public">Public directory</option>
-            </select>
-          </div>
+          <TextField
+            id="cfg-name"
+            label="Name"
+            value={form.name}
+            disabled={!canEdit}
+            onChange={(value) => setForm({ ...form, name: value })}
+            className="sm:col-span-2"
+          />
+          <TextField
+            id="cfg-start"
+            type="date"
+            label="Start date"
+            value={form.startDate}
+            disabled={!canEdit}
+            onChange={(value) => setForm({ ...form, startDate: value })}
+          />
+          <TextField
+            id="cfg-end"
+            type="date"
+            label="End date"
+            value={form.endDate}
+            disabled={!canEdit}
+            onChange={(value) => setForm({ ...form, endDate: value })}
+          />
+          <SelectField
+            id="cfg-category"
+            label="Category"
+            value={form.category}
+            disabled={!canEdit}
+            onChange={(value) => setForm({ ...form, category: value })}
+            options={CATEGORY_OPTIONS}
+          />
+          <SelectField
+            id="cfg-visibility"
+            label="Visibility"
+            value={form.visibility}
+            disabled={!canEdit}
+            onChange={(value) => setForm({ ...form, visibility: value })}
+            options={VISIBILITY_OPTIONS}
+          />
         </div>
-      </fieldset>
+      </FormSection>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <ConfirmButton
           label="Save changes"
           confirmTitle="Save event details?"
@@ -705,69 +687,42 @@ function RosterPanel({
           { label: "Judges", count: state.counts.judges },
           { label: "Organizers", count: state.counts.organizers },
         ].map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-lg border border-outline-variant bg-surface-container-lowest p-4 text-center"
-          >
-            <p className="font-display text-xl font-bold text-on-surface">
+          <div key={stat.label} className={TILE}>
+            <p className="font-display text-2xl font-bold leading-none tabular-nums text-on-surface">
               {stat.count}
             </p>
-            <p className="font-display text-[10px] font-bold uppercase tracking-pill text-secondary">
-              {stat.label}
-            </p>
+            <p className={`mt-2 ${LABEL}`}>{stat.label}</p>
           </div>
         ))}
       </div>
 
       {organizer ? (
-        <div className="rounded-lg border border-outline-variant bg-surface-container-low p-5">
-          <h3 className="mb-3 font-display text-xs font-bold uppercase tracking-pill text-secondary">
-            Share invites
-          </h3>
-          <div className="flex flex-wrap items-end gap-3">
-            <div>
-              <label
-                htmlFor="invite-role"
-                className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-              >
-                Role
-              </label>
-              <select
-                id="invite-role"
-                value={inviteRole}
-                disabled={!canManage}
-                onChange={(e) =>
-                  setInviteRole(e.target.value as typeof inviteRole)
-                }
-                className={MANAGE_CONTROL_CLASSES}
-              >
-                {inviteRoles.map((role) => (
-                  <option key={role} value={role}>
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="invite-expiry"
-                className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-              >
-                Expires in
-              </label>
-              <select
-                id="invite-expiry"
-                value={inviteExpiry}
-                disabled={!canManage}
-                onChange={(e) => setInviteExpiry(e.target.value)}
-                className={MANAGE_CONTROL_CLASSES}
-              >
-                <option value="1">1 day</option>
-                <option value="7">7 days</option>
-                <option value="30">30 days</option>
-                <option value="0">No expiry</option>
-              </select>
-            </div>
+        <div className={CARD}>
+          <h3 className={CARD_TITLE}>Share invites</h3>
+          <p className={`mt-1.5 ${BODY}`}>
+            Create a link or QR per role and send it to riders, judges or
+            co-organizers.
+          </p>
+          <div className="mt-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
+            <SelectField
+              id="invite-role"
+              label="Role"
+              value={inviteRole}
+              disabled={!canManage}
+              onChange={setInviteRole}
+              options={inviteRoles.map((role) => ({
+                value: role,
+                label: role.charAt(0).toUpperCase() + role.slice(1),
+              }))}
+            />
+            <SelectField
+              id="invite-expiry"
+              label="Expires in"
+              value={inviteExpiry}
+              disabled={!canManage}
+              onChange={setInviteExpiry}
+              options={EXPIRY_OPTIONS}
+            />
             <button
               type="button"
               disabled={!canManage}
@@ -777,7 +732,7 @@ function RosterPanel({
                   inviteExpiry === "0" ? 365 : Number(inviteExpiry),
                 )
               }
-              className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-50"
+              className={controlClass("primary")}
             >
               Create invite
             </button>
@@ -795,13 +750,16 @@ function RosterPanel({
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-xs text-secondary">
+            <p className={`mt-4 ${BODY}`}>
               No invites yet — create one and share the link or QR.
             </p>
           )}
         </div>
       ) : null}
 
+      {members.length > 0 ? (
+        <h3 className={EYEBROW}>Members · {members.length}</h3>
+      ) : null}
       <ul className="flex flex-col gap-2">
         {members.map((member) => (
           <MemberRow
@@ -844,13 +802,17 @@ function LivePanel({
       aria-labelledby="manage-tab-live"
       className="flex flex-col gap-4"
     >
-      <p className="font-display text-xs font-bold uppercase tracking-pill text-secondary">
-        Run queue · {state.runs.length} runs
-      </p>
+      <h2 className={EYEBROW}>
+        Run queue · {state.runs.length} {state.runs.length === 1 ? "run" : "runs"}
+      </h2>
       {state.runs.length === 0 ? (
-        <p className="rounded-lg border border-outline-variant bg-surface-container-low p-6 text-sm text-secondary">
-          No runs yet. Close registration and generate the schedule first.
-        </p>
+        <div className={EMPTY_STATE}>
+          <ClipboardList size={24} aria-hidden="true" className="mx-auto text-secondary" />
+          <p className={`mt-3 ${CARD_TITLE}`}>No runs yet</p>
+          <p className={`mx-auto mt-2 max-w-sm ${BODY}`}>
+            Close registration and generate the schedule first.
+          </p>
+        </div>
       ) : (
         <ul className="flex flex-col gap-3">
           {state.runs.map((run) => (
@@ -921,17 +883,17 @@ function ResultsPanel({
           {state.results.map((result) => (
             <li
               key={result.userId}
-              className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3"
+              className={`flex flex-wrap items-center justify-between gap-3 ${CARD_NESTED}`}
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary font-display text-xs font-bold text-on-primary">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary font-display text-xs font-bold tabular-nums text-on-primary">
                   {result.rank}
                 </span>
-                <p className="text-sm font-semibold text-on-surface">
+                <p className="min-w-0 truncate text-sm font-semibold text-on-surface">
                   {result.riderName}
                 </p>
               </div>
-              <p className="font-display text-xs font-bold uppercase tracking-label text-secondary">
+              <p className={`tabular-nums ${META}`}>
                 {result.totalScore.toFixed(2)} run · +{result.pointsAwarded}{" "}
                 league pts
               </p>
@@ -939,10 +901,10 @@ function ResultsPanel({
           ))}
         </ol>
       ) : (
-        <div className="flex flex-col items-center gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-6 py-12 text-center">
+        <div className={`flex flex-col items-center gap-3 ${EMPTY_STATE}`}>
           <Crown size={24} aria-hidden="true" className="text-secondary" />
-          <p className="font-display text-sm font-semibold">No results yet</p>
-          <p className="max-w-sm text-sm text-secondary">
+          <p className={CARD_TITLE}>No results yet</p>
+          <p className={`max-w-sm ${BODY}`}>
             Results appear once the event completes and you publish them.
           </p>
           {state.event.status === "completed" ? (
@@ -1006,7 +968,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
         id="manage-panel-metrics"
         aria-labelledby="manage-tab-metrics"
         role="alert"
-        className="rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
+        className={`text-sm ${alertClass("error")}`}
       >
         {error}
       </section>
@@ -1021,7 +983,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
         aria-hidden="true"
       >
         {[0, 1, 2].map((index) => (
-          <div key={index} className="h-16  rounded-lg bg-surface-container" />
+          <div key={index} className="h-20 animate-pulse rounded-card bg-surface-container-high" />
         ))}
       </section>
     );
@@ -1050,24 +1012,22 @@ function MetricsPanel({ eventId }: { eventId: string }) {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-inner border border-outline-variant bg-surface-bright p-4"
+            className={TILE}
           >
-            <p className="font-display text-[10px] font-bold uppercase tracking-label text-secondary">
-              {stat.label}
-            </p>
-            <p className="mt-1 font-display text-2xl font-bold text-on-surface">
+            <p className={LABEL}>{stat.label}</p>
+            <p className="mt-1 font-display text-2xl font-bold tabular-nums text-on-surface">
               {stat.value}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-inner border border-outline-variant bg-surface-bright p-4">
-        <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+      <div className={CARD}>
+        <p className={`mb-3 ${EYEBROW}`}>
           Criterion averages
         </p>
         {dashboard.criteria.length === 0 ? (
-          <p className="text-sm text-secondary">
+          <p className={BODY}>
             Averages appear once judges submit scores.
           </p>
         ) : (
@@ -1088,7 +1048,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
                     <p className="text-sm font-medium text-on-surface">
                       {criterion.label}
                     </p>
-                    <p className="font-display text-xs font-bold text-on-surface">
+                    <p className="font-display text-xs font-bold tabular-nums text-on-surface">
                       {criterion.average.toFixed(2)} / {criterion.maxScore}
                     </p>
                   </div>
@@ -1098,10 +1058,10 @@ function MetricsPanel({ eventId }: { eventId: string }) {
                     aria-valuenow={percent}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    className="h-1.5 w-full overflow-hidden rounded-full bg-surface-container-high"
+                    className="h-1.5 w-full overflow-hidden rounded-control bg-surface-container-high"
                   >
                     <div
-                      className="h-full rounded-full bg-primary"
+                      className="h-full rounded-control bg-primary"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -1112,12 +1072,12 @@ function MetricsPanel({ eventId }: { eventId: string }) {
         )}
       </div>
 
-      <div className="rounded-inner border border-outline-variant bg-surface-bright p-4">
-        <p className="mb-3 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+      <div className={CARD}>
+        <p className={`mb-3 ${EYEBROW}`}>
           Judge submissions
         </p>
         {dashboard.judges.length === 0 ? (
-          <p className="text-sm text-secondary">No scores submitted yet.</p>
+          <p className={BODY}>No scores submitted yet.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {dashboard.judges.map((judge) => (
@@ -1128,7 +1088,7 @@ function MetricsPanel({ eventId }: { eventId: string }) {
                 <p className="min-w-0 truncate text-sm text-on-surface">
                   {judge.judgeName}
                 </p>
-                <p className="shrink-0 font-display text-xs font-bold text-on-surface">
+                <p className="shrink-0 font-display text-xs font-bold tabular-nums text-on-surface">
                   {judge.scoresSubmitted} submitted
                 </p>
               </li>
@@ -1195,7 +1155,7 @@ function PlanPaymentActions({
         type="button"
         disabled={disabled || busyPlan !== null}
         onClick={() => void register("free")}
-        className="min-h-11 rounded-full bg-primary px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-50"
+        className={controlClass("primary")}
       >
         {busyPlan === "free" ? "Registering…" : "Register free plan ($0)"}
       </button>
@@ -1203,7 +1163,7 @@ function PlanPaymentActions({
         type="button"
         disabled={disabled || busyPlan !== null}
         onClick={() => void register("starter")}
-        className="min-h-11 rounded-full border border-outline-variant px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-50"
+        className={controlClass("outline")}
       >
         {busyPlan === "starter" ? "Requesting…" : "Request Starter ($5)"}
       </button>
@@ -1211,7 +1171,7 @@ function PlanPaymentActions({
         type="button"
         disabled={disabled || busyPlan !== null}
         onClick={() => void register("pro")}
-        className="min-h-11 rounded-full border border-outline-variant px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface hover:border-outline disabled:opacity-50"
+        className={controlClass("outline")}
       >
         {busyPlan === "pro" ? "Requesting…" : "Request Pro ($21)"}
       </button>

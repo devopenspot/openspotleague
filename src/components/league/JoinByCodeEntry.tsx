@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardPaste, Hash, Ticket } from "lucide-react";
-import { DrawerHeader } from "@/components/feedback/DrawerParts";
+import { DrawerHeader, SIDE_DRAWER_PANEL } from "@/components/feedback/DrawerParts";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
-import { controlClass } from "@/components/ui/recipes";
+import { BODY, INPUT, controlClass } from "@/components/ui/recipes";
 import { resolveEventJoinPath } from "@/lib/sport-events/join-input";
 import { cn } from "@/lib/utils/cn";
 
@@ -36,7 +36,7 @@ const UI_TEMPLATES = {
     `${baseId} ${errorId}`,
 };
 
-type JoinByCodeVariant = "compact" | "link";
+type JoinByCodeVariant = "compact" | "link" | "onWash";
 
 interface JoinByCodeEntryProps {
   variant?: JoinByCodeVariant;
@@ -46,6 +46,7 @@ interface JoinByCodeEntryProps {
 const VARIANT_TRIGGER_CLASSES: Record<JoinByCodeVariant, string> = {
   compact: controlClass("secondary"),
   link: controlClass("outline"),
+  onWash: controlClass("onWash"),
 };
 
 export function JoinByCodeEntry({
@@ -120,8 +121,8 @@ export function JoinByCodeEntry({
         labelledBy={JOIN_EVENT_TITLE_ID}
         contentId={JOIN_EVENT_DRAWER_ID}
         testId={JOIN_EVENT_DRAWER_ID}
-        side="top"
-        panelClassName="!top-[4.5rem] !max-h-[calc(100dvh-4.5rem)] border-b border-outline-variant shadow-[0_8px_32px_rgba(18,18,18,0.08)]"
+        side="right"
+        panelClassName={SIDE_DRAWER_PANEL}
       >
         <div className="flex min-h-0 flex-1 flex-col">
           <DrawerHeader
@@ -133,12 +134,12 @@ export function JoinByCodeEntry({
           >
             <p
               id={JOIN_EVENT_DESCRIPTION_ID}
-              className="mt-1.5 text-sm leading-6 text-on-surface-variant"
+              className={`mt-1.5 ${BODY}`}
             >
               {UI_COPY.joinDescription}
             </p>
           </DrawerHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto p-5">
             <form
               className="flex w-full flex-col gap-3"
               onSubmit={(event) => {
@@ -172,7 +173,7 @@ export function JoinByCodeEntry({
                       )
                     : JOIN_EVENT_DESCRIPTION_ID
                 }
-                className="min-h-12 min-w-0 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 font-display text-base outline-none placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+                className={`${INPUT} font-display tracking-label`}
               />
               {joinError ? (
                 <p
@@ -188,15 +189,15 @@ export function JoinByCodeEntry({
                   <button
                     type="button"
                     onClick={() => void pasteCode()}
-                    className="inline-flex min-h-16 flex-1 items-center justify-center gap-2 rounded-lg border-[3px] border-on-surface bg-surface-container-lowest px-3 font-display text-base font-bold uppercase tracking-dense text-on-surface focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+                    className={`flex-1 ${controlClass("outline", "lg")}`}
                   >
-                    <ClipboardPaste size={20} aria-hidden="true" />
+                    <ClipboardPaste size={16} aria-hidden="true" />
                     {UI_COPY.paste}
                   </button>
                 ) : null}
                 <button
                   type="submit"
-                  className="min-h-16 flex-1 rounded-lg border-2 border-primary bg-primary px-3 font-display text-base font-bold uppercase tracking-dense text-on-primary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+                  className={`flex-1 ${controlClass("primary", "lg")}`}
                 >
                   {UI_COPY.join}
                 </button>

@@ -237,7 +237,7 @@ export function LandingMarquee({
       </div>
 
       <div className="group/wire relative bg-wire h-[36vh]">
-        {/* Edge fades — state-driven like EventCarousel, not always-on */}
+        {/* Edge fades — state-driven by scroll position, not always-on */}
         <div
           aria-hidden="true"
           className={cn(

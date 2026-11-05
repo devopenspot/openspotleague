@@ -3,24 +3,27 @@ import { connection } from "next/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  ArrowLeft,
   Calendar,
+  Clock,
+  ExternalLink,
+  Instagram,
   MapPin,
   MapPinned,
-  ExternalLink,
   Trophy,
-  Instagram,
   Youtube,
 } from "lucide-react";
 import { AppImage } from "@/components/ui/AppImage";
 import { Countdown } from "@/components/ui/Countdown";
+import { ShareActions } from "@/components/ui/ShareActions";
 import {
   BODY,
-  CARD_FRAME,
   CARD_NESTED,
   EYEBROW,
   LABEL,
+  META,
+  TILE,
   controlClass,
-  iconButtonClass,
   pageContainer,
   tagClass,
 } from "@/components/ui/recipes";
@@ -29,7 +32,10 @@ import { findEventBySlug } from "@/lib/services/event/events";
 import { getMyEventHistoryBySlug } from "@/lib/services/league";
 import type { MyEventHistory } from "@/lib/services/league";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
-import { buildEventMapUrl } from "@/lib/sport-events/urls";
+import {
+  buildEventDetailUrl,
+  buildEventMapUrl,
+} from "@/lib/sport-events/urls";
 import { truncate } from "@/lib/og/formatters";
 
 export async function generateMetadata({
@@ -125,6 +131,9 @@ export default async function SportEventPage({
   const isUpcoming = event.status === "upcoming";
   const isCompleted = event.status === "completed";
   const hasSocials = Boolean(event.instagram || event.youtube);
+  const place = [event.location.city, event.location.country]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <div className={pageContainer("7xl")}>
@@ -133,150 +142,94 @@ export default async function SportEventPage({
           href="/sport-events"
           className={`${controlClass("onWash", "sm")} focus-visible:outline-white`}
         >
-          <span aria-hidden="true">←</span> Back to events
+          <ArrowLeft size={14} aria-hidden="true" /> All events
         </Link>
       </nav>
 
-      {/* Hero image + header */}
-      <section className={`overflow-hidden ${CARD_FRAME}`}>
-        <div className="relative h-[320px] w-full overflow-hidden bg-on-surface sm:h-[440px]">
+      <article className="-mx-5 overflow-hidden border-y border-outline-variant bg-surface-container-lowest text-on-surface md:mx-0 md:rounded-container md:border">
+        {/* Photo hero — scrim + onPhoto tags (DESIGN.md pages.spot-detail) */}
+        <div className="relative h-[320px] w-full overflow-hidden bg-on-surface sm:h-[420px]">
           <AppImage
             src={event.image}
-            alt={event.name}
+            alt=""
             fill
-            sizes="(min-width: 1024px) 1200px, 100vw"
-            className="object-cover"
+            sizes="(min-width: 1280px) 1200px, 100vw"
+            className={`object-cover${isCompleted ? " opacity-60" : ""}`}
             priority
             unoptimized
             referrerPolicy="no-referrer"
           />
           <div
-            className="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-on-surface/10"
             aria-hidden="true"
-          />
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-on-surface/40 via-transparent to-transparent"
-            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-on-surface/85 via-on-surface/30 to-transparent"
           />
 
-          {/* top meta row */}
-          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="absolute inset-x-0 top-0 flex flex-wrap items-center gap-1.5 p-4 sm:p-6">
+            <span className={tagClass("onPhoto")}>
+              <Trophy size={12} aria-hidden="true" />
+              {event.categoryName}
+            </span>
+            {isLive ? (
               <span className={tagClass("onPhoto")}>
-                <Trophy size={12} aria-hidden="true" />
-                {event.categoryName}
+                <span
+                  aria-hidden="true"
+                  className="h-1.5 w-1.5 rounded-control bg-error"
+                />
+                Live now
               </span>
-              {isLive ? (
-                <span className="inline-flex items-center gap-1.5 rounded-control bg-surface px-2.5 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
-                  <span
-                    aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-control bg-error -dot"
-                  />
-                  Live
-                </span>
-              ) : isCompleted ? (
-                <span className="inline-flex rounded-control bg-surface/90 px-2.5 py-1 font-display text-xs font-bold tracking-label text-secondary uppercase">
-                  Completed
-                </span>
-              ) : null}
-            </div>
-
-            {hasSocials ? (
-              <ul
-                aria-label={`${event.name} social profiles`}
-                className="hidden items-center gap-1.5 sm:flex"
-              >
-                {event.instagram ? (
-                  <li>
-                    <a
-                      href={event.instagram}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${event.name} on Instagram`}
-                      className={iconButtonClass("onPhoto", "sm")}
-                    >
-                      <Instagram size={14} aria-hidden="true" />
-                    </a>
-                  </li>
-                ) : null}
-                {event.youtube ? (
-                  <li>
-                    <a
-                      href={event.youtube}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${event.name} on YouTube`}
-                      className={iconButtonClass("onPhoto", "sm")}
-                    >
-                      <Youtube size={14} aria-hidden="true" />
-                    </a>
-                  </li>
-                ) : null}
-              </ul>
+            ) : isCompleted ? (
+              <span className={tagClass("onPhoto")}>Completed</span>
             ) : null}
           </div>
 
-          {/* bottom title */}
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 md:p-8">
-            <h1 className="max-w-3xl font-display text-3xl font-bold uppercase leading-none tracking-display text-surface sm:text-4xl md:text-5xl lg:text-6xl">
-              {event.name}
-            </h1>
             {event.shortName ? (
-              <p className="mt-2 font-display text-xs font-bold uppercase tracking-label text-surface/70">
+              <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-surface/75">
                 {event.shortName}
               </p>
             ) : null}
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-surface/90">
-              <span className="inline-flex items-center gap-1.5 rounded-control bg-surface/95 px-2.5 py-1 font-display text-xs font-bold uppercase tracking-dense text-on-surface">
+            <h1 className="mt-1 max-w-3xl font-display text-3xl font-bold uppercase leading-none tracking-display text-surface sm:text-5xl md:text-6xl">
+              {event.name}
+            </h1>
+            <div className="mt-4 flex flex-wrap items-center gap-1.5">
+              <span className={tagClass("onPhoto")}>
                 <Calendar size={12} aria-hidden="true" />
                 {event.dateRangeLabel}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-control bg-surface/95 px-2.5 py-1 text-xs font-semibold text-on-surface">
-                <MapPin size={12} aria-hidden="true" />
-                {event.location.city}
-                {event.location.country ? `, ${event.location.country}` : ""}
-              </span>
-              {event.sports.length > 0 ? (
-                <span className="hidden items-center gap-1.5 sm:inline-flex">
-                  {event.sports.map((sport) => (
-                    <span
-                      key={sport}
-                      className={tagClass("onPhoto")}
-                    >
-                      {sport}
-                    </span>
-                  ))}
+              {place ? (
+                <span className={tagClass("onPhoto")}>
+                  <MapPin size={12} aria-hidden="true" />
+                  {place}
                 </span>
               ) : null}
             </div>
           </div>
         </div>
 
-        {/* details grid */}
-        <div className="grid gap-6 p-5 sm:p-6 md:p-8 lg:grid-cols-[1fr_340px]">
-          <div className="space-y-6">
+        <div className="grid gap-8 p-5 sm:p-6 md:p-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="min-w-0 space-y-6">
             {isUpcoming ? (
-              <div className="inline-flex items-center gap-2 rounded-card border border-outline-variant bg-surface-container-high px-3 py-2 font-mono text-xs uppercase tracking-label text-on-surface">
-                <span
-                  className="h-1.5 w-1.5 rounded-control bg-primary -dot"
-                  aria-hidden="true"
-                />
-                Starts in{" "}
+              <div className={`${TILE} inline-flex items-center gap-3`}>
+                <Clock size={16} aria-hidden="true" className="text-secondary" />
+                <span className={LABEL}>Starts in</span>
                 <Countdown
                   target={event.startDate}
                   label={`${event.name} starts in`}
+                  className="text-base text-on-surface"
                 />
               </div>
             ) : null}
 
-            <div className="space-y-3">
-              <h2 className={EYEBROW}>
-                About
-              </h2>
-              <p className={`max-w-prose ${BODY} sm:text-base`}>
-                {event.description}
-              </p>
-            </div>
+            {event.description ? (
+              <section className="space-y-3" aria-labelledby="event-about">
+                <h2 id="event-about" className={EYEBROW}>
+                  About
+                </h2>
+                <p className={`max-w-prose ${BODY} sm:text-base`}>
+                  {event.description}
+                </p>
+              </section>
+            ) : null}
 
             <dl className="grid gap-4 border-t border-outline-variant pt-6 sm:grid-cols-2">
               <div className="flex gap-3">
@@ -286,14 +239,12 @@ export default async function SportEventPage({
                   aria-hidden="true"
                 />
                 <div>
-                  <dt className={EYEBROW}>
-                    Date
-                  </dt>
-                  <dd className="mt-1 font-display text-sm font-semibold uppercase tracking-dense text-on-surface">
+                  <dt className={EYEBROW}>Date</dt>
+                  <dd className="mt-1 font-display text-sm font-semibold uppercase tracking-dense">
                     {event.dateRangeLabel}
                   </dd>
                   {event.endDate && event.endDate !== event.startDate ? (
-                    <dd className="text-xs text-secondary">
+                    <dd className="mt-0.5 text-xs text-secondary">
                       {event.startDate} → {event.endDate}
                     </dd>
                   ) : null}
@@ -306,19 +257,10 @@ export default async function SportEventPage({
                   aria-hidden="true"
                 />
                 <div className="min-w-0">
-                  <dt className={EYEBROW}>
-                    Location
-                  </dt>
-                  <dd className="mt-1 text-sm font-semibold text-on-surface">
-                    {event.location.city}
-                    {event.location.country
-                      ? `, ${event.location.country}`
-                      : ""}
-                  </dd>
+                  <dt className={EYEBROW}>Location</dt>
+                  <dd className="mt-1 text-sm font-semibold">{place}</dd>
                   {event.location.venue ? (
-                    <dd className="font-display text-xs uppercase tracking-label text-secondary">
-                      {event.location.venue}
-                    </dd>
+                    <dd className={`mt-0.5 ${META}`}>{event.location.venue}</dd>
                   ) : null}
                   {event.location.address ? (
                     <dd className="mt-1 text-xs text-secondary">
@@ -330,25 +272,30 @@ export default async function SportEventPage({
             </dl>
 
             {event.sports.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5 border-t border-outline-variant pt-6">
-                <span className={`w-full ${EYEBROW}`}>
+              <section
+                aria-labelledby="event-disciplines"
+                className="space-y-3 border-t border-outline-variant pt-6"
+              >
+                <h2 id="event-disciplines" className={EYEBROW}>
                   Disciplines
-                </span>
-                {event.sports.map((sport) => (
-                  <span
-                    key={sport}
-                    className={tagClass("outline")}
-                  >
-                    {sport}
-                  </span>
-                ))}
-              </div>
+                </h2>
+                <ul className="flex flex-wrap gap-1.5">
+                  {event.sports.map((sport) => (
+                    <li key={sport} className={tagClass("outline")}>
+                      {sport}
+                    </li>
+                  ))}
+                </ul>
+              </section>
             ) : null}
 
             {myHistory ? <MyPerformance history={myHistory} /> : null}
           </div>
 
-          <aside className="space-y-3 self-start lg:sticky lg:top-6">
+          <aside
+            aria-label="Event actions"
+            className="space-y-3 self-start lg:sticky lg:top-[calc(var(--app-header-h)+1.5rem)]"
+          >
             {event.url ? (
               <a
                 href={event.url}
@@ -362,7 +309,7 @@ export default async function SportEventPage({
               </a>
             ) : null}
 
-            {event.location.city ? (
+            {event.location.country ? (
               <a
                 href={buildEventMapUrl({
                   location: {
@@ -373,16 +320,23 @@ export default async function SportEventPage({
                 aria-label={`Show spots and events in ${event.location.country} on the map`}
                 className={`${controlClass("secondary")} w-full`}
               >
-                View on map
+                Spots &amp; events in {event.location.country}
                 <MapPinned size={14} aria-hidden="true" />
               </a>
             ) : null}
 
+            <div className={CARD_NESTED}>
+              <p className={EYEBROW}>Share</p>
+              <ShareActions
+                url={buildEventDetailUrl(event.slug)}
+                title={event.name}
+                className="mt-3"
+              />
+            </div>
+
             {hasSocials ? (
               <div className={CARD_NESTED}>
-                <p className={EYEBROW}>
-                  Social
-                </p>
+                <p className={EYEBROW}>Follow</p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {event.instagram ? (
                     <li>
@@ -417,11 +371,11 @@ export default async function SportEventPage({
             ) : null}
 
             <p className={`px-1 text-center ${LABEL}`}>
-              Official event — verify dates on the organizer site
+              Dates can change — confirm on the organizer&apos;s site
             </p>
           </aside>
         </div>
-      </section>
+      </article>
     </div>
   );
 }
@@ -446,39 +400,46 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
     history.result !== null;
 
   return (
-    <div className="space-y-3 border-t border-outline-variant pt-6">
+    <section
+      aria-labelledby="event-my-performance"
+      className="space-y-3 border-t border-outline-variant pt-6"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className={EYEBROW}>
+        <h2 id="event-my-performance" className={EYEBROW}>
           My performance
         </h2>
-        <span className={tagClass("neutral")}>
-          {role}
-        </span>
+        <span className={tagClass("neutral")}>{role}</span>
       </div>
       {!hasRuns ? (
-        <p className="text-sm text-secondary">
-          Your activity for this event will appear here.
-        </p>
+        <p className={BODY}>Your activity for this event will appear here.</p>
       ) : (
         <div className="space-y-3">
           {history.result ? (
-            <p className="inline-flex items-center gap-2 rounded-card border border-outline-variant bg-surface-container-low px-3 py-2 text-sm text-on-surface">
-              <span className="font-display text-sm font-bold uppercase tracking-dense">
-                Rank #{history.result.rank}
-              </span>
-              <span aria-hidden="true">·</span>
-              {history.result.totalScore.toFixed(2)} run
-              <span aria-hidden="true">·</span>+{history.result.pointsAwarded}{" "}
-              league pts
-            </p>
+            <dl className="grid grid-cols-3 gap-2 sm:max-w-md">
+              <div className={TILE}>
+                <dt className={LABEL}>Rank</dt>
+                <dd className="mt-1 font-display text-xl font-bold tabular-nums">
+                  #{history.result.rank}
+                </dd>
+              </div>
+              <div className={TILE}>
+                <dt className={LABEL}>Best run</dt>
+                <dd className="mt-1 font-display text-xl font-bold tabular-nums">
+                  {history.result.totalScore.toFixed(2)}
+                </dd>
+              </div>
+              <div className={TILE}>
+                <dt className={LABEL}>League pts</dt>
+                <dd className="mt-1 font-display text-xl font-bold tabular-nums">
+                  +{history.result.pointsAwarded}
+                </dd>
+              </div>
+            </dl>
           ) : null}
           {history.myRuns.length > 0 ? (
-            <ul className="flex flex-wrap gap-2">
+            <ul aria-label="My runs" className="flex flex-wrap gap-1.5">
               {history.myRuns.map((run) => (
-                <li
-                  key={run.runId}
-                  className="rounded-control border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-label text-on-surface"
-                >
+                <li key={run.runId} className={tagClass("neutral")}>
                   Run {run.sequence} · {run.status}
                   {run.myTotal !== null ? ` · ${run.myTotal.toFixed(2)}` : ""}
                 </li>
@@ -486,11 +447,11 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
             </ul>
           ) : null}
           {history.myJudgements.length > 0 ? (
-            <ul className="flex flex-wrap gap-1.5">
+            <ul aria-label="My judgements" className="flex flex-wrap gap-1.5">
               {history.myJudgements.map((entry) => (
                 <li
                   key={`${entry.runId}-${entry.total}`}
-                  className="rounded-control border border-outline-variant bg-surface-container-low px-2.5 py-1 font-display text-xs font-bold uppercase tracking-label text-on-surface"
+                  className={tagClass("neutral")}
                 >
                   Run {entry.sequence} judged · {entry.total.toFixed(2)}
                 </li>
@@ -499,6 +460,6 @@ function MyPerformance({ history }: { history: MyEventHistory }) {
           ) : null}
         </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -8,7 +8,13 @@
  */
 
 import { useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import type { LeagueEventState } from "@/lib/services/league";
+import {
+  TILE,
+  controlClass,
+  iconButtonClass,
+} from "@/components/ui/recipes";
 
 export function RunScoreForm({
   criteria,
@@ -31,17 +37,17 @@ export function RunScoreForm({
     setScores((current) => ({ ...current, [key]: value }));
 
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
       {criteria.map((criterion) => {
         return (
           <div
             key={criterion.key}
-            className="rounded-md border border-outline-variant bg-surface-container-low p-2"
+            className={TILE}
           >
-            <p className="mb-1 font-display text-[10px] font-bold uppercase tracking-label text-secondary">
+            <p className="mb-2 font-display text-sm font-bold uppercase leading-tight tracking-label text-on-surface">
               {criterion.label}
             </p>
-            <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
                 aria-label={`Decrease ${criterion.label}`}
@@ -51,13 +57,17 @@ export function RunScoreForm({
                     Math.max(0, (scores[criterion.key] ?? 0) - 1),
                   )
                 }
-                className="h-11 w-11 rounded-full border border-outline-variant text-sm font-bold text-on-surface hover:border-outline disabled:opacity-40"
+                className={iconButtonClass("outline", "lg")}
                 disabled={disabled}
               >
-                −
+                <Minus size={18} aria-hidden="true" />
               </button>
-              <span className="min-w-6 text-center font-display text-sm font-bold text-on-surface">
+              <span
+                aria-live="polite"
+                className="min-w-10 text-center font-display text-2xl font-bold tabular-nums text-on-surface"
+              >
                 {scores[criterion.key] ?? 0}
+                <span className="sr-only"> of {criterion.maxScore}</span>
               </span>
               <button
                 type="button"
@@ -72,10 +82,10 @@ export function RunScoreForm({
                     ),
                   )
                 }
-                className="h-11 w-11 rounded-full border border-outline-variant text-sm font-bold text-on-surface hover:border-outline disabled:opacity-40"
+                className={iconButtonClass("outline", "lg")}
                 disabled={disabled}
               >
-                +
+                <Plus size={18} aria-hidden="true" />
               </button>
             </div>
             <p id={`criterion-${criterion.key}-max`} className="sr-only">
@@ -93,7 +103,7 @@ export function RunScoreForm({
             if (result) setScores({});
           })();
         }}
-        className="col-span-2 min-h-11 rounded-full bg-primary px-4 font-display text-[10px] font-bold uppercase tracking-pill text-on-primary hover:opacity-90 disabled:opacity-40"
+        className={`col-span-full ${controlClass("primary", "lg")}`}
       >
         {submitLabel}
       </button>

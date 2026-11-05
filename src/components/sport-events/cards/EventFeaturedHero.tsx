@@ -1,13 +1,13 @@
-import { AppImage } from "@/components/ui/AppImage";
+import Link from "next/link";
 import {
-  MapPin,
+  ArrowRight,
   Calendar,
   ExternalLink,
-  Trophy,
   Instagram,
+  MapPin,
   Youtube,
-  MapPinned,
 } from "lucide-react";
+import { AppImage } from "@/components/ui/AppImage";
 import type { SportEventEnriched } from "@/types/sport-events";
 import {
   controlClass,
@@ -15,204 +15,145 @@ import {
   tagClass,
 } from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
-import { buildEventMapUrl } from "@/lib/sport-events/urls";
+import { buildEventDetailUrl } from "@/lib/sport-events/urls";
 
 interface EventFeaturedHeroProps {
   event: SportEventEnriched;
 }
 
+/**
+ * Editor's pick: a dark photo hero (bg-on-surface) with one scrim, the
+ * event basics and two actions — View event (onWire) and Official site
+ * (onPhoto). Disciplines and the map link live on the event page.
+ */
 export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
   const { location } = event;
   const isLive = event.status === "live";
   const isCompleted = event.status === "completed";
-  const hasSocials = Boolean(event.instagram || event.youtube);
+  const place = [location.city, location.country].filter(Boolean).join(", ");
 
   return (
     <article
       id="featured-event"
       data-event-id={event.id}
-      className="group relative w-full overflow-hidden rounded-container border border-outline-variant bg-on-surface"
+      className="group relative w-full overflow-hidden rounded-container border border-on-gradient/20 bg-on-surface"
     >
-      <div className="relative min-h-[38rem] w-full sm:h-[480px] sm:min-h-0 md:h-[560px]">
+      <div className="relative h-[28rem] w-full sm:h-[480px] md:h-[520px]">
         <AppImage
           src={event.image}
-          alt={event.name}
+          alt=""
           fill
-          sizes="(min-width: 1024px) 1200px, 100vw"
+          sizes="(min-width: 1280px) 1200px, 100vw"
           className={cn(
-            "object-cover transition-opacity duration-500",
+            "object-cover transition-transform duration-500 ease-out group-hover:scale-105",
             isCompleted && "opacity-50",
           )}
           referrerPolicy="no-referrer"
           unoptimized
           priority
         />
-
         <div
-          className="absolute inset-0 bg-gradient-to-r from-on-surface via-on-surface/70 to-on-surface/30"
           aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-transparent to-on-surface/30"
-          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-on-surface via-on-surface/60 to-on-surface/10 md:bg-gradient-to-r md:from-on-surface md:via-on-surface/70 md:to-transparent"
         />
 
         <div className="absolute inset-0 flex flex-col justify-between p-5 text-surface sm:p-8 md:p-10">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 font-display text-xs font-bold tracking-label text-surface/80 uppercase">
-                <Trophy size={12} aria-hidden="true" className="text-surface" />
-                <span>Featured Event</span>
-              </div>
-              <span className={`self-start ${tagClass("onPhoto")}`}>
-                {event.categoryName}
-              </span>
-            </div>
-
-            <div className="flex items-start gap-2">
-              {hasSocials && (
-                <ul
-                  aria-label={`${event.name} social profiles`}
-                  className="flex items-center gap-1.5"
-                >
-                  {event.instagram && (
-                    <li>
-                      <a
-                        href={event.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`${event.name} on Instagram`}
-                        className={iconButtonClass("onPhoto")}
-                      >
-                        <Instagram size={14} aria-hidden="true" />
-                      </a>
-                    </li>
-                  )}
-                  {event.youtube && (
-                    <li>
-                      <a
-                        href={event.youtube}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`${event.name} on YouTube`}
-                        className={iconButtonClass("onPhoto")}
-                      >
-                        <Youtube size={14} aria-hidden="true" />
-                      </a>
-                    </li>
-                  )}
-                </ul>
-              )}
-              {isLive && (
-                <div className="flex items-center gap-2 self-start rounded-control border border-error bg-on-surface/30 px-3 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className={tagClass("onPhoto")}>{event.categoryName}</span>
+              {isLive ? (
+                <span className={tagClass("onPhoto")}>
                   <span
                     aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-control bg-error -dot"
+                    className="h-1.5 w-1.5 rounded-control bg-error"
                   />
-                  <span>Live</span>
-                </div>
-              )}
+                  Live now
+                </span>
+              ) : null}
             </div>
+
+            {event.instagram || event.youtube ? (
+              <ul
+                aria-label={`${event.name} social profiles`}
+                className="flex items-center gap-1.5"
+              >
+                {event.instagram ? (
+                  <li>
+                    <a
+                      href={event.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${event.name} on Instagram`}
+                      className={iconButtonClass("onPhoto")}
+                    >
+                      <Instagram size={16} aria-hidden="true" />
+                    </a>
+                  </li>
+                ) : null}
+                {event.youtube ? (
+                  <li>
+                    <a
+                      href={event.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${event.name} on YouTube`}
+                      className={iconButtonClass("onPhoto")}
+                    >
+                      <Youtube size={16} aria-hidden="true" />
+                    </a>
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
           </div>
 
-          <div className="max-w-3xl space-y-5">
-            <h2 className="font-display text-4xl font-bold leading-[0.95] tracking-display text-surface uppercase sm:text-5xl md:text-6xl">
+          <div className="max-w-2xl">
+            <h3 className="font-display text-3xl font-bold uppercase leading-none tracking-display text-surface sm:text-5xl md:text-6xl">
               {event.name}
-            </h2>
+            </h3>
+            {event.description ? (
+              <p className="mt-3 line-clamp-2 max-w-xl text-sm leading-relaxed text-surface/85 sm:text-base">
+                {event.description}
+              </p>
+            ) : null}
 
-            <p className="max-w-2xl text-sm leading-relaxed text-surface/85 sm:text-base">
-              {event.description}
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-display text-xs font-bold uppercase tracking-label text-surface sm:text-sm">
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar size={14} aria-hidden="true" />
+                {event.dateRangeLabel}
+              </span>
+              {place ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin size={14} aria-hidden="true" />
+                  {place}
+                </span>
+              ) : null}
             </p>
 
-            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-8">
-              <div className="flex items-center gap-3 border-t border-surface/30 pt-3">
-                <Calendar
-                  size={16}
-                  className="shrink-0 text-surface"
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <Link
+                href={buildEventDetailUrl(event.slug)}
+                className={controlClass("onWire")}
+              >
+                View event
+                <ArrowRight
+                  size={14}
                   aria-hidden="true"
+                  className="transition-transform duration-150 ease-out group-hover:translate-x-0.5"
                 />
-                <div className="min-w-0">
-                  <dt className="font-display text-xs font-bold tracking-label text-surface/60 uppercase">
-                    Date
-                  </dt>
-                  <dd className="font-display text-sm font-bold tracking-dense text-surface uppercase sm:text-base">
-                    {event.dateRangeLabel}
-                  </dd>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 border-t border-surface/30 pt-3">
-                <MapPin
-                  size={16}
-                  className="shrink-0 text-surface"
-                  aria-hidden="true"
-                />
-                <div className="min-w-0">
-                  <dt className="font-display text-xs font-bold tracking-label text-surface/60 uppercase">
-                    Location
-                  </dt>
-                  <dd className="font-display text-sm font-bold tracking-dense text-surface uppercase sm:text-base truncate">
-                    {location.city}
-                    {location.country ? `, ${location.country}` : ""}
-                    {location.venue && (
-                      <span className="block font-display text-xs font-normal tracking-label text-surface/70 normal-case">
-                        {location.venue}
-                      </span>
-                    )}
-                  </dd>
-                </div>
-              </div>
-            </dl>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+              </Link>
               {event.url ? (
                 <a
                   href={event.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Visit ${event.name} official site in a new tab`}
-                  className={controlClass("onWire")}
-                >
-                  <span>Visit official site</span>
-                  <ExternalLink
-                    size={14}
-                    aria-hidden="true"
-                    className="transition-transform group-hover:translate-x-0.5"
-                  />
-                </a>
-              ) : null}
-
-              {event.sports.length > 0 && (
-                <ul aria-label="Disciplines" className="flex flex-wrap gap-1.5">
-                  {event.sports.map((sport) => (
-                    <li
-                      key={sport}
-                      className={tagClass("onPhoto")}
-                    >
-                      {sport}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {event.location.city && (
-                <a
-                  href={buildEventMapUrl({
-                    location: {
-                      region: event.location.region,
-                      country: event.location.country,
-                    },
-                  })}
-                  aria-label={`Show spots and events in ${event.location.country} on the map`}
+                  aria-label={`${event.name} official site (opens in a new tab)`}
                   className={controlClass("onPhoto")}
                 >
-                  <span>View spots and events in {event.location.country}</span>
-                  <MapPinned
-                    size={12}
-                    aria-hidden="true"
-                    className="transition-transform group-hover:translate-x-0.5"
-                  />
+                  Official site
+                  <ExternalLink size={14} aria-hidden="true" />
                 </a>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

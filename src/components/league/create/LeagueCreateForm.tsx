@@ -2,28 +2,41 @@
 
 /**
  * League event create flow (2-month advance window, free plan by default).
- * Mirrors the admin event form's control language; submission posts to
+ * Built on the league form parts (shared recipes); submission posts to
  * `/api/league/events` with a UUID idempotency key in the body (league
  * convention — one key per submit attempt, so a retried POST replays
  * instead of creating a second event) and redirects to the organizer console.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, MapPin, Trophy } from "lucide-react";
-import { cn } from "@/lib/utils/cn";
-import type {
-  CountrySelection,
-} from "@/components/admin/spots/form/CountryAutocomplete";
+import { flushSync } from "react-dom";
+import { ArrowLeft, CalendarClock, MapPin, Trophy } from "lucide-react";
+import type { CountrySelection } from "@/components/admin/spots/form/CountryAutocomplete";
 import { CountryAutocomplete } from "@/components/admin/spots/form/CountryAutocomplete";
 import { DateField } from "@/components/admin/events/form/DateField";
+import {
+  FieldLabel,
+  FieldMessages,
+  FormSection,
+  SelectField,
+  TextField,
+  TextareaField,
+} from "@/components/league/form-parts";
+import {
+  BODY,
+  EYEBROW,
+  PAGE_TITLE,
+  alertClass,
+  chipClass,
+  controlClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import { SportDisciplineSchema, SportEventCategorySchema } from "@/lib/schemas/event";
 import type { SportEventCategory } from "@/types/sport-events";
 import { leagueCreateEventInputSchema } from "@/lib/schemas/league";
 import type { LeagueCreateEventResponse } from "@/lib/schemas/league";
-
-const CONTROL_CLASSES =
-  "w-full rounded-md border border-outline-variant bg-surface-bright p-3 text-base sm:text-sm font-medium text-on-surface shadow-none transition-colors focus:border-primary focus:outline-none focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2";
 
 const CATEGORY_OPTIONS: { value: SportEventCategory; label: string }[] =
   SportEventCategorySchema.options.map((value) => ({
@@ -36,90 +49,15 @@ const CATEGORY_OPTIONS: { value: SportEventCategory; label: string }[] =
 
 const DISCIPLINE_OPTIONS = [...SportDisciplineSchema.options];
 
-function Field({
-  id,
-  label,
-  value,
-  onChange,
-  type = "text",
-  placeholder,
-  required = false,
-  error,
-  hint,
-  autoComplete,
-  min,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: React.HTMLInputTypeAttribute;
-  placeholder?: string;
-  required?: boolean;
-  error?: string;
-  hint?: string;
-  autoComplete?: string;
-  min?: string;
-}) {
-  const hintId = hint ? `${id}-hint` : undefined;
-  const errorId = error ? `${id}-error` : undefined;
-  const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-      >
-        {label} {required ? <span aria-hidden="true">*</span> : null}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        required={required}
-        autoComplete={autoComplete}
-        min={min}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy}
-        className={cn(CONTROL_CLASSES, error && "border-error")}
-      />
-      {hint ? (
-        <p id={hintId} className="mt-1 text-xs leading-5 text-secondary">
-          {hint}
-        </p>
-      ) : null}
-      {error ? (
-        <p id={errorId} role="alert" className="mt-1 text-xs text-error">
-          {error}
-        </p>
-      ) : null}
-    </div>
-  );
-}
+const noopSubscribe = () => () => {};
 
-function Section({
-  icon: Icon,
-  title,
-  intro,
-  children,
-}: {
-  icon: typeof MapPin;
-  title: string;
-  intro: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <fieldset className="rounded-lg border border-outline-variant bg-surface-container-low p-5 sm:p-6">
-      <legend className="flex items-center gap-2 px-1 font-display text-sm font-bold tracking-label text-on-surface">
-        <Icon size={16} aria-hidden="true" />
-        {title}
-      </legend>
-      <p className="mb-5 max-w-2xl text-xs leading-5 text-secondary">{intro}</p>
-      {children}
-    </fieldset>
-  );
+/** The browser's IANA zone, or UTC when it can't be read. */
+function browserTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
 }
 
 export function LeagueCreateForm({ organizerName }: { organizerName?: string }) {
@@ -136,7 +74,15 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
     name: "",
     code: "",
   });
-  const [timezone, setTimezone] = useState("UTC");
+  // Organizer's own zone once hydrated (the server snapshot is UTC); a typed
+  // value wins over the detected one.
+  const detectedTimezone = useSyncExternalStore(
+    noopSubscribe,
+    browserTimezone,
+    () => "UTC",
+  );
+  const [timezoneInput, setTimezone] = useState<string | null>(null);
+  const timezone = timezoneInput ?? detectedTimezone;
   const [category, setCategory] =
     useState<SportEventCategory>("local-event");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -183,7 +129,9 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
         fieldErrors[key] = issue.message;
       }
     }
-    setErrors(fieldErrors);
+    // Commit the error state now so the focus step below finds the
+    // aria-invalid fields on this submit, not the next one.
+    flushSync(() => setErrors(fieldErrors));
     return false;
   }
 
@@ -237,34 +185,43 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="mx-auto w-full max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="font-display text-xs font-bold uppercase tracking-eyebrow text-secondary">
-            League
-          </p>
-          <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-on-surface">
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      aria-labelledby="league-create-title"
+      className="space-y-6"
+    >
+      <Link href="/league" className={controlClass("outline", "sm")}>
+        <ArrowLeft size={14} aria-hidden="true" />
+        My league
+      </Link>
+
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <p className={EYEBROW}>League</p>
+          <h1
+            id="league-create-title"
+            className={`mt-1 ${PAGE_TITLE} text-on-surface`}
+          >
             Create a sport event
           </h1>
           {organizerName ? (
-            <p className="mt-1 text-sm text-secondary">
-              You&apos;ll be the main organizer, {organizerName} — you judge
-              implicitly.
+            <p className={`mt-2 max-w-xl ${BODY}`}>
+              You&apos;ll be the main organizer, {organizerName}, and you can
+              judge runs too. Invite riders and judges once the event exists.
             </p>
           ) : null}
         </div>
-        <p className="rounded-full border border-outline-variant bg-surface-container-high px-4 py-2 font-display text-xs font-semibold uppercase tracking-pill text-secondary">
-          Free plan · up to 3 riders
-        </p>
-      </div>
+        <span className={tagClass("neutral")}>Free plan · up to 3 riders</span>
+      </header>
 
-      <Section
+      <FormSection
         icon={Trophy}
         title="Event essentials"
         intro="Name your competition and describe it for riders who join from the share link."
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field
+          <TextField
             id="league-name"
             label="Event name"
             value={name}
@@ -274,60 +231,56 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             error={errors.name}
             autoComplete="off"
           />
-          <Field
+          <TextField
             id="league-short-name"
             label="Short name"
             value={shortName}
             onChange={setShortName}
             placeholder="e.g. RNJ26"
             error={errors.shortName}
+            hint="Optional — shown under the title."
             autoComplete="off"
           />
+          <TextareaField
+            id="league-description"
+            label="Description"
+            value={description}
+            onChange={setDescription}
+            placeholder="What should riders and judges expect?"
+            error={errors.description}
+            className="sm:col-span-2"
+          />
+          <SelectField
+            id="league-category"
+            label="Category"
+            value={category}
+            onChange={setCategory}
+            options={CATEGORY_OPTIONS}
+            required
+            error={errors.category}
+          />
           <div className="sm:col-span-2">
-            <label
-              htmlFor="league-description"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
+            <FieldLabel required>Disciplines</FieldLabel>
+            <ul
+              className="flex flex-wrap gap-2"
+              aria-label="Event disciplines"
             >
-              Description
-            </label>
-            <textarea
-              id="league-description"
-              rows={3}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="What should riders and judges expect?"
-              aria-invalid={errors.description ? true : undefined}
-              className={cn(CONTROL_CLASSES, "resize-y", errors.description && "border-error")}
-            />
-            {errors.description ? (
-              <p role="alert" className="mt-1 text-xs text-error">
-                {errors.description}
-              </p>
-            ) : null}
-          </div>
-          <div className="sm:col-span-2">
-            <p className="mb-1.5 text-xs font-semibold tracking-label text-secondary">
-              Disciplines <span aria-hidden="true">*</span>
-            </p>
-            <ul className="flex flex-wrap gap-2" aria-label="Event disciplines">
               {DISCIPLINE_OPTIONS.map((value) => {
                 const active = sports.includes(value);
                 return (
                   <li key={value}>
                     <label
-                      className={cn(
-                        "inline-flex min-h-11 cursor-pointer items-center rounded-md border px-4 py-2 text-xs font-semibold transition-colors",
-                        active
-                          ? "border-primary bg-primary text-on-primary"
-                          : "border-outline-variant bg-surface-bright text-on-surface hover:border-outline",
-                      )}
+                      className={`${chipClass(active)} cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary`}
                     >
                       <input
                         type="checkbox"
                         checked={active}
                         onChange={() => toggleSport(value)}
                         className="sr-only"
-                        aria-label={value}
+                        aria-invalid={errors.sports ? true : undefined}
+                        aria-describedby={
+                          errors.sports ? "league-sports-error" : undefined
+                        }
                       />
                       {value}
                     </label>
@@ -335,19 +288,15 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
                 );
               })}
             </ul>
-            {errors.sports ? (
-              <p role="alert" className="mt-2 text-xs text-error">
-                {errors.sports}
-              </p>
-            ) : null}
+            <FieldMessages id="league-sports" error={errors.sports} />
           </div>
         </div>
-      </Section>
+      </FormSection>
 
-      <Section
+      <FormSection
         icon={CalendarClock}
         title="Schedule"
-        intro="Community events can be scheduled at most two months ahead. Dates are calendar days; the judging windows are configured per run once the schedule is generated."
+        intro="Community events can start at most two months ahead. Judging windows are set per run once the schedule is generated."
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <DateField
@@ -360,6 +309,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             min={new Date().toISOString().slice(0, 10)}
             max={maxStartDate}
             hint="At most 2 months ahead."
+            appearance="pill"
           />
           <DateField
             id="league-end-date"
@@ -368,31 +318,31 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             onChange={setEndDate}
             error={errors.endDate}
             min={startDate || undefined}
-            hint="Leave blank for a one-day event. Clear with ✕."
+            hint="Leave blank for a one-day event."
+            appearance="pill"
           />
-        </div>
-        <div className="mt-5">
-          <Field
+          <TextField
             id="league-timezone"
             label="Timezone"
             value={timezone}
-            onChange={(value) => setTimezone(value)}
+            onChange={setTimezone}
             placeholder="e.g. Europe/Madrid"
             required
             error={errors.timezone}
-            hint="IANA name — used for the live schedule board."
+            hint="Detected from your device — used for the live schedule board."
             autoComplete="off"
+            className="sm:col-span-2"
           />
         </div>
-      </Section>
+      </FormSection>
 
-      <Section
+      <FormSection
         icon={MapPin}
         title="Location"
-        intro="Where riders meet. Coordinates are optional for league events — the city and country are what the directory shows."
+        intro="Where riders meet. The city and country are what the directory shows."
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Field
+          <TextField
             id="league-city"
             label="City"
             value={city}
@@ -403,78 +353,46 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
             autoComplete="address-level2"
           />
           <div>
-            <label
-              htmlFor="league-country"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              Country <span aria-hidden="true">*</span>
-            </label>
+            <FieldLabel htmlFor="league-country" required>
+              Country
+            </FieldLabel>
             <CountryAutocomplete
               id="league-country"
               value={country}
               onChange={setCountry}
               invalid={Boolean(errors.country)}
+              appearance="pill"
             />
-            {errors.country ? (
-              <p role="alert" className="mt-1 text-xs text-error">
-                {errors.country}
-              </p>
-            ) : null}
+            <FieldMessages id="league-country" error={errors.country} />
           </div>
-          <Field
+          <TextField
             id="league-venue"
             label="Venue"
             value={venue}
             onChange={setVenue}
             placeholder="e.g. Riverside skatepark"
             error={errors.venue}
+            hint="Optional."
+            className="sm:col-span-2"
           />
-          <div>
-            <label
-              htmlFor="league-category"
-              className="mb-1.5 block text-xs font-semibold tracking-label text-secondary"
-            >
-              Category <span aria-hidden="true">*</span>
-            </label>
-            <select
-              id="league-category"
-              value={category}
-              onChange={(event) =>
-                setCategory(event.target.value as SportEventCategory)
-              }
-              className={cn(CONTROL_CLASSES, errors.category && "border-error")}
-            >
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
-      </Section>
+      </FormSection>
 
       {submitError ? (
-        <div
-          role="alert"
-          className="rounded-lg border border-error/30 bg-error-container/30 p-4 text-sm text-error"
-        >
+        <div role="alert" className={`text-sm ${alertClass("error")}`}>
           {submitError}
         </div>
       ) : null}
 
-      <div className="flex items-center justify-end gap-3">
-        <button
-          type="button"
-          onClick={() => router.push("/league")}
-          className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
-        >
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Link href="/league" className={controlClass("outline")}>
           Cancel
-        </button>
+        </Link>
         <button
           type="submit"
           disabled={busy}
-          className="min-h-11 rounded-full bg-primary px-6 font-display text-xs font-semibold uppercase tracking-pill text-on-primary transition-opacity hover:opacity-90 disabled:opacity-50"
+          aria-busy={busy || undefined}
+          className={controlClass("primary")}
         >
           {busy ? "Creating…" : "Create event"}
         </button>

@@ -67,19 +67,19 @@ export function PaymentGateNotice({
       role={state === "disabled" ? "alert" : "status"}
       aria-live="polite"
       className={cn(
-        "flex flex-col gap-2 rounded-container border p-4 sm:p-5",
+        "flex flex-col gap-2 rounded-card border p-4 text-on-surface",
         STATE_STYLES[state],
       )}
     >
       <div className="flex items-center gap-2">
         <Icon size={16} aria-hidden="true" className="shrink-0" />
-        <h2 className="font-display text-xs font-bold uppercase tracking-label">
+        <h2 className="font-display text-xs font-bold uppercase leading-tight tracking-eyebrow text-on-surface">
           {title}
         </h2>
       </div>
-      <p className="text-sm leading-relaxed text-secondary">{message}</p>
+      <p className="text-sm leading-relaxed text-on-surface-variant">{message}</p>
       {(due || deadline) && (
-        <dl className="flex flex-wrap gap-x-6 gap-y-1 font-display text-xs font-semibold uppercase tracking-wider">
+        <dl className="flex flex-wrap gap-x-6 gap-y-1 font-display text-xs font-semibold uppercase tracking-label">
           {due && state === "pending" && (
             <div>
               <dt className="text-secondary">Read-only after</dt>

@@ -8,10 +8,22 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { CalendarDays, MapPin, Plus, Trophy, Users } from "lucide-react";
+import { CalendarDays, ChevronRight, Plus, Trophy } from "lucide-react";
 import { JoinByCodeEntry } from "@/components/league/JoinByCodeEntry";
 import { PaymentGateNotice } from "@/components/league/PaymentGateNotice";
-import { alertClass, CARD, controlClass, EMPTY_STATE, EYEBROW, PAGE_TITLE, pageContainer, tagClass } from "@/components/ui/recipes";
+import {
+  alertClass,
+  BODY,
+  CARD,
+  CARD_TITLE,
+  controlClass,
+  EMPTY_STATE,
+  EYEBROW,
+  META,
+  PAGE_TITLE,
+  pageContainer,
+  tagClass,
+} from "@/components/ui/recipes";
 import {
   formatDateRange,
   groupLeagueEvents,
@@ -40,6 +52,11 @@ interface MyLeagueEventItem {
   paymentDeadlineAt: string | null;
 }
 
+function planLabel(planSlug: string): string {
+  if (planSlug === "free") return "Free plan";
+  return `${planSlug.charAt(0).toUpperCase()}${planSlug.slice(1)} plan`;
+}
+
 function EventCard({ item }: { item: MyLeagueEventItem }) {
   const rolePath = isOrganizerRole(item.myRole)
     ? `/sport-events/${item.slug}/manage`
@@ -48,28 +65,35 @@ function EventCard({ item }: { item: MyLeagueEventItem }) {
     <li>
       <Link
         href={rolePath}
-        className={`flex flex-col gap-3 ${CARD} transition-colors hover:border-outline`}
+        className={`group flex flex-col gap-3 ${CARD} transition-colors duration-150 ease-out hover:border-on-surface`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-display text-sm font-bold uppercase tracking-dense text-on-surface">
+            <p className={`${CARD_TITLE} text-on-surface group-hover:underline`}>
               {item.name}
             </p>
-            <p className="mt-1 flex items-center gap-2 text-xs text-secondary">
-              <CalendarDays size={12} aria-hidden="true" />
-              {formatDateRange(item.startDate, item.endDate)}
+            <p className={`mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 ${META}`}>
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarDays size={12} aria-hidden="true" />
+                {formatDateRange(item.startDate, item.endDate)}
+              </span>
               <span aria-hidden="true">·</span>
-              {item.planSlug === "free" ? "Free" : item.planSlug}
+              {planLabel(item.planSlug)}
             </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <span className={tagClass("outline")}>
+                {statusLabel(item.status)}
+              </span>
+              <span className={tagClass("neutral")}>
+                {roleLabel(item.myRole)}
+              </span>
+            </div>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <span className={tagClass("outline")}>
-              {statusLabel(item.status)}
-            </span>
-            <span className={tagClass("neutral")}>
-              {roleLabel(item.myRole)}
-            </span>
-          </div>
+          <ChevronRight
+            size={18}
+            aria-hidden="true"
+            className="mt-1 shrink-0 text-secondary transition-transform duration-150 ease-out group-hover:translate-x-0.5"
+          />
         </div>
         {item.paymentState !== "settled" ? (
           <PaymentGateNotice
@@ -137,36 +161,40 @@ export default function LeagueHub() {
 
   return (
     <div className={pageContainer("3xl")}>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <header className="mb-8 flex flex-col gap-5">
         <div>
-          <p className={EYEBROW}>
-            League
-          </p>
+          <p className={EYEBROW}>League</p>
           <h1 className={`mt-1 ${PAGE_TITLE} text-on-surface`}>
             My sport events
           </h1>
+          <p className={`mt-2 max-w-xl ${BODY}`}>
+            Events you organize, judge or ride in. Join one with an invite code
+            or create your own.
+          </p>
         </div>
-        <Link
-          href="/league/new"
-          className={controlClass("primary")}
-        >
-          <Plus size={14} aria-hidden="true" />
-          New event
-        </Link>
-      </div>
-
-      <div className="mb-6 flex justify-end">
-        <JoinByCodeEntry variant="link" />
-      </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/league/new" className={controlClass("primary")}>
+            <Plus size={14} aria-hidden="true" />
+            New event
+          </Link>
+          <JoinByCodeEntry variant="compact" />
+          <Link href="/sport-events" className={controlClass("outline")}>
+            Browse sport events
+          </Link>
+        </div>
+      </header>
 
       {loading ? (
-        <div className="flex flex-col gap-3" aria-hidden="true">
-          {[0, 1, 2].map((index) => (
-            <div
-              key={index}
-              className="h-24 rounded-container bg-surface-container"
-            />
-          ))}
+        <div aria-busy="true">
+          <p className="sr-only">Loading your events…</p>
+          <div className="flex flex-col gap-3" aria-hidden="true">
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
+                className="h-28 animate-pulse rounded-container border border-outline-variant bg-surface-container-lowest"
+              />
+            ))}
+          </div>
         </div>
       ) : error ? (
         <div
@@ -177,22 +205,24 @@ export default function LeagueHub() {
           <button
             type="button"
             onClick={retry}
-            className={controlClass("secondary")}
+            className={controlClass("outline", "sm")}
           >
             Retry
           </button>
         </div>
       ) : items.length === 0 ? (
         <div className={`flex flex-col items-center gap-3 ${EMPTY_STATE}`}>
-          <Trophy size={24} aria-hidden="true" className="text-secondary" />
-          <p className="font-display text-sm font-semibold">No events yet</p>
-          <p className="max-w-sm text-sm text-secondary">
-            Create your first competition — you judge implicitly, invite riders
+          <div className="flex h-12 w-12 items-center justify-center rounded-control border border-outline-variant bg-surface-container-high text-secondary">
+            <Trophy size={20} aria-hidden="true" />
+          </div>
+          <h2 className={`${CARD_TITLE} text-on-surface`}>No events yet</h2>
+          <p className={`max-w-sm ${BODY}`}>
+            Create your first competition — you can judge too, invite riders
             with a link, and the engine handles schedule and results.
           </p>
           <Link
             href="/league/new"
-            className={`mt-1 ${controlClass("secondary")}`}
+            className={`mt-1 ${controlClass("primary")}`}
           >
             <Plus size={14} aria-hidden="true" />
             Create an event
@@ -200,9 +230,9 @@ export default function LeagueHub() {
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          <RoleGroup title="Organizing" icon={Trophy} items={organizing} />
-          <RoleGroup title="Judging" icon={Users} items={judging} />
-          <RoleGroup title="Riding" icon={MapPin} items={riding} />
+          <RoleGroup title="Organizing" items={organizing} />
+          <RoleGroup title="Judging" items={judging} />
+          <RoleGroup title="Riding" items={riding} />
         </div>
       )}
     </div>
@@ -214,13 +244,12 @@ function RoleGroup({
   items,
 }: {
   title: string;
-  icon: typeof Trophy;
   items: MyLeagueEventItem[];
 }) {
   if (items.length === 0) return null;
   return (
     <section aria-label={title}>
-      <h2 className="mb-3 font-display text-xs font-bold uppercase tracking-pill text-secondary">
+      <h2 className={`mb-3 ${EYEBROW}`}>
         {title} · {items.length}
       </h2>
       <ul className="flex flex-col gap-3">
