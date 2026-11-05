@@ -76,6 +76,10 @@ colors:
   gradient-profile-mid: "#d9f99d"
   gradient-profile-end: "#a3e635"
   gradient-profile: "linear-gradient(to right, #ecfccb, #d9f99d, #a3e635)"
+  gradient-events-start: "#0284c7"
+  gradient-events-mid: "#2563eb"
+  gradient-events-end: "#1e40af"
+  gradient-events: "linear-gradient(to right, #0284c7, #2563eb, #1e40af)"
   # wire — inverted dark rail (landing marquee), derived from primary.
   # On wire surfaces NEVER use white/* literals — map via wire-* tokens:
   #   text-white → text-on-wire · text-white/60-70 → text-wire-muted
@@ -132,9 +136,9 @@ pages:
     overlay: "tv-overlay"
     note: "Dark page: one navy canvas (`--color-wire: #060912`, set in tv/layout.tsx); no bg-black under it. Only the fullscreen player is pure black. Shares the shell gutter (px-5 md:px-10). Row headings are the wire-rail heading (font-display uppercase tracking-eyebrow text-on-wire). Discipline pills are chipClass(active, 'wire'); CTAs are controlClass('onWire' | 'onWireOutline'); the search field is INPUT_ON_WIRE. Text uses on-wire and wire-muted only — no text-black or white/* literals. Video cards are rounded-inner with a full-radius tag. Panels use PANEL_ON_WIRE (tv-overlay). All TV loading states come from TvCatalogSkeleton.tsx, whose geometry mirrors TvMarqueeCard, with bg-wire-border blocks and no spinners."
   sport-events:
-    shell: "surface"
+    shell: "gradient-events"
     hero: "on-surface"
-    note: "Surface shell + dark featured hero (bg-on-surface) with white text — same inverse logic as TV but limited to the feature hero."
+    note: "Horizontal saturated electric-blue/cobalt wash (#0284c7 → #2563eb → #1e40af) via `bg-gradient-events` only — never raw from-sky-*/from-blue-* literals. Applied across /sport-events, /sport-events/[slug], /sport-events/join/[code], loading and error states. Uses the /games card-on-wash layout: floating white circuit action bar + CARD command deck with 4 Stat filter tiles, inverted white section titles (text-on-gradient) directly on the wash, dark featured hero (bg-on-surface) with onWire/onPhoto controls, and border-white/20 footer with onWash pill CTA."
   admin:
     shell: "surface-bright"
     note: "Flat monochrome — surface-bright + outline-variant borders, no wash."

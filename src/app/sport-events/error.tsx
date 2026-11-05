@@ -3,6 +3,13 @@
 import { AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
 import { log } from "@/lib/utils/log";
+import {
+  BODY,
+  CARD,
+  CARD_TITLE,
+  controlClass,
+  pageContainer,
+} from "@/components/ui/recipes";
 
 export default function SportEventsError({
   error,
@@ -37,35 +44,37 @@ export default function SportEventsError({
   }, [error]);
 
   return (
-    <div
-      role="alert"
-      className="mx-auto my-12 max-w-md rounded-container border border-outline-variant bg-surface-container-lowest p-6 text-center"
-    >
-      <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-full border border-outline-variant bg-surface-container-high text-error">
-        <AlertTriangle size={20} aria-hidden="true" />
-      </div>
-      <h2 className="font-display text-base font-bold uppercase tracking-wider text-on-surface">
-        Events are temporarily unavailable
-      </h2>
-      <p className="mt-2 text-xs leading-relaxed text-secondary">
-        We could not load the event circuit. Try again without leaving this
-        page.
-      </p>
-      <div className="mt-6 flex justify-center gap-2">
-        <button
-          type="button"
-          onClick={reset}
-          className="inline-flex min-h-11 items-center rounded-control border border-primary bg-primary px-5 py-3 text-xs font-bold tracking-label text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px"
-        >
-          Try again
-        </button>
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="inline-flex min-h-11 items-center rounded-control border border-outline px-5 py-3 text-xs font-bold tracking-label text-on-surface uppercase transition-[background-color,transform] hover:bg-surface-container active:translate-y-px"
-        >
-          Reload
-        </button>
+    <div className={pageContainer("7xl")}>
+      <div
+        role="alert"
+        className={`${CARD} mx-auto my-6 max-w-md text-center sm:p-6`}
+      >
+        <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-control border border-outline-variant bg-surface-container-high text-error">
+          <AlertTriangle size={20} aria-hidden="true" />
+        </div>
+        <h2 className={`${CARD_TITLE} text-on-surface`}>
+          Events are temporarily unavailable
+        </h2>
+        <p className={`${BODY} mt-2`}>
+          We could not load the event circuit. Try again without leaving this
+          page.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <button
+            type="button"
+            onClick={reset}
+            className={controlClass("primary")}
+          >
+            Try again
+          </button>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className={controlClass("outline")}
+          >
+            Reload
+          </button>
+        </div>
       </div>
     </div>
   );

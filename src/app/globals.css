@@ -127,6 +127,15 @@
     var(--color-gradient-profile-mid),
     var(--color-gradient-profile-end)
   );
+  --color-gradient-events-start: #0284c7;
+  --color-gradient-events-mid: #2563eb;
+  --color-gradient-events-end: #1e40af;
+  --gradient-events: linear-gradient(
+    to right,
+    var(--color-gradient-events-start),
+    var(--color-gradient-events-mid),
+    var(--color-gradient-events-end)
+  );
 
   /* Wire — inverted dark rail (landing marquee). Token-mapped from primary
    * so skeleton + marquee share one source; avoids hard bg-black.
@@ -932,6 +941,11 @@
 
   .bg-gradient-profile {
     background-image: var(--gradient-profile);
+    color: var(--color-on-surface);
+  }
+
+  .bg-gradient-events {
+    background-image: var(--gradient-events);
     color: var(--color-on-surface);
   }
 }

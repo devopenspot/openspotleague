@@ -1,6 +1,7 @@
 import { EventCard } from "@/components/sport-events/cards/EventCard";
 import { EventEmptyState } from "@/components/sport-events/shared/EventEmptyState";
 import { EventFeaturedHero } from "@/components/sport-events/cards/EventFeaturedHero";
+import { SECTION_TITLE, controlClass } from "@/components/ui/recipes";
 import type {
   SportEventEnriched,
   SportEventStatus,
@@ -23,41 +24,39 @@ export function EventDirectory({
         <section
           id="featured-event-section"
           aria-labelledby="featured-event-heading"
-          className="space-y-5"
+          className="space-y-4"
         >
-          <div className="flex items-end justify-between gap-4 px-5 sm:px-6 lg:px-10">
+          <div className="flex items-end justify-between gap-4">
             <div>
               <h2
                 id="featured-event-heading"
-                className="font-display text-xl font-bold tracking-dense text-on-surface uppercase"
+                className={`${SECTION_TITLE} text-on-gradient`}
               >
                 Featured
               </h2>
-              <p className="mt-1 font-display text-xs font-bold tracking-label text-secondary uppercase">
+              <p className="mt-1 font-display text-xs font-semibold uppercase tracking-label text-white/80">
                 Editor&apos;s pick
               </p>
             </div>
           </div>
-          <div className="mx-5 sm:mx-6 lg:mx-10">
-            <EventFeaturedHero event={featured} />
-          </div>
+          <EventFeaturedHero event={featured} />
         </section>
       )}
 
       <section
         id="events-grid-section"
         aria-labelledby="events-grid-heading"
-        className="space-y-5"
+        className="space-y-4"
       >
-        <div className="flex items-end justify-between gap-4 px-5 sm:px-6 lg:px-10">
+        <div className="flex items-end justify-between gap-4">
           <div>
             <h2
               id="events-grid-heading"
-              className="font-display text-xl font-bold tracking-dense text-on-surface uppercase"
+              className={`${SECTION_TITLE} text-on-gradient`}
             >
               All Events
             </h2>
-            <p className="mt-1 font-display text-xs font-bold tracking-label text-secondary uppercase">
+            <p className="mt-1 font-display text-xs font-semibold uppercase tracking-label text-white/80">
               {events.length} on the circuit
             </p>
           </div>
@@ -68,7 +67,7 @@ export function EventDirectory({
         ) : (
           <div
             id="events-grid"
-            className="mx-5 grid grid-cols-1 gap-6 sm:mx-6 sm:grid-cols-2 lg:mx-10 lg:grid-cols-3"
+            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
           >
             {events.map((event, index) => (
               <EventCard key={event.id} event={event} priority={index === 0} />
@@ -77,22 +76,27 @@ export function EventDirectory({
         )}
       </section>
 
-      <footer className="mx-5 border-t border-outline-variant pt-6 text-center sm:mx-6 lg:mx-10">
-        <p className="font-display text-xs font-bold tracking-label text-secondary uppercase">
-          All dates are subject to change. Tap a card to verify on the official
-          site.
-        </p>
-        <p className="mt-2 text-xs text-secondary">
-          Looking for a missing event?{" "}
+      <footer className="mt-auto border-t border-white/20 pt-8 pb-6 text-on-gradient sm:pt-10 sm:pb-8">
+        <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+          <div>
+            <p className="font-display text-xs font-bold tracking-label text-white/95 uppercase">
+              All dates are subject to change. Tap a card to verify on the
+              official site.
+            </p>
+            <p className="mt-1.5 text-xs text-white/75">
+              Looking for a missing event? Check the official international
+              federation calendar.
+            </p>
+          </div>
           <a
             href="https://www.worldskate.org/"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-control px-2 py-1 font-display font-bold tracking-label uppercase underline underline-offset-2 hover:text-on-surface focus-visible:outline-offset-4"
+            className={`${controlClass("onWash", "sm")} focus-visible:outline-white`}
           >
             Browse the federations
           </a>
-        </p>
+        </div>
       </footer>
     </>
   );

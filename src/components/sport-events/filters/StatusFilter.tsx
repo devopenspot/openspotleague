@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BODY, CARD, EYEBROW, PAGE_TITLE } from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
 import {
   buildStatusFilterUrl,
@@ -79,12 +80,15 @@ export function StatusFilter({ events }: StatusFilterProps) {
   }, [events]);
 
   return (
-    <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-      <div className="min-w-0 flex-1">
-        <h2 className="font-display text-2xl font-bold tracking-tight text-on-surface uppercase sm:text-3xl">
+    <div className={`${CARD} text-on-surface sm:p-6`}>
+      <div className="border-b border-outline-variant pb-4">
+        <p className={EYEBROW}>
+          Official &amp; community circuit
+        </p>
+        <h2 className={`mt-1 ${PAGE_TITLE} text-on-surface`}>
           Sport Events
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-secondary">
+        <p className={`mt-2 max-w-2xl ${BODY}`}>
           The circuit that defines the season. World tours, federations, and
           festivals — the official stages where action sports happen. Tap any
           card to open the organizer&apos;s site.
@@ -93,7 +97,7 @@ export function StatusFilter({ events }: StatusFilterProps) {
 
       <dl
         aria-label="Filter events by status"
-        className="grid grid-cols-4 gap-1.5 self-start rounded-container border border-outline-variant bg-surface-container-low p-1.5 sm:self-end"
+        className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4"
       >
         {tiles.map((tile) => {
           const active = current === tile.value;
@@ -134,27 +138,32 @@ function StatusStat({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "truncate flex max-h-18 md:max-h-20 min-w-0 flex-col items-start gap-1.5 rounded-inner px-2 py-3 transition-[background-color,color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:min-w-[90px] sm:px-4",
+        "flex min-w-0 flex-col items-start justify-between rounded-card border px-3.5 py-3 text-left transition-[background-color,border-color,color,transform] active:translate-y-px focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2",
         active
-          ? "bg-primary text-on-primary"
-          : "bg-surface-container-high text-on-surface hover:bg-surface-container-highest",
+          ? "border-primary bg-primary text-on-primary"
+          : "border-outline-variant bg-surface-container text-on-surface hover:border-on-surface hover:bg-surface-container-high",
       )}
     >
-      <div className="flex items-center gap-1.5">
+      <div className="flex w-full items-center justify-between gap-2">
+        <dd className="font-display text-2xl font-bold leading-none tabular-nums">
+          {value.toString().padStart(2, "0")}
+        </dd>
         <span
           aria-hidden="true"
           className={cn(
-            "h-1.5 w-1.5 rounded-full",
+            "h-2 w-2 shrink-0 rounded-control",
             active ? "bg-on-primary" : dotClass,
           )}
         />
-        <h2 className="font-display text-xs font-bold tracking-label uppercase truncate">
-          {label}
-        </h2>
       </div>
-      <dd className="font-display text-xl font-bold tracking-tight">
-        {value.toString().padStart(2, "0")}
-      </dd>
+      <dt
+        className={cn(
+          "mt-2 truncate font-display text-xs font-bold uppercase leading-tight tracking-label",
+          active ? "text-on-primary/85" : "text-secondary",
+        )}
+      >
+        {label}
+      </dt>
     </button>
   );
 }

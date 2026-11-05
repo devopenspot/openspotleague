@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Tv, Plus, Search } from "lucide-react";
+import { CalendarDays, Trophy, Tv, Plus, Search } from "lucide-react";
 import { NearbyCtaButton } from "@/components/shell/NearbyCtaButton";
 import { JoinWithCode } from "@/components/shell/JoinWithCode";
 import { ROUTES } from "@/lib/navigation/nav";
@@ -84,6 +84,14 @@ export function Hero() {
             >
               <Trophy size={14} aria-hidden="true" />
               Training - Challenges - League
+            </Link>
+
+            <Link
+              href={ROUTES.events}
+              className={`${controlClass("onWash")} focus-visible:outline-white`}
+            >
+              <CalendarDays size={14} aria-hidden="true" />
+              Events
             </Link>
 
             <Link

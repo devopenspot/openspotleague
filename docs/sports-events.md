@@ -1,6 +1,6 @@
 # OpenSpot League — Sport Events & League User Stories, Architecture & E2E Flow Report
 
-> **Document:** `sports-events-us.md`
+> **Document:** `sports-events.md`
 > **Status:** Verified & Aligned with Codebase Reality (Tier 3 Audit)
 > **Target Routes:** `/sport-events`, `/league`, `/league/new`, `/sport-events/[slug]/manage`, `/sport-events/join/[code]`, `/sport-events/[slug]`
 > **Date:** November 2026
@@ -13,17 +13,17 @@ This document provides a ground-up, code-verified specification of the **Sport E
 
 ### System Map
 
-| Surface / Layer | Route / File | Responsibility |
-| :--- | :--- | :--- |
-| **Global Navigation** | `src/lib/navigation/nav.ts`, `src/types/spots.ts` | Exposes `Events` (`CalendarDays`, `id="nav-btn-events"`) in desktop header, mobile bottom bar, and side drawer. |
-| **Public Events Hub** | `/sport-events` (`SportEventsTab.tsx`) | Public event directory (`visibility = 'public'`), status filter (`all`, `live`, `upcoming`, `completed`), role-aware CTAs (`Create event`, `My league`), and compact `JoinByCodeEntry`. |
-| **My League Hub** | `/league` (`LeagueHub.tsx`) | Auth-gated member dashboard grouping active memberships into `Organizing`, `Judging`, and `Riding` with payment-gate notices and link-variant `JoinByCodeEntry`. |
-| **Create Event** | `/league/new` (`LeagueCreateForm.tsx`) | Auth-gated 3-section creation form submitting to `POST /api/league/events` with a client UUID `idempotencyKey`. |
-| **Organizer Console** | `/sport-events/[slug]/manage` (`ManageConsole.tsx`) | Role-aware competition console with 5 tabs (`Event`, `People`, `Runs`, `Metrics`, `Results`), payment gate actions, lifecycle transitions, invite generation (link + QR), and live scoring. |
-| **Invite Landing** | `/sport-events/join/[code]` (`JoinWithInvite.tsx`) | Public invite preview (`GET /api/league/invites/[code]`) + sign-in gate for guests + one-tap join (`POST /api/league/join`) for authenticated users. |
-| **Public Event Detail** | `/sport-events/[slug]` (`src/app/sport-events/[slug]/page.tsx`) | Public detail page for `visibility = 'public'` events, including member-only `<MyPerformance>` card when the signed-in viewer has an active membership. |
-| **Domain Engine** | `src/lib/league/definitions.ts`, `src/lib/league/engine.ts` | Pure state machine transitions, payment gate math, 2-month schedule window, role capabilities, base62 invite encoding, weighted scoring, and ranking/points calculation. |
-| **Service Layer** | `src/lib/services/league/index.ts` | Drizzle transactional writers (`withDbWrite` + `lockEvent` row locks + `expectedVersion` OCC + `league_idempotency_keys` + `event_realtime_signals`). |
+| Surface / Layer         | Route / File                                                    | Responsibility                                                                                                                                                                              |
+| :---------------------- | :-------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Global Navigation**   | `src/lib/navigation/nav.ts`, `src/types/spots.ts`               | Exposes `Events` (`CalendarDays`, `id="nav-btn-events"`) in desktop header, mobile bottom bar, and side drawer.                                                                             |
+| **Public Events Hub**   | `/sport-events` (`SportEventsTab.tsx`)                          | Public event directory (`visibility = 'public'`), status filter (`all`, `live`, `upcoming`, `completed`), role-aware CTAs (`Create event`, `My league`), and compact `JoinByCodeEntry`.     |
+| **My League Hub**       | `/league` (`LeagueHub.tsx`)                                     | Auth-gated member dashboard grouping active memberships into `Organizing`, `Judging`, and `Riding` with payment-gate notices and link-variant `JoinByCodeEntry`.                            |
+| **Create Event**        | `/league/new` (`LeagueCreateForm.tsx`)                          | Auth-gated 3-section creation form submitting to `POST /api/league/events` with a client UUID `idempotencyKey`.                                                                             |
+| **Organizer Console**   | `/sport-events/[slug]/manage` (`ManageConsole.tsx`)             | Role-aware competition console with 5 tabs (`Event`, `People`, `Runs`, `Metrics`, `Results`), payment gate actions, lifecycle transitions, invite generation (link + QR), and live scoring. |
+| **Invite Landing**      | `/sport-events/join/[code]` (`JoinWithInvite.tsx`)              | Public invite preview (`GET /api/league/invites/[code]`) + sign-in gate for guests + one-tap join (`POST /api/league/join`) for authenticated users.                                        |
+| **Public Event Detail** | `/sport-events/[slug]` (`src/app/sport-events/[slug]/page.tsx`) | Public detail page for `visibility = 'public'` events, including member-only `<MyPerformance>` card when the signed-in viewer has an active membership.                                     |
+| **Domain Engine**       | `src/lib/league/definitions.ts`, `src/lib/league/engine.ts`     | Pure state machine transitions, payment gate math, 2-month schedule window, role capabilities, base62 invite encoding, weighted scoring, and ranking/points calculation.                    |
+| **Service Layer**       | `src/lib/services/league/index.ts`                              | Drizzle transactional writers (`withDbWrite` + `lockEvent` row locks + `expectedVersion` OCC + `league_idempotency_keys` + `event_realtime_signals`).                                       |
 
 ---
 
@@ -33,6 +33,7 @@ This document provides a ground-up, code-verified specification of the **Sport E
 
 > [!WARNING]
 > **Only Google OAuth Is Implemented**
+>
 > - `src/app/login/page.tsx` and `src/app/api/auth/signin/google/route.ts` (`signInWithGoogle` in `src/lib/auth/server.ts`) only implement **Google OAuth**.
 > - There is no email/password, magic-link, or email OTP login form or route handler anywhere in `src/app/login` or `src/app/api/auth` (which contains only `session`, `signin/google`, and `signout`).
 > - **Testing Implication:** Automated or headless browser E2E tests cannot sign in via an email form unless a valid Supabase session cookie (`sb-<project-ref>-auth-token`) is injected into the browser context or a non-production test-auth route is added behind an environment flag.
@@ -43,11 +44,11 @@ This document provides a ground-up, code-verified specification of the **Sport E
 
 Every community event starts on the `free` plan (`FREE_PLAN_SLUG = "free"`). Monthly creation quotas (`countCommunityEventsThisMonth`) count events created by the user in the current UTC calendar month with `origin = 'community'`:
 
-| Plan Slug | Name | Price | Monthly Event Limit | Max Riders | Max Judges | Max Organizers | Paid Features Unlocked |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `free` (default) | **Free** | \$0 (`0` cents) | **8 events / month** | **3** | **0** *(organizer judges implicitly)* | **1** *(main organizer only)* | None (rider invites only; live metrics only) |
-| `starter` | **Starter** | \$5 (`500` cents) | **21 events / month** | **13** | **2** | **2** | `multi_organizer`, `judge_invites`, `organizer_invites`, `historic_metrics` |
-| `pro` | **Pro** | \$21 (`2100` cents) | **21 events / month** | **55** | **4** | **5** | `multi_organizer`, `judge_invites`, `organizer_invites`, `historic_metrics` |
+| Plan Slug        | Name        | Price               | Monthly Event Limit   | Max Riders | Max Judges                            | Max Organizers                | Paid Features Unlocked                                                      |
+| :--------------- | :---------- | :------------------ | :-------------------- | :--------- | :------------------------------------ | :---------------------------- | :-------------------------------------------------------------------------- |
+| `free` (default) | **Free**    | \$0 (`0` cents)     | **8 events / month**  | **3**      | **0** _(organizer judges implicitly)_ | **1** _(main organizer only)_ | None (rider invites only; live metrics only)                                |
+| `starter`        | **Starter** | \$5 (`500` cents)   | **21 events / month** | **13**     | **2**                                 | **2**                         | `multi_organizer`, `judge_invites`, `organizer_invites`, `historic_metrics` |
+| `pro`            | **Pro**     | \$21 (`2100` cents) | **21 events / month** | **55**     | **4**                                 | **5**                         | `multi_organizer`, `judge_invites`, `organizer_invites`, `historic_metrics` |
 
 - Exceeding `monthlyEventLimit` at creation throws `409 QUOTA_EXCEEDED` (`"You reached your monthly limit of 8 events"`).
 - On the `free` plan, `maxJudges = 0` and `maxOrganizers = 1`. Attempting to create a `judge` or `organizer` invite throws `403 NOT_AUTHORIZED` (`assertInviteRoleAllowed`), and the `ManageConsole` UI hides `judge` and `organizer` options from the role selector when `planSlug === "free"`.
@@ -80,12 +81,14 @@ Community events (`origin = 'community'`) do **not** have an `event_payments` ro
 
 > [!IMPORTANT]
 > **Riders Cannot Join an Event in `draft` Status**
+>
 > - `createLeagueEvent` initializes the event with `status: "draft"` and `version: 0`.
 > - Code-joining (`joinEventByCode` and `getInvitePreview`) checks `JOINABLE_STATUSES`, which contains **only `"registration_open"`** (`src/lib/services/league/index.ts:1426`).
 > - While in `draft`, `GET /api/league/invites/[code]` returns `usable: false, reason: "This event is not accepting registrations"`, and `POST /api/league/join` throws `409 INVALID_TRANSITION`.
 > - The organizer **must** transition the event from `draft` to `registration_open` in the Organizer Console (`Event` tab -> `Open registration` -> `Confirm` -> `POST /api/league/events/[id]/registration/open`) before riders can join via invite link/code.
 >
 > **Same-Day UTC `startDate` Trap (`openEventRegistration`):**
+>
 > - `startDate` (`YYYY-MM-DD`) is converted to midnight UTC (`YYYY-MM-DDT00:00:00.000Z`) via `dateAtUtc`.
 > - `openEventRegistration` (`src/lib/services/league/index.ts:2428`) checks `if (locked.startAt.getTime() <= Date.now())` and throws **`400 INVALID_INPUT`** (`"Registration can only open while the event start date is in the future"`).
 > - Although `<DateField>` on `/league/new` sets `min={new Date().toISOString().slice(0, 10)}` (allowing today's UTC date at creation), selecting **today's UTC date** means `startAt` (`00:00:00.000Z`) is already in the past relative to `Date.now()`. To open registration, **`startDate` must be at least tomorrow in UTC**.
@@ -96,6 +99,7 @@ Community events (`origin = 'community'`) do **not** have an `event_payments` ro
 
 > [!IMPORTANT]
 > **`/sport-events/[slug]` Requires `visibility = 'public'`**
+>
 > - Community events are created with `visibility: "unlisted"` (`src/lib/services/league/index.ts:444`).
 > - The public detail route `/sport-events/[slug]` (`src/app/sport-events/[slug]/page.tsx`) loads the event via `findEventBySlug(slug)` (`src/lib/services/event/events.ts:333-348`), which queries `runListEvents()` -> `DrizzleEventRepository.list()` (`src/lib/repositories/event/drizzle-event-repository.ts:293`) with the hard filter `WHERE sport_events.visibility = 'public'`.
 > - **Consequence:** While an event remains `visibility: "unlisted"`, visiting `/sport-events/[slug]`—including the automatic client redirect after a rider joins on `/sport-events/join/[code]`, clicking a rider/judge card on `/league`, or clicking `"View public page"` in `ManageConsole`—returns **HTTP 404 (`notFound()`)**.
@@ -106,32 +110,32 @@ Community events (`origin = 'community'`) do **not** have an `event_payments` ro
 
 ### 2.6 Domain Error Taxonomy & HTTP Status Mapping (`src/app/api/league/errors.ts`)
 
-| `LeagueErrorCode` | HTTP Status | Trigger Condition |
-| :--- | :--- | :--- |
-| `INVALID_INPUT` | `400` | Invalid country/category, `endDate < startDate`, opening registration when `startAt <= now`, missing run/membership, or malformed reorder payload. |
-| `SCORE_INVALID` | `400` | Missing criterion score, non-finite number, score outside `[0, maxScore]`, or criteria weights summing to `<= 0`. |
-| `SCHEDULE_TOO_FAR_AHEAD` | `400` | `startAt` is more than 2 calendar months (`MAX_SCHEDULE_ADVANCE_MONTHS = 2`) after `now`. |
-| `NOT_AUTHORIZED` | `403` | Caller lacks required `EventCapability`, non-member calling `listEventMembers`, creating `judge`/`organizer` invite on Free plan, or attempting to remove/leave as `main_organizer`. |
-| `PAYMENT_NOT_FOUND` | `404` | Admin payment transition targets a non-existent `paymentId`. |
-| `PLAN_NOT_FOUND` | `404` | Admin plan update/grant targets a non-existent `planSlug`. |
-| `USER_NOT_FOUND` | `404` | Admin account-plan grant targets a non-existent `userId`. |
-| `STALE_VERSION` | `409` | `input.expectedVersion !== locked.version` (Optimistic Concurrency Control mismatch). |
-| `INVALID_TRANSITION` | `409` | Illegal status transition in `EVENT_TRANSITIONS`, code-joining when `status !== 'registration_open'`, editing config once `live`/`completed`/`cancelled`, completing with unscored runs, or publishing results twice. |
-| `CAPACITY_EXCEEDED` | `409` | Role bucket is full (`counts.riders >= plan.maxRiders`, `counts.judges >= plan.maxJudges`, or `counts.organizers >= plan.maxOrganizers`). |
-| `QUOTA_EXCEEDED` | `409` | User's community events created this UTC month `>= plan.monthlyEventLimit`. |
-| `ALREADY_MEMBER` | `409` | User already has an `active` row in `event_memberships` for the event. |
-| `INVITE_INVALID` | `409` | Invite code does not exist on `POST /api/league/join`, was revoked (`revokedAt !== null`), or expired (`expiresAt <= now`). |
-| `INVITE_EXHAUSTED` | `409` | Invite reached its usage cap (`maxUses !== null && useCount >= maxUses`). |
-| `PAYMENT_EXISTS` | `409` | Event already has a pending payment for a different plan or an active non-free payment. |
-| `RUN_WINDOW_CLOSED` | `409` | Judge submits score when `run.status !== 'judging'` or `windowEndsAt < now`. |
-| `NOT_SCORED` | `409` | Publishing results when zero runs have judge scores. |
-| `EMPTY_SCHEDULE` | `409` | Generating schedule with 0 active riders, or starting/reordering an event with 0 scheduled runs. |
-| `EVENT_LOCKED` | `409` | Event is 3–6 days old without an active payment (`payment.state === 'locked'`). |
-| `EVENT_DISABLED` | `409` | Event is $\ge 6$ days old without an active payment (`payment.state === 'disabled'`). |
-| `IDEMPOTENCY_CONFLICT` | `409` | Same `(userId, action, idempotencyKey)` reused with a different request payload `fingerprint`. |
-| `PLAN_EXISTS` | `409` | Admin attempts to create a plan with an existing `slug`. |
-| `RATE_LIMITED` | `429` | Exceeded per-user (`60/min`) or per-IP (`120/min`, or `10/min` on `POST /api/league/join`) rate limit. |
-| `SERVICE_UNAVAILABLE` | `503` | Database `TimeoutError` or connection error (`isConnectionError`). |
+| `LeagueErrorCode`        | HTTP Status | Trigger Condition                                                                                                                                                                                                     |
+| :----------------------- | :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `INVALID_INPUT`          | `400`       | Invalid country/category, `endDate < startDate`, opening registration when `startAt <= now`, missing run/membership, or malformed reorder payload.                                                                    |
+| `SCORE_INVALID`          | `400`       | Missing criterion score, non-finite number, score outside `[0, maxScore]`, or criteria weights summing to `<= 0`.                                                                                                     |
+| `SCHEDULE_TOO_FAR_AHEAD` | `400`       | `startAt` is more than 2 calendar months (`MAX_SCHEDULE_ADVANCE_MONTHS = 2`) after `now`.                                                                                                                             |
+| `NOT_AUTHORIZED`         | `403`       | Caller lacks required `EventCapability`, non-member calling `listEventMembers`, creating `judge`/`organizer` invite on Free plan, or attempting to remove/leave as `main_organizer`.                                  |
+| `PAYMENT_NOT_FOUND`      | `404`       | Admin payment transition targets a non-existent `paymentId`.                                                                                                                                                          |
+| `PLAN_NOT_FOUND`         | `404`       | Admin plan update/grant targets a non-existent `planSlug`.                                                                                                                                                            |
+| `USER_NOT_FOUND`         | `404`       | Admin account-plan grant targets a non-existent `userId`.                                                                                                                                                             |
+| `STALE_VERSION`          | `409`       | `input.expectedVersion !== locked.version` (Optimistic Concurrency Control mismatch).                                                                                                                                 |
+| `INVALID_TRANSITION`     | `409`       | Illegal status transition in `EVENT_TRANSITIONS`, code-joining when `status !== 'registration_open'`, editing config once `live`/`completed`/`cancelled`, completing with unscored runs, or publishing results twice. |
+| `CAPACITY_EXCEEDED`      | `409`       | Role bucket is full (`counts.riders >= plan.maxRiders`, `counts.judges >= plan.maxJudges`, or `counts.organizers >= plan.maxOrganizers`).                                                                             |
+| `QUOTA_EXCEEDED`         | `409`       | User's community events created this UTC month `>= plan.monthlyEventLimit`.                                                                                                                                           |
+| `ALREADY_MEMBER`         | `409`       | User already has an `active` row in `event_memberships` for the event.                                                                                                                                                |
+| `INVITE_INVALID`         | `409`       | Invite code does not exist on `POST /api/league/join`, was revoked (`revokedAt !== null`), or expired (`expiresAt <= now`).                                                                                           |
+| `INVITE_EXHAUSTED`       | `409`       | Invite reached its usage cap (`maxUses !== null && useCount >= maxUses`).                                                                                                                                             |
+| `PAYMENT_EXISTS`         | `409`       | Event already has a pending payment for a different plan or an active non-free payment.                                                                                                                               |
+| `RUN_WINDOW_CLOSED`      | `409`       | Judge submits score when `run.status !== 'judging'` or `windowEndsAt < now`.                                                                                                                                          |
+| `NOT_SCORED`             | `409`       | Publishing results when zero runs have judge scores.                                                                                                                                                                  |
+| `EMPTY_SCHEDULE`         | `409`       | Generating schedule with 0 active riders, or starting/reordering an event with 0 scheduled runs.                                                                                                                      |
+| `EVENT_LOCKED`           | `409`       | Event is 3–6 days old without an active payment (`payment.state === 'locked'`).                                                                                                                                       |
+| `EVENT_DISABLED`         | `409`       | Event is $\ge 6$ days old without an active payment (`payment.state === 'disabled'`).                                                                                                                                 |
+| `IDEMPOTENCY_CONFLICT`   | `409`       | Same `(userId, action, idempotencyKey)` reused with a different request payload `fingerprint`.                                                                                                                        |
+| `PLAN_EXISTS`            | `409`       | Admin attempts to create a plan with an existing `slug`.                                                                                                                                                              |
+| `RATE_LIMITED`           | `429`       | Exceeded per-user (`60/min`) or per-IP (`120/min`, or `10/min` on `POST /api/league/join`) rate limit.                                                                                                                |
+| `SERVICE_UNAVAILABLE`    | `503`       | Database `TimeoutError` or connection error (`isConnectionError`).                                                                                                                                                    |
 
 ---
 
@@ -204,16 +208,19 @@ sequenceDiagram
 ## 4. User Stories & Acceptance Criteria
 
 ### US-SE-01: Navigate to Sport Events Across All Screens
+
 - **As a** visitor or signed-in rider,
 - **I want to** navigate to the Sport Events section directly from the primary navigation on desktop and mobile,
 - **So that** I can browse action sports events without manually typing the URL.
 
 #### Implementation Details (`src/lib/navigation/nav.ts`, `src/types/spots.ts`)
+
 - `TabType` includes `"events"`.
 - `NAV_ITEMS` includes `{ id: "events", label: "Events", path: "/sport-events", icon: CalendarDays, placements: ["header", "bottom", "drawer"], group: "discover" }`.
 - Desktop header renders `id="nav-btn-events"`, matching `aria-labelledby="nav-btn-events"` on `<section id="sport-events-tab" role="tabpanel">`.
 
 #### Acceptance Criteria
+
 1. Desktop header pill track, mobile bottom navigation bar, and mobile side drawer all render the `Events` link pointing to `/sport-events`.
 2. When on `/sport-events` or `/sport-events/*`, the `Events` nav item receives `aria-current="page"` and active inverted pill styling (`bg-on-wire text-wire`).
 3. The desktop navigation link exposes `id="nav-btn-events"`.
@@ -221,11 +228,13 @@ sequenceDiagram
 ---
 
 ### US-SE-02: Browse Public Directory & Access Role-Aware League Actions
+
 - **As a** visitor or signed-in rider on `/sport-events` (or `/league`),
 - **I want to** filter public events by status, access my league hub, create a new event (when signed in), or enter an invite code,
 - **So that** I can quickly jump to organizing or participating.
 
 #### Implementation Details (`SportEventsTab.tsx`, `LeagueHub.tsx`, `JoinByCodeEntry.tsx`)
+
 - `/sport-events` fetches public events (`visibility = 'public'`) via `listEventDirectory()` (`"use cache: remote"`, tag `events:list`).
 - Sticky header renders:
   - `<StatusFilter>` (`All`, `Live`, `Upcoming`, `Completed`).
@@ -234,6 +243,7 @@ sequenceDiagram
   - `<JoinByCodeEntry>` form (`input` placeholder `"Invite code"` + `"Join"` submit button) which navigates to `/sport-events/join/${encodeURIComponent(code.trim())}` for any non-empty trimmed input.
 
 #### Acceptance Criteria
+
 1. Guests on `/sport-events` see status filters, `My league`, and `JoinByCodeEntry`, and do **not** see `Create event`.
 2. Signed-in users on `/sport-events` additionally see the `Create event` button linking to `/league/new`.
 3. Submitting a non-empty code in `JoinByCodeEntry` (on `/sport-events` or `/league`) navigates to `/sport-events/join/[code]`.
@@ -241,11 +251,13 @@ sequenceDiagram
 ---
 
 ### US-SE-03: Create a Community League Event
+
 - **As an** authenticated rider,
 - **I want to** create a community sport event with disciplines, schedule, location, and category,
 - **So that** I become the main organizer and can manage the competition.
 
 #### Implementation Details (`src/app/league/new/page.tsx`, `LeagueCreateForm.tsx`, `createLeagueEvent`)
+
 - Server component `LeagueNewPage` calls `requireUserOrRedirect('/league/new')`, redirecting guests to `/login?next=%2Fleague%2Fnew`.
 - `LeagueCreateForm` displays badge `Free plan · up to 3 riders` and renders **3 `<fieldset>` sections**:
   1. **Event essentials** (`Trophy`):
@@ -277,6 +289,7 @@ sequenceDiagram
 - Returns `201 Created { id, version: 0, slug }`; client redirects to `/sport-events/${data.slug}/manage`.
 
 #### Acceptance Criteria
+
 1. Unauthenticated requests to `/league/new` redirect to `/login?next=%2Fleague%2Fnew`.
 2. Missing required fields (`name`, `sports`, `startDate`, `timezone`, `city`, `country`) block submission on the client and focus the first invalid field.
 3. Start dates > 2 months in the future return `400 SCHEDULE_TOO_FAR_AHEAD`; end dates before start dates return `400 INVALID_INPUT`.
@@ -286,11 +299,13 @@ sequenceDiagram
 ---
 
 ### US-SE-04: Configure Event, Settle Payment Gate & Open Registration
+
 - **As a** main organizer or co-organizer in `/sport-events/[slug]/manage`,
 - **I want to** confirm my event's plan payment, update event details/visibility, and open registration,
 - **So that** the event does not lock after 3 days, can be viewed publicly if desired, and accepts rider invite joins.
 
 #### Implementation Details (`ManageConsole.tsx` — `PaymentGateNotice` & `ConfigPanel`)
+
 - **Access Control:**
   - Guests visiting `/sport-events/[slug]/manage` are redirected to `/login?next=%2Fsport-events%2F[slug]%2Fmanage`.
   - Signed-in non-members receive `404 { error: "Event not found" }` from `GET /api/league/events/[id]` and see an error alert with a `Retry` button.
@@ -308,6 +323,7 @@ sequenceDiagram
   - Transitions `status` from `"draft"` to `"registration_open"`.
 
 #### Acceptance Criteria
+
 1. Clicking `Register free plan ($0)` settles the payment gate (`payment.state === "settled"`) and removes the payment warning banner.
 2. Switching `Visibility` to `Public directory` (`"public"`) and confirming `Save changes` makes `/sport-events/[slug]` accessible and lists the event on `/sport-events`.
 3. Clicking `Open registration` when `startDate` is in the future (UTC) transitions `status` to `"registration_open"`.
@@ -316,11 +332,13 @@ sequenceDiagram
 ---
 
 ### US-SE-05: Generate & Manage Role-Based Invites (Link & QR)
+
 - **As an** organizer in `/sport-events/[slug]/manage` (`People` tab),
 - **I want to** generate shareable invite codes/links and QR codes and revoke compromised invites,
 - **So that** riders (and judges/co-organizers on paid plans) can join the event roster.
 
 #### Implementation Details (`RosterPanel`, `InviteRow`, `createEventInvite`, `revokeEventInvite`)
+
 - In the `People` tab (`#manage-panel-roster`), organizers see role counts (`Riders`, `Judges`, `Organizers`), the `Share invites` generator card, and the active member list (`GET /api/league/events/[id]/members`).
 - **Role Selector (`#invite-role`):**
   - On Free plan (`planSlug === "free"`), only `Rider` is available in the UI dropdown and allowed by `assertInviteRoleAllowed` on the server (`judge` and `organizer` throw `403 NOT_AUTHORIZED`).
@@ -335,6 +353,7 @@ sequenceDiagram
   - Only `main_organizer` can remove active members (`DELETE /api/league/events/[id]/members/[membershipId]`) or cancel the event (`POST /api/league/events/[id]/cancel`).
 
 #### Acceptance Criteria
+
 1. Creating a rider invite on a Free plan event generates a 12-character base62 code and displays it in the invite list with `Copy`, `QR`, and `Revoke` actions.
 2. Attempting to create a `judge` or `organizer` invite on a Free plan event via the API returns `403 NOT_AUTHORIZED`.
 3. Toggling `QR` renders an inline SVG QR code encoding `${origin}/sport-events/join/${code}`.
@@ -343,11 +362,13 @@ sequenceDiagram
 ---
 
 ### US-SE-06: Preview Invite Link as a Guest or Signed-In User
+
 - **As a** person opening `/sport-events/join/[code]`,
 - **I want to** see the event name, date/time in the event's timezone, city, invited role, and whether the invite is currently usable,
 - **So that** I know what event and role I am accepting before signing in or joining.
 
 #### Implementation Details (`JoinWithInvite.tsx`, `GET /api/league/invites/[code]`, `getInvitePreview`)
+
 - `JoinWithInvite` calls `GET /api/league/invites/[code]` on mount (unauthenticated public endpoint, `Cache-Control: no-store`).
 - **Unknown Code (`404`):**
   - If `code` does not exist in `event_invites`, the API returns `404 { error: "Invite not found" }`, and `JoinWithInvite` displays an error alert: `"This invite could not be found."` (no event preview card).
@@ -364,6 +385,7 @@ sequenceDiagram
     - **Signed-in (`user !== null`):** Renders primary button `"Join the event"`.
 
 #### Acceptance Criteria
+
 1. Visiting `/sport-events/join/[code]` with an unknown code renders `"This invite could not be found."`.
 2. Visiting `/sport-events/join/[code]` while the event is still in `draft` (or closed/live/completed) renders the event preview card with alert `"This event is not accepting registrations"` and no join button.
 3. Visiting `/sport-events/join/[code]` with a revoked, expired, or exhausted invite renders the event preview card with the corresponding reason alert.
@@ -372,11 +394,13 @@ sequenceDiagram
 ---
 
 ### US-SE-07: Join Event by Code as an Authenticated Rider
+
 - **As a** signed-in user viewing a usable invite on `/sport-events/join/[code]`,
 - **I want to** click `"Join the event"` to claim my spot on the roster,
 - **So that** I become an active member of the event.
 
 #### Implementation Details (`JoinWithInvite.tsx`, `POST /api/league/join`, `joinEventByCode`)
+
 - Clicking `"Join the event"` sets button text to `"Joining…"` and sends `POST /api/league/join` with `{ code }`.
 - Route handler enforces authentication (`401` if guest), rate limit (`ipMax: 10` req/min per IP, `60` req/min per user -> `429 RATE_LIMITED`), and `leagueJoinInputSchema` (`code` 6–32 chars).
 - `joinEventByCode` locks the `sport_events` row first (`lockEvent`), then locks the `event_invites` row `FOR UPDATE` (preventing deadlocks with concurrent revocations), and validates:
@@ -388,9 +412,10 @@ sequenceDiagram
 - Inserts `event_memberships` (`status: "active"`, `joinedViaInviteId`), increments `event_invites.useCount`, increments `sport_events.version`, emits `registration_changed` realtime signal, and creates `league_registration_confirmed` notifications for the joiner and organizers.
 - Returns `201 Created { id, version, role, eventSlug }`.
 - `JoinWithInvite` shows `"You're in — taking you to the event…"` and calls `router.push('/sport-events/${preview.eventSlug}')`.
-  - *Note:* As documented in Section 2.5, `/sport-events/[slug]` renders the event detail + `<MyPerformance>` card if the event's `visibility` has been set to `"public"`, or returns `404` while `visibility` is `"unlisted"` (the rider can always see the event under `Riding` on `/league`).
+  - _Note:_ As documented in Section 2.5, `/sport-events/[slug]` renders the event detail + `<MyPerformance>` card if the event's `visibility` has been set to `"public"`, or returns `404` while `visibility` is `"unlisted"` (the rider can always see the event under `Riding` on `/league`).
 
 #### Acceptance Criteria
+
 1. Clicking `"Join the event"` on a valid, open event with available capacity returns `201 Created`, adds the rider to `event_memberships`, increments `useCount`, and navigates to `/sport-events/[slug]`.
 2. Attempting to join when the Free plan event already has 3 active riders returns `409 CAPACITY_EXCEEDED` and displays `"This event allows at most 3 riders"` in an alert.
 3. Attempting to join when the user already has an active role in the event returns `409 ALREADY_MEMBER` and displays `"You already have a role in this event"` in an alert.
@@ -398,11 +423,13 @@ sequenceDiagram
 ---
 
 ### US-SE-08: Run Schedule, Live Judging Windows, Scoring & Frozen Results
+
 - **As an** organizer or judge in `/sport-events/[slug]/manage`,
 - **I want to** close registration, generate the run schedule, start the event, open judging windows per run, submit weighted criterion scores, and publish frozen results,
 - **So that** riders are ranked fairly and earn global league points.
 
 #### Implementation Details (`ManageConsole.tsx`, `src/lib/services/league/index.ts`)
+
 1. **Close Registration (`registration_open` -> `registration_closed`):**
    - Organizer clicks `Close registration` -> `Confirm` (`POST /api/league/events/[id]/registration/close`). Code-joins are no longer accepted.
 2. **Generate Schedule (`registration_closed` -> `scheduled`):**
@@ -420,6 +447,7 @@ sequenceDiagram
    - Organizer clicks `Publish results` (`POST /api/league/events/[id]/results/publish`), which ranks scored runs (`total desc` -> `bestJudgeTotal desc` -> `sequence asc`), writes frozen rows to `event_results`, awards `10` attendance points + `[100, 80, 60, 50, 40]` (floor `25`) rank bonus points to `event_points_ledger` and `rider_stats`, and revalidates `ranking:global`.
 
 #### Acceptance Criteria
+
 1. Generating a schedule with 0 active riders returns `409 EMPTY_SCHEDULE`.
 2. Submitting scores while a run's judging window is open records the weighted judge total; closing the window transitions the run to `scored` (or `skipped` if unjudged).
 3. Completing the event and publishing results freezes rankings in the `Results` tab and awards league points to participating riders.
@@ -428,33 +456,33 @@ sequenceDiagram
 
 ## 5. Comprehensive Use Cases Matrix
 
-| ID | Use Case | Actor | Route / Endpoint | Input / Precondition | Expected Outcome |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **UC-SE-01** | Global Nav to Events | Any Visitor | Header / Bottom Bar / Drawer | Click `Events` (`#nav-btn-events`) | Navigates to `/sport-events`; sets `aria-current="page"`. |
-| **UC-SE-02** | Guest Events Hub | Guest | `/sport-events` | `user === null` | Renders status filters, public directory, `My league`, and `JoinByCodeEntry`; hides `Create event`. |
-| **UC-SE-03** | Signed-in Events Hub | Signed-in User | `/sport-events` | `user !== null` | Additionally renders `Create event` button linking to `/league/new`. |
-| **UC-SE-04** | Unauthenticated Create Access | Guest | `GET /league/new` | No session cookie | Server `requireUserOrRedirect` redirects `307` to `/login?next=%2Fleague%2Fnew`. |
-| **UC-SE-05** | Happy Path Event Creation | Signed-in User | `POST /api/league/events` | Valid 3-section form, `startDate` within 2 months | Returns `201 { id, version: 0, slug }`; creates `draft`, `unlisted`, `free` event with `main_organizer` membership; redirects to `/sport-events/[slug]/manage`. |
-| **UC-SE-06** | Client Form Validation Error | Signed-in User | `/league/new` | Missing `name`, `sports`, `startDate`, `city`, or `country` | Blocks `fetch`; sets `aria-invalid="true"`, renders field `role="alert"`, scrolls to and focuses first invalid input. |
-| **UC-SE-07** | Advance Window Exceeded | Signed-in User | `POST /api/league/events` | `startDate > now + 2 months` | Server throws `400 SCHEDULE_TOO_FAR_AHEAD`; form renders top-level `submitError` alert. |
-| **UC-SE-08** | Invalid Date Range | Signed-in User | `POST /api/league/events` | `endDate < startDate` | Server throws `400 INVALID_INPUT` (`"Event end date must be on or after the start date"`). |
-| **UC-SE-09** | Monthly Event Quota Reached | Signed-in User | `POST /api/league/events` | User already created 8 community events this UTC month (Free plan) | Server throws `409 QUOTA_EXCEEDED` (`"You reached your monthly limit of 8 events"`). |
-| **UC-SE-10** | Create Idempotency Replay | Signed-in User | `POST /api/league/events` | Retried POST with identical `idempotencyKey` and payload | Replays original `201 { id, version: 0, slug }` without creating a duplicate event or consuming quota. |
-| **UC-SE-11** | Self-Register Free Plan (\$0) | Organizer | `POST /api/league/events/[id]/payment` | Click `Register free plan ($0)` (`planSlug: "free"`) | Inserts `paid` (\$0) row in `event_payments`; transitions `payment.state` from `"pending"` to `"settled"`. |
-| **UC-SE-12** | Payment Gate Lock & Disable | Organizer / Rider | `/api/league/events/[id]/*` | No active payment after 3 days / 6 days | At $\ge 3$ days: `payment.state = "locked"`, mutations throw `409 EVENT_LOCKED`. At $\ge 6$ days: `payment.state = "disabled"`, all writes throw `409 EVENT_DISABLED`. |
-| **UC-SE-13** | Console Access by Role | Guest / Non-member / Rider / Judge / Organizer | `/sport-events/[slug]/manage` | Direct navigation | Guest -> `/login`; Non-member -> `404 Event not found` alert; Rider/Judge -> `Runs` & `Results` tabs only; Organizer -> all 5 tabs. |
-| **UC-SE-14** | Open Registration (Future UTC Date) | Organizer | `POST /api/league/events/[id]/registration/open` | `status === "draft"` and `startDate >= tomorrow UTC` | Transitions `status` to `"registration_open"`, enabling code-based invite joins. |
-| **UC-SE-15** | Open Registration (Same-Day UTC Trap) | Organizer | `POST /api/league/events/[id]/registration/open` | `status === "draft"` and `startDate === today UTC` (`startAt <= Date.now()`) | Throws `400 INVALID_INPUT` (`"Registration can only open while the event start date is in the future"`). |
-| **UC-SE-16** | Create Rider Invite & QR | Organizer | `POST /api/league/events/[id]/invites` | `role: "rider"`, `expiresInDays: 7` (or `1`, `30`, `undefined`) | Returns `201 { inviteId, code (12-char base62), role: "rider", version }`; renders `InviteRow` with `Copy`, `QR` (`QRCodeSVG`), and `Revoke`. |
-| **UC-SE-17** | Paid-Only Invite Role on Free Plan | Organizer | `POST /api/league/events/[id]/invites` | `role: "judge"` or `"organizer"` on `free` plan | UI hides options; direct API call throws `403 NOT_AUTHORIZED`. |
-| **UC-SE-18** | Unknown vs. Unusable Invite Preview | Guest or Rider | `GET /api/league/invites/[code]` | Unknown code vs. `draft` / revoked / expired / exhausted / disabled | Unknown -> `404` (`"This invite could not be found."`). Known but unusable -> `200 OK` with preview card + `usable: false` and specific `reason` alert. |
-| **UC-SE-19** | Guest Invite Preview & Sign-In Redirect | Guest | `/sport-events/join/[code]` | Valid code, `status === "registration_open"`, `usable === true` | Renders preview card + `"Sign in"` link to `/login?next=%2Fsport-events%2Fjoin%2F[code]` + `"Sign in to join as Rider."`. |
-| **UC-SE-20** | Happy Path Rider Join by Code | Signed-in Rider | `POST /api/league/join` | Click `"Join the event"` (`{ code }`) on open event with `< 3` riders | Returns `201 { id, version, role: "rider", eventSlug }`; inserts `event_memberships`, increments `useCount`, redirects to `/sport-events/[slug]`. |
-| **UC-SE-21** | Rider Capacity Cap Reached | Signed-in Rider | `POST /api/league/join` | Free plan event already has 3 active riders | Throws `409 CAPACITY_EXCEEDED` (`"This event allows at most 3 riders"`). |
-| **UC-SE-22** | Invite Usage Limit Reached | Signed-in Rider | `POST /api/league/join` | Invite has `maxUses !== null && useCount >= maxUses` | Throws `409 INVITE_EXHAUSTED` (`"This invite reached its usage limit"`). |
-| **UC-SE-23** | Duplicate Join by Existing Member | Active Member | `POST /api/league/join` | User already has an active membership in the event | Throws `409 ALREADY_MEMBER` (`"You already have a role in this event"`), rendered in alert without redirecting. |
-| **UC-SE-24** | Public Page Visibility Gate | Any User | `GET /sport-events/[slug]` | Event `visibility === "unlisted"` vs. `"public"` | Returns `404` while `"unlisted"`; renders full event page (plus `<MyPerformance>` for active members) once organizer sets `visibility = "public"`. |
-| **UC-SE-25** | Schedule, Judging & Publish Results | Organizer / Judge | `/schedule`, `/start`, `/runs/[id]/window`, `/runs/[id]/scores`, `/complete`, `/results/publish` | `registration_closed` with $\ge 1$ rider | Generates 10m run slots -> goes `live` -> opens run window -> submits weighted scores -> closes window -> completes event -> publishes frozen ranks and awards league points. |
+| ID           | Use Case                                | Actor                                          | Route / Endpoint                                                                                 | Input / Precondition                                                         | Expected Outcome                                                                                                                                                              |
+| :----------- | :-------------------------------------- | :--------------------------------------------- | :----------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **UC-SE-01** | Global Nav to Events                    | Any Visitor                                    | Header / Bottom Bar / Drawer                                                                     | Click `Events` (`#nav-btn-events`)                                           | Navigates to `/sport-events`; sets `aria-current="page"`.                                                                                                                     |
+| **UC-SE-02** | Guest Events Hub                        | Guest                                          | `/sport-events`                                                                                  | `user === null`                                                              | Renders status filters, public directory, `My league`, and `JoinByCodeEntry`; hides `Create event`.                                                                           |
+| **UC-SE-03** | Signed-in Events Hub                    | Signed-in User                                 | `/sport-events`                                                                                  | `user !== null`                                                              | Additionally renders `Create event` button linking to `/league/new`.                                                                                                          |
+| **UC-SE-04** | Unauthenticated Create Access           | Guest                                          | `GET /league/new`                                                                                | No session cookie                                                            | Server `requireUserOrRedirect` redirects `307` to `/login?next=%2Fleague%2Fnew`.                                                                                              |
+| **UC-SE-05** | Happy Path Event Creation               | Signed-in User                                 | `POST /api/league/events`                                                                        | Valid 3-section form, `startDate` within 2 months                            | Returns `201 { id, version: 0, slug }`; creates `draft`, `unlisted`, `free` event with `main_organizer` membership; redirects to `/sport-events/[slug]/manage`.               |
+| **UC-SE-06** | Client Form Validation Error            | Signed-in User                                 | `/league/new`                                                                                    | Missing `name`, `sports`, `startDate`, `city`, or `country`                  | Blocks `fetch`; sets `aria-invalid="true"`, renders field `role="alert"`, scrolls to and focuses first invalid input.                                                         |
+| **UC-SE-07** | Advance Window Exceeded                 | Signed-in User                                 | `POST /api/league/events`                                                                        | `startDate > now + 2 months`                                                 | Server throws `400 SCHEDULE_TOO_FAR_AHEAD`; form renders top-level `submitError` alert.                                                                                       |
+| **UC-SE-08** | Invalid Date Range                      | Signed-in User                                 | `POST /api/league/events`                                                                        | `endDate < startDate`                                                        | Server throws `400 INVALID_INPUT` (`"Event end date must be on or after the start date"`).                                                                                    |
+| **UC-SE-09** | Monthly Event Quota Reached             | Signed-in User                                 | `POST /api/league/events`                                                                        | User already created 8 community events this UTC month (Free plan)           | Server throws `409 QUOTA_EXCEEDED` (`"You reached your monthly limit of 8 events"`).                                                                                          |
+| **UC-SE-10** | Create Idempotency Replay               | Signed-in User                                 | `POST /api/league/events`                                                                        | Retried POST with identical `idempotencyKey` and payload                     | Replays original `201 { id, version: 0, slug }` without creating a duplicate event or consuming quota.                                                                        |
+| **UC-SE-11** | Self-Register Free Plan (\$0)           | Organizer                                      | `POST /api/league/events/[id]/payment`                                                           | Click `Register free plan ($0)` (`planSlug: "free"`)                         | Inserts `paid` (\$0) row in `event_payments`; transitions `payment.state` from `"pending"` to `"settled"`.                                                                    |
+| **UC-SE-12** | Payment Gate Lock & Disable             | Organizer / Rider                              | `/api/league/events/[id]/*`                                                                      | No active payment after 3 days / 6 days                                      | At $\ge 3$ days: `payment.state = "locked"`, mutations throw `409 EVENT_LOCKED`. At $\ge 6$ days: `payment.state = "disabled"`, all writes throw `409 EVENT_DISABLED`.        |
+| **UC-SE-13** | Console Access by Role                  | Guest / Non-member / Rider / Judge / Organizer | `/sport-events/[slug]/manage`                                                                    | Direct navigation                                                            | Guest -> `/login`; Non-member -> `404 Event not found` alert; Rider/Judge -> `Runs` & `Results` tabs only; Organizer -> all 5 tabs.                                           |
+| **UC-SE-14** | Open Registration (Future UTC Date)     | Organizer                                      | `POST /api/league/events/[id]/registration/open`                                                 | `status === "draft"` and `startDate >= tomorrow UTC`                         | Transitions `status` to `"registration_open"`, enabling code-based invite joins.                                                                                              |
+| **UC-SE-15** | Open Registration (Same-Day UTC Trap)   | Organizer                                      | `POST /api/league/events/[id]/registration/open`                                                 | `status === "draft"` and `startDate === today UTC` (`startAt <= Date.now()`) | Throws `400 INVALID_INPUT` (`"Registration can only open while the event start date is in the future"`).                                                                      |
+| **UC-SE-16** | Create Rider Invite & QR                | Organizer                                      | `POST /api/league/events/[id]/invites`                                                           | `role: "rider"`, `expiresInDays: 7` (or `1`, `30`, `undefined`)              | Returns `201 { inviteId, code (12-char base62), role: "rider", version }`; renders `InviteRow` with `Copy`, `QR` (`QRCodeSVG`), and `Revoke`.                                 |
+| **UC-SE-17** | Paid-Only Invite Role on Free Plan      | Organizer                                      | `POST /api/league/events/[id]/invites`                                                           | `role: "judge"` or `"organizer"` on `free` plan                              | UI hides options; direct API call throws `403 NOT_AUTHORIZED`.                                                                                                                |
+| **UC-SE-18** | Unknown vs. Unusable Invite Preview     | Guest or Rider                                 | `GET /api/league/invites/[code]`                                                                 | Unknown code vs. `draft` / revoked / expired / exhausted / disabled          | Unknown -> `404` (`"This invite could not be found."`). Known but unusable -> `200 OK` with preview card + `usable: false` and specific `reason` alert.                       |
+| **UC-SE-19** | Guest Invite Preview & Sign-In Redirect | Guest                                          | `/sport-events/join/[code]`                                                                      | Valid code, `status === "registration_open"`, `usable === true`              | Renders preview card + `"Sign in"` link to `/login?next=%2Fsport-events%2Fjoin%2F[code]` + `"Sign in to join as Rider."`.                                                     |
+| **UC-SE-20** | Happy Path Rider Join by Code           | Signed-in Rider                                | `POST /api/league/join`                                                                          | Click `"Join the event"` (`{ code }`) on open event with `< 3` riders        | Returns `201 { id, version, role: "rider", eventSlug }`; inserts `event_memberships`, increments `useCount`, redirects to `/sport-events/[slug]`.                             |
+| **UC-SE-21** | Rider Capacity Cap Reached              | Signed-in Rider                                | `POST /api/league/join`                                                                          | Free plan event already has 3 active riders                                  | Throws `409 CAPACITY_EXCEEDED` (`"This event allows at most 3 riders"`).                                                                                                      |
+| **UC-SE-22** | Invite Usage Limit Reached              | Signed-in Rider                                | `POST /api/league/join`                                                                          | Invite has `maxUses !== null && useCount >= maxUses`                         | Throws `409 INVITE_EXHAUSTED` (`"This invite reached its usage limit"`).                                                                                                      |
+| **UC-SE-23** | Duplicate Join by Existing Member       | Active Member                                  | `POST /api/league/join`                                                                          | User already has an active membership in the event                           | Throws `409 ALREADY_MEMBER` (`"You already have a role in this event"`), rendered in alert without redirecting.                                                               |
+| **UC-SE-24** | Public Page Visibility Gate             | Any User                                       | `GET /sport-events/[slug]`                                                                       | Event `visibility === "unlisted"` vs. `"public"`                             | Returns `404` while `"unlisted"`; renders full event page (plus `<MyPerformance>` for active members) once organizer sets `visibility = "public"`.                            |
+| **UC-SE-25** | Schedule, Judging & Publish Results     | Organizer / Judge                              | `/schedule`, `/start`, `/runs/[id]/window`, `/runs/[id]/scores`, `/complete`, `/results/publish` | `registration_closed` with $\ge 1$ rider                                     | Generates 10m run slots -> goes `live` -> opens run window -> submits weighted scores -> closes window -> completes event -> publishes frozen ranks and awards league points. |
 
 ---
 

@@ -9,6 +9,11 @@ import {
   MapPinned,
 } from "lucide-react";
 import type { SportEventEnriched } from "@/types/sport-events";
+import {
+  controlClass,
+  iconButtonClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
 import { buildEventMapUrl } from "@/lib/sport-events/urls";
 
@@ -59,7 +64,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                 <Trophy size={12} aria-hidden="true" className="text-surface" />
                 <span>Featured Event</span>
               </div>
-              <span className="self-start rounded-control border border-surface/70 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-label text-surface uppercase">
+              <span className={`self-start ${tagClass("onPhoto")}`}>
                 {event.categoryName}
               </span>
             </div>
@@ -77,7 +82,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${event.name} on Instagram`}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-control border border-surface/40 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-offset-4"
+                        className={iconButtonClass("onPhoto")}
                       >
                         <Instagram size={14} aria-hidden="true" />
                       </a>
@@ -90,7 +95,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={`${event.name} on YouTube`}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-control border border-surface/40 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-offset-4"
+                        className={iconButtonClass("onPhoto")}
                       >
                         <Youtube size={14} aria-hidden="true" />
                       </a>
@@ -102,7 +107,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                 <div className="flex items-center gap-2 self-start rounded-control border border-error bg-on-surface/30 px-3 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
                   <span
                     aria-hidden="true"
-                    className="h-1.5 w-1.5 rounded-full bg-error -dot"
+                    className="h-1.5 w-1.5 rounded-control bg-error -dot"
                   />
                   <span>Live</span>
                 </div>
@@ -111,7 +116,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
           </div>
 
           <div className="max-w-3xl space-y-5">
-            <h2 className="font-display text-4xl font-bold leading-[0.95] tracking-[-0.03em] text-surface uppercase sm:text-5xl md:text-6xl">
+            <h2 className="font-display text-4xl font-bold leading-[0.95] tracking-display text-surface uppercase sm:text-5xl md:text-6xl">
               {event.name}
             </h2>
 
@@ -149,7 +154,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                     {location.city}
                     {location.country ? `, ${location.country}` : ""}
                     {location.venue && (
-                      <span className="block font-display text-xs font-normal tracking-wider text-surface/70 normal-case">
+                      <span className="block font-display text-xs font-normal tracking-label text-surface/70 normal-case">
                         {location.venue}
                       </span>
                     )}
@@ -165,7 +170,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Visit ${event.name} official site in a new tab`}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-control bg-primary px-5 py-3 font-display text-xs font-bold tracking-label text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px sm:px-6"
+                  className={controlClass("onWire")}
                 >
                   <span>Visit official site</span>
                   <ExternalLink
@@ -181,7 +186,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                   {event.sports.map((sport) => (
                     <li
                       key={sport}
-                      className="rounded-control border border-surface/40 bg-on-surface/30 px-2.5 py-1 font-display text-xs font-bold tracking-label text-surface uppercase"
+                      className={tagClass("onPhoto")}
                     >
                       {sport}
                     </li>
@@ -198,7 +203,7 @@ export function EventFeaturedHero({ event }: EventFeaturedHeroProps) {
                     },
                   })}
                   aria-label={`Show spots and events in ${event.location.country} on the map`}
-                  className="inline-flex min-h-11 items-center justify-between gap-2 rounded-control border border-surface/40 bg-on-surface/20 px-4 py-2 font-display text-xs font-bold tracking-label text-surface uppercase transition-colors hover:bg-on-surface/40 focus-visible:outline-offset-4"
+                  className={controlClass("onPhoto")}
                 >
                   <span>View spots and events in {event.location.country}</span>
                   <MapPinned

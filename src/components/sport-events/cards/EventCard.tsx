@@ -11,6 +11,13 @@ import type {
   SportEventEnriched,
   SportEventStatus,
 } from "@/types/sport-events";
+import {
+  BODY,
+  CARD_FRAME,
+  CARD_TITLE,
+  controlClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
 import { buildEventMapUrl } from "@/lib/sport-events/urls";
 
@@ -59,7 +66,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
     <article
       data-event-card={event.id}
       data-event-status={event.status}
-      className="group relative flex w-full flex-col overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest text-left transition-[border-color,background-color] hover:border-on-surface focus-within:border-on-surface"
+      className={`group relative flex w-full flex-col overflow-hidden ${CARD_FRAME} text-left transition-[border-color,background-color] hover:border-on-surface focus-within:border-on-surface`}
     >
       <div className="relative h-52 w-full overflow-hidden bg-on-surface">
         {event.url ? (
@@ -150,7 +157,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 rounded-control bg-surface/95 px-2 py-1 font-display text-xs font-bold tracking-label text-error uppercase">
             <span
               aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-error -dot"
+              className="h-1.5 w-1.5 rounded-control bg-error -dot"
             />
             Live
           </div>
@@ -162,7 +169,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           <span
             aria-hidden="true"
             className={cn(
-              "h-1.5 w-1.5 rounded-full",
+              "h-1.5 w-1.5 rounded-control",
               STATUS_DOT_STYLES[event.status],
             )}
           />
@@ -176,7 +183,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           </span>
         </div>
 
-        <h3 className="font-display text-lg font-bold tracking-dense text-on-surface uppercase group-hover:underline">
+        <h3 className={`${CARD_TITLE} text-on-surface group-hover:underline`}>
           {event.name}
         </h3>
 
@@ -186,7 +193,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
           </span>
         )}
 
-        <p className="mt-3 text-sm leading-relaxed text-secondary line-clamp-3">
+        <p className={`mt-3 ${BODY} line-clamp-3`}>
           {event.description}
         </p>
 
@@ -198,7 +205,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
               aria-hidden="true"
             />
             <dt className="visually-hidden">Date</dt>
-            <dd className="font-display tracking-wider font-semibold uppercase">
+            <dd className="font-display font-semibold tracking-label uppercase">
               {event.dateRangeLabel}
             </dd>
           </div>
@@ -210,12 +217,12 @@ export function EventCard({ event, priority = false }: EventCardProps) {
             />
             <dt className="visually-hidden">Location</dt>
             <dd className="text-secondary">
-              <span className="text-on-surface font-semibold">
+              <span className="font-semibold text-on-surface">
                 {location.city}
               </span>
               {location.country ? `, ${location.country}` : ""}
               {location.venue && (
-                <span className="mt-0.5 block text-xs tracking-wider uppercase">
+                <span className="mt-0.5 block font-display text-xs tracking-label uppercase">
                   {location.venue}
                 </span>
               )}
@@ -228,7 +235,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
             {event.sports.map((sport) => (
               <li
                 key={sport}
-                className="rounded-control border border-outline-variant bg-surface-container-low px-2 py-1 font-display text-xs font-bold tracking-label text-on-surface uppercase"
+                className={tagClass("outline")}
               >
                 {sport}
               </li>
@@ -245,7 +252,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
               },
             })}
             aria-label={`Show spots and events in ${event.location.country} on the map`}
-            className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-control border border-outline-variant bg-surface-container-high px-4 py-2 font-display text-xs font-bold tracking-label text-on-surface uppercase transition-colors hover:bg-surface-container-highest focus-visible:outline-offset-4"
+            className={`mt-5 w-full justify-between ${controlClass("secondary")}`}
           >
             <span>View spots and events in {event.location.country}</span>
             <MapPinned
@@ -301,7 +308,7 @@ export function EventCard({ event, priority = false }: EventCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Visit ${event.name} official site in a new tab`}
-            className="mt-5 inline-flex min-h-11 items-center justify-between gap-2 rounded-control bg-primary px-4 py-3 font-display text-xs font-bold tracking-label text-on-primary uppercase transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px"
+            className={`mt-5 w-full justify-between ${controlClass("primary")}`}
           >
             <span>Visit official site</span>
             <ExternalLink

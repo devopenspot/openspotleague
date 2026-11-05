@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { EventCard } from "@/components/sport-events/cards/EventCard";
+import { iconButtonClass } from "@/components/ui/recipes";
 import type { SportEventEnriched } from "@/types/sport-events";
 import { cn } from "@/lib/utils/cn";
 
@@ -125,10 +126,10 @@ export function EventCarousel({
           onClick={() => scrollBy(-1)}
           disabled={!canScrollLeft}
           className={cn(
-            "absolute left-2 top-[168px] z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border bg-surface-container-lowest text-on-surface shadow-sm transition-[opacity,background-color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 lg:flex",
+            `absolute left-2 top-[168px] z-20 hidden -translate-y-1/2 lg:flex ${iconButtonClass("outline")}`,
             canScrollLeft
-              ? "border-outline-variant opacity-100 hover:bg-surface-container-low"
-              : "pointer-events-none border-outline-variant/40 opacity-40",
+              ? "opacity-100"
+              : "pointer-events-none opacity-40",
           )}
         >
           <ChevronLeft size={18} aria-hidden="true" />
@@ -139,10 +140,10 @@ export function EventCarousel({
           onClick={() => scrollBy(1)}
           disabled={!canScrollRight}
           className={cn(
-            "absolute right-2 top-[168px] z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border bg-surface-container-lowest text-on-surface shadow-sm transition-[opacity,background-color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 lg:flex",
+            `absolute right-2 top-[168px] z-20 hidden -translate-y-1/2 lg:flex ${iconButtonClass("outline")}`,
             canScrollRight
-              ? "border-outline-variant opacity-100 hover:bg-surface-container-low"
-              : "pointer-events-none border-outline-variant/40 opacity-40",
+              ? "opacity-100"
+              : "pointer-events-none opacity-40",
           )}
         >
           <ChevronRight size={18} aria-hidden="true" />
@@ -192,12 +193,12 @@ export function EventCarousel({
                   const amount = card ? card.offsetWidth + gap : 360;
                   el.scrollTo({ left: idx * amount, behavior: "smooth" });
                 }}
-                className="flex h-6 w-6 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                className="flex h-6 w-6 items-center justify-center rounded-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "h-2 w-2 rounded-full transition-colors",
+                    "h-2 w-2 rounded-control transition-colors",
                     idx === activeIndex ? "bg-primary" : "bg-outline-variant",
                   )}
                 />

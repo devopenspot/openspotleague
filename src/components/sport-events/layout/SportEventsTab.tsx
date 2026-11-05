@@ -8,6 +8,7 @@ import { EventDirectory } from "@/components/sport-events/layout/EventDirectory"
 import { EventResultsSummary } from "@/components/sport-events/filters/EventResultsSummary";
 import { StatusFilter } from "@/components/sport-events/filters/StatusFilter";
 import { JoinByCodeEntry } from "@/components/league/JoinByCodeEntry";
+import { controlClass } from "@/components/ui/recipes";
 import { useUser } from "@/lib/contexts/user-context";
 import type { SportEventEnriched } from "@/types/sport-events";
 import { useEventStatusFilter } from "@/lib/sport-events/status-filter";
@@ -42,39 +43,39 @@ export function SportEventsTab({ featured, events }: SportEventsTabProps) {
       id="sport-events-tab"
       role="tabpanel"
       aria-labelledby="nav-btn-events"
-      className="mx-auto max-w-7xl space-y-12 pb-8 animate-fade-in md:space-y-14"
+      className="mx-auto flex w-full max-w-7xl flex-1 flex-col space-y-8 px-5 py-4 pb-10 animate-fade-in sm:py-6 md:space-y-10 md:px-10"
     >
       <h1 className="visually-hidden">Sport Events</h1>
 
-      <header className="sticky -top-42 z-40 w-full space-y-5 border-b border-outline-variant bg-surface-container-lowest px-5 pt-5 sm:px-6 md:px-8">
-        <div className="flex items-center justify-between gap-3">
-          <StatusFilter events={events} />
-          <div className="flex shrink-0 flex-col items-stretch gap-2">
+      <header className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-container border border-outline-variant bg-surface-container-lowest px-4 py-3 text-on-surface sm:px-5">
+          <div className="flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="h-2 w-2 shrink-0 rounded-control bg-on-surface"
+            />
+            <EventResultsSummary
+              visibleCount={visibleEvents.length}
+              totalCount={events.length}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <JoinByCodeEntry />
+            <Link href="/league" className={controlClass("secondary")}>
+              <Trophy size={14} aria-hidden="true" />
+              My league
+            </Link>
             {user ? (
-              <Link
-                href="/league/new"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-primary transition-opacity hover:opacity-90"
-              >
+              <Link href="/league/new" className={controlClass("primary")}>
                 <Plus size={14} aria-hidden="true" />
                 Create event
               </Link>
             ) : null}
-            <Link
-              href="/league"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-semibold uppercase tracking-pill text-on-surface transition-colors hover:border-outline"
-            >
-              <Trophy size={14} aria-hidden="true" />
-              My league
-            </Link>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <EventResultsSummary
-            visibleCount={visibleEvents.length}
-            totalCount={events.length}
-          />
-          <JoinByCodeEntry />
-        </div>
+
+        <StatusFilter events={events} />
+
         <span className="sr-only">
           {searchParams.get("status")
             ? `Showing ${status} events`

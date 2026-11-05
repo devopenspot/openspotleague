@@ -36,6 +36,7 @@ export function HomeSkeleton() {
               <div className="h-control w-[118px] animate-pulse rounded-control bg-white/20" />
               <div className="h-control w-[76px] animate-pulse rounded-control bg-white/20" />
               <div className="h-control w-[317px] max-w-full animate-pulse rounded-control bg-white/20" />
+              <div className="h-control w-[112px] animate-pulse rounded-control bg-white/20" />
               <div className="h-control w-[98px] animate-pulse rounded-control bg-white/20 md:hidden" />
               <div className="h-control w-[181px] animate-pulse rounded-control bg-white/20" />
             </div>

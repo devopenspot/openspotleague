@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import SportEventsLayout from "@/app/sport-events/layout";
 import { SportEventsTab } from "./SportEventsTab";
 
 const { push, user } = vi.hoisted(() => ({
@@ -28,7 +29,9 @@ describe("SportEventsTab league entries", () => {
       "href",
       "/league",
     );
-    expect(screen.getByLabelText("Invite code")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /join with code/i }),
+    ).toBeInTheDocument();
   });
 
   it("shows the create CTA only for signed-in users", () => {
@@ -38,5 +41,23 @@ describe("SportEventsTab league entries", () => {
       screen.getByRole("link", { name: /create event/i }),
     ).toHaveAttribute("href", "/league/new");
     expect(screen.getByRole("link", { name: /my league/i })).toBeInTheDocument();
+  });
+
+  it("wraps sport-events routes in the bg-gradient-events wash and renders the command deck", () => {
+    const { container } = render(
+      <SportEventsLayout>
+        <SportEventsTab featured={undefined} events={[]} />
+      </SportEventsLayout>,
+    );
+    expect(container.firstElementChild).toHaveClass("bg-gradient-events");
+    expect(
+      screen.getByText(/official & community circuit/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /all/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("link", { name: /browse the federations/i }),
+    ).toBeInTheDocument();
   });
 });
