@@ -15,7 +15,7 @@ import { flushSync } from "react-dom";
 import { ArrowLeft, CalendarClock, Link2, MapPin, Trophy } from "lucide-react";
 import type { CountrySelection } from "@/components/admin/spots/form/CountryAutocomplete";
 import { CountryAutocomplete } from "@/components/admin/spots/form/CountryAutocomplete";
-import { DateField } from "@/components/admin/events/form/DateField";
+import { DateField } from "@/components/league/DateField";
 import { ContestCoverField } from "@/components/league/cover/ContestCoverField";
 import { uploadContestCover } from "@/components/league/cover/upload-contest-cover";
 import {

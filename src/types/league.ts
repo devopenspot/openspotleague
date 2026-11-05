@@ -22,7 +22,6 @@ export const CONTEST_CATEGORIES: readonly ContestCategory[] = [
   "local-event",
 ] as const;
 
-export type EventOrigin = "seed" | "community";
 export type EventVisibility = "public" | "unlisted";
 export type EventLifecycleStatus =
   | "draft"
@@ -107,7 +106,6 @@ export interface Contest {
   category: ContestCategory;
   categoryName: string;
   featured?: boolean;
-  origin: EventOrigin;
   visibility: EventVisibility;
   lifecycleStatus: EventLifecycleStatus;
   timezone: string;

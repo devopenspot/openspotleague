@@ -42,7 +42,7 @@ describe("AdminSidebar", () => {
       "page",
     )
     expect(screen.getByRole("link", { name: "Spots" })).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "Events" })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Events" })).not.toBeInTheDocument()
     expect(screen.getByRole("link", { name: "Tricks" })).toBeInTheDocument()
     expect(screen.queryByRole("link", { name: "Sports" })).not.toBeInTheDocument()
   })

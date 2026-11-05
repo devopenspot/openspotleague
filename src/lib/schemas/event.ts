@@ -3,7 +3,7 @@ import {
   isValidCalendarDate,
   isValidEventDateRange,
 } from "@/lib/league/validation";
-import type { EventLifecycleStatus, EventOrigin, EventVisibility } from "@/types/league";
+import type { EventLifecycleStatus, EventVisibility } from "@/types/league";
 
 export const SportDisciplineSchema = z.enum([
   "Skateboard",
@@ -20,7 +20,6 @@ export const SportEventCategorySchema = z.enum([
   "local-event",
 ]);
 
-export const EventOriginSchema = z.enum(["seed", "community"]);
 export const EventVisibilitySchema = z.enum(["public", "unlisted"]);
 export const EventLifecycleStatusSchema = z.enum([
   "draft",
@@ -105,7 +104,6 @@ export const SportEventSchema = z
     category: SportEventCategorySchema,
     categoryName: z.string().min(1),
     featured: z.boolean().optional(),
-    origin: EventOriginSchema,
     visibility: EventVisibilitySchema,
     lifecycleStatus: EventLifecycleStatusSchema,
     timezone: z.string().min(1),
@@ -141,7 +139,6 @@ export const SportEventSchema = z
     category: raw.category,
     categoryName: raw.categoryName,
     featured: raw.featured,
-    origin: raw.origin,
     visibility: raw.visibility,
     lifecycleStatus: raw.lifecycleStatus,
     timezone: raw.timezone,
@@ -194,7 +191,6 @@ export const SportEventEnrichedSchema = z.object({
   category: SportEventCategorySchema,
   categoryName: z.string().min(1),
   featured: z.boolean().optional(),
-  origin: EventOriginSchema,
   visibility: EventVisibilitySchema,
   lifecycleStatus: EventLifecycleStatusSchema,
   timezone: z.string().min(1),
@@ -238,123 +234,5 @@ export const MapLayerSchema = z.enum(["spots", "events"]);
 
 export type MapLayer = z.infer<typeof MapLayerSchema>;
 
-/**
- * Fields a client supplies when creating a sport event. `slug`, `id`,
- * `createdAt`, and `updatedAt` are server-derived and not part of the
- * input contract.
- *
- * Mirrors the `spots` create input (see `NewSpotSchema`): an event can
- * carry a `citySlug`, an `address`, an uploaded `imagePath` alongside
- * the public `image`, and Instagram / YouTube profile URLs. All
- * event-only add-ons (venue, short name, category, dates, featured) are
- * preserved. `origin` defaults to `seed` (admin-curated content);
- * the league create flow sets `community` server-side.
- */
-export const NewSportEventSchema = z
-  .object({
-    id: z.string().min(1).optional(),
-    slug: z.string().min(1).optional(),
-    name: z.string().min(1),
-    shortName: z.string().optional(),
-    url: HttpUrlSchema.nullable().optional(),
-    image: HttpUrlSchema,
-    imagePath: z.string().nullable().optional(),
-    description: z.string().default(""),
-    sports: z.array(SportDisciplineSchema).default([]),
-    startDate: CalendarDateSchema,
-    endDate: CalendarDateSchema.optional(),
-    city: z.string().min(1),
-    citySlug: CitySlugSchema.optional(),
-    address: z.string().optional(),
-    country: z.string().min(1),
-    countryCode: CountryCodeSchema.optional(),
-    venue: z.string().optional(),
-    latitude: z.number().finite().min(-90).max(90).optional(),
-    longitude: z.number().finite().min(-180).max(180).optional(),
-    category: SportEventCategorySchema,
-    origin: EventOriginSchema.optional(),
-    visibility: EventVisibilitySchema.optional(),
-    status: EventLifecycleStatusSchema.optional(),
-    timezone: TimezoneSchema.optional(),
-    featured: z.boolean().default(false),
-    instagram: HttpUrlSchema.nullable().optional(),
-    youtube: HttpUrlSchema.nullable().optional(),
-    createdBy: z.string().nullable().optional(),
-  })
-  .strict()
-  .superRefine((event, ctx) => {
-    if ((event.latitude === undefined) !== (event.longitude === undefined)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "latitude and longitude must both be set or both be omitted",
-        path: ["latitude"],
-      });
-    }
-    if (!isValidEventDateRange(event.startDate, event.endDate)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "endDate must be on or after startDate",
-        path: ["endDate"],
-      });
-    }
-  });
-
-/**
- * Patch payload for editing a sport event. All fields are optional; only
- * the keys present in the input are updated.
- *
- * `latitude` and `longitude` must both be set when an event is edited. The
- * API preserves existing coordinates when neither key is present.
- */
-export const SportEventPatchSchema = z
-  .object({
-    name: z.string().min(1).optional(),
-    shortName: z.string().optional(),
-    url: HttpUrlSchema.nullable().optional(),
-    image: HttpUrlSchema.optional(),
-    imagePath: z.string().nullable().optional(),
-    description: z.string().optional(),
-    sports: z.array(SportDisciplineSchema).optional(),
-    startDate: CalendarDateSchema.optional(),
-    endDate: CalendarDateSchema.nullable().optional(),
-    city: z.string().min(1).optional(),
-    citySlug: CitySlugSchema.optional(),
-    address: z.string().optional(),
-    country: z.string().min(1).optional(),
-    countryCode: CountryCodeSchema.optional(),
-    venue: z.string().optional(),
-    latitude: z.number().min(-90).max(90).optional(),
-    longitude: z.number().min(-180).max(180).optional(),
-    category: SportEventCategorySchema.optional(),
-    visibility: EventVisibilitySchema.optional(),
-    status: EventLifecycleStatusSchema.optional(),
-    timezone: TimezoneSchema.optional(),
-    featured: z.boolean().optional(),
-    instagram: HttpUrlSchema.nullable().optional(),
-    youtube: HttpUrlSchema.nullable().optional(),
-  })
-  .strict()
-  .superRefine((patch, ctx) => {
-    if ((patch.latitude === undefined) !== (patch.longitude === undefined)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "latitude and longitude must both be set or both be omitted",
-        path: ["latitude"],
-      });
-    }
-    if (
-      patch.startDate !== undefined &&
-      patch.endDate !== undefined &&
-      !isValidEventDateRange(patch.startDate, patch.endDate)
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        message: "endDate must be on or after startDate",
-        path: ["endDate"],
-      });
-    }
-  });
-
 export type EventLifecycle = EventLifecycleStatus;
-export type EventOriginValue = EventOrigin;
 export type EventVisibilityValue = EventVisibility;

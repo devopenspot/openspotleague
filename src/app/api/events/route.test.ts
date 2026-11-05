@@ -5,8 +5,6 @@ const listEventsMock = vi.fn()
 
 vi.mock("@/lib/services/event/events", () => ({
   listEvents: (...args: unknown[]) => listEventsMock(...args),
-  findFeaturedEvent: vi.fn(),
-  findEventById: vi.fn(),
 }))
 
 vi.mock("@/lib/utils/log", () => ({

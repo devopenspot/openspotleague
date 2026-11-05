@@ -41,7 +41,6 @@ function event(
     startDate,
     location: { city: "Paris", country: "France" },
     category: "festival",
-    origin: "seed",
     visibility: "public",
     lifecycleStatus: "scheduled",
     timezone: "UTC",

@@ -1,6 +1,6 @@
 /**
  * League route contract tests — services mocked (repo pattern from
- * admin/events route tests); the real DB is never touched. Covers auth
+ * admin route tests); the real DB is never touched. Covers auth
  * gating, body validation, domain-error → status mapping (409 gate, 503
  * transient), idempotency/OCC pass-through and the `{id, version}` envelope.
  */

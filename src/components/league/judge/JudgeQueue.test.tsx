@@ -32,7 +32,6 @@ function baseState(overrides: Record<string, unknown> = {}) {
       description: null,
       status: "live",
       planSlug: "free",
-      origin: "community",
       visibility: "public",
       timezone: "UTC",
       category: "skateboard",

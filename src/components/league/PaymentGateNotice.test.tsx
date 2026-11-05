@@ -8,7 +8,6 @@ const CREATED = new Date("2026-09-01T12:00:00.000Z");
 
 function props(state: "pending" | "locked" | "disabled") {
   const gate = paymentGate({
-    origin: "community",
     createdAt: CREATED,
     hasActivePayment: false,
     now:

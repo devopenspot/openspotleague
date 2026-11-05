@@ -36,10 +36,9 @@ const CREATED = new Date("2026-09-01T12:00:00.000Z");
 
 function gate(
   now: Date,
-  options?: { origin?: "seed" | "community"; hasActivePayment?: boolean },
+  options?: { hasActivePayment?: boolean },
 ) {
   return paymentGate({
-    origin: options?.origin ?? "community",
     createdAt: CREATED,
     hasActivePayment: options?.hasActivePayment ?? false,
     now,
@@ -69,8 +68,8 @@ describe("paymentGate", () => {
     expect(result.paymentDeadlineAt).toBeNull();
   });
 
-  it("editorial events are always settled", () => {
-    const result = gate(addDays(CREATED, 30), { origin: "seed" });
+  it("curator-created contests are settled by their comped payment", () => {
+    const result = gate(addDays(CREATED, 30), { hasActivePayment: true });
     expect(result.state).toBe("settled");
   });
 });

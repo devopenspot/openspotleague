@@ -14,7 +14,6 @@ function enriched(status: ContestEnriched["status"]): ContestEnriched {
     startDate: "2026-08-14",
     location: { city: "Paris", country: "France" },
     category: "festival",
-    origin: "seed",
     visibility: "public",
     lifecycleStatus: "scheduled",
     timezone: "UTC",

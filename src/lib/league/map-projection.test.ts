@@ -21,7 +21,6 @@ function event(
       ...coordinates,
     },
     category: "festival",
-    origin: "seed",
     visibility: "public",
     lifecycleStatus: "scheduled",
     timezone: "UTC",

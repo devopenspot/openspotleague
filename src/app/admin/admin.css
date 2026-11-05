@@ -297,7 +297,7 @@
 
 .admin-route-scope button[type="submit"],
 .admin-route-scope a[href="/admin/spots/new"],
-.admin-route-scope a[href="/admin/events/new"] {
+.admin-route-scope a[href="/admin/league/contests/new"] {
   border-color: var(--color-primary);
   background: var(--color-primary);
   color: var(--color-on-primary);
@@ -305,7 +305,7 @@
 
 .admin-route-scope button[type="submit"]:hover,
 .admin-route-scope a[href="/admin/spots/new"]:hover,
-.admin-route-scope a[href="/admin/events/new"]:hover {
+.admin-route-scope a[href="/admin/league/contests/new"]:hover {
   background: var(--color-surface-tint);
   color: var(--color-on-primary);
 }

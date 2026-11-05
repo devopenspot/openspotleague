@@ -1,33 +1,28 @@
 import { describe, expect, it } from "vitest";
-import {
-  NewSportEventSchema,
-  SportEventEnrichedSchema,
-  SportEventPatchSchema,
-} from "./event";
+import { SportEventEnrichedSchema } from "./event";
+import { leagueCreateEventInputSchema } from "./league";
 
-const validEvent = {
-  name: "Test event",
-  url: "https://example.com/event",
-  image: "https://example.com/event.jpg",
+const validContest = {
+  name: "Test contest",
+  sports: ["Skateboard"],
   startDate: "2026-08-14",
   city: "Paris",
   country: "France",
   countryCode: "FR",
+  timezone: "Europe/Paris",
   category: "festival",
 };
 
-describe("sport event schemas", () => {
-  it("rejects an end date before the start date", () => {
-    const result = NewSportEventSchema.safeParse({
-      ...validEvent,
-      endDate: "2026-08-13",
-    });
-    expect(result.success).toBe(false);
+describe("contest schemas", () => {
+  it("accepts a minimal contest", () => {
+    expect(leagueCreateEventInputSchema.safeParse(validContest).success).toBe(
+      true,
+    );
   });
 
   it("requires coordinates to be supplied as a pair", () => {
-    const result = NewSportEventSchema.safeParse({
-      ...validEvent,
+    const result = leagueCreateEventInputSchema.safeParse({
+      ...validContest,
       latitude: 48.85,
     });
     expect(result.success).toBe(false);
@@ -35,26 +30,36 @@ describe("sport event schemas", () => {
 
   it("rejects non-canonical city slugs and country codes", () => {
     expect(
-      NewSportEventSchema.safeParse({
-        ...validEvent,
+      leagueCreateEventInputSchema.safeParse({
+        ...validContest,
         citySlug: "Paris Center",
       }).success,
     ).toBe(false);
     expect(
-      NewSportEventSchema.safeParse({
-        ...validEvent,
+      leagueCreateEventInputSchema.safeParse({
+        ...validContest,
         countryCode: "fr",
       }).success,
     ).toBe(false);
   });
 
-  it("allows a partial date patch for repository-level merge validation", () => {
-    expect(SportEventPatchSchema.safeParse({ startDate: "2026-08-20" }).success).toBe(
-      true,
-    );
+  it("accepts organizer links only as http(s) URLs", () => {
+    expect(
+      leagueCreateEventInputSchema.safeParse({
+        ...validContest,
+        url: "https://jam.example",
+        instagram: "https://instagram.com/jam",
+      }).success,
+    ).toBe(true);
+    expect(
+      leagueCreateEventInputSchema.safeParse({
+        ...validContest,
+        youtube: "javascript:alert(1)",
+      }).success,
+    ).toBe(false);
   });
 
-  it("validates enriched read DTOs separately from write inputs", () => {
+  it("validates enriched read DTOs", () => {
     const result = SportEventEnrichedSchema.safeParse({
       id: "event-1",
       slug: "test-event",
@@ -67,7 +72,6 @@ describe("sport event schemas", () => {
       location: { city: "Paris", country: "France" },
       category: "festival",
       categoryName: "Festival",
-      origin: "seed",
       visibility: "public",
       lifecycleStatus: "scheduled",
       timezone: "UTC",

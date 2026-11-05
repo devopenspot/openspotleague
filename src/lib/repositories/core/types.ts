@@ -1,19 +1,12 @@
 import type { z } from "zod"
 import type { MapSpot, Spot } from "@/lib/types"
 import type { SpotQuerySchema, NewSpotSchema, SpotPatchSchema } from "@/lib/schemas/spot"
-import type {
-  NewSportEventSchema,
-  SportEventPatchSchema,
-} from "@/lib/schemas/event"
 import type { SportDiscipline } from "@/types/disciplines"
 import type { ContestCategory } from "@/types/league"
 
 export type SpotQuery = z.infer<typeof SpotQuerySchema>
 export type NewSpot = z.infer<typeof NewSpotSchema>
 export type SpotPatch = z.infer<typeof SpotPatchSchema>
-
-export type NewSportEvent = z.infer<typeof NewSportEventSchema>
-export type SportEventPatch = z.infer<typeof SportEventPatchSchema>
 
 export interface ContentDeleteResult {
   imagePath: string | null
@@ -148,17 +141,3 @@ export interface SpotFacetCity {
   region?: string
 }
 
-export interface SportEventFacetCountry {
-  name: string
-  count: number
-}
-
-export interface SportEventFacetCategory {
-  name: ContestCategory
-  count: number
-}
-
-export interface SportEventFacetDiscipline {
-  name: SportDiscipline
-  count: number
-}

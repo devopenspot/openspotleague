@@ -4,7 +4,6 @@
  * services and the routes. See .agents/specs/league/engine.spec.md.
  */
 
-import type { EventOrigin } from "@/types/league";
 
 // ---------- payment gate ----------
 
@@ -196,5 +195,3 @@ export function isLeagueDomainError(
 
 // ---------- misc ----------
 
-/** Events with this editorial origin are exempt from league product rules. */
-export const EDITORIAL_ORIGIN: EventOrigin = "seed";

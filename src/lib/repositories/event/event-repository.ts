@@ -1,13 +1,6 @@
 import type { SportDiscipline } from "@/types/disciplines"
 import type { Contest, ContestCategory } from "@/types/league"
-import type {
-  NewSportEvent,
-  SportEventPatch,
-  SportEventFacetCountry,
-  SportEventFacetDiscipline,
-  SportEventFacetCategory,
-} from "../core/types"
-import type { ContentDeleteResult, EventShuffleFilters } from "../core/types"
+import type { EventShuffleFilters } from "../core/types"
 
 export interface SportEventListResult {
   items: readonly Contest[]
@@ -31,10 +24,6 @@ export interface SportEventQuery {
   limit?: number
 }
 
-export interface EventMediaState {
-  imagePath: string | null
-}
-
 export interface EventRepository {
   list(query?: SportEventQuery): Promise<SportEventListResult>
   /**
@@ -52,23 +41,6 @@ export interface EventRepository {
     citySlug?: string
     limit?: number
   }): Promise<readonly Contest[]>
+  /** Any visibility — callers gate unlisted contests (members only). */
   findById(id: string): Promise<Contest | null>
-  findMediaState(id: string): Promise<EventMediaState | null>
-  findFeatured(): Promise<Contest | null>
-  listCountries(): Promise<readonly SportEventFacetCountry[]>
-  listCategories(): Promise<readonly SportEventFacetCategory[]>
-  listDisciplines(): Promise<readonly SportEventFacetDiscipline[]>
-  count(): Promise<number>
-  create(input: NewSportEvent): Promise<Contest>
-  update(
-    id: string,
-    patch: SportEventPatch,
-    expectedUpdatedAt?: string,
-    actorId?: string | null,
-  ): Promise<Contest>
-  delete(
-    id: string,
-    expectedUpdatedAt?: string,
-    actorId?: string | null,
-  ): Promise<ContentDeleteResult>
 }
