@@ -32,7 +32,7 @@ pnpm dev
 | `pnpm test` / `pnpm test:watch` | Vitest |
 | `pnpm db:*` | Migrations, seeding, and diagnostics; see [docs/database.md](docs/database.md) |
 
-There is no CI. Run `pnpm lint && pnpm typecheck && pnpm test` before pushing.
+CI is not set up yet (see Pending work). Run `pnpm lint && pnpm typecheck && pnpm test` before pushing. The Vercel check on pull requests is a leftover integration and not a gate; the app deploys to Cloudflare Workers.
 
 ## Project layout
 
@@ -51,6 +51,11 @@ src/
   data/           JSON seed fixtures
 supabase/migrations/  SQL migrations
 ```
+
+## Pending work
+
+- Set up CI that runs the local gate (`pnpm lint && pnpm typecheck && pnpm test`) on pull requests.
+- Remove or repurpose the leftover Vercel GitHub integration, whose check fails on pull requests.
 
 ## Documentation
 
