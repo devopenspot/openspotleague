@@ -91,11 +91,11 @@ export function AppShell({
     mainAriaLabel = "Open Spot challenges";
   } else if (isLandingRoute) {
     mainClassName =
-      "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain pb-0";
+      "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain pb-[var(--mobile-nav-h)] md:pb-0";
   }
 
   const showHeader = !isGameSession;
-  const showBottomNav = !isLandingRoute && !isGameSession;
+  const showBottomNav = !isGameSession;
 
   // Map, game and landing routes scroll inside `main`, so the shell is one
   // screen tall. Every other route scrolls the document: the shell must grow

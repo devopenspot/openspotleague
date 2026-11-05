@@ -43,7 +43,7 @@ describe("AppShell", () => {
     mockPathname = "/";
   });
 
-  it("renders Header on the landing page without BottomNav", () => {
+  it("renders Header and BottomNav on the landing page", () => {
     mockPathname = "/";
     render(
       <AppShell>
@@ -52,7 +52,7 @@ describe("AppShell", () => {
     );
 
     expect(screen.getByTestId("app-header")).toBeInTheDocument();
-    expect(screen.queryByTestId("bottom-nav")).not.toBeInTheDocument();
+    expect(screen.getByTestId("bottom-nav")).toBeInTheDocument();
     expect(screen.getByText("Landing Content")).toBeInTheDocument();
     expect(screen.getByRole("main")).toHaveAttribute(
       "aria-label",
