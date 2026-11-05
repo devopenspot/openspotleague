@@ -1,6 +1,6 @@
 # Repository Guide
 
-OpenSpot is an interactive map of action sports spots (skateboard, BMX, scooter, roller), with community and editorial events (the "league"), multiplayer trick-challenge games, and action sports TV.
+OpenSpot is an interactive map of action sports spots (skateboard, BMX, scooter, roller), with user-created and curated contests (the League, `/league`), multiplayer trick-challenge games, and action sports TV.
 
 It is one private Next.js 16 App Router app (React 19, Cache Components) that runs on vinext (Vite) and deploys to Cloudflare Workers. Data lives in Supabase (Postgres + PostGIS, Auth, Realtime), reached through Drizzle and Hyperdrive. Media lives on Cloudflare R2. It uses Node 22 (`.nvmrc`) and pnpm 12.16.1 (`packageManager` in `package.json`). It is not a monorepo: `pnpm-workspace.yaml` only holds pnpm policies.
 
@@ -43,7 +43,6 @@ pnpm lint && pnpm typecheck && pnpm test
 | `src/lib/cache/` | `lifetimes.ts` (cache profiles), `deferred.ts` (post-commit invalidation). |
 | `src/db/schema.ts` | Schema source of truth. Migrations live in `supabase/migrations/`. |
 | `src/data/` | JSON seed fixtures (spots, TV, tricks, taxonomy, RBAC). |
-| `.agents/specs/` | Feature specs for the league (`league/`) and games UX. Read the relevant one before touching that code. |
 | `DESIGN.md` | Design tokens and UI system. |
 
 ## Hard rules
@@ -52,7 +51,8 @@ pnpm lint && pnpm typecheck && pnpm test
 
 - Pages and route handlers never import Drizzle or `@/db/schema`. The flow is always page/route → service → repository.
 - Get repositories from `@/lib/repositories` (proxies or `get<Entity>RepositoryAsync()`), never by constructing a Drizzle implementation.
-- Game and league mutations go through their services: `withDbWrite` + `db.transaction` + `expectedVersion` OCC + an idempotent `requestFingerprint` + a realtime signal row.
+- Game and league mutations go through their services: `withDbWrite` + `db.transaction` + `expectedVersion` OCC + an idempotent `requestFingerprint` + a realtime signal row. Contest curators reuse the league writers with `{ asCurator: true }`; never add parallel curator writers.
+- Build every contest URL with `src/lib/league/urls.ts` (`/league/**`). Free-plan contests stay unlisted (QR/invite only); public listing needs a paid or comped non-free plan (`canListPublicly`).
 - Any new `RESTRICT` foreign key to `spots` must be handled in `detachSpotDependents`.
 - Import canonical paths. About 65 files in `src/lib`, `src/lib/services`, and `src/lib/repositories` are `@deprecated` one-line re-export shims, for example `@/lib/safe-fetch` → `@/lib/utils/safe-fetch` and `@/lib/supabase/storage` → `@/lib/storage`.
 - Storage errors are `UploadValidationError`. Check them with `instanceof`, never by matching the message.
@@ -93,7 +93,7 @@ pnpm lint && pnpm typecheck && pnpm test
   - Locked exception: the `TvMarqueeCard` corner tab (flush top-left, `rounded-tl-sm rounded-br-sm`) is an owner decision. Never restyle it into a pill or `tagClass`. The spec is in `DESIGN.md` `components.tv-card`.
 - Build UI from the class recipes in `src/components/ui/recipes.ts` (`controlClass`, `chipClass`, `tagClass`, `INPUT`, `EYEBROW`, `PAGE_TITLE`, `CARD`, `pageContainer`, …). `cn` does not merge Tailwind classes: pick a variant, never override a recipe's radius, height or colour from the call site, and never restyle a shared component with `!important` classes.
 - Pages share one gutter: `px-5 md:px-10` (`pageContainer`).
-- One wash per route: warm `bg-gradient-primary` for the Home hero and the Games landing page, lime `bg-gradient-profile` for Profile, cyan `bg-gradient-support` for Support. Everything else is monochrome surface (TV is the navy wire).
+- One wash per route: warm `bg-gradient-primary` for the Home hero and the Games landing page, lime `bg-gradient-profile` for Profile, cyan `bg-gradient-support` for Support, electric-blue `bg-gradient-league` (`LeagueWash`) for the League landing, contest page and join page. Everything else is monochrome surface, including the League create form, organizer console and judge queue (TV is the navy wire).
 - The nav is a "pill track" on the black chrome: the active item is an inverted `bg-on-wire text-wire` pill on desktop, the bottom bar and the drawer alike. NavLink variants own those styles.
 - Keep Next image optimization off (`unoptimized: true`); images come straight from the R2 CDN.
 
@@ -102,4 +102,5 @@ pnpm lint && pnpm typecheck && pnpm test
 - `docs/architecture.md`: request lifecycle, layers, repositories, write path, deletion lifecycle, error mapping, security headers.
 - `docs/caching-and-egress.md`: Cache Components, invalidation, the Supabase egress budget, RSC payloads, polling.
 - `docs/database.md`: environment, migrations, seeding, RBAC/RLS, realtime, storage.
+- `docs/league.md`: League contests — routes, public listing rule, plans and payment gate, covers, contest curation, write path, errors.
 - `docs/ui-conventions.md`: UI rules and component organization.

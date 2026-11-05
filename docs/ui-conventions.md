@@ -6,7 +6,7 @@
 
 - The UI is monochrome and set in Plus Jakarta Sans.
 - `--color-primary` (`#0a0a0a`) is reserved for CTAs, active nav, critical states, and the wire rail. Never use it on dark panels.
-- One wash per route (`DESIGN.md` `pages.*`): `bg-gradient-primary` (warm, `#ea580c` → `#dc2626` → `#b91c1c`) on the Home hero and the Games landing page only; `bg-gradient-profile` (lime) on Profile; `bg-gradient-support` (cyan) on Support, data-curator and thank-you. TV is the navy wire (`--color-wire: #060912`). Everything else sits on `bg-surface`.
+- One wash per route (`DESIGN.md` `pages.*`): `bg-gradient-primary` (warm, `#ea580c` → `#dc2626` → `#b91c1c`) on the Home hero and the Games landing page only; `bg-gradient-profile` (lime) on Profile; `bg-gradient-support` (cyan) on Support, data-curator and thank-you; `bg-gradient-league` (electric blue, via `LeagueWash`) on `/league`, `/league/[slug]` and `/league/join/[code]` only — the create form, organizer console and judge queue stay on `bg-surface`. TV is the navy wire (`--color-wire: #060912`). Everything else sits on `bg-surface`.
 
 ## Shape rule
 

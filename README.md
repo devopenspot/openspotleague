@@ -2,7 +2,7 @@
 
 OpenSpot is an interactive map of action-sports spots (skateboard, BMX, scooter, roller), with:
 
-- community and editorial events (the league)
+- the League: user-created and curated contests with QR invites, live judging and league points (`/league`)
 - multiplayer trick-challenge games
 - curated action sports TV
 
@@ -50,7 +50,6 @@ src/
   db/             schema, migration runner, seed scripts
   data/           JSON seed fixtures
 supabase/migrations/  SQL migrations
-.agents/specs/        feature specs (league, games)
 ```
 
 ## Documentation
@@ -58,6 +57,7 @@ supabase/migrations/  SQL migrations
 - [AGENTS.md](AGENTS.md): rules for coding agents and contributors
 - [docs/architecture.md](docs/architecture.md)
 - [docs/caching-and-egress.md](docs/caching-and-egress.md)
+- [docs/league.md](docs/league.md)
 - [docs/database.md](docs/database.md)
 - [docs/ui-conventions.md](docs/ui-conventions.md)
 - [DESIGN.md](DESIGN.md): design system

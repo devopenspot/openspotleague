@@ -69,7 +69,7 @@ export function notificationHref(
 }
 
 function eventLabel(payload: NotificationPayload): string {
-  return payload.eventName ?? "the event";
+  return payload.eventName ?? "the contest";
 }
 
 function roleLabel(role: NotificationPayload["role"]): string {
@@ -113,12 +113,12 @@ export function renderNotification(
       };
     case "league_member_added":
       return {
-        title: "Added to event",
+        title: "Added to contest",
         body: `${payload.actorName ?? "An organizer"} added you to ${event} as ${roleLabel(payload.role)}.`,
       };
     case "league_member_removed":
       return {
-        title: "Removed from event",
+        title: "Removed from contest",
         body: `You were removed from ${event}.`,
       };
     case "league_schedule_published":
@@ -128,12 +128,12 @@ export function renderNotification(
       };
     case "league_event_started":
       return {
-        title: "Event is live",
+        title: "Contest is live",
         body: `${event} just started — check the live board.`,
       };
     case "league_event_cancelled":
       return {
-        title: "Event cancelled",
+        title: "Contest cancelled",
         body: `${event} was cancelled by the organizer.`,
       };
     case "league_results_published": {

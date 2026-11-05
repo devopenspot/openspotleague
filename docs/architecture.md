@@ -38,7 +38,7 @@ page / route handler ──► src/lib/services/* ──► src/lib/repositories
 
 - Pages and route handlers never import Drizzle or `@/db/schema`.
 - **Pure engines** (`src/lib/games`, `src/lib/league`) hold the state machines, scoring, capability checks, location verification, training limits, and trick selection. Trick selection uses a seeded Mulberry32 shuffle. Each module has a sibling `*.test.ts`.
-- **Services** (`src/lib/services/games/*`, `src/lib/services/league/*`) are the only writers for games and league events. Every mutation:
+- **Services** (`src/lib/services/games/*`, `src/lib/services/league/*`) are the only writers for games and league contests. Contest curators reuse the league writers with `{ asCurator: true }` (see `docs/league.md`). Every mutation:
   - runs inside `withDbWrite` + `db.transaction`;
   - checks `expectedVersion` (optimistic concurrency);
   - is replayed idempotently using a canonical-JSON `requestFingerprint`, stored in `game_action_requests` or `event_action_requests`;
@@ -87,7 +87,8 @@ Workers ties sockets and promises to the request that created them, so the Node 
 
 ## Deletion lifecycle
 
-- Deletes of spots, events, and TV entries go through `deleteWithOccAudit` (`src/lib/repositories/core/occ-delete.ts`). It enforces `expectedDate` (If-Match) against `updatedAt` and writes to `content_audit_log`.
+- Deletes of spots and TV entries go through `deleteWithOccAudit` (`src/lib/repositories/core/occ-delete.ts`). It enforces `expectedDate` (If-Match) against `updatedAt` and writes to `content_audit_log`.
+- League contests are never deleted: organizers and contest curators cancel them through the league lifecycle (`cancelEvent`), which notifies members.
 - Hard-deleting a spot also runs `detachSpotDependents` (`src/lib/repositories/spot/spot-delete-plan.ts`):
   - Lobby games are hard-deleted.
   - Active games are cancelled and detached (`spotId: null`, `spotRemoved: true`, `status: 'cancelled'`); their snapshots are kept.

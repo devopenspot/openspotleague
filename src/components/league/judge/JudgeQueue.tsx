@@ -85,7 +85,7 @@ export function JudgeQueue({
         if (opts.isCancelled?.()) return;
         if (!response.ok) {
           if (!stateRef.current) {
-            setError("This event could not be loaded. Try again shortly.");
+            setError("This contest could not be loaded. Try again shortly.");
           }
           return;
         }
@@ -97,7 +97,7 @@ export function JudgeQueue({
       } catch (err) {
         if (opts.isCancelled?.()) return;
         if (!stateRef.current) {
-          setError("This event could not be loaded. Try again shortly.");
+          setError("This contest could not be loaded. Try again shortly.");
         }
         throw err;
       }
@@ -357,7 +357,7 @@ export function JudgeQueue({
                 aria-live="polite"
               >
                 {readOnly
-                  ? "The event is read-only while payment is pending."
+                  ? "The contest is read-only while payment is pending."
                   : "Window closed — the organizer can extend it to allow scoring."}
               </p>
             )}

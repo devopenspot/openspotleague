@@ -158,7 +158,7 @@ export function JoinWithInvite({ code }: { code: string }) {
                 onClick={() => void join()}
                 className={`mt-5 w-full ${controlClass("primary")}`}
               >
-                {joinState === "busy" ? "Joining…" : "Join the event"}
+                {joinState === "busy" ? "Joining…" : "Join the contest"}
               </button>
             ) : (
               <div className="mt-2">

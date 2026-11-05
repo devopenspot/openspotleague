@@ -1,7 +1,7 @@
 /**
  * League domain definitions — pure constants and the typed error taxonomy.
  * No IO; everything here is unit-testable and shared by the engine, the
- * services and the routes. See .agents/specs/league/engine.spec.md.
+ * services and the routes. See docs/league.md.
  */
 
 
@@ -13,8 +13,8 @@ export const PAYMENT_LOCK_AFTER_DAYS = 3;
 export const PAYMENT_DISABLE_AFTER_DAYS = 6;
 
 /**
- * Payment gate states (community events only — editorial events are always
- * `settled`):
+ * Payment gate states (every contest; curated contests start `settled`
+ * through their comped payment):
  * - `pending`: payment not registered yet but before the lock deadline.
  * - `locked`: past the due date without payment — read-only, payment-only.
  * - `disabled`: past the final deadline without payment — definitive.

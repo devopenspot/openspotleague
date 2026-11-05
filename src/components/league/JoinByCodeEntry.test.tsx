@@ -27,7 +27,7 @@ describe("JoinByCodeEntry", () => {
     const submitBtn = screen.getByRole("button", { name: /^join$/i });
     await userEvent.click(submitBtn);
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Enter an invite code to join an event.",
+      "Enter an invite code to join a contest.",
     );
     expect(push).not.toHaveBeenCalled();
   });
@@ -38,25 +38,25 @@ describe("JoinByCodeEntry", () => {
       screen.getByRole("button", { name: /join with code/i }),
     );
 
-    const input = screen.getByLabelText("Enter an event invite code");
+    const input = screen.getByLabelText("Enter a contest invite code");
     await userEvent.type(input, "  abcDEF123456  ");
     await userEvent.click(screen.getByRole("button", { name: /^join$/i }));
 
     expect(push).toHaveBeenCalledWith("/league/join/abcDEF123456");
   });
 
-  it("shows an invalid link alert when a foreign non-event URL is submitted", async () => {
+  it("shows an invalid link alert when a foreign non-contest URL is submitted", async () => {
     render(<JoinByCodeEntry />);
     await userEvent.click(
       screen.getByRole("button", { name: /join with code/i }),
     );
 
-    const input = screen.getByLabelText("Enter an event invite code");
+    const input = screen.getByLabelText("Enter a contest invite code");
     await userEvent.type(input, "https://evil.example/login");
     await userEvent.click(screen.getByRole("button", { name: /^join$/i }));
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "That doesn't look like an event invite link. Try the invite code instead.",
+      "That doesn't look like a contest invite link. Try the invite code instead.",
     );
     expect(push).not.toHaveBeenCalled();
   });

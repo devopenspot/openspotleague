@@ -77,7 +77,7 @@ const VISIBILITY_OPTIONS = [
 type Tab = "config" | "roster" | "live" | "results" | "metrics";
 
 const TABS: { id: Tab; label: string; icon: typeof Settings }[] = [
-  { id: "config", label: "Event", icon: Settings },
+  { id: "config", label: "Contest", icon: Settings },
   { id: "roster", label: "People", icon: Users },
   { id: "live", label: "Runs", icon: ClipboardList },
   { id: "metrics", label: "Metrics", icon: BarChart3 },
@@ -130,7 +130,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
         if (opts.isCancelled?.()) return;
         if (!response.ok) {
           if (!stateRef.current) {
-            setError("This event could not be loaded. Try again shortly.");
+            setError("This contest could not be loaded. Try again shortly.");
           }
           return;
         }
@@ -142,7 +142,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
       } catch (err) {
         if (opts.isCancelled?.()) return;
         if (!stateRef.current) {
-          setError("This event could not be loaded. Try again shortly.");
+          setError("This contest could not be loaded. Try again shortly.");
         }
         throw err;
       }
@@ -306,7 +306,7 @@ export function ManageConsole({ eventId }: { eventId: string }) {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className={EYEBROW}>
-            {organizer ? "Organizer console" : "Event console"}
+            {organizer ? "Organizer console" : "Contest console"}
           </p>
           <h1 className={`mt-1 ${PAGE_TITLE}`}>{event.name}</h1>
           <p className={`mt-3 flex flex-wrap items-center gap-2 ${META}`}>
@@ -524,7 +524,7 @@ function ConfigPanel({
         intro={
           canEdit
             ? "Edits apply together when you save."
-            : "Read-only — only organizers can edit while the event is unlocked."
+            : "Read-only — only organizers can edit while the contest is unlocked."
         }
       >
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -709,9 +709,9 @@ function ConfigPanel({
         ) : null}
         {event.status === "scheduled" ? (
           <ConfirmButton
-            label="Start event"
-            confirmTitle="Start the event?"
-            confirmBody="The event goes live and judging windows become available."
+            label="Start contest"
+            confirmTitle="Start the contest?"
+            confirmBody="The contest goes live and judging windows become available."
             disabled={disabled}
             variant="primary"
             onConfirm={() => void lifecycleAction("/start")}
@@ -719,8 +719,8 @@ function ConfigPanel({
         ) : null}
         {event.status === "live" ? (
           <ConfirmButton
-            label="Complete event"
-            confirmTitle="Complete the event?"
+            label="Complete contest"
+            confirmTitle="Complete the contest?"
             confirmBody="Requires every run scored or skipped. Results can then be published."
             disabled={disabled}
             onConfirm={() => void lifecycleAction("/complete")}
@@ -728,8 +728,8 @@ function ConfigPanel({
         ) : null}
         {event.status !== "completed" && event.status !== "cancelled" ? (
           <ConfirmButton
-            label="Cancel event"
-            confirmTitle="Cancel the event?"
+            label="Cancel contest"
+            confirmTitle="Cancel the contest?"
             confirmBody="All members will be notified. This cannot be undone."
             disabled={disabled || state.myRole !== "main_organizer"}
             onConfirm={() => void lifecycleAction("/cancel")}

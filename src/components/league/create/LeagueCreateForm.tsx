@@ -389,7 +389,7 @@ export function LeagueCreateForm({ organizerName, curator }: LeagueCreateFormPro
             onChange={setEndDate}
             error={errors.endDate}
             min={startDate || undefined}
-            hint="Leave blank for a one-day event."
+            hint="Leave blank for a one-day contest."
             appearance="pill"
           />
           <TextField

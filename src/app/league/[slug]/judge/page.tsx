@@ -1,5 +1,4 @@
 import { notFound, redirect } from "next/navigation";
-import { LeagueWash } from "@/components/league/landing/LeagueWash";
 import { JudgeQueue } from "@/components/league/judge/JudgeQueue";
 import { getSessionUser } from "@/lib/auth/server";
 import {
@@ -35,9 +34,5 @@ export default async function JudgePage({
   if (role !== "main_organizer" && role !== "organizer" && role !== "judge") {
     redirect(buildContestDetailUrl(slug));
   }
-  return (
-    <LeagueWash>
-      <JudgeQueue eventId={resolved.id} slug={slug} />
-    </LeagueWash>
-  );
+  return <JudgeQueue eventId={resolved.id} slug={slug} />;
 }

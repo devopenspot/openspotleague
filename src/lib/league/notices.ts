@@ -15,19 +15,19 @@ export function paymentNotice(gate: PaymentGate): PaymentGateNotice | null {
   if (gate.state === "pending") {
     return {
       title: "Payment required to move forward",
-      message: `Register this event's plan payment before ${gate.paymentDueAt?.toUTCString() ?? "the deadline"} or the event becomes read-only.`,
+      message: `Register this contest's plan payment before ${gate.paymentDueAt?.toUTCString() ?? "the deadline"} or the contest becomes read-only.`,
     };
   }
   if (gate.state === "locked") {
     return {
       title: "Payment required to move forward",
       message:
-        "The event is read-only until a payment is registered. It will be disabled definitively if no payment is registered in time.",
+        "The contest is read-only until a payment is registered. It will be disabled definitively if no payment is registered in time.",
     };
   }
   return {
-    title: "Event disabled",
+    title: "Contest disabled",
     message:
-      "This event was disabled definitively because no payment was registered in time.",
+      "This contest was disabled definitively because no payment was registered in time.",
   };
 }
