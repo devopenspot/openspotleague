@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils/cn";
 import {
   buildStatusFilterUrl,
   useEventStatusFilter,
-} from "@/lib/sport-events/status-filter";
-import type { SportEventEnriched } from "@/types/sport-events";
+} from "@/lib/league/status-filter";
+import type { ContestEnriched } from "@/types/league";
 
 interface StatusFilterProps {
-  events: readonly SportEventEnriched[];
+  events: readonly ContestEnriched[];
 }
 
 type StatusValue = "all" | "live" | "upcoming" | "completed";

@@ -1,4 +1,4 @@
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 
 export type WeatherIconName =
   | "sunny"

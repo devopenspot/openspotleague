@@ -6,7 +6,7 @@ import { ClipboardPaste, Hash, Ticket } from "lucide-react";
 import { DrawerHeader, SIDE_DRAWER_PANEL } from "@/components/feedback/DrawerParts";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 import { BODY, INPUT, controlClass } from "@/components/ui/recipes";
-import { resolveEventJoinPath } from "@/lib/sport-events/join-input";
+import { resolveEventJoinPath } from "@/lib/league/join-input";
 import { cn } from "@/lib/utils/cn";
 
 const JOIN_EVENT_DRAWER_ID = "join-event-drawer";

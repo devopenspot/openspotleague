@@ -12,7 +12,8 @@ import { Search, X } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils/cn"
 import type { EventCategoryOption, SportOption } from "@/lib/admin/taxonomy"
-import type { SportDiscipline, SportEventCategory } from "@/types/sport-events"
+import type { SportDiscipline } from "@/types/disciplines"
+import type { ContestCategory } from "@/types/league"
 
 interface EventTableFiltersProps {
   sportOptions: readonly SportOption[]
@@ -37,8 +38,8 @@ export function EventTableFilters({
 
   const [query, setQuery] = useState(searchParams.get("q") ?? "")
   const [country, setCountry] = useState(searchParams.get("country") ?? "")
-  const [category, setTier] = useState<SportEventCategory | "">(
-    (searchParams.get("category") as SportEventCategory | null) ?? "",
+  const [category, setTier] = useState<ContestCategory | "">(
+    (searchParams.get("category") as ContestCategory | null) ?? "",
   )
   const [sport, setSport] = useState<SportDiscipline | "">(
     (searchParams.get("discipline") as SportDiscipline | null) ?? "",
@@ -48,7 +49,7 @@ export function EventTableFilters({
   const [featured, setFeatured] = useState(searchParams.get("featured") === "true")
   const deferredQuery = useDeferredValue(query)
 
-  const isTier = (value: string | null): value is SportEventCategory =>
+  const isTier = (value: string | null): value is ContestCategory =>
     categoryOptions.some((option) => option.value === value)
   const isSport = (value: string | null): value is SportDiscipline =>
     sportOptions.some((option) => option.value === value)
@@ -56,7 +57,7 @@ export function EventTableFilters({
   const emit = (next: {
     q: string
     country: string
-    category: SportEventCategory | ""
+    category: ContestCategory | ""
     sport: SportDiscipline | ""
     from: string
     to: string
@@ -118,7 +119,7 @@ export function EventTableFilters({
   ) => {
     const next = { q: query, country, category, sport, from, to, featured, [key]: value }
     if (key === "country") setCountry(value as string)
-    if (key === "category") setTier(value as SportEventCategory | "")
+    if (key === "category") setTier(value as ContestCategory | "")
     if (key === "sport") setSport(value as SportDiscipline | "")
     if (key === "from") setFrom(value as string)
     if (key === "to") setTo(value as string)
@@ -213,7 +214,7 @@ export function EventTableFilters({
             aria-label="Tier"
             value={category}
             onChange={(event) =>
-              updateAndEmit("category", event.target.value as SportEventCategory | "")
+              updateAndEmit("category", event.target.value as ContestCategory | "")
             }
             className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest p-3 text-base font-medium text-on-surface focus:border-primary focus:outline-none sm:text-sm"
           >

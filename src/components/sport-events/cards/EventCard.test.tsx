@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 import { EventCard } from "./EventCard";
 
-const EVENT: SportEventEnriched = {
+const EVENT: ContestEnriched = {
   id: "e1",
   slug: "street league/paris",
   name: "Street League Paris",

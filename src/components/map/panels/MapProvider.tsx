@@ -9,7 +9,7 @@ import {
 import type { MapSpot, Region, SpotTypeEntity } from "@/lib/types";
 import { useSpotsStore } from "@/stores/spots-store";
 import { useEventsStore } from "@/stores/events-store";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 
 export type MapDataAvailability = "ready" | "degraded";
 

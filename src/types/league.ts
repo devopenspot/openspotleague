@@ -1,34 +1,20 @@
-export type SportDiscipline = "Skateboard" | "BMX" | "Scooter" | "Roller";
+import type { SportDiscipline } from "@/types/disciplines";
 
-export const SPORT_DISCIPLINES: readonly SportDiscipline[] = [
-  "Skateboard",
-  "BMX",
-  "Scooter",
-  "Roller",
-] as const;
-
-export type SportPreference = SportDiscipline | "all";
-
-export const SPORT_PREFERENCES: readonly SportPreference[] = [
-  "all",
-  ...SPORT_DISCIPLINES,
-] as const;
-
-export type SportEventStatus = "upcoming" | "live" | "completed";
+export type ContestStatus = "upcoming" | "live" | "completed";
 
 /**
  * Editorial taxonomy (`event_categories`): how prominent a directory event
  * is. Payment tiers are a separate concept (`event_plans`) — "tier" in
  * product language refers to billing, never to this field.
  */
-export type SportEventCategory =
+export type ContestCategory =
   | "world-tour"
   | "championship"
   | "festival"
   | "federation"
   | "local-event";
 
-export const SPORT_EVENT_CATEGORIES: readonly SportEventCategory[] = [
+export const CONTEST_CATEGORIES: readonly ContestCategory[] = [
   "world-tour",
   "championship",
   "festival",
@@ -93,7 +79,7 @@ export interface NotificationPayload {
   planSlug?: string;
 }
 
-export interface SportEventLocation {
+export interface ContestLocation {
   city: string;
   citySlug?: string;
   address?: string;
@@ -105,7 +91,7 @@ export interface SportEventLocation {
   longitude?: number;
 }
 
-export interface SportEvent {
+export interface Contest {
   id: string;
   slug: string;
   name: string;
@@ -117,8 +103,8 @@ export interface SportEvent {
   sports: readonly SportDiscipline[];
   startDate: string;
   endDate?: string;
-  location: SportEventLocation;
-  category: SportEventCategory;
+  location: ContestLocation;
+  category: ContestCategory;
   categoryName: string;
   featured?: boolean;
   origin: EventOrigin;
@@ -132,8 +118,8 @@ export interface SportEvent {
   updatedAt: string;
 }
 
-export interface SportEventEnriched extends SportEvent {
-  status: SportEventStatus;
+export interface ContestEnriched extends Contest {
+  status: ContestStatus;
   dateRangeLabel: string;
 }
 
@@ -142,7 +128,7 @@ export interface SportEventEnriched extends SportEvent {
  * `EventMarker` pin, and populate the `MapInfoPopup` / `EventPanel`.
  * Produced by `listEventsForMap` (see `src/lib/services/event/events.ts`)
  * by dropping description / socials / full address from a
- * `SportEventEnriched` and projecting `location.latitude` /
+ * `ContestEnriched` and projecting `location.latitude` /
  * `location.longitude` into `lat` / `lon` for Leaflet. The shape
  * is the contract between the service projection and every map
  * consumer — keep it here, not inline in a component.
@@ -155,9 +141,9 @@ export interface MapEvent {
   city: string;
   citySlug?: string;
   country: string;
-  category: SportEventCategory;
+  category: ContestCategory;
   categoryName: string;
-  status: SportEventStatus;
+  status: ContestStatus;
   dateRangeLabel: string;
   startDate: string;
   endDate?: string;

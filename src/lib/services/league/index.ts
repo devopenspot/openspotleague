@@ -88,7 +88,7 @@ import {
   notifyLeagueManageAdmins,
   resolveEventRecipients,
 } from "@/lib/notifications/service";
-import { normalizeCitySlug } from "@/lib/sport-events/validation";
+import { normalizeCitySlug } from "@/lib/league/validation";
 import type {
   CreateLeagueEventInput,
   LeagueConfigPatch,
@@ -98,13 +98,7 @@ import type {
   LeagueMutationResponse,
   LeaguePaymentInput,
 } from "@/lib/schemas/league";
-import type {
-  EventPaymentStatus,
-  EventRole,
-  EventSignalType,
-  NotificationType,
-  SportEventCategory,
-} from "@/types/sport-events";
+import type { EventPaymentStatus, EventRole, EventSignalType, NotificationType, ContestCategory } from "@/types/league";
 import { log } from "@/lib/utils/log";
 
 type Db = ReturnType<typeof getDbClient>["db"];
@@ -539,7 +533,7 @@ export interface LeagueEventState {
     origin: string;
     visibility: string;
     timezone: string;
-    category: SportEventCategory;
+    category: ContestCategory;
     categoryName: string;
     imageUrl: string;
     startDate: string;
@@ -790,7 +784,7 @@ export async function getLeagueEventState(
           origin: event.origin,
           visibility: event.visibility,
           timezone: event.timezone,
-          category: event.categorySlug as SportEventCategory,
+          category: event.categorySlug as ContestCategory,
           categoryName: row.categoryName,
           imageUrl: event.imageUrl,
           startDate: event.startAt.toISOString().slice(0, 10),

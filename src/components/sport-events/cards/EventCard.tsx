@@ -8,10 +8,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { AppImage } from "@/components/ui/AppImage";
-import type {
-  SportEventEnriched,
-  SportEventStatus,
-} from "@/types/sport-events";
+import type { ContestEnriched, ContestStatus } from "@/types/league";
 import {
   BODY,
   CARD_FRAME,
@@ -21,24 +18,24 @@ import {
   tagClass,
 } from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
-import { buildEventDetailUrl } from "@/lib/sport-events/urls";
+import { buildEventDetailUrl } from "@/lib/league/urls";
 
 export type EventCardVariant = "default" | "compact";
 
 interface EventCardProps {
-  event: SportEventEnriched;
+  event: ContestEnriched;
   priority?: boolean;
   /** `compact` is the quieter Past-events card: shorter photo, no description. */
   variant?: EventCardVariant;
 }
 
-const STATUS_LABEL: Record<SportEventStatus, string> = {
+const STATUS_LABEL: Record<ContestStatus, string> = {
   live: "Live now",
   upcoming: "Upcoming",
   completed: "Completed",
 };
 
-const STATUS_DOT: Record<SportEventStatus, string> = {
+const STATUS_DOT: Record<ContestStatus, string> = {
   live: "bg-error",
   upcoming: "bg-on-surface",
   completed: "bg-outline",
@@ -205,7 +202,7 @@ export function EventCard({
   );
 }
 
-function EventCardLinks({ event }: { event: SportEventEnriched }) {
+function EventCardLinks({ event }: { event: ContestEnriched }) {
   if (!event.url && !event.instagram && !event.youtube) return null;
   const button = `relative z-10 ${iconButtonClass("outline")}`;
   return (

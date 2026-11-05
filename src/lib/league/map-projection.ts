@@ -1,6 +1,6 @@
-import type { MapEvent, SportEventEnriched } from "@/types/sport-events";
+import type { MapEvent, ContestEnriched } from "@/types/league";
 
-export function projectMapEvent(event: SportEventEnriched): MapEvent | null {
+export function projectMapEvent(event: ContestEnriched): MapEvent | null {
   const { latitude, longitude } = event.location;
   if (typeof latitude !== "number" || typeof longitude !== "number") {
     return null;
@@ -31,7 +31,7 @@ export function projectMapEvent(event: SportEventEnriched): MapEvent | null {
  * remain valid directory records but cannot consume marker capacity.
  */
 export function projectMapEvents(
-  events: readonly SportEventEnriched[],
+  events: readonly ContestEnriched[],
   limit: number,
 ): readonly MapEvent[] {
   const projected: MapEvent[] = [];

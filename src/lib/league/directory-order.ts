@@ -1,6 +1,6 @@
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 
-const STATUS_ORDER: Record<SportEventEnriched["status"], number> = {
+const STATUS_ORDER: Record<ContestEnriched["status"], number> = {
   live: 0,
   upcoming: 1,
   completed: 2,
@@ -8,8 +8,8 @@ const STATUS_ORDER: Record<SportEventEnriched["status"], number> = {
 
 /** Keep active and upcoming events ahead of historical events. */
 export function orderEventsForDirectory(
-  events: readonly SportEventEnriched[],
-): readonly SportEventEnriched[] {
+  events: readonly ContestEnriched[],
+): readonly ContestEnriched[] {
   return [...events].sort(
     (left, right) => {
       const statusOrder = STATUS_ORDER[left.status] - STATUS_ORDER[right.status];

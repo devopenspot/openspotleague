@@ -24,18 +24,7 @@ import type {
   SpotTypeSnapshot,
 } from "@/lib/schemas/game";
 import type { LeagueMutationResponse } from "@/lib/schemas/league";
-import type {
-  EventLifecycleStatus,
-  EventMembershipStatus,
-  EventOrigin,
-  EventPaymentStatus,
-  EventRole,
-  EventRunStatus,
-  EventSignalType,
-  EventVisibility,
-  NotificationPayload,
-  NotificationType,
-} from "@/types/sport-events";
+import type { EventLifecycleStatus, EventMembershipStatus, EventOrigin, EventPaymentStatus, EventRole, EventRunStatus, EventSignalType, EventVisibility, NotificationPayload, NotificationType } from "@/types/league";
 
 const geographyPoint = customType<{
   data: { lat: number; lon: number };

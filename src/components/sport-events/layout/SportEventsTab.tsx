@@ -14,13 +14,13 @@ import {
   pageContainer,
 } from "@/components/ui/recipes";
 import { useUser } from "@/lib/contexts/user-context";
-import type { SportEventEnriched } from "@/types/sport-events";
-import { useEventStatusFilter } from "@/lib/sport-events/status-filter";
-import { orderEventsForDirectory } from "@/lib/sport-events/directory-order";
+import type { ContestEnriched } from "@/types/league";
+import { useEventStatusFilter } from "@/lib/league/status-filter";
+import { orderEventsForDirectory } from "@/lib/league/directory-order";
 
 interface SportEventsTabProps {
-  featured: SportEventEnriched | undefined;
-  events: readonly SportEventEnriched[];
+  featured: ContestEnriched | undefined;
+  events: readonly ContestEnriched[];
 }
 
 export function SportEventsTab({ featured, events }: SportEventsTabProps) {

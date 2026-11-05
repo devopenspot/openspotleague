@@ -19,11 +19,7 @@ import {
   userRoles,
   type NewUserNotificationRow,
 } from "@/db/schema"
-import type {
-  EventRole,
-  NotificationPayload,
-  NotificationType,
-} from "@/types/sport-events"
+import type { EventRole, NotificationPayload, NotificationType } from "@/types/league"
 
 type Db = ReturnType<typeof getDbClient>["db"]
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0]

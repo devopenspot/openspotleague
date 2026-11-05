@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 import {
   ImageSourceField,
   type ImageSourceFieldValue,

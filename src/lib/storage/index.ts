@@ -3,7 +3,7 @@ import "server-only"
 import { cache } from "react"
 import { cacheLife, cacheTag } from "next/cache"
 import type { Spot } from "@/lib/types"
-import type { SportEvent } from "@/types/sport-events"
+import type { Contest } from "@/types/league"
 import { IMAGE_CACHE_LIFE } from "@/lib/cache/lifetimes"
 import { getVariantPath, getVariantPaths } from "./variants"
 import type { ImageVariant } from "./variants"
@@ -235,11 +235,11 @@ export async function withThumbImageUrls<T extends { image: string } = Spot>(ent
 }
 
 export interface EventWithImagePath {
-  event: SportEvent
+  event: Contest
   imagePath: string | null
 }
 
-export async function withEventImageUrls(entries: readonly EventWithImagePath[]): Promise<SportEvent[]> {
+export async function withEventImageUrls(entries: readonly EventWithImagePath[]): Promise<Contest[]> {
   const paths = entries.map((entry) => entry.imagePath).filter((path): path is string => path !== null)
   const urlMap = await getEventImageUrlsCached(paths)
   return entries.map(({ event, imagePath }) => {
@@ -250,7 +250,7 @@ export async function withEventImageUrls(entries: readonly EventWithImagePath[])
   })
 }
 
-export async function withEventCardImageUrls(entries: readonly EventWithImagePath[]): Promise<SportEvent[]> {
+export async function withEventCardImageUrls(entries: readonly EventWithImagePath[]): Promise<Contest[]> {
   const paths = entries.map((entry) => entry.imagePath).filter((path): path is string => path !== null)
   const urlMap = await getEventCardImageUrlsCached(paths)
   return entries.map(({ event, imagePath }) => {
@@ -261,7 +261,7 @@ export async function withEventCardImageUrls(entries: readonly EventWithImagePat
   })
 }
 
-export async function withEventDetailImageUrls(entries: readonly EventWithImagePath[]): Promise<SportEvent[]> {
+export async function withEventDetailImageUrls(entries: readonly EventWithImagePath[]): Promise<Contest[]> {
   const paths = entries.map((entry) => entry.imagePath).filter((path): path is string => path !== null)
   const urlMap = await getEventDetailImageUrlsCached(paths)
   return entries.map(({ event, imagePath }) => {

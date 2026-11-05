@@ -33,7 +33,7 @@ import { useMapLayer } from "@/hooks/map/useMapLayer";
 import { milesToMeters } from "@/lib/spots/geo";
 import { SpotMarker } from "@/components/map/markers/SpotMarker";
 import { EventMarker } from "@/components/map/markers/EventMarker";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 import {
   MapController,
   ZoomListener,

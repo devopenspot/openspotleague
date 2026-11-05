@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 
 /**
  * Server-rendered events for the map layer. Hydrated once by

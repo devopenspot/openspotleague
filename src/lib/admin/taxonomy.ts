@@ -1,9 +1,6 @@
 import type { TaxonomyEntry } from "@/lib/repositories/taxonomy/taxonomy-repository"
-import {
-  SPORT_DISCIPLINES,
-  type SportDiscipline,
-  type SportEventCategory,
-} from "@/types/sport-events"
+import { SPORT_DISCIPLINES, type SportDiscipline } from "@/types/disciplines"
+import { type ContestCategory } from "@/types/league"
 
 export interface SportOption {
   value: SportDiscipline
@@ -11,7 +8,7 @@ export interface SportOption {
 }
 
 export interface EventCategoryOption {
-  value: SportEventCategory
+  value: ContestCategory
   label: string
 }
 
@@ -51,7 +48,7 @@ export function toEventCategoryOptions(
     if (!DEFAULT_EVENT_CATEGORY_OPTIONS.some((option) => option.value === entry.slug)) {
       return []
     }
-    return [{ value: entry.slug as SportEventCategory, label: entry.name }]
+    return [{ value: entry.slug as ContestCategory, label: entry.name }]
   })
   return options.length > 0 ? options : DEFAULT_EVENT_CATEGORY_OPTIONS
 }

@@ -32,7 +32,7 @@ import Link from "next/link";
 import { SpotMapFallback } from "@/components/spots/card/SpotMapFallback";
 import { useEventPopup } from "@/hooks/data/useEventPopup";
 import { EventPanel } from "@/components/map/panels/EventPanel";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 import type { MapSpot } from "@/lib/types";
 import { buildGamePrefillUrl } from "@/lib/games/prefill";
 import { useWeatherVerification } from "@/hooks/data/useWeatherVerification";

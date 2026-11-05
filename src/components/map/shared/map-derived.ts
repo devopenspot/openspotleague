@@ -2,7 +2,7 @@ import type { MapSpot, Region } from "@/lib/types";
 import { haversineMiles } from "@/lib/spots/geo";
 import { slugify } from "@/lib/utils/slug";
 import type { MapLayer } from "@/lib/schemas/event";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 
 export interface MapOrigin {
   lat: number;

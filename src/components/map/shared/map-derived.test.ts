@@ -11,7 +11,7 @@ import {
   filterMapEventsByGeo,
   unionById,
 } from "@/components/map/shared/map-derived";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 
 const spot = (
   id: string,

@@ -9,11 +9,8 @@ import {
   sportEvents,
   type NewSportEventRow,
 } from "@/db/schema"
-import type {
-  SportEvent,
-  SportEventCategory,
-  SportDiscipline,
-} from "@/types/sport-events"
+import type { SportDiscipline } from "@/types/disciplines"
+import type { Contest, ContestCategory } from "@/types/league"
 import type {
   SportEventListResult,
   SportEventQuery,
@@ -31,7 +28,7 @@ import { decodeEventCursor, encodeEventCursor } from "./event-pagination"
 import {
   assertValidEventDateRange,
   normalizeCitySlug,
-} from "@/lib/sport-events/validation"
+} from "@/lib/league/validation"
 import {
   InvalidReferenceError,
   StaleRecordError,
@@ -95,7 +92,7 @@ function dateOnly(d: Date | null): string {
   return d.toISOString().slice(0, 10)
 }
 
-function toEvent(row: JoinedEventRow): SportEvent {
+function toEvent(row: JoinedEventRow): Contest {
   return {
     id: row.id,
     slug: row.slug,
@@ -118,11 +115,11 @@ function toEvent(row: JoinedEventRow): SportEvent {
       latitude: row.location?.lat,
       longitude: row.location?.lon,
     },
-    category: row.category as SportEventCategory,
+    category: row.category as ContestCategory,
     categoryName: row.categoryName,
-    origin: row.origin as SportEvent["origin"],
-    visibility: row.visibility as SportEvent["visibility"],
-    lifecycleStatus: row.status as SportEvent["lifecycleStatus"],
+    origin: row.origin as Contest["origin"],
+    visibility: row.visibility as Contest["visibility"],
+    lifecycleStatus: row.status as Contest["lifecycleStatus"],
     timezone: row.timezone,
     spotName: row.spotNameSnapshot,
     featured: row.featured,
@@ -135,7 +132,7 @@ function toEvent(row: JoinedEventRow): SportEvent {
 
 async function resolveImageUrls(
   rows: readonly JoinedEventRow[],
-): Promise<SportEvent[]> {
+): Promise<Contest[]> {
   // Wire cards render 232px wide × 32vh tall (~660–810 device px on 2×/3×
   // screens) — detail (800) is the smallest variant that stays crisp; the
   // card (400) variant left wire images visibly upscaled next to spot cards.
@@ -148,7 +145,7 @@ async function resolveImageUrls(
 
 async function resolveDetailImageUrls(
   rows: readonly JoinedEventRow[],
-): Promise<SportEvent[]> {
+): Promise<Contest[]> {
   const { withEventDetailImageUrls } = await import("@/lib/storage")
   const { extractStoragePath } = await import("@/lib/storage/variants")
   return withEventDetailImageUrls(
@@ -268,7 +265,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
    * Full joined rows for page IDs, in no guaranteed order — the caller
    * restores shuffle order before returning.
    */
-  async listByIds(ids: readonly string[]): Promise<SportEvent[]> {
+  async listByIds(ids: readonly string[]): Promise<Contest[]> {
     if (ids.length === 0) return []
     const rows = await this.selectJoined().where(
       and(
@@ -362,7 +359,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
   async listMap(query?: {
     citySlug?: string
     limit?: number
-  }): Promise<readonly SportEvent[]> {
+  }): Promise<readonly Contest[]> {
     const conditions: SQL[] = [
       isNotNull(sportEvents.location),
       eq(sportEvents.visibility, "public"),
@@ -386,7 +383,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
     return Number(row?.c ?? 0)
   }
 
-  async findById(id: string): Promise<SportEvent | null> {
+  async findById(id: string): Promise<Contest | null> {
     const rows = await this.selectJoined()
       .where(eq(sportEvents.id, id))
       .limit(1)
@@ -407,7 +404,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
     return { imagePath: extractStoragePath(row.imageUrl) }
   }
 
-  async findFeatured(): Promise<SportEvent | null> {
+  async findFeatured(): Promise<Contest | null> {
     // Single query: featured events first (true before false), then earliest
     // start. Matches prior two-query fallback but in one round-trip and with
     // deterministic ordering for the featured case (previously unordered).
@@ -440,7 +437,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
       order by ec.slug
     `)
     return rows.map((r) => ({
-      name: r.category as SportEventCategory,
+      name: r.category as ContestCategory,
       count: Number(r.count),
     }))
   }
@@ -660,7 +657,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
     }) as Record<string, unknown>
   }
 
-  async create(input: NewSportEvent): Promise<SportEvent> {
+  async create(input: NewSportEvent): Promise<Contest> {
     const insertValues = await this.buildInsertValues(input)
     const [existing] = await this.db
       .select({ id: sportEvents.id })
@@ -704,7 +701,7 @@ export class DrizzleEventRepository extends BaseDrizzleRepository implements Eve
     patch: SportEventPatch,
     expectedUpdatedAt?: string,
     actorId?: string | null,
-  ): Promise<SportEvent> {
+  ): Promise<Contest> {
     const expectedDate = this.parseExpectedUpdatedAt(expectedUpdatedAt)
     const before = await this.auditSnapshot(id)
     const [current] = await this.db

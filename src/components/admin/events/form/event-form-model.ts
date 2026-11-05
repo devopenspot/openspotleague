@@ -1,11 +1,9 @@
 import type { ImageSourceFieldValue } from "@/components/admin/spots/form/ImageSourceField"
 import { NewSportEventSchema } from "@/lib/schemas/event"
-import { normalizeCitySlug } from "@/lib/sport-events/validation"
-import type {
-  SportDiscipline,
-  SportEvent,
-} from "@/types/sport-events"
-import type { SportEventCategory } from "@/types/sport-events"
+import { normalizeCitySlug } from "@/lib/league/validation"
+import type { SportDiscipline } from "@/types/disciplines"
+import type { Contest } from "@/types/league"
+import type { ContestCategory } from "@/types/league"
 
 export { EVENT_CATEGORY_LABELS, EVENT_CATEGORY_OPTIONS } from "./event-options"
 
@@ -26,7 +24,7 @@ export interface EventFormState {
   venue: string
   latitude: string
   longitude: string
-  category: SportEventCategory
+  category: ContestCategory
   featured: boolean
   instagram: string
   youtube: string
@@ -63,7 +61,7 @@ export function buildInitialEventState(): EventFormState {
   }
 }
 
-export function stateFromEvent(event: SportEvent): EventFormState {
+export function stateFromEvent(event: Contest): EventFormState {
   return {
     name: event.name,
     shortName: event.shortName ?? "",

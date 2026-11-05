@@ -4,7 +4,7 @@
  * services and the routes. See .agents/specs/league/engine.spec.md.
  */
 
-import type { EventOrigin } from "@/types/sport-events";
+import type { EventOrigin } from "@/types/league";
 
 // ---------- payment gate ----------
 

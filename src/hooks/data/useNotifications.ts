@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { NotificationPayload } from "@/types/sport-events";
+import type { NotificationPayload } from "@/types/league";
 import {
   createSupabaseBrowserClient,
   uniqueChannelTopic,

@@ -5,7 +5,7 @@
  * (see plan.league.spec.md decisions — email/push arrive in Phase 5).
  */
 
-import type { NotificationPayload, NotificationType } from "@/types/sport-events";
+import type { NotificationPayload, NotificationType } from "@/types/league";
 
 export interface NotificationCopy {
   title: string;

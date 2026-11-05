@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, ExternalLink, MapPin, Trophy, X } from "lucide-react";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 import { Countdown } from "@/components/ui/Countdown";
 import { ShareActions } from "@/components/ui/ShareActions";
 

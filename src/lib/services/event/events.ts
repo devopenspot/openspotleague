@@ -1,10 +1,6 @@
 import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache"
 import { getEventRepositoryAsync } from "@/lib/repositories"
-import type {
-  MapEvent,
-  SportEvent,
-  SportEventEnriched,
-} from "@/types/sport-events"
+import type { MapEvent, Contest, ContestEnriched } from "@/types/league"
 import type {
   NewSportEvent,
   EventShuffleFilters,
@@ -17,9 +13,9 @@ import type {
 import { decodeRandomSpotCursor, encodeRandomSpotCursor } from "@/lib/repositories/spot/spot-pagination"
 import { seededShuffle } from "@/lib/utils/seeded-random"
 import { EVENT_LIST_HARD_CAP } from "@/lib/config/constants"
-import { deriveStatus } from "@/lib/sport-events/status"
-import { selectFeaturedEvent } from "@/lib/sport-events/featured"
-import { projectMapEvents } from "@/lib/sport-events/map-projection"
+import { deriveStatus } from "@/lib/league/status"
+import { selectFeaturedEvent } from "@/lib/league/featured"
+import { projectMapEvents } from "@/lib/league/map-projection"
 
 const MONTH_FORMAT = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -35,7 +31,7 @@ function toUTCDate(iso: string): Date {
   return new Date(`${iso}T00:00:00Z`)
 }
 
-function formatDateRange(event: SportEvent): string {
+function formatDateRange(event: Contest): string {
   const start = toUTCDate(event.startDate)
   const startLabel = MONTH_FORMAT.format(start).toUpperCase()
 
@@ -58,7 +54,7 @@ function formatDateRange(event: SportEvent): string {
   return `${startLabel} – ${endLabelBase}, ${year}`.toUpperCase()
 }
 
-function enrich(event: SportEvent, now: Date): SportEventEnriched {
+function enrich(event: Contest, now: Date): ContestEnriched {
   return {
     ...event,
     status: deriveStatus(event, now),
@@ -67,9 +63,9 @@ function enrich(event: SportEvent, now: Date): SportEventEnriched {
 }
 
 function enrichAll(
-  items: readonly SportEvent[],
+  items: readonly Contest[],
   now: Date,
-): readonly SportEventEnriched[] {
+): readonly ContestEnriched[] {
   return Object.freeze(items.map((e) => enrich(e, now)))
 }
 
@@ -138,7 +134,7 @@ export async function runListEventsRandom(
   const byId = new Map(events.map((event) => [event.id, event]))
   const ordered = pageIds
     .map((id) => byId.get(id))
-    .filter((event): event is SportEvent => event !== undefined)
+    .filter((event): event is Contest => event !== undefined)
   const nextIndex = startIndex + pageIds.length
   const nextCursor =
     nextIndex < ids.length ? encodeRandomSpotCursor({ seed: query.seed, index: nextIndex }) : null
@@ -150,7 +146,7 @@ export async function runListEventsRandom(
 }
 
 export interface SportEventEnrichedListResult {
-  items: readonly SportEventEnriched[]
+  items: readonly ContestEnriched[]
   nextCursor: string | null
   hasMore: boolean
 }
@@ -165,8 +161,8 @@ export async function listEvents(
 }
 
 export interface SportEventsDirectoryData {
-  events: readonly SportEventEnriched[]
-  featured: SportEventEnriched | undefined
+  events: readonly ContestEnriched[]
+  featured: ContestEnriched | undefined
 }
 
 /**
@@ -183,7 +179,7 @@ export interface SportEventsDirectoryData {
 const EVENT_DIRECTORY_MAX_PAGES = 5
 
 export async function runListEventDirectory(): Promise<SportEventsDirectoryData> {
-  const items: SportEventEnriched[] = []
+  const items: ContestEnriched[] = []
   let cursor: string | undefined
   for (let page = 0; page < EVENT_DIRECTORY_MAX_PAGES; page++) {
     const result = await runListEvents(cursor ? { cursor } : undefined)
@@ -204,12 +200,12 @@ export async function listEventDirectory(): Promise<SportEventsDirectoryData> {
 
 // Marquee: 12 random events, seeded per-visit. Routes through the
 // shuffle-ID cache (`runListEventsRandom`) — no full-table ID scan.
-export async function runGetMarqueeEvents(seed?: string): Promise<readonly SportEventEnriched[]> {
+export async function runGetMarqueeEvents(seed?: string): Promise<readonly ContestEnriched[]> {
   const { items } = await runListEvents(seed ? { limit: 12, random: true, seed } : { limit: 12 })
   return items
 }
 
-export async function getMarqueeEvents(seed?: string): Promise<readonly SportEventEnriched[]> {
+export async function getMarqueeEvents(seed?: string): Promise<readonly ContestEnriched[]> {
   "use cache"
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
@@ -253,7 +249,7 @@ export async function listEventsRaw(
 //   3. Returns a minimal DTO (`MapEvent`) — the map does not need the
 //      description, social links, full address, etc. The shape is the
 //      minimum needed by `EventMarker` + `MapInfoPopup`.
-//   4. Skips events that have no coordinates — a `SportEventLocation`
+//   4. Skips events that have no coordinates — a `ContestLocation`
 //      without `latitude` / `longitude` cannot be plotted on Leaflet.
 //
 // `EVENTS_FOR_MAP_LIMIT` is the hard cap on markers the map will
@@ -283,14 +279,14 @@ export async function listEventsForMap(
 // `events:list` tag, which transitively invalidates this function.
 
 export async function runFindFeaturedEvent(): Promise<
-  SportEventEnriched | undefined
+  ContestEnriched | undefined
 > {
   const { items } = await runListEvents()
   return selectFeaturedEvent(items)
 }
 
 export async function findFeaturedEvent(): Promise<
-  SportEventEnriched | undefined
+  ContestEnriched | undefined
 > {
   "use cache"
   cacheTag("events:list")
@@ -303,7 +299,7 @@ export async function findFeaturedEvent(): Promise<
 
 export async function runFindEventById(
   id: string,
-): Promise<SportEventEnriched | null> {
+): Promise<ContestEnriched | null> {
   const repo = await getEventRepositoryAsync()
   const event = await repo.findById(id)
   if (!event) return null
@@ -313,7 +309,7 @@ export async function runFindEventById(
 
 export async function findEventById(
   id: string,
-): Promise<SportEventEnriched | null> {
+): Promise<ContestEnriched | null> {
   "use cache"
   cacheTag(`events:item:${id}`)
   cacheLife(ITEM_CACHE_LIFE)
@@ -332,7 +328,7 @@ export async function findEventMediaState(id: string) {
 
 export async function runFindEventBySlug(
   slug: string,
-): Promise<SportEventEnriched | null> {
+): Promise<ContestEnriched | null> {
   const { items } = await runListEvents()
   const decoded = decodeURIComponent(slug)
   return items.find((e) => e.slug === slug || e.slug === decoded) ?? null
@@ -340,7 +336,7 @@ export async function runFindEventBySlug(
 
 export async function findEventBySlug(
   slug: string,
-): Promise<SportEventEnriched | null> {
+): Promise<ContestEnriched | null> {
   "use cache"
   cacheTag("events:list")
   cacheLife(LIST_CACHE_LIFE)
@@ -366,12 +362,12 @@ function revalidateEventCaches(eventId: string, slug: string | null = null): voi
 
 export async function runCreateEvent(
   input: NewSportEvent,
-): Promise<SportEvent> {
+): Promise<Contest> {
   const repo = await getEventRepositoryAsync()
   return repo.create(input)
 }
 
-export async function createEvent(input: NewSportEvent): Promise<SportEvent> {
+export async function createEvent(input: NewSportEvent): Promise<Contest> {
   const event = await runCreateEvent(input)
   revalidateEventCaches(event.id, event.slug)
   return event
@@ -382,7 +378,7 @@ export async function runUpdateEvent(
   patch: SportEventPatch,
   expectedUpdatedAt?: string,
   actorId?: string | null,
-): Promise<SportEvent> {
+): Promise<Contest> {
   const repo = await getEventRepositoryAsync()
   return repo.update(id, patch, expectedUpdatedAt, actorId)
 }
@@ -392,7 +388,7 @@ export async function updateEvent(
   patch: SportEventPatch,
   expectedUpdatedAt?: string,
   actorId?: string | null,
-): Promise<SportEvent> {
+): Promise<Contest> {
   const event = await runUpdateEvent(id, patch, expectedUpdatedAt, actorId)
   revalidateEventCaches(id, event.slug)
   return event

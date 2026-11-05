@@ -1,4 +1,4 @@
-import type { SportEvent, SportEventStatus } from "@/types/sport-events"
+import type { Contest, ContestStatus } from "@/types/league"
 
 /**
  * Event dates are calendar dates, not user-local instants. They are stored as
@@ -13,7 +13,7 @@ function endOfDayUTC(iso: string): Date {
   return new Date(`${iso}T23:59:59Z`);
 }
 
-export function deriveStatus(event: SportEvent, now: Date): SportEventStatus {
+export function deriveStatus(event: Contest, now: Date): ContestStatus {
   const start = toUTCDate(event.startDate);
   const end = event.endDate ? endOfDayUTC(event.endDate) : endOfDayUTC(event.startDate);
   if (now < start) return "upcoming";

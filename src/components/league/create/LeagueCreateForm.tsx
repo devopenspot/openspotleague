@@ -34,11 +34,11 @@ import {
   tagClass,
 } from "@/components/ui/recipes";
 import { SportDisciplineSchema, SportEventCategorySchema } from "@/lib/schemas/event";
-import type { SportEventCategory } from "@/types/sport-events";
+import type { ContestCategory } from "@/types/league";
 import { leagueCreateEventInputSchema } from "@/lib/schemas/league";
 import type { LeagueCreateEventResponse } from "@/lib/schemas/league";
 
-const CATEGORY_OPTIONS: { value: SportEventCategory; label: string }[] =
+const CATEGORY_OPTIONS: { value: ContestCategory; label: string }[] =
   SportEventCategorySchema.options.map((value) => ({
     value,
     label: value
@@ -84,7 +84,7 @@ export function LeagueCreateForm({ organizerName }: { organizerName?: string }) 
   const [timezoneInput, setTimezone] = useState<string | null>(null);
   const timezone = timezoneInput ?? detectedTimezone;
   const [category, setCategory] =
-    useState<SportEventCategory>("local-event");
+    useState<ContestCategory>("local-event");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 import { parseYouTubeVideoUrl } from "@/lib/tv/urls";
 import { makeSeededRng } from "@/lib/utils/seeded-random";
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 import type { TvCard } from "@/types/tv";
 import { ROUTES } from "@/lib/navigation/nav";
 
@@ -32,7 +32,7 @@ export interface MarqueeSpotInput {
 }
 
 /**
- * Minimum event shape the wire reads. Full `SportEventEnriched` satisfies
+ * Minimum event shape the wire reads. Full `ContestEnriched` satisfies
  * it structurally; server-side projection strips unused columns from the
  * RSC flight and `/api/events` shuffle responses.
  */

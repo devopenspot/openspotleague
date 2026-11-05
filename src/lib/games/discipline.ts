@@ -1,6 +1,6 @@
 import { GAME_DEFINITIONS, type GameDefinition } from "@/lib/games/definitions"
 import type { DisciplineSlug } from "@/lib/schemas/game"
-import type { SportDiscipline, SportPreference } from "@/types/sport-events"
+import type { SportDiscipline, SportPreference } from "@/types/disciplines"
 
 export const DISCIPLINE_META: Record<DisciplineSlug, { name: string; eliminationWord: string }> = {
   roller: { name: GAME_DEFINITIONS.roller.sportPreference, eliminationWord: GAME_DEFINITIONS.roller.eliminationWord },

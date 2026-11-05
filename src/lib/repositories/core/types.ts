@@ -5,7 +5,8 @@ import type {
   NewSportEventSchema,
   SportEventPatchSchema,
 } from "@/lib/schemas/event"
-import type { SportDiscipline, SportEventCategory } from "@/types/sport-events"
+import type { SportDiscipline } from "@/types/disciplines"
+import type { ContestCategory } from "@/types/league"
 
 export type SpotQuery = z.infer<typeof SpotQuerySchema>
 export type NewSpot = z.infer<typeof NewSpotSchema>
@@ -94,7 +95,7 @@ export interface EventShuffleFilters {
   q?: string
   country?: string
   citySlug?: string
-  category?: SportEventCategory
+  category?: ContestCategory
   discipline?: SportDiscipline
   featured?: boolean
   from?: string
@@ -153,7 +154,7 @@ export interface SportEventFacetCountry {
 }
 
 export interface SportEventFacetCategory {
-  name: SportEventCategory
+  name: ContestCategory
   count: number
 }
 

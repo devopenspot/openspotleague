@@ -8,17 +8,17 @@ import {
   Youtube,
 } from "lucide-react";
 import { AppImage } from "@/components/ui/AppImage";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 import {
   controlClass,
   iconButtonClass,
   tagClass,
 } from "@/components/ui/recipes";
 import { cn } from "@/lib/utils/cn";
-import { buildEventDetailUrl } from "@/lib/sport-events/urls";
+import { buildEventDetailUrl } from "@/lib/league/urls";
 
 interface EventFeaturedHeroProps {
-  event: SportEventEnriched;
+  event: ContestEnriched;
 }
 
 /**

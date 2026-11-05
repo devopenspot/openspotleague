@@ -7,7 +7,7 @@ import { isAuthorizationError } from "@/lib/services/profile/authorization"
 import { leagueErrorResponse } from "@/app/api/league/errors"
 import { privateNoCache } from "@/app/api/league/helpers"
 import { listLeaguePayments } from "@/lib/services/league"
-import type { EventPaymentStatus } from "@/types/sport-events"
+import type { EventPaymentStatus } from "@/types/league"
 
 const STATUS_FILTERS: ReadonlySet<EventPaymentStatus> = new Set([
   "pending",

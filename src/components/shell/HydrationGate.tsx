@@ -6,7 +6,7 @@ import { useUIStore } from "@/stores/ui-store"
 import { useUser } from "@/lib/contexts/user-context"
 import { fetchWithTimeout } from "@/lib/utils/fetch-timeout"
 import type { DistanceUnit, TemperatureUnit } from "@/stores/preferences-store"
-import { SPORT_DISCIPLINES, type SportPreference } from "@/types/sport-events"
+import { SPORT_DISCIPLINES, type SportPreference } from "@/types/disciplines"
 
 export function HydrationGate({ children }: { children: ReactNode }) {
   const user = useUser()
