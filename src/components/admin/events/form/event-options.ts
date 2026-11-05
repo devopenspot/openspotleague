@@ -1,7 +1,7 @@
-import type { SportEventCategory } from "@/types/sport-events"
+import type { ContestCategory } from "@/types/league"
 
 export const EVENT_CATEGORY_OPTIONS: readonly {
-  value: SportEventCategory
+  value: ContestCategory
   label: string
 }[] = [
   { value: "world-tour", label: "World Tour" },
@@ -11,7 +11,7 @@ export const EVENT_CATEGORY_OPTIONS: readonly {
   { value: "local-event", label: "Local Event" },
 ]
 
-export const EVENT_CATEGORY_LABELS: Readonly<Record<SportEventCategory, string>> =
+export const EVENT_CATEGORY_LABELS: Readonly<Record<ContestCategory, string>> =
   Object.fromEntries(
     EVENT_CATEGORY_OPTIONS.map((option) => [option.value, option.label]),
-  ) as Record<SportEventCategory, string>
+  ) as Record<ContestCategory, string>

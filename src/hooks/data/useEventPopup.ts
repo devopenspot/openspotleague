@@ -1,7 +1,7 @@
 "use client";
 
 import { useEventsStore } from "@/stores/events-store";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 
 /**
  * Read the active event for the map's info popup. Returns `null`

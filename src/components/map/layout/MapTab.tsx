@@ -10,7 +10,7 @@ import { useMapFilter } from "@/hooks/map/useMapFilter";
 import { useMapActions } from "@/components/map/hooks/use-map-actions";
 import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 import { cn } from "@/lib/utils/cn";
 import { SignInLink } from "@/components/shell/SignInLink";
 

@@ -14,11 +14,11 @@ import {
   Youtube,
 } from "lucide-react"
 import { DeleteConfirmDialog } from "@/components/admin/common/DeleteConfirmDialog"
-import type { SportEvent } from "@/types/sport-events"
+import type { Contest } from "@/types/league"
 import { EVENT_CATEGORY_LABELS } from "../form/event-options"
 
 interface EventTableProps {
-  events: readonly SportEvent[]
+  events: readonly Contest[]
   nextCursor: string | null
 }
 
@@ -31,7 +31,7 @@ function socialLabel(value: string | null | undefined): string {
   }
 }
 
-function eventStatus(event: SportEvent): "upcoming" | "live" | "completed" {
+function eventStatus(event: Contest): "upcoming" | "live" | "completed" {
   const today = new Date().toISOString().slice(0, 10)
   if (event.endDate ? event.endDate < today : event.startDate < today) {
     return "completed"
@@ -52,7 +52,7 @@ export function EventTable({ events, nextCursor }: EventTableProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const [pendingDelete, setPendingDelete] = useState<SportEvent | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Contest | null>(null)
 
   const nextPageParams = new URLSearchParams(searchParams.toString())
   if (nextCursor) nextPageParams.set("cursor", nextCursor)

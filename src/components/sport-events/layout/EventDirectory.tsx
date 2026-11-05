@@ -7,19 +7,16 @@ import {
   SECTION_TITLE,
   controlClass,
 } from "@/components/ui/recipes";
-import type {
-  SportEventEnriched,
-  SportEventStatus,
-} from "@/types/sport-events";
+import type { ContestEnriched, ContestStatus } from "@/types/league";
 
 interface EventDirectoryProps {
-  featured: SportEventEnriched | undefined;
+  featured: ContestEnriched | undefined;
   /** Already filtered and ordered; excludes the featured event. */
-  events: readonly SportEventEnriched[];
-  status: "all" | SportEventStatus;
+  events: readonly ContestEnriched[];
+  status: "all" | ContestStatus;
 }
 
-const UPCOMING_TITLE: Record<"all" | SportEventStatus, string> = {
+const UPCOMING_TITLE: Record<"all" | ContestStatus, string> = {
   all: "Live & upcoming",
   live: "Live now",
   upcoming: "Upcoming",

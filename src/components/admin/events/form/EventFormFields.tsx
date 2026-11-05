@@ -2,7 +2,7 @@
 
 import { useId } from "react"
 import { cn } from "@/lib/utils/cn"
-import type { SportDiscipline } from "@/types/sport-events"
+import type { SportDiscipline } from "@/types/disciplines"
 import type { EventCategoryOption, SportOption } from "@/lib/admin/taxonomy"
 import type { ProjectedAddress } from "@/lib/geocode/project"
 import {

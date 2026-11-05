@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildStatusFilterUrl, filterEventsByStatus } from "./status-filter";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 
-function enriched(status: SportEventEnriched["status"]): SportEventEnriched {
+function enriched(status: ContestEnriched["status"]): ContestEnriched {
   return {
     id: status,
     slug: status,

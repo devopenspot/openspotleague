@@ -7,7 +7,7 @@ import { runListAdminTaxonomy } from "@/lib/services/taxonomy/taxonomy";
 import { toSportOptions } from "@/lib/admin/taxonomy";
 import { SpotTable } from "@/components/admin/spots/table/SpotTable";
 import { SpotTableFilters } from "@/components/admin/spots/table/SpotTableFilters";
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 
 interface AdminSpotsPageProps {
   searchParams: Promise<{

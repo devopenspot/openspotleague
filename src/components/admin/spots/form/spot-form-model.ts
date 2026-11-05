@@ -2,8 +2,8 @@
 
 import type { ImageSourceFieldValue } from "./ImageSourceField"
 import { NewSpotSchema } from "@/lib/schemas/spot"
-import { normalizeCitySlug } from "@/lib/sport-events/validation"
-import { SPORT_DISCIPLINES, type SportDiscipline } from "@/types/sport-events"
+import { normalizeCitySlug } from "@/lib/league/validation"
+import { SPORT_DISCIPLINES, type SportDiscipline } from "@/types/disciplines"
 import type { Spot } from "@/lib/types"
 
 export interface SpotFormState {

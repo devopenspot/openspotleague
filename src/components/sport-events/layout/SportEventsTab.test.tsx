@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import SportEventsLayout from "@/app/sport-events/layout";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 import { SportEventsTab } from "./SportEventsTab";
 
 const { push, replace, user, search } = vi.hoisted(() => ({
@@ -23,9 +23,9 @@ vi.mock("@/lib/contexts/user-context", () => ({
 
 function event(
   id: string,
-  status: SportEventEnriched["status"],
+  status: ContestEnriched["status"],
   startDate: string,
-): SportEventEnriched {
+): ContestEnriched {
   return {
     id,
     slug: `${id}-slug`,

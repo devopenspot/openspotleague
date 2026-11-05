@@ -11,7 +11,7 @@ import {
   type DistanceUnit,
   type TemperatureUnit,
 } from "@/stores/preferences-store";
-import { SPORT_DISCIPLINES, type SportPreference } from "@/types/sport-events";
+import { SPORT_DISCIPLINES, type SportPreference } from "@/types/disciplines";
 import { useUser } from "@/lib/contexts/user-context";
 import { SignInLink } from "@/components/shell/SignInLink";
 import {

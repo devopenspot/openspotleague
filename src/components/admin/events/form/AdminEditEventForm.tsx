@@ -1,11 +1,11 @@
 "use client"
 
 import { AdminEventForm } from "@/components/admin/events/form/AdminEventForm"
-import type { SportEventEnriched } from "@/types/sport-events"
+import type { ContestEnriched } from "@/types/league"
 import type { EventCategoryOption, SportOption } from "@/lib/admin/taxonomy"
 
 interface AdminEditEventFormProps {
-  event: SportEventEnriched
+  event: ContestEnriched
   sportOptions: readonly SportOption[]
   categoryOptions: readonly EventCategoryOption[]
 }

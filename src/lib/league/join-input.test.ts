@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveEventJoinPath } from "@/lib/sport-events/join-input";
+import { resolveEventJoinPath } from "@/lib/league/join-input";
 
 describe("resolveEventJoinPath", () => {
   it("routes a bare invite code, keeping its case", () => {

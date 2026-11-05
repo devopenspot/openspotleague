@@ -2,12 +2,8 @@ import { z } from "zod";
 import {
   isValidCalendarDate,
   isValidEventDateRange,
-} from "@/lib/sport-events/validation";
-import type {
-  EventLifecycleStatus,
-  EventOrigin,
-  EventVisibility,
-} from "@/types/sport-events";
+} from "@/lib/league/validation";
+import type { EventLifecycleStatus, EventOrigin, EventVisibility } from "@/types/league";
 
 export const SportDisciplineSchema = z.enum([
   "Skateboard",

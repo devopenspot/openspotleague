@@ -11,7 +11,7 @@ import {
   spots,
   type NewSpotRow,
 } from "@/db/schema";
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 import type { Spot } from "@/lib/types";
 import type {
   ContentDeleteResult,

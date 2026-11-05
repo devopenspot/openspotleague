@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { selectFeaturedEvent } from "./featured";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 
 function event(
   id: string,
-  status: SportEventEnriched["status"],
+  status: ContestEnriched["status"],
   featured = false,
-): SportEventEnriched {
+): ContestEnriched {
   return {
     id,
     slug: id,

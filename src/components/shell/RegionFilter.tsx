@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useSpotsStore } from "@/stores/spots-store";
 import type { MapSpot } from "@/lib/types";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 import type { CityOption } from "@/hooks/map/useMapFilter";
 import {
   mergeCityOptions,

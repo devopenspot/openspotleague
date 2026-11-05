@@ -1,10 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
-import {
-  SPORT_DISCIPLINES,
-  type SportDiscipline,
-  type SportPreference,
-} from "@/types/sport-events";
+import { SPORT_DISCIPLINES, type SportDiscipline, type SportPreference } from "@/types/disciplines";
 
 export type { SportPreference };
 export type DistanceUnit = "mi" | "km";

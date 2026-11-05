@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Search, X } from "lucide-react"
 import { cn } from "@/lib/utils/cn"
 import type { SportOption } from "@/lib/admin/taxonomy"
-import type { SportDiscipline } from "@/types/sport-events"
+import type { SportDiscipline } from "@/types/disciplines"
 import { useSpotsStore } from "@/stores/spots-store"
 
 function parseTypesParam(value: string | null): string[] {

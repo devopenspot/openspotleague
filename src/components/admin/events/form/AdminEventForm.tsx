@@ -7,7 +7,7 @@ import { Plus } from "lucide-react"
 import { showToast } from "@/hooks/ui/useToast"
 import type { ProjectedAddress } from "@/lib/geocode/project"
 import type { EventCategoryOption, SportOption } from "@/lib/admin/taxonomy"
-import type { SportEventEnriched } from "@/types/sport-events"
+import type { ContestEnriched } from "@/types/league"
 import { EventFormFields } from "./EventFormFields"
 import { EventFormSubmit } from "./EventFormSubmit"
 import {
@@ -30,7 +30,7 @@ type AdminEventFormProps =
     }
   | {
       mode: "edit"
-      event: SportEventEnriched
+      event: ContestEnriched
       sportOptions: readonly SportOption[]
       categoryOptions: readonly EventCategoryOption[]
     }

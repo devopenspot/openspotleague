@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { deriveStatus } from "./status";
-import type { SportEvent } from "@/types/sport-events";
+import type { Contest } from "@/types/league";
 
-function event(startDate: string, endDate?: string): SportEvent {
+function event(startDate: string, endDate?: string): Contest {
   return {
     id: "event-1",
     slug: "event-1",

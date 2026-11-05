@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { orderEventsForDirectory } from "./directory-order";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 
 function event(
   id: string,
-  status: SportEventEnriched["status"],
+  status: ContestEnriched["status"],
   startDate: string,
-): SportEventEnriched {
+): ContestEnriched {
   return {
     id,
     slug: id,

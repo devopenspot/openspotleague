@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import { Marker } from "react-leaflet";
-import type { MapEvent } from "@/types/sport-events";
+import type { MapEvent } from "@/types/league";
 import { cn } from "@/lib/utils/cn";
 
 const LABEL_MAX_CHARS = 14;

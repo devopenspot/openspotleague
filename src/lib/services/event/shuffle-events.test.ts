@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import type { SportEvent } from "@/types/sport-events"
+import type { Contest } from "@/types/league"
 
 const listShuffledIdsMock = vi.fn()
 const listByIdsMock = vi.fn()
@@ -34,7 +34,7 @@ function ids(n: number): string[] {
   return Array.from({ length: n }, (_, i) => `event-${i}`)
 }
 
-function event(id: string): SportEvent {
+function event(id: string): Contest {
   return {
     id,
     slug: `slug-${id}`,

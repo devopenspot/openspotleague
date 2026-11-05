@@ -6,7 +6,7 @@ import {
   spots,
   spotTypes,
 } from "@/db/schema";
-import type { SportDiscipline } from "@/types/sport-events";
+import type { SportDiscipline } from "@/types/disciplines";
 import type { MapSpot, Spot, SpotLocation, SpotTypeRef } from "@/lib/types";
 import type { SpotCard } from "../core/types";
 import type { SpotWithImagePath } from "@/lib/storage";

@@ -35,7 +35,7 @@ import { withSafeDefault } from "@/lib/utils/safe-fetch";
 import {
   buildEventDetailUrl,
   buildEventMapUrl,
-} from "@/lib/sport-events/urls";
+} from "@/lib/league/urls";
 import { truncate } from "@/lib/og/formatters";
 
 export async function generateMetadata({

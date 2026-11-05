@@ -6,12 +6,8 @@ import {
   SportEventStatusFilterSchema,
   type SportEventStatusFilter,
 } from "@/lib/schemas/event";
-import { deriveStatus } from "@/lib/sport-events/status";
-import type {
-  SportEvent,
-  SportEventEnriched,
-  SportEventStatus,
-} from "@/types/sport-events";
+import { deriveStatus } from "@/lib/league/status";
+import type { Contest, ContestEnriched, ContestStatus } from "@/types/league";
 
 /**
  * Resolve the active status filter from the URL. The default is
@@ -28,7 +24,7 @@ export function readStatusFilter(
 
 export interface EventStatusFilter {
   status: SportEventStatusFilter;
-  filter: <T extends SportEvent>(events: readonly T[]) => readonly T[];
+  filter: <T extends Contest>(events: readonly T[]) => readonly T[];
 }
 
 export function buildStatusFilterUrl(
@@ -43,7 +39,7 @@ export function buildStatusFilterUrl(
   return query ? `${pathname}?${query}` : pathname;
 }
 
-function isStatus(value: unknown): value is SportEventStatus {
+function isStatus(value: unknown): value is ContestStatus {
   return value === "live" || value === "upcoming" || value === "completed";
 }
 
@@ -52,14 +48,14 @@ function isStatus(value: unknown): value is SportEventStatus {
  * Raw events still use the date-derived fallback for callers outside the
  * directory page.
  */
-export function filterEventsByStatus<T extends SportEvent>(
+export function filterEventsByStatus<T extends Contest>(
   events: readonly T[],
   status: SportEventStatusFilter,
   now: Date = new Date(),
 ): readonly T[] {
   if (status === "all") return events;
   return events.filter((event) => {
-    const enrichedStatus = (event as unknown as Partial<SportEventEnriched>).status;
+    const enrichedStatus = (event as unknown as Partial<ContestEnriched>).status;
     const eventStatus = isStatus(enrichedStatus)
       ? enrichedStatus
       : deriveStatus(event, now);
@@ -70,7 +66,7 @@ export function filterEventsByStatus<T extends SportEvent>(
 /**
  * Status filter for `/sport-events?status=…`. The status field is
  * derived from the event's start/end dates (see
- * `src/lib/sport-events/status.ts`) and the filter is applied on
+ * `src/lib/league/status.ts`) and the filter is applied on
  * the client after the cached `listEvents()` returns.
  *
  * The URL is the single source of truth for the active filter —
@@ -85,7 +81,7 @@ export function useEventStatusFilter(): EventStatusFilter {
   return useMemo(
     () => ({
       status,
-      filter: <T extends SportEvent>(events: readonly T[]): readonly T[] => {
+      filter: <T extends Contest>(events: readonly T[]): readonly T[] => {
         return filterEventsByStatus(events, status);
       },
     }),

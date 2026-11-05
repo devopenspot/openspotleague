@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { projectMapEvent, projectMapEvents } from "./map-projection";
-import type { SportEventEnriched } from "@/types/sport-events";
+import type { ContestEnriched } from "@/types/league";
 
 function event(
   id: string,
   coordinates?: { latitude: number; longitude: number },
-): SportEventEnriched {
+): ContestEnriched {
   return {
     id,
     slug: id,
