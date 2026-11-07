@@ -18,6 +18,8 @@ export interface SpotMarqueeProps<T> {
   ariaLabel: string;
   className?: string;
   cardClassName?: string;
+  /** Appended to the scroll rail (e.g. edge-bleed padding + scroll-padding). */
+  scrollerClassName?: string;
   edgeFadeClass?: {
     left?: string;
     right?: string;
@@ -31,6 +33,7 @@ export function SpotMarquee<T extends { id?: string }>({
   ariaLabel,
   className,
   cardClassName,
+  scrollerClassName,
   edgeFadeClass,
 }: SpotMarqueeProps<T>) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -164,7 +167,10 @@ export function SpotMarquee<T extends { id?: string }>({
         aria-roledescription="carousel"
         tabIndex={0}
         onKeyDown={handleKeyDown}
-        className="flex items-start snap-x snap-mandatory gap-3 sm:gap-4 overflow-x-auto scroll-smooth overscroll-x-contain no-scrollbar py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:rounded-lg"
+        className={cn(
+          "flex items-start snap-x snap-mandatory gap-3 sm:gap-4 overflow-x-auto scroll-smooth overscroll-x-contain no-scrollbar py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:rounded-lg",
+          scrollerClassName,
+        )}
       >
         {items.map((item, idx) => {
           const key = getItemKey

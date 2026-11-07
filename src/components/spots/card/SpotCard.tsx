@@ -6,6 +6,7 @@ import { SpotMapFallback } from "@/components/spots/card/SpotMapFallback";
 import { memo, useCallback, type MouseEvent } from "react";
 import { cn } from "@/lib/utils/cn";
 import { TypeBadges } from "@/components/spots/shared/TypeBadges";
+import { tagClass } from "@/components/ui/recipes";
 import type { Spot } from "@/lib/types";
 
 interface BaseSpotCardProps {
@@ -16,10 +17,12 @@ interface BaseSpotCardProps {
   isVerified?: boolean;
   onToggleVerify?: (id: string, meta?: { name?: string }) => void;
   className?: string;
+  /** Optional "1.2 MI AWAY" label shown in the meta row (suggested spots). */
+  distanceLabel?: string;
 }
 
 const ROOT_CLASSES =
-  "group relative flex w-full flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest text-left transition-colors hover:border-on-surface focus-within:border-on-surface";
+  "group relative flex w-full flex-col overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest text-left transition-colors hover:border-on-surface focus-within:border-on-surface";
 
 const IMAGE_WRAPPER_CLASSES =
   "relative h-48 w-full overflow-hidden bg-surface-container";
@@ -74,6 +77,7 @@ function BaseSpotCardImpl({
   isVerified = false,
   onToggleVerify,
   className,
+  distanceLabel,
   toggleIconVariant,
   removeCopy,
 }: BaseSpotCardProps & {
@@ -184,6 +188,9 @@ function BaseSpotCardImpl({
                   />
                   {spot.verificationCount}
                 </p>
+              )}
+              {distanceLabel && (
+                <span className={tagClass("onPhoto")}>{distanceLabel}</span>
               )}
             </div>
           </div>
