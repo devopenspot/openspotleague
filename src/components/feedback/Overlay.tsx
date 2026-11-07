@@ -26,6 +26,12 @@ interface OverlayProps {
   hideBackdrop?: boolean;
   initialFocus?: FocusTrapInitialFocus;
   animation?: 'center' | 'top';
+  /**
+   * Skip the default panel sizing (`max-w-3xl`, radius, margins) so the
+   * caller's `panelClassName` owns width and shape. `cn` does not merge
+   * Tailwind classes, so a second `max-w-*` would otherwise conflict.
+   */
+  unsized?: boolean;
 }
 
 export function Overlay({
@@ -43,6 +49,7 @@ export function Overlay({
   hideBackdrop = false,
   initialFocus,
   animation = 'center',
+  unsized = false,
 }: OverlayProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   useFocusTrap(panelRef, isOpen, initialFocus);
@@ -114,7 +121,9 @@ export function Overlay({
               'relative z-10 outline-none',
               flush
                 ? 'flex h-full w-full flex-col'
-                : 'mx-auto my-6 w-full max-w-3xl rounded-[16px]',
+                : unsized
+                  ? ''
+                  : 'mx-auto my-6 w-full max-w-3xl rounded-[16px]',
               panelClassName,
             )}
           >

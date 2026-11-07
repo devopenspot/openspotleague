@@ -224,12 +224,14 @@ describe("GameLanding", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("That game has ended or is full")
   })
 
-  it("exposes game rules and rider policy modal triggers from LandingInfo", async () => {
+  it("puts the game rules and rider policy triggers in the setup section", async () => {
     const user = userEvent.setup()
     render(<GameLanding signedIn={false} />)
 
-    const footer = screen.getByRole("contentinfo", { name: "Game information and rules" })
-    expect(footer).toBeInTheDocument()
+    const setup = screen.getByRole("region", { name: "Set up your game" })
+    expect(within(setup).getByRole("button", { name: "Game rules" })).toBeInTheDocument()
+    expect(within(setup).getByRole("button", { name: "Rider policy" })).toBeInTheDocument()
+    expect(screen.queryByRole("contentinfo")).not.toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Game rules" }))
     expect(screen.getByRole("dialog", { name: "Game rules modal" })).toBeInTheDocument()

@@ -163,9 +163,12 @@ function parseNearbySpot(value: unknown): Spot {
 export function GameCreateForm({
   signedIn,
   initialPrefill,
+  onOpenPolicy,
 }: {
   signedIn: boolean;
   initialPrefill?: GamePrefill | null;
+  /** Opens the rider policy dialog from the note beside the start action. */
+  onOpenPolicy?: () => void;
 }) {
   const router = useRouter();
   const [prefillSpot, setPrefillSpot] = useState<Spot | null>(null);
@@ -1711,6 +1714,7 @@ export function GameCreateForm({
                 busy={busy}
                 testId="desktop-create-game"
               />
+              <RiskNote onOpenPolicy={onOpenPolicy} className="mt-3" />
               {!discipline && showSportPicker ? (
                 <p
                   role="note"
@@ -1882,6 +1886,9 @@ export function GameCreateForm({
               )}
             </div>
           )}
+          {activeSetupStep === "confirm" ? (
+            <RiskNote onOpenPolicy={onOpenPolicy} className="mt-4" />
+          ) : null}
           {error ? (
             <p
               role="alert"
@@ -1926,6 +1933,33 @@ export function GameCreateForm({
       </Overlay>
       <GameTransitionLoader isOpen={busy} variant="creating" mode={mode} />
     </section>
+  );
+}
+
+function RiskNote({
+  onOpenPolicy,
+  className = "",
+}: {
+  onOpenPolicy?: () => void;
+  className?: string;
+}) {
+  return (
+    <p className={`text-xs leading-5 text-on-surface-variant ${className}`}>
+      You ride at your own risk.
+      {onOpenPolicy ? (
+        <>
+          {" "}
+          <button
+            type="button"
+            onClick={onOpenPolicy}
+            aria-haspopup="dialog"
+            className="font-semibold text-on-surface underline underline-offset-2 hover:no-underline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          >
+            Read the rider policy
+          </button>
+        </>
+      ) : null}
+    </p>
   );
 }
 

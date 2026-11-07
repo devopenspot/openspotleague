@@ -12,7 +12,14 @@ import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
 import { ResponsibilityPolicyModal } from "@/components/games/shared/ResponsibilityPolicyModal";
-import { CARD, EYEBROW, META, tagClass } from "@/components/ui/recipes";
+import { BookOpen, ShieldCheck } from "lucide-react";
+import {
+  CARD,
+  EYEBROW,
+  META,
+  controlClass,
+  tagClass,
+} from "@/components/ui/recipes";
 import { dottedWord } from "@/lib/games/game-title";
 import { ResumeGameCard } from "@/components/games/matches/ResumeGameCard";
 import {
@@ -193,26 +200,52 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
             )}
           </div>
           <section aria-labelledby={`create-game-title`}>
-            <div className={``}>
-              <h2
-                id={`create-game-title`}
-                className={`mt-4 font-display text-on-primary text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em]`}
-              >
-                {UI_COPY.setupTitle}
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-on-primary/80">
-                {UI_COPY.modeHint}
-              </p>
-              <GameCreateForm signedIn={signedIn} initialPrefill={prefill} />
+            <div className="mt-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+              <div className="min-w-0 max-w-2xl">
+                <h2
+                  id={`create-game-title`}
+                  className={`font-display text-on-primary text-2xl font-bold uppercase leading-[1.3] tracking-[-0.02em]`}
+                >
+                  {UI_COPY.setupTitle}
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-on-primary/80">
+                  {UI_COPY.modeHint}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRulesOpen(true)}
+                  aria-haspopup="dialog"
+                  className={controlClass("onWash", "sm")}
+                >
+                  <BookOpen size={14} aria-hidden="true" />
+                  {UI_COPY.gameRules}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPolicyOpen(true)}
+                  aria-haspopup="dialog"
+                  className={controlClass("onWash", "sm")}
+                >
+                  <ShieldCheck size={14} aria-hidden="true" />
+                  {UI_COPY.riderPolicy}
+                </button>
+              </div>
             </div>
+            <GameCreateForm
+              signedIn={signedIn}
+              initialPrefill={prefill}
+              onOpenPolicy={() => setPolicyOpen(true)}
+            />
           </section>
-          <LandingInfo
-            onOpenRules={() => setRulesOpen(true)}
-            onOpenPolicy={() => setPolicyOpen(true)}
-          />
         </div>
       </div>
-      <RulesModal isOpen={rulesOpen} onClose={() => setRulesOpen(false)} />
+      <RulesModal
+        isOpen={rulesOpen}
+        onClose={() => setRulesOpen(false)}
+        eliminationWord={eliminationWord}
+      />
       <ResponsibilityPolicyModal
         isOpen={policyOpen}
         onClose={() => setPolicyOpen(false)}
@@ -234,41 +267,6 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
         </MatchesDrawer>
       ) : null}
     </>
-  );
-}
-
-function LandingInfo({
-  onOpenRules,
-  onOpenPolicy,
-}: {
-  onOpenRules: () => void;
-  onOpenPolicy: () => void;
-}) {
-  return (
-    <footer
-      role="contentinfo"
-      aria-label="Game information and rules"
-      className="mx-auto pb-6 text-on-gradient sm:pt-10 sm:pb-8"
-    >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="mb-12 flex flex-wrap items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={onOpenRules}
-            className="inline-flex min-h-12 items-center rounded-lg bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-          >
-            {UI_COPY.gameRules}
-          </button>
-          <button
-            type="button"
-            onClick={onOpenPolicy}
-            className="inline-flex min-h-12 items-center rounded-lg bg-surface-container-lowest px-4 font-display text-sm font-bold uppercase tracking-[0.04em] text-on-surface transition-colors hover:bg-surface-container-high focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-          >
-            {UI_COPY.riderPolicy}
-          </button>
-        </div>
-      </div>
-    </footer>
   );
 }
 
