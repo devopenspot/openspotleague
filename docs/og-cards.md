@@ -7,7 +7,7 @@ When someone shares an OpenSpot link on WhatsApp, iMessage, X, LinkedIn, Faceboo
 | Kind | Who draws it | Where |
 | --- | --- | --- |
 | **Generated, per entity** | The app, at request time | Spots (`src/app/spots/[id]/opengraph-image.tsx`, plus the spot's own photo in metadata), TV videos (YouTube thumbnail via `resolveTvOgImage` in `src/lib/tv/share.ts`), contest covers (`src/app/league/[slug]/opengraph-image.tsx`), per-rider result cards (`src/app/league/[slug]/r/[userId]/opengraph-image.tsx`), games and game invites (`src/app/games/[id]/opengraph-image.tsx`, `src/app/games/join/[shareCode]/opengraph-image.tsx`). Helpers are in `src/lib/og/`. |
-| **Static, per section** | The card sheet, exported once | `design/og-cards/`. The PNGs go into `public/`, and a route's `metadata` points at them. |
+| **Static, per section** | The card sheet, exported once | `design/og-cards/` → PNGs in `public/og/`, paths in `OG_IMAGES` (`src/lib/og/config.ts`), referenced from route `metadata` and as the base of the generated images above. |
 
 Leave the generated images alone when you change the sheet. The sheet only owns the static ones.
 
@@ -24,17 +24,26 @@ Leave the generated images alone when you change the sheet. The sheet only owns 
 
 ### Cards
 
-| id | File | Meant for |
-| --- | --- | --- |
-| `default` | `og-default.png` | Every page without its own image (root `layout.tsx`). |
-| `tv` | `og-tv.png` | `/tv` landing. Each video keeps its own thumbnail. |
-| `league` | `og-league.png` | `/league` landing. |
-| `games-training` | `og-games-training.png` | Training games. |
-| `games-battle` | `og-games-battle.png` | Battle (challenge mode) games. |
-| `league-results` | `og-league-results.png` | A contest that has ended / published results. |
-| `games-results` | `og-games-results.png` | A game that has ended. |
-| `rider` | `og-rider.png` | Rider profile (generic, no personal data). |
-| `curator` | `og-data-curator.png` | `/support/data-curator` invitation. |
+All cards live in `public/og/`. Their paths come from `OG_IMAGES` in `src/lib/og/config.ts`; never hard-code a path.
+
+| id | File (`public/og/`) | `OG_IMAGES` key | Wired at |
+| --- | --- | --- | --- |
+| `default` | `og-default.png` | `default` | Root `src/app/layout.tsx` (every page without its own image), the not-found branches of contest and game metadata, and the spot fallback via `DEFAULT_OG_IMAGE_PATH`. |
+| `tv` | `og-tv.png` | `tv` | `/tv` landing through `TV_OG_IMAGE_PATH` (`src/lib/tv/share.ts`). Each video keeps its YouTube thumbnail. |
+| `league` | `og-league.png` | `league` | `/league` metadata (`src/app/league/page.tsx`), and contests without a cover while upcoming or live (`contestOgCard`). |
+| `games-training` | `og-games-training.png` | `gamesTraining` | `/games` (`src/app/games/layout.tsx`), and training games and invites (`gameOgCard`). |
+| `games-battle` | `og-games-battle.png` | `gamesBattle` | Battle (`mode: "challenge"`) games and invites (`gameOgCard`). |
+| `league-results` | `og-league-results.png` | `leagueResults` | Contests without a cover once `status` is `completed` (`contestOgCard`). |
+| `games-results` | `og-games-results.png` | `gamesResults` | Any game whose `status` is `complete` (`gameOgCard`). |
+| `rider` | `og-rider.png` | `rider` | Not wired: there is no public rider profile page yet. Ready for that route. |
+| `curator` | `og-data-curator.png` | `curator` | `/support/data-curator` metadata (the page is `noindex`; unfurls still read OpenGraph). |
+
+How the generated images use them:
+
+- `src/app/games/[id]/opengraph-image.tsx` and `src/app/games/join/[shareCode]/opengraph-image.tsx` draw `gameOgCard(mode, status)` full-bleed, with `og-default` as the fallback.
+- `src/app/league/[slug]/opengraph-image.tsx` draws the contest cover when it has one, otherwise `contestOgCard(status)`.
+- `src/app/league/[slug]/r/[userId]/opengraph-image.tsx` (rider result) keeps its own text layout. With no contest cover it uses the League gradient, not a card, so two sets of text never stack.
+- The "not found" variants of the game and contest images show `public/logo.png` above their message.
 
 ### Using it
 
@@ -46,19 +55,21 @@ Leave the generated images alone when you change the sheet. The sheet only owns 
 
 ## Shipping a card
 
-1. Export, then copy the PNG into `public/`. Use a **new filename** whenever the design changes (for example `og-league-v2.png`). Platforms cache share images by URL, often for weeks, and many ignore query strings, so renaming is the only reliable cache-buster.
-2. Point the route's metadata at it, with explicit size and alt text, in both `openGraph` and `twitter`:
+1. Export, then copy the PNG into `public/og/`. Use a **new filename** whenever the design changes (for example `og-league-v2.png`) and update its `OG_IMAGES` entry. Platforms cache share images by URL, often for weeks, and many ignore query strings, so renaming is the only reliable cache-buster. `src/lib/og/config.test.ts` fails if an `OG_IMAGES` path has no file in `public/`.
+2. Point the route's metadata at it with `ogImage()` (adds the 1200×630 size), in both `openGraph` and `twitter`:
 
    ```ts
+   import { OG_IMAGES, ogImage } from "@/lib/og/config";
+
    export const metadata: Metadata = {
-     openGraph: { images: [{ url: "/og-league.png", width: 1200, height: 630, alt: "OpenSpot League contests" }] },
-     twitter: { card: "summary_large_image", images: ["/og-league.png"] },
+     openGraph: { images: [ogImage(OG_IMAGES.league, "OpenSpot League contests")] },
+     twitter: { card: "summary_large_image", images: [OG_IMAGES.league] },
    };
    ```
 
    `metadataBase` (`src/app/layout.tsx`, from `env.APP_URL`) turns the relative path into an absolute URL. Pages and layouts only, following the existing pattern: `src/app/tv/page.tsx`, `src/app/games/layout.tsx`.
-3. A route with its own `opengraph-image.tsx` file wins over `metadata.openGraph.images`. Remove the file convention for routes that should use a static PNG.
-4. Keep each PNG small: under about 300 KB is a good target (WhatsApp drops images over about 600 KB without warning). Run it through an optimizer if the export is larger.
+3. A route with its own `opengraph-image.tsx` file wins over `metadata.openGraph.images`. Remove the file convention for routes that should use a static PNG (the root one was removed for this reason).
+4. Keep each PNG small. WhatsApp drops images over about 600 KB without warning. The flat cards export at 75–130 KB; the gradient ones (League, rider) at about 350 KB, because 256-colour optimisers band the gradients.
 5. Deploy, then re-scrape the URL in the Facebook Sharing Debugger and LinkedIn Post Inspector. X and WhatsApp refresh on their own schedule; a new filename is what makes them pick up the change.
 
 `public/` is served by Workers static assets, so the PNGs need no code to serve, but they are **not on disk at runtime**. A generated image that needs one goes through `loadPublicImageAsDataUrl` (`src/lib/og/images.ts`).
@@ -70,7 +81,7 @@ Leave the generated images alone when you change the sheet. The sheet only owns 
 1. In `index.html`, copy an existing `<div class="item">…</div>` block and give its `<section>` a new, unique `id`.
 2. Reuse a wash class (`wash-default`, `wash-tv`, `wash-league`, `wash-training`, `wash-battle`, `wash-profile`, `wash-support`) or add one next to them. Follow the one-wash-per-route rule in `AGENTS.md`: a card's wash matches the route it represents.
 3. Keep the shared layout (`.inner` grid, `.eyebrow`, `h2`, `.sub`, `.foot`) so cards look like a set. Two-line titles at 66px fit. If a title wraps to three lines, shorten the copy rather than shrinking the font.
-4. Add `"<id>:<file>.png"` to `CARDS` in `export.sh` and a row to the tables here and in the README.
+4. Add `"<id>:<file>.png"` to `CARDS` in `export.sh`, a key to `OG_IMAGES`, and a row to the tables here and in the README.
 
 ### Brand changes
 
@@ -91,11 +102,9 @@ A static PNG can't show a rider's name, a contest's winner or a game's score. Wh
 
 Don't duplicate HTML per variant. Pass the variant in the query string (`?only=league&lang=es`), read it in the small script at the bottom of `index.html` to swap the copy, and loop over the variants in `export.sh`. Name the outputs by variant (`og-league.es.png`).
 
-## Known debt
+## Remaining debt
 
-The cards in the sheet replace these. Clear them when the new PNGs are wired in:
-
-- `public/opengraph.png` is 2239×1188 but is declared as 1200×630 in `src/app/layout.tsx`.
-- `public/opengrapgh-tv.png` is misspelled and 1140×470 (`src/lib/tv/share.ts`).
-- The root `src/app/opengraph-image.tsx` only wraps `opengraph.png`. Once the root metadata points at `og-default.png`, remove it, or it will keep winning.
-- `src/app/games/layout.tsx` uses the square `challenges.jpg` with no width or height set.
+- `public/opengraph.png` (2239×1188) is no longer a share image, but `AppImage`'s fallback and `DEFAULT_CONTEST_IMAGE` (`src/lib/league/cover.ts`) still use it. Leave it until those move to their own asset.
+- `public/opengrapgh-tv.png` (misspelled) has no references left. Delete it after the next deploy, once crawlers have refreshed.
+- `CHALLENGE_OG_IMAGE_PATH` / `TRAINING_OG_IMAGE_PATH` in `src/lib/og/config.ts` are unused; `challenges.jpg` / `trainings.jpg` are still used as artwork elsewhere.
+- Contest images switch to the results card on `status === "completed"`, which comes before results are published. Use a published flag instead if `ContestEnriched` gains one.

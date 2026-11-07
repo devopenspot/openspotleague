@@ -48,7 +48,7 @@ describe("tv metadata", () => {
     const result = await generateMetadata({
       searchParams: Promise.resolve({}),
     });
-    const expected = new URL("/opengrapgh-tv.png", env.APP_URL).toString();
+    const expected = new URL("/og/og-tv.png", env.APP_URL).toString();
 
     expect(result.title).toBe("TV — Open Spot");
     expect(result.openGraph).toMatchObject({
@@ -91,7 +91,7 @@ describe("tv metadata", () => {
       ...CARD,
       youtubeUrl: "https://example.com/not-youtube",
     });
-    const expected = new URL("/opengrapgh-tv.png", env.APP_URL).toString();
+    const expected = new URL("/og/og-tv.png", env.APP_URL).toString();
 
     const result = await generateMetadata({
       searchParams: Promise.resolve({ play: "vid-1" }),
@@ -118,7 +118,7 @@ describe("tv metadata", () => {
 
   it("falls back to the generic TV card when the video is unavailable", async () => {
     findTvCardByIdMock.mockResolvedValue(null);
-    const expected = new URL("/opengrapgh-tv.png", env.APP_URL).toString();
+    const expected = new URL("/og/og-tv.png", env.APP_URL).toString();
 
     const result = await generateMetadata({
       searchParams: Promise.resolve({ play: "missing" }),

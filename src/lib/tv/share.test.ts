@@ -44,11 +44,11 @@ describe("tv share", () => {
   });
 
   it("points at the static TV OG asset", () => {
-    expect(TV_OG_IMAGE_PATH).toBe("/opengrapgh-tv.png");
+    expect(TV_OG_IMAGE_PATH).toBe("/og/og-tv.png");
   });
 
   describe("resolveTvOgImage", () => {
-    const fallbackUrl = "https://example.com/opengrapgh-tv.png";
+    const fallbackUrl = "https://example.com/og/og-tv.png";
 
     it("returns the fallback static banner when video is null", () => {
       const result = resolveTvOgImage(null, fallbackUrl);
