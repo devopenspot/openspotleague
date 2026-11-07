@@ -70,9 +70,29 @@ How the generated images use them:
    `metadataBase` (`src/app/layout.tsx`, from `env.APP_URL`) turns the relative path into an absolute URL. Pages and layouts only, following the existing pattern: `src/app/tv/page.tsx`, `src/app/games/layout.tsx`.
 3. A route with its own `opengraph-image.tsx` file wins over `metadata.openGraph.images`. Remove the file convention for routes that should use a static PNG (the root one was removed for this reason).
 4. Keep each PNG small. WhatsApp drops images over about 600 KB without warning. The flat cards export at 75–130 KB; the gradient ones (League, rider) at about 350 KB, because 256-colour optimisers band the gradients.
-5. Deploy, then re-scrape the URL in the Facebook Sharing Debugger and LinkedIn Post Inspector. X and WhatsApp refresh on their own schedule; a new filename is what makes them pick up the change.
+5. Deploy, then run `pnpm og:check` (see [Checking a deploy](#checking-a-deploy)). When it passes, re-scrape the URL in the Facebook Sharing Debugger and LinkedIn Post Inspector. X and WhatsApp refresh on their own schedule; a new filename is what makes them pick up the change.
 
 `public/` is served by Workers static assets, so the PNGs need no code to serve, but they are **not on disk at runtime**. A generated image that needs one goes through `loadPublicImageAsDataUrl` (`src/lib/og/images.ts`).
+
+## Checking a deploy
+
+`pnpm og:check [baseUrl]` fetches `/`, `/tv`, `/league`, `/games` and `/support/data-curator` with a crawler user agent, reads each page's share tags, then downloads the image the way WhatsApp or Facebook would. Read-only, no database. The base URL defaults to `APP_URL` from `.env.local`; pass one to check another host (`pnpm og:check https://openspotleague.com`). It exits 1 on any failure.
+
+Per page it checks:
+
+- an `og:image` tag exists, is absolute https, and is on **the same host that served the page**;
+- the declared size is 1200×630, and `twitter:image` matches `og:image`;
+- the image downloads: the host resolves, HTTP 200, `image/png` or `image/jpeg`, under 600 KB.
+
+The page list is `OG_CHECK_PATHS` and the logic is in `src/lib/og/check.ts` (unit-tested); the runner is `scripts/og-check.ts`. Add a path there when you wire a new static card.
+
+### Troubleshooting: links show no image
+
+Check in this order:
+
+1. **The image host.** Run `pnpm og:check https://openspotleague.com`. The `og:image` URL is built from `metadataBase` = `env.APP_URL` (`src/app/layout.tsx`), so a wrong `APP_URL` breaks every share image at once, while the pages themselves look fine. This happened in November 2026: production `APP_URL` was `https://www.openspotleague.com`, but `www` had no DNS record (only the apex is attached to the Worker), so crawlers could not download any card. The fix is to keep `APP_URL` on a host the Worker serves, and to redeploy with `pnpm deploy:secrets`, because plain `pnpm deploy` keeps the old secret value. To serve `www` too, add it as a custom domain on the `open-spot` Worker in the Cloudflare dashboard first.
+2. **The file.** `curl -I <og:image URL>` must return 200 `image/png`. A 404 means the PNG is missing from `public/og/` or the deploy is old.
+3. **The platform cache.** If both pass, the platform is showing a cached unfurl. Re-scrape in the Facebook Sharing Debugger. WhatsApp caches per link, so test with a link it has not seen (add `?v=2`).
 
 ## Scaling
 
