@@ -4,9 +4,9 @@ import { Undo2 } from "lucide-react";
 import type { PendingResult } from "@/components/games/hooks/usePendingResult";
 
 export function pendingResultStatus(pending: PendingResult) {
-  if (pending.status === "unsent") return "No signal — result saved";
+  if (pending.status === "unsent") return "No signal. Tap Send Again when you're back online.";
   if (pending.status === "sending") return "Sending…";
-  return pending.result === "landed" ? "Marked as Landed" : "Marked as Failed";
+  return pending.result === "landed" ? "Marked as Landed" : "Marked as Missed";
 }
 
 const BASE =
@@ -70,7 +70,7 @@ export function PendingResultBar({
       <button
         type="button"
         onClick={onUndo}
-        aria-label={`Undo ${pending.result}`}
+        aria-label={`Undo ${pending.result === "landed" ? "Landed" : "Missed"}`}
         className={`${BASE} ${SECONDARY} ${sizing}`}
       >
         <span

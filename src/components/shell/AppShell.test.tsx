@@ -89,7 +89,7 @@ describe("AppShell", () => {
     expect(screen.getByTestId("bottom-nav")).toBeInTheDocument();
     expect(screen.getByRole("main")).toHaveAttribute(
       "aria-label",
-      "Open Spot challenges",
+      "Open Spot games",
     );
   });
 

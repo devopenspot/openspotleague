@@ -55,6 +55,13 @@ export function formatDistance(meters: number, unit: DistanceUnit): string {
   return `${Math.round(value / 10) * 10} ${suffix}`;
 }
 
+/** A short radius for copy ("250 m", "820 ft"), unlike `formatDistance`'s "… AWAY". */
+export function formatRadius(meters: number, unit: DistanceUnit): string {
+  return unit === "km"
+    ? `${Math.round(meters)} m`
+    : `${Math.round((meters * 3.28084) / 10) * 10} ft`;
+}
+
 export const SPOT_DISTANCE_CTA_LABEL = "DISTANCE";
 
 export type SpotDistanceInfo =

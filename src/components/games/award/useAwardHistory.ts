@@ -18,6 +18,11 @@ function guestHeaders(): Record<string, string> {
   return { "x-guest-token": token };
 }
 
+const RESULTS_FAILED = "Results couldn't load. Check your signal and try again.";
+
+/** A results failure whose message is written for riders. */
+class ResultsError extends Error {}
+
 export function useAwardHistory() {
   const [state, setState] = useState<AwardHistoryState>({
     open: false,
@@ -43,11 +48,13 @@ export function useAwardHistory() {
         signal: controller.signal,
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => res.statusText);
-        throw new Error(text || `Failed to load game ${gameId}`);
+        throw new ResultsError(
+          res.status === 404 ? "That game no longer exists." : RESULTS_FAILED,
+        );
       }
-      const json = await res.json();
-      const game = gameStateSchema.parse(json);
+      const parsed = gameStateSchema.safeParse(await res.json().catch(() => null));
+      if (!parsed.success) throw new ResultsError(RESULTS_FAILED);
+      const game = parsed.data;
       if (controller.signal.aborted) return;
       setState({ open: true, gameId, game, loading: false, error: null });
     } catch (error) {
@@ -56,7 +63,7 @@ export function useAwardHistory() {
         ...s,
         open: false,
         loading: false,
-        error: error instanceof Error ? error.message : "Failed to load results",
+        error: error instanceof ResultsError ? error.message : RESULTS_FAILED,
       }));
     }
   }, []);

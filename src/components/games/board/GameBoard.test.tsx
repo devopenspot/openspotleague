@@ -278,7 +278,7 @@ describe("GameBoard", () => {
       activeGameOverride = null;
     });
 
-    async function tapResult(name: "Mark as landed" | "Mark as failed") {
+    async function tapResult(name: "Mark as landed" | "Mark as missed") {
       mockGameState = activeGameOverride ?? activeGame;
       render(<GameBoard userId="rider-1" />);
       const sheet = await screen.findByTestId("game-sheet");
@@ -294,7 +294,7 @@ describe("GameBoard", () => {
 
     it("sends nothing until the window ends", async () => {
       mockAction.mockResolvedValue({ ok: true, data: { id: "game-123", version: 2 } });
-      await tapResult("Mark as failed");
+      await tapResult("Mark as missed");
 
       await advance(3999);
       expect(mockAction).not.toHaveBeenCalled();
@@ -351,7 +351,7 @@ describe("GameBoard", () => {
       fireEvent.click(
         within(screen.getByRole("listitem", { current: "step" })).getByRole(
           "button",
-          { name: "Undo landed" },
+          { name: "Undo Landed" },
         ),
       );
       await advance(5000);
@@ -360,10 +360,10 @@ describe("GameBoard", () => {
     });
 
     it("never sends a result the rider undid", async () => {
-      const sheet = await tapResult("Mark as failed");
+      const sheet = await tapResult("Mark as missed");
 
       fireEvent.click(
-        within(sheet).getByRole("button", { name: "Undo failed" }),
+        within(sheet).getByRole("button", { name: "Undo Missed" }),
       );
       await advance(5000);
 
@@ -380,7 +380,7 @@ describe("GameBoard", () => {
       await advance(4000);
 
       expect(
-        within(sheet).getByRole("button", { name: /No signal — result saved/ }),
+        within(sheet).getByRole("button", { name: /No signal/ }),
       ).toBeInTheDocument();
 
       fireEvent.click(within(sheet).getByRole("button", { name: "Send Again" }));

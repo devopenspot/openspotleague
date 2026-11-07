@@ -2399,10 +2399,13 @@ export async function getGameState(identity: Identity, gameId: string, shareCode
   const game = await loadAuthorizedGame(db, identity, gameId, shareCode)
   if (knownVersion !== undefined && game.version === knownVersion) return null
 
-  const [players, recentRoundRows, raceLapRows] = await Promise.all([
+  const [players, recentRoundRows, raceLapRows, spotNameRows] = await Promise.all([
     db.select().from(gamePlayers).where(eq(gamePlayers.gameId, gameId)),
     db.select().from(gameRounds).where(eq(gameRounds.gameId, gameId)).orderBy(desc(gameRounds.sequence)).limit(DEFAULT_GAME_HISTORY_LIMIT),
     db.select().from(gameRaceLaps).where(eq(gameRaceLaps.gameId, gameId)).orderBy(asc(gameRaceLaps.lapNumber), asc(gameRaceLaps.submittedAt)).limit(RACE_LAP_STATE_LIMIT),
+    game.spotId
+      ? db.select({ name: spots.name }).from(spots).where(eq(spots.id, game.spotId)).limit(1)
+      : Promise.resolve([] as { name: string }[]),
   ])
   let roundRows = recentRoundRows
   if (game.currentRoundId && !roundRows.some((round) => round.id === game.currentRoundId)) {
@@ -2485,6 +2488,7 @@ export async function getGameState(identity: Identity, gameId: string, shareCode
     catalogId: game.catalogId,
     spotId: game.spotId,
     spotLabel: game.spotLabel ?? null,
+    spotName: spotNameRows[0]?.name ?? (game.spotRemoved ? game.spotNameSnapshot : null) ?? null,
     scheduledStartAt: game.scheduledStartAt?.toISOString() ?? null,
     timezone: game.timezone,
     locationRadiusMeters: game.locationRadiusMeters,
@@ -2887,11 +2891,14 @@ export async function listGamesForUser(userId: string, limit = 20): Promise<Game
       gameName: gameSessions.gameName,
       spotId: gameSessions.spotId,
       spotLabel: gameSessions.spotLabel,
+      spotName: sql<string | null>`coalesce(${spots.name}, ${gameSessions.spotNameSnapshot})`,
       scheduledStartAt: gameSessions.scheduledStartAt,
       nextSpotType: gameSessions.nextSpotType,
       version: gameSessions.version,
       updatedAt: gameSessions.updatedAt,
-    }).from(gameSessions).where(inArray(gameSessions.id, ids)).orderBy(desc(gameSessions.updatedAt)).limit(limit),
+    }).from(gameSessions)
+      .leftJoin(spots, eq(spots.id, gameSessions.spotId))
+      .where(inArray(gameSessions.id, ids)).orderBy(desc(gameSessions.updatedAt)).limit(limit),
   )
   return gameListResponseSchema.parse(games.map((game) => ({
     ...game,

@@ -223,6 +223,8 @@ export const gameStateSchema = z.object({
   catalogId: z.string().min(1).nullable(),
   spotId: z.string().min(1).nullable(),
   spotLabel: z.string().min(1).nullable().optional(),
+  /** Registered spot's name (or its snapshot once removed), for display. */
+  spotName: z.string().min(1).nullable().optional(),
   scheduledStartAt: wireDateSchema.nullable(),
   timezone: z.string().min(1).nullable(),
   locationRadiusMeters: z.number().finite().positive().nullable(),
@@ -275,6 +277,7 @@ export const gameListItemSchema = z.object({
   gameName: z.string().min(1),
   spotId: z.string().min(1).nullable(),
   spotLabel: z.string().min(1).nullable().optional(),
+  spotName: z.string().min(1).nullable().optional(),
   scheduledStartAt: wireDateSchema.nullable(),
   nextSpotType: z.string().min(1),
   version: z.number().int().nonnegative(),

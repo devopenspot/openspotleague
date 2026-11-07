@@ -38,7 +38,7 @@ describe("OpenTrainingGamesDrawer", () => {
 
     expect(await screen.findByText("Play a Skate")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /resume/i })).toHaveAttribute("href", "/games/game-1")
-    expect(screen.getByRole("button", { name: /finish run/i })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /close game/i })).toBeInTheDocument()
   })
 
   it("confirms cancellation and removes the game", async () => {
@@ -47,10 +47,10 @@ describe("OpenTrainingGamesDrawer", () => {
     render(<OpenTrainingGamesDrawer isOpen onClose={onClose} authenticated />)
     await screen.findByText("Play a Skate")
 
-    await user.click(screen.getByRole("button", { name: /finish run/i }))
-    expect(screen.getByText(/finish this run/i)).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: /close game/i }))
+    expect(screen.getByText(/close this game/i)).toBeInTheDocument()
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ id: game.id, version: 5, status: "cancelled" }))
-    await user.click(screen.getByRole("button", { name: /yes, finish run/i }))
+    await user.click(screen.getByRole("button", { name: /yes, close game/i }))
 
     await waitFor(() => expect(screen.queryByText("Play a Skate")).not.toBeInTheDocument())
     const cancelCall = vi.mocked(fetch).mock.calls.find(([url]) => url === "/api/games/game-1/cancel")
@@ -63,9 +63,9 @@ describe("OpenTrainingGamesDrawer", () => {
     Object.defineProperty(window, "localStorage", { value: { getItem: () => "guest-token-12345678901234567890" }, configurable: true })
     render(<OpenTrainingGamesDrawer isOpen onClose={vi.fn()} authenticated={false} />)
     await screen.findByText("Play a Skate")
-    await user.click(screen.getByRole("button", { name: /finish run/i }))
+    await user.click(screen.getByRole("button", { name: /close game/i }))
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ id: game.id, version: 5, status: "cancelled" }))
-    await user.click(screen.getByRole("button", { name: /yes, finish run/i }))
+    await user.click(screen.getByRole("button", { name: /yes, close game/i }))
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/games/game-1/cancel", expect.objectContaining({
       headers: expect.objectContaining({ "x-guest-token": "guest-token-12345678901234567890" }),
@@ -77,6 +77,6 @@ describe("OpenTrainingGamesDrawer", () => {
     render(<OpenTrainingGamesDrawer isOpen onClose={vi.fn()} authenticated />)
 
     expect(await screen.findByText("No open training games")).toBeInTheDocument()
-    expect(within(screen.getByRole("dialog")).getByText(/next training challenge/i)).toBeInTheDocument()
+    expect(within(screen.getByRole("dialog")).getByText(/next training game/i)).toBeInTheDocument()
   })
 })

@@ -67,6 +67,54 @@ describe("ChallengeSpotStep with no spot nearby", () => {
   });
 });
 
+describe("ChallengeSpotStep after rejecting the only spot", () => {
+  const spot = { id: "spot-1", name: "Old Ledge", city: "Madrid", visibility: "public" } as unknown as Spot;
+
+  it("keeps a way forward in a battle: quick-add and Play as Training", () => {
+    render(
+      <ChallengeSpotStep
+        {...baseProps}
+        selectedSpot={spot}
+        spotAccepted={false}
+        onContinueTraining={vi.fn()}
+        quickAdd={<p>quick add form</p>}
+      />,
+    );
+    expect(screen.getByText("quick add form")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play as Training" })).toBeInTheDocument();
+    expect(screen.queryByText(/stays locked/)).toBeNull();
+  });
+
+  it("hides Retry location once the spot is accepted", () => {
+    render(
+      <ChallengeSpotStep
+        {...baseProps}
+        selectedSpot={spot}
+        spotAccepted
+        onContinueTraining={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Retry location" })).toBeNull();
+  });
+});
+
+describe("ChallengeSpotStep copy in training", () => {
+  it("never tells a training rider to continue with Training", () => {
+    for (const locationStatus of ["denied", "unavailable", "granted", "idle"] as const) {
+      const { container, unmount } = render(
+        <ChallengeSpotStep
+          {...baseProps}
+          context="training"
+          locationStatus={locationStatus}
+          onContinueTraining={vi.fn()}
+        />,
+      );
+      expect(container.textContent).not.toMatch(/continue with Training|Challenge needs/i);
+      unmount();
+    }
+  });
+});
+
 describe("TrainingPlaceStep", () => {
   it("shows the place name field only for Just a name", async () => {
     const onPlaceChange = vi.fn();

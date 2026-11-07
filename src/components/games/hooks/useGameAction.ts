@@ -161,9 +161,7 @@ export function useGameAction({
             version: refreshed.version,
           });
         } catch {
-          if (mountedRef.current && response.ok) {
-            setError("Action submitted. Waiting for the updated game state.");
-          }
+          // The action landed; realtime brings the new state, so no message.
         }
         const superseded = options.isSuperseded?.(refreshed) ?? false;
         const errorPayload = data as GameErrorPayload;
@@ -179,24 +177,20 @@ export function useGameAction({
           !(options.silentStale && errorPayload?.code === "STALE_VERSION")
         ) {
           if (mountedRef.current) {
-            setError(errorPayload?.error ?? "Action was rejected. Refreshing state.");
+            setError(errorPayload?.error ?? "That didn't go through. The game is up to date, so try again.");
           }
         }
         if (response.ok) {
           const labels: Record<string, string> = {
-            "/join": "You joined the challenge.",
-            "/start": "Challenge started.",
+            "/join": "You joined the game.",
+            "/start": "Game on.",
             "/train-alone": "Solo training started.",
             "/leave": "You left the lobby.",
           };
-          if (path.includes("/next-trick")) showToast("Alternative trick ready.", "success");
+          if (path.includes("/next-trick")) showToast("New trick ready.", "success");
           else if (labels[path]) showToast(labels[path], "success");
-        } else if (
-          !superseded &&
-          (!options.silentStale || errorPayload?.code !== "STALE_VERSION")
-        ) {
-          showToast(errorPayload?.error ?? "Action was rejected.", "error");
         }
+        // Rejections are shown inline (setError above), not repeated as a toast.
         if (startWasAlreadyApplied) {
           debugGameAction("start.reconciled", { gameId, expectedVersion, status: refreshed?.status, version: refreshed?.version });
         }
@@ -208,9 +202,9 @@ export function useGameAction({
         if (mountedRef.current) {
           try {
             await refreshGameState();
-            setError("The action result was uncertain. The game state was refreshed.");
+            setError("We couldn't confirm that. The game is up to date, so check it before trying again.");
           } catch {
-            setError("The action could not be completed. Refresh the game and try again.");
+            setError("No connection. Check your signal and try again.");
           }
         }
         return { ok: false as const, data: null };

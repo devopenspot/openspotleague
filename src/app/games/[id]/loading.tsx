@@ -17,8 +17,8 @@ export default function GameBoardLoading() {
 
       {/* Main arcade CRT bezel container */}
       <div className="mx-auto flex w-full max-w-7xl min-h-0 flex-1 flex-col overflow-hidden pt-2" aria-hidden="true">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest p-2">
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-[12px] bg-surface-container">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest p-2">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-card bg-surface-container">
             <div className="h-8 w-36 animate-pulse rounded-full bg-surface-container-highest" />
           </div>
         </div>

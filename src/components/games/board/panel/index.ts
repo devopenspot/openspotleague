@@ -1,2 +1,2 @@
-export { PanelShell, PanelScreenBezel, ScrewCluster } from "./PanelShell";
+export { PanelShell, PanelScreenBezel } from "./PanelShell";
 export { Led } from "./PanelIndicators";

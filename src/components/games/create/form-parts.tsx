@@ -3,13 +3,13 @@
 import type { KeyboardEvent, ReactNode } from "react";
 import { WeatherIcon } from "@/components/spots/weather/WeatherIcon";
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
-import { formatDistance } from "@/lib/spots/geo";
+import { formatDistance, formatRadius } from "@/lib/spots/geo";
+import { DEFAULT_LOCATION_RADIUS_METERS } from "@/lib/games/definitions";
 import {
   CARD,
   CARD_NESTED,
   INPUT,
   LABEL,
-  chipClass,
   controlClass,
 } from "@/components/ui/recipes";
 import { type useUserLocation } from "@/hooks/map/useUserLocation";
@@ -46,6 +46,10 @@ export const WEATHER_LIVE_OPTIONS: ReadonlyArray<{
 ] as const;
 
 export const GAME_CREATE_FORM_ID = "game-create-form";
+
+/** Matches the engine: only flexible games let the leader change a live trick. */
+export const RULE_MODE_HINT =
+  "Flexible: the leader can change the trick mid-round. Strict: the trick stays until the round ends.";
 
 const EMPTY_STATE_INLINE =
   "rounded-inner border border-dashed border-outline-variant bg-surface-container-low px-4 py-4 text-sm leading-5 text-on-surface-variant";
@@ -94,7 +98,7 @@ export function GuestNicknameField({
   const errorId = `${id}-error`;
 
   return (
-    <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
+    <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
       <label
         htmlFor={id}
         className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary"
@@ -113,7 +117,7 @@ export function GuestNicknameField({
         inputMode="text"
         aria-invalid={error ? "true" : undefined}
         aria-describedby={error ? errorId : undefined}
-        className="mt-3 min-h-11 w-full rounded-[16px] border border-outline-variant bg-surface-container-lowest px-3 font-sans text-base outline-none placeholder:text-on-surface-variant focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
+        className="mt-3 min-h-11 w-full rounded-container border border-outline-variant bg-surface-container-lowest px-3 font-sans text-base outline-none placeholder:text-on-surface-variant focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
       />
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </div>
@@ -125,6 +129,7 @@ export function OptionChip({
   label,
   role,
   ariaChecked,
+  pressed,
   disabled = false,
   invalid = false,
   onClick,
@@ -134,8 +139,10 @@ export function OptionChip({
 }: {
   active: boolean;
   label: string;
-  role: "radio";
-  ariaChecked: boolean;
+  /** Single choice. Leave it off and pass `pressed` for multi-select. */
+  role?: "radio";
+  ariaChecked?: boolean;
+  pressed?: boolean;
   disabled?: boolean;
   invalid?: boolean;
   onClick: () => void;
@@ -148,7 +155,8 @@ export function OptionChip({
       type="button"
       id={id}
       role={role}
-      aria-checked={ariaChecked}
+      aria-checked={role ? ariaChecked : undefined}
+      aria-pressed={role ? undefined : pressed}
       data-invalid={invalid ? "true" : undefined}
       disabled={disabled}
       tabIndex={tabIndex}
@@ -181,7 +189,6 @@ export function GameFormatSettings({
   onSpotTypeChange,
   onLevelChange,
   onRuleModeChange,
-  clearFieldError: _clearFieldError,
 }: {
   idPrefix?: string;
   hasDiscipline: boolean;
@@ -198,17 +205,17 @@ export function GameFormatSettings({
   onSpotTypeChange: (spotType: string) => void;
   onLevelChange: (level: TrickLevel) => void;
   onRuleModeChange: (ruleMode: RuleMode) => void;
-  clearFieldError: (field: FieldName) => void;
 }) {
-  void _clearFieldError;
   const controlId = (id: string) => getControlId(idPrefix, id);
-
   const trickSettingsLabelId = controlId("trick-settings-label");
+  const hasLevelCounts = levelCounts
+    ? Array.from(levelCounts.values()).some((v) => v > 0)
+    : false;
   return (
     <div
       role="group"
       aria-labelledby={trickSettingsLabelId}
-      className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+      className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
     >
       <p
         id={trickSettingsLabelId}
@@ -218,21 +225,17 @@ export function GameFormatSettings({
       </p>
       <div className="mt-4 space-y-6">
         <div>
-          <div className="flex items-baseline justify-between gap-3">
-            <p
-              id={controlId(GAME_SETTINGS_ANCHOR_ID)}
-              tabIndex={-1}
-              className="scroll-mt-20 font-display text-xs font-bold uppercase tracking-[0.05em] outline-none"
-            >
-              Spot type
-            </p>
-            <span className="inline-flex rounded-[8px] border border-outline-variant bg-surface-container px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-variant">
-              Default selected
-            </span>
-          </div>
+          <p
+            id={controlId(GAME_SETTINGS_ANCHOR_ID)}
+            tabIndex={-1}
+            className="scroll-mt-20 font-display text-xs font-bold uppercase tracking-[0.05em] outline-none"
+          >
+            Spot type
+          </p>
           {optionsLoading ? (
             <div
-              className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
+              className="mt-3 h-11 rounded-container border border-outline-variant bg-surface-container"
+              role="status"
               aria-label="Loading spot types"
             />
           ) : activeOptionsError ? (
@@ -271,42 +274,30 @@ export function GameFormatSettings({
         </div>
 
         <div>
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.05em]">
-              Level
-            </p>
-            <span className="inline-flex rounded-[8px] border border-outline-variant bg-surface-container px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-variant">
-              Level {selectedSpotType?.levels[0] ?? 1} default
-            </span>
-          </div>
+          <p className="font-display text-xs font-bold uppercase tracking-[0.05em]">
+            Level
+          </p>
           <div
             className="mt-3 flex flex-wrap gap-2"
             role="radiogroup"
             aria-label="Trick level"
           >
-            {([1, 2, 3, 4, 5] as const).map((option, index) => {
-              const hasData = levelCounts
-                ? Array.from(levelCounts.values()).some((v) => v > 0)
-                : false;
-              return (
-                <OptionChip
-                  key={option}
-                  active={effectiveLevel === option}
-                  label={
-                    hasData
-                      ? `Level ${option} (${levelCounts?.get(option) ?? 0})`
-                      : `Level ${option}`
-                  }
-                  role="radio"
-                  ariaChecked={effectiveLevel === option}
-                  disabled={
-                    !selectedSpotType || !availableLevels.includes(option)
-                  }
-                  invalid={Boolean(fieldErrors.level) && index === 0}
-                  onClick={() => onLevelChange(option)}
-                />
-              );
-            })}
+            {([1, 2, 3, 4, 5] as const).map((option, index) => (
+              <OptionChip
+                key={option}
+                active={effectiveLevel === option}
+                label={
+                  hasLevelCounts
+                    ? `Level ${option} (${levelCounts?.get(option) ?? 0})`
+                    : `Level ${option}`
+                }
+                role="radio"
+                ariaChecked={effectiveLevel === option}
+                disabled={!selectedSpotType || !availableLevels.includes(option)}
+                invalid={Boolean(fieldErrors.level) && index === 0}
+                onClick={() => onLevelChange(option)}
+              />
+            ))}
           </div>
           {fieldErrors.level ? (
             <FieldError>{fieldErrors.level}</FieldError>
@@ -318,7 +309,7 @@ export function GameFormatSettings({
             Rule mode
           </p>
           <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-            Flexible: leader can move on. Strict: challenge stays open.
+            {RULE_MODE_HINT}
           </p>
           <div
             className="mt-3 flex flex-wrap gap-2"
@@ -347,43 +338,47 @@ export function GameFormatSettings({
 }
 
 export function CategoriesField({
+  idPrefix = "",
   categories,
   selectedCategories,
   error,
   onToggle,
+  onClear,
   disabled,
   eligibleCount,
-  effectiveSpotType,
-  effectiveLevel,
   categoryCounts,
 }: {
+  idPrefix?: string;
   categories: readonly string[];
   selectedCategories: readonly string[];
   error?: string;
   onToggle: (category: string) => void;
+  /** Back to All. */
+  onClear: () => void;
   disabled?: boolean;
   eligibleCount?: number | null;
-  effectiveSpotType?: string;
-  effectiveLevel?: number;
   categoryCounts?: Map<string, number>;
 }) {
   const isAll = selectedCategories.length === 0;
+  const labelId = getControlId(idPrefix, "categories-field-label");
+  const hasData = categoryCounts
+    ? Array.from(categoryCounts.values()).some((v) => v > 0)
+    : false;
   return (
     <div
       role="group"
-      aria-labelledby="categories-field-label"
-      className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+      aria-labelledby={labelId}
+      className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
     >
       <p
-        id="categories-field-label"
+        id={labelId}
         className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
       >
         Categories
       </p>
       {categories.length === 0 ? (
         <p className="mt-2 text-xs leading-5 text-on-surface-variant">
-          No categories configured for this discipline — tricks will be drawn
-          from the full pool. Continue.
+          No categories for this sport yet. Tricks come from the full list.
         </p>
       ) : (
         <>
@@ -397,23 +392,9 @@ export function CategoriesField({
               aria-pressed={isAll}
               disabled={disabled}
               onClick={() => {
-                if (!isAll) {
-                  // clear to All
-                  categories.forEach((c) => {
-                    if (
-                      selectedCategories.some(
-                        (sc) => sc.toLowerCase() === c.toLowerCase(),
-                      )
-                    )
-                      onToggle(c);
-                  });
-                }
+                if (!isAll) onClear();
               }}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
-                isAll
-                  ? "border border-on-surface bg-on-surface text-surface"
-                  : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
-              }`}
+              className={categoryChipClass(isAll, false)}
             >
               All
             </button>
@@ -425,9 +406,6 @@ export function CategoriesField({
                 categoryCounts?.get(cat.toLowerCase()) ??
                 categoryCounts?.get(cat) ??
                 0;
-              const hasData = categoryCounts
-                ? Array.from(categoryCounts.values()).some((v) => v > 0)
-                : false;
               const zero = hasData && count === 0 && !active;
               return (
                 <button
@@ -438,56 +416,82 @@ export function CategoriesField({
                   disabled={disabled || zero}
                   title={
                     zero
-                      ? `No tricks for ${cat} at Level ${effectiveLevel} ${effectiveSpotType}`
+                      ? `No ${cat} tricks for this level and spot type`
                       : hasData
                         ? `${count} trick${count === 1 ? "" : "s"}`
                         : undefined
                   }
                   onClick={() => onToggle(cat)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
-                    active
-                      ? "border border-on-surface bg-on-surface text-surface"
-                      : zero
-                        ? "border border-outline-variant bg-surface-container-high text-on-surface-variant opacity-50 cursor-not-allowed"
-                        : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
-                  }`}
+                  className={categoryChipClass(active, zero)}
                 >
                   {cat} {hasData ? `(${count})` : ""}
                 </button>
               );
             })}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={disabled || isAll}
-              onClick={() =>
-                [...selectedCategories].forEach((c) => onToggle(c))
-              }
-              className="rounded-full border border-outline-variant bg-surface-container-high px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest disabled:opacity-40"
-            >
-              Clear
-            </button>
-          </div>
           {error ? (
             <FieldError>{error}</FieldError>
           ) : eligibleCount === 0 ? (
-            <p role="alert" className="mt-2 text-xs leading-5 text-error">
-              No tricks match Level {effectiveLevel} at {effectiveSpotType} with{" "}
-              {selectedCategories.join(", ")} — try All, another level, or
-              another spot type.
+            <p role="alert" className="mt-2 text-sm leading-5 text-error">
+              No tricks match. Pick All, another level or another spot type.
             </p>
           ) : null}
-          <p className="mt-2 text-[11px] text-on-surface-variant">
-            {isAll
-              ? "All categories (unfiltered)"
-              : `${selectedCategories.length} selected · max 12`}
-            {eligibleCount !== null && eligibleCount !== undefined
-              ? ` · ${eligibleCount} match${eligibleCount === 1 ? "" : "es"} for current spot+level`
+          <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+            {isAll ? "All categories" : `${selectedCategories.length} selected (max 12)`}
+            {eligibleCount !== null && eligibleCount !== undefined && eligibleCount > 0
+              ? ` · ${eligibleCount} trick${eligibleCount === 1 ? "" : "s"} match`
               : ""}
           </p>
         </>
       )}
+    </div>
+  );
+}
+
+/** Same look as before, at the 44px control height. */
+function categoryChipClass(active: boolean, zero: boolean) {
+  return `inline-flex min-h-control items-center rounded-control border px-3.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+    active
+      ? "border-on-surface bg-on-surface text-surface"
+      : zero
+        ? "cursor-not-allowed border-outline-variant bg-surface-container-high text-on-surface-variant opacity-50"
+        : "border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
+  }`;
+}
+
+/** Compact key/value summary used on the wizard's last step. */
+export function SetupSummaryCard({
+  rows,
+  nested = false,
+}: {
+  rows: ReadonlyArray<readonly [string, string]>;
+  nested?: boolean;
+}) {
+  const list = (
+    <dl className="space-y-2 text-xs">
+      {rows.map(([label, value]) => (
+        <div key={label} className="flex justify-between gap-4">
+          <dt className="text-on-surface-variant">{label}</dt>
+          <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
+            {value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+  if (nested) {
+    return (
+      <div className="mt-4 rounded-card border border-outline-variant bg-surface-container-lowest p-3">
+        {list}
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
+      <p className="mb-3 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+        Summary
+      </p>
+      {list}
     </div>
   );
 }
@@ -552,57 +556,41 @@ export function ChallengeTimeStep({
   const startLabelId = controlId("challenge-start-label");
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-[16px] border border-outline-variant bg-surface-container-low p-4">
-        <p className="font-display text-sm font-bold uppercase">
-          Confirm when the lobby opens
-        </p>
-        <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-          Riders can join during the countdown. The host can start early once
-          every active rider is ready.
-        </p>
-      </div>
-      <div
-        role="group"
-        aria-labelledby={startLabelId}
-        className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+    <div
+      role="group"
+      aria-labelledby={startLabelId}
+      className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+    >
+      <p
+        id={startLabelId}
+        className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
       >
-        <p
-          id={startLabelId}
-          className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-        >
-          Challenge start
-        </p>
-        <div
-          className="mt-3 flex flex-wrap gap-2"
-          role="radiogroup"
-          aria-labelledby={startLabelId}
-        >
-          {CHALLENGE_START_OPTIONS.map((option) => (
-            <OptionChip
-              key={option.value}
-              active={startDelayMinutes === option.value}
-              label={option.title}
-              role="radio"
-              ariaChecked={startDelayMinutes === option.value}
-              onClick={() => onStartDelayChange(option.value)}
-            />
-          ))}
-        </div>
-        <p className="mt-2 text-xs leading-5 text-on-surface-variant">
-          {CHALLENGE_START_OPTIONS.find((o) => o.value === startDelayMinutes)
-            ?.description ?? ""}
-        </p>
-        <p className="mt-3 text-xs leading-5 text-on-surface-variant">
-          Your browser timezone is applied automatically
-          {timezone ? ` (${timezone})` : ""}. The selected start is shared with
-          every rider in the lobby.
-        </p>
+        Start time
+      </p>
+      <div
+        className="mt-3 flex flex-wrap gap-2"
+        role="radiogroup"
+        aria-labelledby={startLabelId}
+      >
+        {CHALLENGE_START_OPTIONS.map((option) => (
+          <OptionChip
+            key={option.value}
+            active={startDelayMinutes === option.value}
+            label={option.title}
+            role="radio"
+            ariaChecked={startDelayMinutes === option.value}
+            onClick={() => onStartDelayChange(option.value)}
+          />
+        ))}
       </div>
-      <p className="border-t border-outline-variant pt-4 text-sm leading-6 text-on-surface-variant">
-        Every joined rider must be signed in and verified at the registered spot
-        before the challenge can start. The start window includes a 15-minute
-        grace period.
+      <p className="mt-3 text-sm leading-6 text-on-surface-variant">
+        {CHALLENGE_START_OPTIONS.find((o) => o.value === startDelayMinutes)
+          ?.description ?? ""}{" "}
+        Riders join and check in at the spot during the countdown, with a
+        15-minute grace period.
+      </p>
+      <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+        Times use your timezone{timezone ? ` (${timezone})` : ""}.
       </p>
     </div>
   );
@@ -641,6 +629,26 @@ export function ChallengeSpotStep({
     !selectedSpot && !locationLoading && locationStatus === "granted";
   const locationFailed =
     locationStatus === "denied" || locationStatus === "unavailable";
+  const spotRejected = Boolean(selectedSpot) && spotAccepted === false;
+  const battle = context === "challenge";
+  const radius = formatRadius(DEFAULT_LOCATION_RADIUS_METERS, distanceUnit);
+  const checking = locationStatus === "requesting" || locationLoading;
+  const status =
+    locationStatus === "requesting"
+      ? "Checking your location..."
+      : locationLoading
+        ? `Looking for a spot within ${radius}...`
+        : selectedSpot
+          ? `${selectedSpot.name} is the closest spot for this game.`
+          : locationStatus === "granted"
+            ? `No registered spot for this game within ${radius}.`
+            : locationStatus === "denied"
+              ? "Location is blocked on this device."
+              : locationStatus === "unavailable"
+                ? battle
+                  ? "A battle needs your location to find the spot. Try again, or play it as Training."
+                  : "Your location isn't available right now. Try again, or log without a spot."
+                : "Allow location to find the spot you're at.";
   return (
     <Field label="Nearby registered spot" error={fieldError}>
       <div
@@ -653,22 +661,10 @@ export function ChallengeSpotStep({
           role="status"
           aria-live="polite"
         >
-          {locationStatus === "requesting"
-            ? "Checking your location..."
-            : locationLoading
-              ? "Finding the nearest compatible spot within 250 meters..."
-              : selectedSpot
-                ? `${selectedSpot.name} is the only compatible spot found within 250 meters.`
-                : locationStatus === "granted"
-                  ? "No compatible registered spot was found within 250 meters."
-                  : locationStatus === "denied"
-                    ? "Location is blocked. Allow location in your browser settings, close this tab and open again, then tap Try again. Or continue with Training."
-                    : locationStatus === "unavailable"
-                      ? "Challenge needs your location to find a registered spot. Tap Try again or continue with Training."
-                      : "Location is required to show a registered spot. Tap Try again to allow it."}
+          {status}
         </p>
         {selectedSpot ? (
-          <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+          <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-display text-lg font-bold uppercase">
@@ -713,15 +709,15 @@ export function ChallengeSpotStep({
                   No, not this spot
                 </button>
               </div>
-              {spotAccepted === false ? (
-                <p className="mt-3 text-sm leading-5 text-error" role="status">
-                  {context === "challenge"
-                    ? "Battle creation stays locked until you accept the nearby spot."
-                    : "Pick another option above, or add this place as a new spot."}
+              {spotRejected ? (
+                <p className="mt-3 text-sm leading-5 text-on-surface-variant" role="status">
+                  {battle
+                    ? "Add the place you're at as a new spot, or play it as Training."
+                    : "Add the place you're at as a new spot, or pick Anywhere or Just a name."}
                 </p>
               ) : null}
             </div>
-            {selectedSpot.visibility === "personal" && context === "challenge" ? (
+            {selectedSpot.visibility === "personal" && battle ? (
               <p className="mt-3 text-xs leading-5 text-on-surface-variant" role="note">
                 This spot is still personal. It becomes public once your
                 opponent checks in here, and leaderboard points count from
@@ -729,19 +725,18 @@ export function ChallengeSpotStep({
               </p>
             ) : null}
           </div>
-        ) : noSpotHere && quickAdd ? (
-          quickAdd
-        ) : (
+        ) : noSpotHere && quickAdd ? null : (
           <div className={EMPTY_STATE_INLINE}>
-            {context === "challenge"
-              ? "A battle needs a spot near your current location. Add this place as a new spot, or play it as Training."
+            {battle
+              ? "A battle needs a registered spot near you. Add the place you're at as a new spot, or play it as Training."
               : "No registered spot nearby. Pick Anywhere or Just a name to log this session. Signed-in riders can add this place to the map."}
           </div>
         )}
+        {(noSpotHere || spotRejected) && quickAdd ? quickAdd : null}
         {locationStatus === "denied" ? (
           <LocationBlockedCallout onRetry={onRetryLocation} />
         ) : null}
-        {context === "challenge" && (locationFailed || noSpotHere) ? (
+        {battle && (locationFailed || noSpotHere || spotRejected) ? (
           <div className={CARD_NESTED}>
             <p className="text-sm leading-6 text-on-surface-variant">
               No spot? Play it as Training: any place works and your session
@@ -757,7 +752,7 @@ export function ChallengeSpotStep({
             </button>
           </div>
         ) : null}
-        {context === "training" && locationFailed ? (
+        {!battle && locationFailed ? (
           <button
             type="button"
             onClick={onContinueTraining}
@@ -766,17 +761,14 @@ export function ChallengeSpotStep({
             Log without a spot
           </button>
         ) : null}
-        {locationStatus !== "denied" ? (
+        {locationStatus !== "denied" && spotAccepted !== true ? (
           <button
             type="button"
             onClick={onRetryLocation}
-            disabled={locationStatus === "requesting" || locationLoading}
-            aria-label="Retry location"
-            className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+            disabled={checking}
+            className={controlClass("outline")}
           >
-            {locationStatus === "requesting" || locationLoading
-              ? "Checking location..."
-              : "Retry location"}
+            {checking ? "Checking location..." : "Retry location"}
           </button>
         ) : null}
       </div>
@@ -794,8 +786,11 @@ export function WeatherConfirmSection({
   onConfirm,
   onObservedChange,
   temperatureUnit,
+  optional = false,
 }: {
   idPrefix?: string;
+  /** Training: weather is a journal note, never a blocker. */
+  optional?: boolean;
   forecastWeather?: SpotWeather | null;
   weatherConfirmed: boolean | null;
   weatherObservedIcon: WeatherIconName | null;
@@ -810,9 +805,9 @@ export function WeatherConfirmSection({
   const observedGroupId = controlId("weather-observed-group");
 
   return (
-    <Field label="Current weather" error={fieldError}>
+    <Field label={optional ? "Current weather (optional)" : "Current weather"}>
       <div className="space-y-3" data-invalid={fieldError ? "true" : undefined}>
-        <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+        <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
               Forecast at spot
@@ -850,7 +845,7 @@ export function WeatherConfirmSection({
         <div
           role="group"
           aria-labelledby={confirmedGroupId}
-          className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4"
+          className="rounded-container border border-outline-variant bg-surface-container-lowest p-4"
         >
           <p
             id={confirmedGroupId}
@@ -885,13 +880,18 @@ export function WeatherConfirmSection({
             </button>
           </div>
           {fieldError ? <FieldError>{fieldError}</FieldError> : null}
+          {optional && weatherConfirmed !== null ? (
+            <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+              Tap your answer again to skip the weather.
+            </p>
+          ) : null}
         </div>
 
         {weatherConfirmed === false ? (
           <div
             role="group"
             aria-labelledby={observedGroupId}
-            className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4"
+            className="rounded-container border border-outline-variant bg-surface-container-lowest p-4"
           >
             <p
               id={observedGroupId}
@@ -955,7 +955,7 @@ export function ConfigurationSummary({
   weather: string;
 }) {
   const items = [
-    ["Mode", mode === "training" ? "Training" : "Challenge"],
+    ["Mode", mode === "training" ? "Training" : "Battle"],
     ["Rule", ruleMode === "flexible" ? "Flexible" : "Strict"],
     ["Spot type", spotType],
     ["Level", `Level ${level}`],
@@ -973,7 +973,7 @@ export function ConfigurationSummary({
   ] as const;
 
   return (
-    <aside className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 lg:top-24 mb-4 text-on-surface">
+    <aside className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 lg:top-24 mb-4 text-on-surface">
       <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
         Your setup
       </p>
@@ -1021,7 +1021,7 @@ export function CreateSubmitButton({
         ? "Creating game..."
         : mode === "training"
           ? "Start Training"
-          : "Create Challenge"}
+          : "Create Battle"}
     </button>
   );
 }
@@ -1046,7 +1046,7 @@ export function Field({
       >
         {label}
       </label>
-      <div className="mt-2.5 [&>input]:min-h-11 [&>input]:w-full [&>input]:rounded-[16px] [&>input]:border [&>input]:border-outline-variant [&>input]:bg-surface-container-lowest [&>input]:px-3 [&>input]:font-sans [&>input]:text-base sm:[&>input]:text-sm [&>input]:outline-none [&>input]:placeholder:text-on-surface-variant [&>input]:focus-visible:outline-2 [&>input]:focus-visible:outline-primary [&>input]:focus-visible:outline-offset-2">
+      <div className="mt-2.5 [&>input]:min-h-11 [&>input]:w-full [&>input]:rounded-container [&>input]:border [&>input]:border-outline-variant [&>input]:bg-surface-container-lowest [&>input]:px-3 [&>input]:font-sans [&>input]:text-base sm:[&>input]:text-sm [&>input]:outline-none [&>input]:placeholder:text-on-surface-variant [&>input]:focus-visible:outline-2 [&>input]:focus-visible:outline-primary [&>input]:focus-visible:outline-offset-2">
         {children}
       </div>
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
@@ -1127,16 +1127,14 @@ export function TrainingPlaceStep({
           aria-labelledby={labelId}
         >
           {TRAINING_PLACE_OPTIONS.map((option) => (
-            <button
+            <OptionChip
               key={option.value}
-              type="button"
+              active={place === option.value}
+              label={option.label}
               role="radio"
-              aria-checked={place === option.value}
+              ariaChecked={place === option.value}
               onClick={() => onPlaceChange(option.value)}
-              className={chipClass(place === option.value)}
-            >
-              {option.label}
-            </button>
+            />
           ))}
         </div>
         <p className="mt-2 text-xs leading-5 text-on-surface-variant">

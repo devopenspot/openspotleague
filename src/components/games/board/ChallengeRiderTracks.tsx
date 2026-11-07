@@ -1,3 +1,4 @@
+import { PLAYER_STATUS_LABEL } from "@/lib/games/labels";
 import { Flag, Trophy } from "lucide-react";
 import type { GameState } from "@/lib/schemas/game";
 import { totalLedgerPoints } from "@/lib/games/challenge-board-model";
@@ -58,7 +59,7 @@ export function ChallengeRiderTracksContent({
                     ? "Riding Now"
                     : player.status === "active"
                       ? "In The Crew"
-                      : player.status
+                      : PLAYER_STATUS_LABEL[player.status]
                 : player.id === game.winnerPlayerId
                   ? "Winner!"
                   : player.status === "eliminated"
@@ -69,7 +70,7 @@ export function ChallengeRiderTracksContent({
                         ? "Leads The Trick"
                         : player.status === "active"
                           ? "In The Crew"
-                          : player.status;
+                          : PLAYER_STATUS_LABEL[player.status];
 
             return (
               <article
@@ -86,7 +87,7 @@ export function ChallengeRiderTracksContent({
                     </p>
                   </div>
                   {player.id === game.winnerPlayerId ? (
-                    <Trophy size={17} aria-label="Winner" />
+                    <Trophy size={17} aria-hidden="true" />
                   ) : null}
                 </div>
 

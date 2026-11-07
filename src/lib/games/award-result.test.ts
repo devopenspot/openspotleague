@@ -337,7 +337,7 @@ describe("award-result — image mapping static", () => {
     const challenge = buildAwardResult(gameFixture({ mode: "challenge" }));
     const training = buildAwardResult(gameFixture({ mode: "training" }));
     expect(challenge.image.src).toBe("/challenges.jpg");
-    expect(challenge.image.alt).toContain("Challenge");
+    expect(challenge.image.alt).toContain("Battle");
     expect(training.image.src).toBe("/trainings.jpg");
     expect(training.image.alt).toContain("Training");
   });

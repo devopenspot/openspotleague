@@ -109,7 +109,7 @@ describe("AwardDialog", () => {
     const { rerender } = render(<AwardDialog isOpen game={challenge} onClose={vi.fn()} />);
     const img = document.querySelector("img");
     expect(img?.getAttribute("src")).toBe("/challenges.jpg");
-    expect(img?.getAttribute("alt")).toContain("Challenge");
+    expect(img?.getAttribute("alt")).toContain("Battle");
 
     rerender(<AwardDialog isOpen game={training} onClose={vi.fn()} />);
     // training still has one img with trainings.jpg

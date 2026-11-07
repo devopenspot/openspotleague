@@ -17,6 +17,7 @@ import {
   controlClass,
   tagClass,
 } from "@/components/ui/recipes";
+import { GAME_MODE_LABEL } from "@/lib/games/labels";
 import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
 import type { GameState } from "@/lib/schemas/game";
 
@@ -53,12 +54,12 @@ export function GameStatusStrip({
   pendingProposal: PendingProposal | null;
 }) {
   return (
-    <div className="order-3 flex min-w-0 basis-full flex-wrap items-center gap-2 overflow-hidden rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-1.5 font-display text-xs font-semibold tracking-[0.03em] text-on-surface-variant lg:order-none lg:flex-1 lg:flex-nowrap lg:overflow-x-auto">
+    <div className="order-3 flex min-w-0 basis-full flex-wrap items-center gap-2 overflow-hidden rounded-card border border-outline-variant bg-surface-container-low px-2.5 py-1.5 font-display text-xs font-semibold tracking-[0.03em] text-on-surface-variant lg:order-none lg:flex-1 lg:flex-nowrap lg:overflow-x-auto">
       <span className="inline-flex shrink-0 items-center rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold">
         {game.players.length} {game.players.length === 1 ? "Rider" : "Riders"}
       </span>
       <span className="inline-flex shrink-0 items-center rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold capitalize">
-        {game.mode === "training" ? "Training" : "Challenge"}
+        {game.mode === "training" ? "Training" : "Battle"}
       </span>
       <span className="inline-flex shrink-0 items-center rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold">
         {game.trainingVariant === "solo"
@@ -114,9 +115,12 @@ export function GameStatusStrip({
       {game.spotId && game.weatherForecastIcon ? (
         <GameWeatherBanner game={game} variant="compact" />
       ) : null}
-      {!game.spotId && game.spotLabel ? (
-        <span className="inline-flex min-w-0 max-w-[10rem] items-center truncate rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold text-on-surface">
-          <span className="min-w-0 truncate">@ {game.spotLabel}</span>
+      {game.spotName || game.spotLabel ? (
+        <span
+          className="inline-flex min-w-0 max-w-[10rem] items-center truncate rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold text-on-surface"
+          title={game.spotName ?? game.spotLabel ?? undefined}
+        >
+          <span className="min-w-0 truncate">@ {game.spotName ?? game.spotLabel}</span>
         </span>
       ) : null}
     </div>
@@ -133,6 +137,7 @@ export function TerminalResultBar({
   onViewResults,
   onBackToChallenges,
   showRunAgain,
+  runAgainHref = "/games",
 }: {
   tone: Extract<BadgeTone, "success" | "info">;
   label: string;
@@ -142,6 +147,8 @@ export function TerminalResultBar({
   onViewResults?: () => void;
   onBackToChallenges: () => void;
   showRunAgain: boolean;
+  /** Setup page prefilled with this game's mode, spot and spot type. */
+  runAgainHref?: string;
 }) {
   const showResults = Boolean(onViewResults) && showResultsLink;
   // One primary per bar: Run It Again when the game completed, else Results.
@@ -185,14 +192,14 @@ export function TerminalResultBar({
               <button
                 type="button"
                 onClick={onViewResults}
-                aria-label="View championship results"
+                aria-label="View results"
                 className={controlClass(resultsTone)}
               >
                 Results
               </button>
             ) : null}
             {showRunAgain ? (
-              <Link href="/games" className={controlClass("primary")}>
+              <Link href={runAgainHref} className={controlClass("primary")}>
                 Run It Again
               </Link>
             ) : null}
@@ -250,7 +257,7 @@ export function GameShareDrawer({
                 <ShareActions
                   url={sharePath}
                   code={game.shareCode}
-                  title={`${game.gameName} challenge`}
+                  title={`${game.gameName} ${GAME_MODE_LABEL[game.mode].toLowerCase()}`}
                   compact
                   className="mt-3"
                 />
@@ -296,10 +303,10 @@ export function CancelSessionDialog({
       describedBy={CANCEL_DIALOG_DESCRIPTION_ID}
       contentId="game-cancel-dialog"
       role="alertdialog"
-      panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-[16px] border border-error bg-surface p-6"
+      panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-container border border-error bg-surface p-6"
     >
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-error-container text-on-error-container">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-container bg-error-container text-on-error-container">
           <AlertTriangle size={20} aria-hidden="true" />
         </div>
         <div className="min-w-0">
@@ -313,15 +320,18 @@ export function CancelSessionDialog({
             {isSoloRun
               ? "Finish This Run?"
               : canCancelActive
-                ? "Finish This Challenge?"
-                : "End This Session?"}
+                ? "Finish This Game?"
+                : "Close This Lobby?"}
           </h2>
           <p
             id={CANCEL_DIALOG_DESCRIPTION_ID}
             className="mt-3 text-sm leading-6 text-on-surface-variant"
           >
-            Everyone Will Head Back To The Lobby And The Session Ends
-            Immediately. You Can Start A New Run Right After.
+            {isSoloRun
+              ? "Your run ends now. You can start a new one right after."
+              : canCancelActive
+                ? "The game ends for everyone now. You can start a new one right after."
+                : "Riders can no longer join this lobby. You can start a new game right after."}
           </p>
         </div>
       </div>
@@ -345,8 +355,8 @@ export function CancelSessionDialog({
             : isSoloRun
               ? "Yes, Finish Run"
               : canCancelActive
-                ? "Yes, Finish Challenge"
-                : "Yes, End Session"}
+                ? "Yes, Finish Game"
+                : "Yes, Close Lobby"}
         </button>
       </div>
     </Overlay>
