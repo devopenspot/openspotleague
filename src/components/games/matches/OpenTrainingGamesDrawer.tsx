@@ -6,6 +6,8 @@ import { ArrowUpRight } from "lucide-react";
 import { DrawerHeader, SIDE_DRAWER_PANEL } from "@/components/feedback/DrawerParts";
 import { SideDrawer } from "@/components/feedback/SideDrawer";
 import { loadGuestToken, loadOrCreateGuestToken } from "@/lib/games/guest";
+import { gameTitle } from "@/lib/games/game-title";
+import { matchStatusLabel, spotTypeLabel } from "@/lib/games/match-labels";
 import { DISCIPLINE_META, type DisciplineSlug } from "@/lib/games/discipline";
 import {
   gameMutationResponseSchema,
@@ -166,11 +168,11 @@ export function OpenTrainingGamesDrawer({
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-display text-2xl font-bold uppercase">
-                      {game.gameName}
+                      {gameTitle(game)}
                     </p>
                     <p className="mt-1 font-display text-xs uppercase tracking-[0.08em] text-secondary">
-                      {meta?.name ?? game.disciplineSlug} / {game.status} /{" "}
-                      {game.nextSpotType}
+                      {meta?.name ?? game.disciplineSlug} ·{" "}
+                      {matchStatusLabel(game)} · {spotTypeLabel(game.nextSpotType)}
                     </p>
                   </div>
                   <span className="font-display text-xs uppercase tracking-[0.08em] text-secondary">

@@ -11,6 +11,7 @@ import { showToast } from "@/hooks/ui/useToast";
 import { shareOrCopyUrl } from "@/lib/utils/share";
 import { GuestJoinForm } from "@/components/games/shared/GuestJoinForm";
 import type { GameCapabilities } from "@/lib/games/capabilities";
+import { gameTitle } from "@/lib/games/game-title";
 import type { GameState } from "@/lib/schemas/game";
 import {
   deriveHeaderState,
@@ -168,10 +169,10 @@ export function GameBoardControls({
         ? { label: "Your Call", onSelect: onAttemptResult }
         : null;
 
-  const shareUrl = useShareUrl(sharePath ?? "/games", game?.gameName ?? "Open Spot");
+  const shareUrl = useShareUrl(sharePath ?? "/games", game ? gameTitle(game) : "Open Spot");
 
   async function shareInvite() {
-    const outcome = await shareOrCopyUrl(shareUrl, game?.gameName ?? "Open Spot");
+    const outcome = await shareOrCopyUrl(shareUrl, game ? gameTitle(game) : "Open Spot");
     if (outcome === "copied") showToast("Link copied.", "success");
     else if (outcome === "failed") setIsDrawerOpen(true);
   }
@@ -269,7 +270,7 @@ export function GameBoardControls({
               <Led tone={connectionLed} />
               <div className="min-w-0">
                 <h2 className="min-w-0 truncate font-display text-base font-bold leading-tight tracking-tight text-on-surface sm:text-[18px]">
-                  {game.gameName}
+                  {gameTitle(game)}
                 </h2>
                 {letterSummary ? (
                   <p className="truncate font-display text-sm font-semibold text-on-surface-variant md:hidden">

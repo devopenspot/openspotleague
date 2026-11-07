@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Printer, ShieldCheck, FileText, ChevronDown } from "lucide-react";
+import { ArrowLeft, Printer, ShieldCheck, FileText, ChevronDown, ListChecks } from "lucide-react";
 import { ROUTES } from "@/lib/navigation/nav";
 import {
+  BODY,
   CARD,
   CARD_FRAME,
   EYEBROW,
@@ -25,9 +26,9 @@ export interface TOCItem {
 export interface LegalLayoutProps {
   title: string;
   kicker: string;
-  effectiveDate: string;
   lastUpdated: string;
   version: string;
+  keyPoints: readonly string[];
   tableOfContents: readonly TOCItem[];
   activeDoc: "terms" | "privacy";
   children: React.ReactNode;
@@ -36,9 +37,9 @@ export interface LegalLayoutProps {
 export function LegalLayout({
   title,
   kicker,
-  effectiveDate,
   lastUpdated,
   version,
+  keyPoints,
   tableOfContents,
   activeDoc,
   children,
@@ -114,13 +115,9 @@ export function LegalLayout({
             {title}
           </h1>
           <div className={`mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 ${META}`}>
-            <span>Effective: {effectiveDate}</span>
-            <span aria-hidden="true">•</span>
-            <span>Last Updated: {lastUpdated}</span>
+            <span>Last updated {lastUpdated}</span>
             <span aria-hidden="true">•</span>
             <span>Version {version}</span>
-            <span aria-hidden="true">•</span>
-            <span>Jurisdiction: Bogotá D.C., Colombia</span>
           </div>
         </header>
 
@@ -135,7 +132,7 @@ export function LegalLayout({
           >
             <span className="flex items-center gap-2">
               <FileText size={16} aria-hidden="true" />
-              Table of Contents ({tableOfContents.length} Sections)
+              Contents ({tableOfContents.length} sections)
             </span>
             <ChevronDown
               size={16}
@@ -230,7 +227,7 @@ export function LegalLayout({
                 <span>Legal Inquiries</span>
               </div>
               <p className="text-xs leading-relaxed text-on-surface-variant">
-                Need to report a spot, request data deletion, or submit a DMCA notice?
+                Need to remove a spot, delete your data, or report a copied photo?
               </p>
               <div className="pt-1">
                 <Link
@@ -244,14 +241,30 @@ export function LegalLayout({
           </aside>
 
           {/* Main Legal Content Column */}
-          <div className="min-w-0 space-y-8 sm:space-y-10">{children}</div>
+          <div className="min-w-0 space-y-6 sm:space-y-8">
+            <section aria-labelledby="legal-key-points" className={CARD}>
+              <h2
+                id="legal-key-points"
+                className={`flex items-center gap-2 ${EYEBROW}`}
+              >
+                <ListChecks size={16} className="text-primary" aria-hidden="true" />
+                <span>The short version</span>
+              </h2>
+              <ul className={`mt-3 list-disc space-y-2 pl-5 marker:text-outline ${BODY}`}>
+                {keyPoints.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </section>
+            {children}
+          </div>
         </div>
 
         {/* Footer print note */}
         <div className="mt-16 border-t border-outline-variant pt-8 text-center text-xs text-secondary print:mt-8">
           <p>
-            © {new Date().getFullYear()} Open Spot League. All rights reserved. Document version{" "}
-            {version} • Effective {effectiveDate}.
+            © {new Date().getFullYear()} Open Spot League. Version {version} • Last updated{" "}
+            {lastUpdated}.
           </p>
         </div>
       </div>

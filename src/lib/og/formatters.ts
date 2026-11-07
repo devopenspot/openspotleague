@@ -1,4 +1,5 @@
 import type { WeatherIconName } from "@/lib/types";
+import { gameTitle } from "@/lib/games/game-title";
 
 const OG_DAY_NAMES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"] as const;
 const OG_MONTH_NAMES = [
@@ -94,7 +95,7 @@ export function buildSpotDescription(input: {
 
 export function buildGameTitle(input: { mode: "challenge" | "training"; gameName: string; host: string }): string {
   const prefix = input.mode === "challenge" ? "Challenge" : "Training";
-  return `${prefix} · ${input.gameName} — hosted by ${input.host}`;
+  return `${prefix} · ${gameTitle({ gameName: input.gameName })} — hosted by ${input.host}`;
 }
 
 export function buildGameDescription(input: {

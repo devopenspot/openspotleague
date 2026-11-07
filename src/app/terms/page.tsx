@@ -2,32 +2,32 @@ import type { Metadata } from "next";
 import { LegalLayout } from "@/components/legal/LegalLayout";
 import { LegalSection } from "@/components/legal/LegalSection";
 import {
+  TERMS_KEY_POINTS,
   TERMS_SECTIONS,
-  TERMS_EFFECTIVE_DATE,
   TERMS_LAST_UPDATED,
   TERMS_VERSION,
 } from "@/lib/legal/terms-content";
 import { env } from "@/lib/config/env";
 
+const DESCRIPTION =
+  "The OpenSpot Terms of Use in plain words: ride at your own risk, respect private property, own what you post, and play fair.";
+
 export const metadata: Metadata = {
   title: "Terms of Use",
-  description:
-    "Official Terms of Use for Open Spot League: rider responsibility, extreme sports liability waiver, anti-trespassing policies, and challenge network rules.",
+  description: DESCRIPTION,
   alternates: {
     canonical: "/terms",
   },
   openGraph: {
     title: "Terms of Use · Open Spot League",
-    description:
-      "Official Terms of Use for Open Spot League: rider responsibility, extreme sports liability waiver, anti-trespassing policies, and challenge network rules.",
+    description: DESCRIPTION,
     url: `${env.APP_URL}/terms`,
     type: "website",
   },
   twitter: {
     card: "summary",
     title: "Terms of Use · Open Spot League",
-    description:
-      "Official Terms of Use for Open Spot League: rider responsibility, extreme sports liability waiver, anti-trespassing policies, and challenge network rules.",
+    description: DESCRIPTION,
   },
 };
 
@@ -42,11 +42,10 @@ export default function TermsPage() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: "Terms of Use · Open Spot League",
-    description:
-      "Official Terms of Use for Open Spot League covering rider responsibility, physical waivers, and spot directory rules.",
+    description: DESCRIPTION,
     url: `${env.APP_URL}/terms`,
     datePublished: "2026-10-21",
-    dateModified: "2026-10-21",
+    dateModified: "2026-11-07",
     publisher: {
       "@type": "Organization",
       name: "Open Spot League",
@@ -62,10 +61,10 @@ export default function TermsPage() {
       />
       <LegalLayout
         title="Terms of Use"
-        kicker="Legal & Compliance"
-        effectiveDate={TERMS_EFFECTIVE_DATE}
+        kicker="Legal"
         lastUpdated={TERMS_LAST_UPDATED}
         version={TERMS_VERSION}
+        keyPoints={TERMS_KEY_POINTS}
         tableOfContents={toc}
         activeDoc="terms"
       >

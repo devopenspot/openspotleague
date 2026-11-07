@@ -1,27 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Link2, Check, Sparkles } from "lucide-react";
+import { Link2, Check } from "lucide-react";
 import { LegalCallout } from "@/components/legal/LegalCallout";
-import type { LegalSection as TermsSectionType } from "@/lib/legal/terms-content";
-import type { PrivacySection as PrivacySectionType } from "@/lib/legal/privacy-content";
+import type { LegalSection as LegalSectionData } from "@/lib/legal/types";
 import {
+  BODY,
   CARD_FRAME,
-  CARD_NESTED,
   EYEBROW,
   SECTION_TITLE,
   iconButtonClass,
 } from "@/components/ui/recipes";
 
 export interface LegalSectionProps {
-  section: TermsSectionType | PrivacySectionType;
-  customCallout?: "risk" | "trespass" | "youtube" | "emergency";
+  section: LegalSectionData;
   children?: React.ReactNode;
 }
 
-export function LegalSection({ section, customCallout, children }: LegalSectionProps) {
+export function LegalSection({ section, children }: LegalSectionProps) {
   const [copied, setCopied] = useState(false);
-  const callout = customCallout ?? ("calloutType" in section ? section.calloutType : undefined);
 
   const handleCopyLink = () => {
     if (typeof window === "undefined") return;
@@ -37,12 +34,11 @@ export function LegalSection({ section, customCallout, children }: LegalSectionP
     <article
       id={section.id}
       aria-labelledby={`heading-${section.id}`}
-      className={`scroll-mt-24 p-5 sm:p-8 md:p-10 ${CARD_FRAME}`}
+      className={`scroll-mt-24 p-5 sm:p-8 ${CARD_FRAME}`}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 border-b border-outline-variant pb-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className={EYEBROW}>Section {section.number}</p>
+          <p className={EYEBROW}>{section.number}</p>
           <h2
             id={`heading-${section.id}`}
             className={`mt-1 ${SECTION_TITLE} text-on-surface`}
@@ -66,44 +62,19 @@ export function LegalSection({ section, customCallout, children }: LegalSectionP
         </button>
       </div>
 
-      {/* Rider Takeaway / Plain English Highlight */}
-      <div className={`mt-6 ${CARD_NESTED} sm:p-5`}>
-        <div className={`flex items-center gap-2 ${EYEBROW}`}>
-          <Sparkles size={14} className="text-primary" aria-hidden="true" />
-          <span>In Plain English</span>
-        </div>
-        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-on-surface-variant font-medium">
-          {section.plainEnglishSummary}
-        </p>
-      </div>
+      <p className="mt-4 text-base leading-relaxed font-medium text-on-surface">
+        {section.summary}
+      </p>
 
-      {/* Callout Alert if applicable */}
-      {callout ? <LegalCallout type={callout} /> : null}
+      {section.calloutType ? <LegalCallout type={section.calloutType} /> : null}
 
-      {/* Subsections & Formal Terms */}
-      <div className="mt-8 space-y-6 text-xs sm:text-sm leading-7 text-on-surface-variant">
-        {section.subsections.map((sub, idx) => (
-          <div key={sub.id ?? idx} className="space-y-2">
-            {sub.title ? (
-              <h3 className="font-display text-sm font-bold uppercase leading-tight tracking-tight text-on-surface">
-                {sub.title}
-              </h3>
-            ) : null}
-            {Array.isArray(sub.content) ? (
-              sub.content.map((p, pIdx) => (
-                <p key={pIdx} className="leading-relaxed">
-                  {p}
-                </p>
-              ))
-            ) : (
-              <p className="leading-relaxed">{sub.content}</p>
-            )}
-          </div>
+      <ul className={`mt-4 list-disc space-y-2 pl-5 marker:text-outline ${BODY}`}>
+        {section.points.map((point) => (
+          <li key={point}>{point}</li>
         ))}
-      </div>
+      </ul>
 
-      {/* Children slot for extra tables or processors */}
-      {children ? <div className="mt-8">{children}</div> : null}
+      {children ? <div className="mt-6">{children}</div> : null}
     </article>
   );
 }

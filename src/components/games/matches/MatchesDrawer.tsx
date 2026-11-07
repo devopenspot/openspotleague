@@ -10,10 +10,13 @@ const DRAWER_TITLE_ID = "matches-drawer-title";
 export function MatchesDrawer({
   isOpen,
   onClose,
+  authenticated,
   children,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  /** Passed to the list so result requests never mix session and guest identity. */
+  authenticated: boolean;
   /** Rendered above the list. */
   children?: ReactNode;
 }) {
@@ -35,7 +38,7 @@ export function MatchesDrawer({
       />
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
         {children}
-        <MatchList bare limit={100} />
+        <MatchList authenticated={authenticated} limit={100} />
       </div>
     </SideDrawer>
   );

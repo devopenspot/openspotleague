@@ -36,7 +36,7 @@ describe("OpenTrainingGamesDrawer", () => {
   it("loads a game with resume and cancel actions", async () => {
     render(<OpenTrainingGamesDrawer isOpen onClose={vi.fn()} authenticated />)
 
-    expect(await screen.findByText("Play a Skate")).toBeInTheDocument()
+    expect(await screen.findByText("Game of S.K.A.T.E")).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /resume/i })).toHaveAttribute("href", "/games/game-1")
     expect(screen.getByRole("button", { name: /finish run/i })).toBeInTheDocument()
   })
@@ -45,14 +45,14 @@ describe("OpenTrainingGamesDrawer", () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
     render(<OpenTrainingGamesDrawer isOpen onClose={onClose} authenticated />)
-    await screen.findByText("Play a Skate")
+    await screen.findByText("Game of S.K.A.T.E")
 
     await user.click(screen.getByRole("button", { name: /finish run/i }))
     expect(screen.getByText(/finish this run/i)).toBeInTheDocument()
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ id: game.id, version: 5, status: "cancelled" }))
     await user.click(screen.getByRole("button", { name: /yes, finish run/i }))
 
-    await waitFor(() => expect(screen.queryByText("Play a Skate")).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.queryByText("Game of S.K.A.T.E")).not.toBeInTheDocument())
     const cancelCall = vi.mocked(fetch).mock.calls.find(([url]) => url === "/api/games/game-1/cancel")
     expect(cancelCall?.[1]).toEqual(expect.objectContaining({ method: "POST" }))
     expect(JSON.parse(String(cancelCall?.[1] && (cancelCall[1] as RequestInit).body))).toEqual(expect.objectContaining({ expectedVersion: 4, idempotencyKey: expect.any(String) }))
@@ -62,7 +62,7 @@ describe("OpenTrainingGamesDrawer", () => {
     const user = userEvent.setup()
     Object.defineProperty(window, "localStorage", { value: { getItem: () => "guest-token-12345678901234567890" }, configurable: true })
     render(<OpenTrainingGamesDrawer isOpen onClose={vi.fn()} authenticated={false} />)
-    await screen.findByText("Play a Skate")
+    await screen.findByText("Game of S.K.A.T.E")
     await user.click(screen.getByRole("button", { name: /finish run/i }))
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ id: game.id, version: 5, status: "cancelled" }))
     await user.click(screen.getByRole("button", { name: /yes, finish run/i }))

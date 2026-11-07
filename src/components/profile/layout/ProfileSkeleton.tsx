@@ -19,9 +19,7 @@ export function ProfileSkeleton() {
           <ProfileHeroSkeleton />
           <ProfileStatsSkeleton />
         </div>
-        <div className="overflow-hidden rounded-container border border-outline-variant">
-          <RiderActivityBoardSkeleton />
-        </div>
+        <RiderActivityBoardSkeleton />
       </div>
       <div className="mt-6 pb-18" aria-hidden="true">
         <ProfileTabBarSkeleton />

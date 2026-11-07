@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { gameTitle } from "@/lib/games/game-title";
 import type { ResumableGame } from "@/components/games/hooks/useMyGames";
 
 export function ResumeGameCard({ game }: { game: ResumableGame }) {
@@ -15,7 +16,7 @@ export function ResumeGameCard({ game }: { game: ResumableGame }) {
           Resume Game
         </span>
         <span className="block truncate text-sm font-semibold text-on-surface-variant">
-          {game.gameName} ·{" "}
+          {gameTitle(game)} ·{" "}
           {game.status === "lobby" ? "Waiting in the lobby" : "In progress"}
         </span>
       </span>

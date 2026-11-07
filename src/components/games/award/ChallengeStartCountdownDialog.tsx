@@ -1,5 +1,6 @@
 "use client";
 
+import { gameTitle } from "@/lib/games/game-title";
 import { X } from "lucide-react";
 
 import { Overlay } from "@/components/feedback/Overlay";
@@ -68,7 +69,7 @@ export function ChallengeStartCountdownDialog({
               id={TITLE_ID}
               className="mt-2 font-display text-2xl font-bold uppercase leading-[1.05] tracking-[-0.02em] sm:text-3xl"
             >
-              {game.gameName}
+              {gameTitle(game)}
             </h2>
           </div>
           <button
@@ -166,7 +167,7 @@ export function ChallengeStartCountdownDialog({
           <ShareActions
             url={`/games/join/${encodeURIComponent(game.shareCode)}`}
             code={game.shareCode}
-            title={`${game.gameName} challenge`}
+            title={`${gameTitle(game)} challenge`}
             showShare={false}
             compact
             className="mt-3"

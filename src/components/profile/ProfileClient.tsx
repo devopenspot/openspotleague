@@ -67,12 +67,10 @@ export function ProfileClient() {
             <ProfileStats summary={summary} onSelectTab={handleSelectTab} />
           </div>
 
-          <div className="min-w-0 overflow-hidden rounded-container border border-outline-variant">
-            <RiderActivityBoard
-              data={activityData}
-              headingId="profile-activity-title"
-            />
-          </div>
+          <RiderActivityBoard
+            data={activityData}
+            headingId="profile-activity-title"
+          />
         </div>
 
         <div className="mt-6 pb-18">

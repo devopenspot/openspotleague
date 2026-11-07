@@ -1,136 +1,136 @@
 import { describe, it, expect } from "vitest";
 import {
+  TERMS_KEY_POINTS,
   TERMS_SECTIONS,
   TERMS_VERSION,
   TERMS_EFFECTIVE_DATE,
 } from "@/lib/legal/terms-content";
 import {
+  PRIVACY_KEY_POINTS,
   PRIVACY_SECTIONS,
   PRIVACY_VERSION,
   PRIVACY_EFFECTIVE_DATE,
-  COOKIE_INVENTORY,
   THIRD_PARTY_PROCESSORS,
 } from "@/lib/legal/privacy-content";
+import type { LegalSection } from "@/lib/legal/types";
 import { ROUTES } from "@/lib/navigation/nav";
 
-describe("Terms of Use Content & Legal Integrity", () => {
-  it("defines standard metadata and effective dates", () => {
-    expect(TERMS_VERSION).toBe("1.0");
+function text(section: LegalSection | undefined): string {
+  return section ? [section.title, section.summary, ...section.points].join(" ") : "";
+}
+
+const TECHNICAL_TERMS = [
+  "creatorIpHash",
+  "localStorage",
+  "HMAC",
+  "Row-Level",
+  "TLS",
+  "OAuth",
+  "Supabase Auth",
+  "17 U.S.C.",
+];
+
+describe("Terms of Use content", () => {
+  it("defines version, date and sections", () => {
+    expect(TERMS_VERSION).toBe("2.0");
     expect(TERMS_EFFECTIVE_DATE).toBeDefined();
-    expect(TERMS_SECTIONS.length).toBe(14);
+    expect(TERMS_SECTIONS.length).toBe(9);
+    expect(TERMS_KEY_POINTS.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("contains unique and valid section identifiers", () => {
+  it("has unique section ids, and every section has a summary and points", () => {
     const ids = TERMS_SECTIONS.map((s) => s.id);
-    const uniqueIds = new Set(ids);
-    expect(ids.length).toBe(uniqueIds.size);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const s of TERMS_SECTIONS) {
+      expect(s.summary.length).toBeGreaterThan(0);
+      expect(s.points.length).toBeGreaterThan(0);
+    }
   });
 
-  it("covers essential action sports liability, trespass, and risk waivers", () => {
-    const riskSection = TERMS_SECTIONS.find((s) => s.id === "risk-waiver");
-    expect(riskSection).toBeDefined();
-    expect(riskSection?.calloutType).toBe("risk");
-    expect(JSON.stringify(riskSection)).toContain("Assumption of Risk");
-    expect(JSON.stringify(riskSection)).toContain("helmet");
+  it("keeps the risk and property sections the footer links to", () => {
+    const risk = TERMS_SECTIONS.find((s) => s.id === "risk-waiver");
+    expect(risk?.calloutType).toBe("risk");
+    expect(text(risk)).toContain("own risk");
+    expect(text(risk)).toContain("helmet");
 
-    const trespassSection = TERMS_SECTIONS.find((s) => s.id === "spots-property");
-    expect(trespassSection).toBeDefined();
-    expect(trespassSection?.calloutType).toBe("trespass");
-    expect(JSON.stringify(trespassSection)).toContain("Trespass");
+    const property = TERMS_SECTIONS.find((s) => s.id === "spots-property");
+    expect(property?.calloutType).toBe("trespass");
+    expect(text(property)).toContain("trespass");
   });
 
-  it("mandates 13+ age restriction in compliance with COPPA & minor protection", () => {
-    const acceptanceSection = TERMS_SECTIONS.find((s) => s.id === "acceptance");
-    expect(acceptanceSection).toBeDefined();
-    expect(JSON.stringify(acceptanceSection)).toContain("thirteen (13)");
-    expect(JSON.stringify(acceptanceSection)).toContain("COPPA");
+  it("requires riders to be 13+ with guardian consent under 18", () => {
+    const acceptance = text(TERMS_SECTIONS.find((s) => s.id === "acceptance"));
+    expect(acceptance).toContain("13");
+    expect(acceptance).toContain("guardian");
   });
 
-  it("includes YouTube API Services compliance disclosure", () => {
-    const tvSection = TERMS_SECTIONS.find((s) => s.id === "tv-youtube");
-    expect(tvSection).toBeDefined();
-    expect(tvSection?.calloutType).toBe("youtube");
-    expect(JSON.stringify(tvSection)).toContain("YouTube Terms of Service");
-    expect(JSON.stringify(tvSection)).toContain("Google Privacy Policy");
+  it("covers betting, fair play, YouTube, takedowns and governing law", () => {
+    const games = text(TERMS_SECTIONS.find((s) => s.id === "games-league"));
+    expect(games).toContain("betting");
+    expect(games).toContain("location");
+
+    expect(text(TERMS_SECTIONS.find((s) => s.id === "conduct"))).toContain("YouTube");
+    expect(text(TERMS_SECTIONS.find((s) => s.id === "ugc"))).toContain(
+      "legal@openspotleague.com",
+    );
+
+    const legal = text(TERMS_SECTIONS.find((s) => s.id === "legal"));
+    expect(legal).toContain("Colombia");
+    expect(legal).toContain("arbitration in Bogotá");
+    expect(legal).toContain("USD 50");
   });
 
-  it("contains non-gambling skill game rules and anti-cheating GPS terms", () => {
-    const gameSection = TERMS_SECTIONS.find((s) => s.id === "challenge-games");
-    expect(gameSection).toBeDefined();
-    expect(JSON.stringify(gameSection)).toContain("gambling");
-    expect(JSON.stringify(gameSection)).toContain("GPS");
-  });
-
-  it("specifies DMCA designated takedown procedure", () => {
-    const dmcaSection = TERMS_SECTIONS.find((s) => s.id === "dmca");
-    expect(dmcaSection).toBeDefined();
-    expect(JSON.stringify(dmcaSection)).toContain("17 U.S.C. § 512");
-    expect(JSON.stringify(dmcaSection)).toContain("legal@openspotleague.com");
-  });
-
-  it("establishes Colombian governing law, Bogotá D.C. venue, and arbitration", () => {
-    const govSection = TERMS_SECTIONS.find((s) => s.id === "governing-law");
-    expect(govSection).toBeDefined();
-    expect(JSON.stringify(govSection)).toContain("Republic of Colombia");
-    expect(JSON.stringify(govSection)).toContain("Bogotá D.C.");
-    expect(JSON.stringify(govSection)).toContain("Cámara de Comercio de Bogotá");
+  it("avoids technical jargon", () => {
+    const all = TERMS_SECTIONS.map(text).join(" ");
+    for (const term of TECHNICAL_TERMS) expect(all).not.toContain(term);
   });
 });
 
-describe("Privacy Policy Content & Regulatory Compliance", () => {
-  it("defines standard metadata and effective dates", () => {
-    expect(PRIVACY_VERSION).toBe("1.0");
+describe("Privacy Policy content", () => {
+  it("defines version, date and sections", () => {
+    expect(PRIVACY_VERSION).toBe("2.0");
     expect(PRIVACY_EFFECTIVE_DATE).toBeDefined();
-    expect(PRIVACY_SECTIONS.length).toBe(12);
+    expect(PRIVACY_SECTIONS.length).toBe(8);
+    expect(PRIVACY_KEY_POINTS.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("contains unique and valid section identifiers", () => {
+  it("has unique section ids", () => {
     const ids = PRIVACY_SECTIONS.map((s) => s.id);
-    const uniqueIds = new Set(ids);
-    expect(ids.length).toBe(uniqueIds.size);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("harmonizes with Colombian Law 1581 of 2012 (Habeas Data)", () => {
-    const overviewSection = PRIVACY_SECTIONS.find((s) => s.id === "overview");
-    expect(overviewSection).toBeDefined();
-    expect(JSON.stringify(overviewSection)).toContain("Law 1581 of 2012");
-    expect(JSON.stringify(overviewSection)).toContain("Habeas Data");
+  it("names the data laws and the Colombian authority", () => {
+    const overview = text(PRIVACY_SECTIONS.find((s) => s.id === "overview"));
+    expect(overview).toContain("Law 1581 of 2012");
+    expect(overview).toContain("Habeas Data");
+    expect(overview).toContain("GDPR");
+    expect(overview).toContain("CCPA/CPRA");
+    expect(overview).toContain("never sell");
 
-    const rightsSection = PRIVACY_SECTIONS.find((s) => s.id === "user-rights");
-    expect(rightsSection).toBeDefined();
-    expect(JSON.stringify(rightsSection)).toContain("Superintendencia de Industria y Comercio");
+    const rights = text(PRIVACY_SECTIONS.find((s) => s.id === "user-rights"));
+    expect(rights).toContain("Superintendencia de Industria y Comercio");
+    expect(rights).toContain("under 13");
   });
 
-  it("incorporates GDPR and CCPA/CPRA disclosures with a strict No-Sale commitment", () => {
-    const allText = JSON.stringify(PRIVACY_SECTIONS);
-    expect(allText).toContain("GDPR");
-    expect(allText).toContain("CCPA/CPRA");
-    expect(allText).toContain("does not sell");
+  it("says location is only used on demand", () => {
+    const collected = text(PRIVACY_SECTIONS.find((s) => s.id === "information-collected"));
+    expect(collected).toContain("only when you tap");
+    expect(collected).toContain("never track your location in the background");
   });
 
-  it("discloses on-demand geolocation collection without background tracking", () => {
-    const geoSection = PRIVACY_SECTIONS.find((s) => s.id === "information-collected");
-    expect(geoSection).toBeDefined();
-    expect(JSON.stringify(geoSection)).toContain("Geolocation Data");
-    expect(JSON.stringify(geoSection)).toContain("NEVER tracks your location continuously in the background");
+  it("lists the key services we use", () => {
+    const names = THIRD_PARTY_PROCESSORS.map((p) => p.name);
+    expect(names.some((n) => n.includes("Supabase"))).toBe(true);
+    expect(names.some((n) => n.includes("Cloudflare"))).toBe(true);
+    expect(names.some((n) => n.includes("OpenWeather"))).toBe(true);
+    expect(names.some((n) => n.includes("Google") || n.includes("YouTube"))).toBe(true);
+    expect(names.some((n) => n.includes("Vercel"))).toBe(false);
+    for (const p of THIRD_PARTY_PROCESSORS) expect(p.privacyUrl).toMatch(/^https:\/\//);
   });
 
-  it("lists all essential cookies and functional localStorage items", () => {
-    expect(COOKIE_INVENTORY.length).toBeGreaterThanOrEqual(5);
-    const cookieNames = COOKIE_INVENTORY.map((c) => c.name);
-    expect(cookieNames).toContain("sb-*-auth-token");
-    expect(cookieNames).toContain("osp_seed");
-    expect(cookieNames).toContain("openspot-preferences");
-    expect(cookieNames).toContain("openspot-guest-token");
-  });
-
-  it("lists key third-party processors including Supabase and Cloudflare", () => {
-    const processorNames = THIRD_PARTY_PROCESSORS.map((p) => p.name);
-    expect(processorNames.some((n) => n.includes("Supabase"))).toBe(true);
-    expect(processorNames.some((n) => n.includes("Vercel"))).toBe(false);
-    expect(processorNames.some((n) => n.includes("Cloudflare"))).toBe(true);
-    expect(processorNames.some((n) => n.includes("OpenWeather"))).toBe(true);
-    expect(processorNames.some((n) => n.includes("Google") || n.includes("YouTube"))).toBe(true);
+  it("avoids technical jargon", () => {
+    const all = PRIVACY_SECTIONS.map(text).join(" ");
+    for (const term of TECHNICAL_TERMS) expect(all).not.toContain(term);
   });
 });
 

@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { OG_IMAGES } from "@/lib/og/config";
 import { connection } from "next/server";
 import { getSessionUser } from "@/lib/auth/server";
+import { gameTitle } from "@/lib/games/game-title";
 import { GameDomainError } from "@/lib/games/definitions";
 import {
   getGameOgPreviewByShareCode,
@@ -276,7 +277,7 @@ function CrawlerPreview({
             {badge}
           </p>
           <h1 className="mt-3 max-w-xl font-display text-4xl font-bold uppercase leading-[1.05] tracking-[-0.03em] text-on-surface sm:text-6xl">
-            {preview.gameName}
+            {gameTitle(preview)}
           </h1>
           <p className="mt-3 font-display text-xs font-bold uppercase tracking-[0.06em] text-on-surface-variant">
             Hosted by {preview.creatorDisplayName}

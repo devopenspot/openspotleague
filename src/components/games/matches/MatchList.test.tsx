@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { MatchList } from "@/components/games/matches/MatchList";
+import { GUEST_TOKEN_HEADER, GUEST_TOKEN_STORAGE_KEY, createGuestToken } from "@/lib/games/guest";
 import type { GameListItem } from "@/lib/schemas/game";
 
 vi.mock("next/navigation", () => ({
@@ -149,9 +150,9 @@ describe("MatchList — award history replay", () => {
       }
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
-    render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getAllByText("complete").length).toBeGreaterThanOrEqual(2));
-    const buttons = screen.getAllByRole("button", { name: /View championship results/i });
+    render(<MatchList authenticated limit={100} />);
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBeGreaterThanOrEqual(2));
+    const buttons = screen.getAllByRole("button", { name: /View results for/i });
     expect(buttons).toHaveLength(3);
   });
 
@@ -162,14 +163,16 @@ describe("MatchList — award history replay", () => {
       }
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
-    render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getByText("lobby")).toBeInTheDocument());
-    const buttons = screen.getAllByRole("button", { name: /View championship results/i });
+    render(<MatchList authenticated limit={100} />);
+    await waitFor(() => expect(screen.getByText("Not started")).toBeInTheDocument());
+    const buttons = screen.getAllByRole("button", { name: /View results for/i });
     // only 3 terminal
     expect(buttons).toHaveLength(3);
     // ensure active/lobby labels exist but not as buttons
-    expect(screen.getByText("active")).toBeInTheDocument();
-    expect(screen.getByText("lobby")).toBeInTheDocument();
+    expect(screen.getByText("In progress")).toBeInTheDocument();
+    expect(screen.getByText("Not started")).toBeInTheDocument();
+    // A battle that closed with no winner reads "Ended early".
+    expect(screen.getByText("Ended early")).toBeInTheDocument();
   });
 
 
@@ -186,9 +189,9 @@ describe("MatchList — award history replay", () => {
       }
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
-    render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getAllByText("complete").length).toBe(2));
-    const btn = screen.getByRole("button", { name: /View championship results for Play a Blade — roller/i });
+    render(<MatchList authenticated limit={100} />);
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    const btn = screen.getByRole("button", { name: /View results for Game of B\.L\.A\.D\.E — roller/i });
     await user.click(btn);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument(), { timeout: 3000 });
     expect(screen.getByText(/Alice takes BLADE!/)).toBeInTheDocument();
@@ -206,10 +209,71 @@ describe("MatchList — award history replay", () => {
       }
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
-    render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getAllByText("complete").length).toBe(2));
-    const btn = screen.getByRole("button", { name: /View championship results for Play a Blade — roller/i });
+    render(<MatchList authenticated limit={100} />);
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    const btn = screen.getByRole("button", { name: /View results for Game of B\.L\.A\.D\.E — roller/i });
     await user.click(btn);
     await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+  });
+
+  it("shows friendly copy next to the row, not the raw error body", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("fetch", vi.fn(async (url: string | URL) => {
+      const u = String(url);
+      if (u.includes("/api/games?limit=")) return new Response(JSON.stringify(mockGames), { status: 200 });
+      return new Response(
+        JSON.stringify({ error: "Conflicting identity claims", code: "NOT_AUTHORIZED" }),
+        { status: 403 },
+      );
+    }));
+    render(<MatchList authenticated limit={100} />);
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    await user.click(screen.getByRole("button", { name: /View results for Game of B\.L\.A\.D\.E — roller/i }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("You can't open these results.");
+    expect(alert).not.toHaveTextContent(/Conflicting|NOT_AUTHORIZED/);
+    expect(alert.closest("li")).toHaveTextContent("Game of B.L.A.D.E");
+  });
+});
+
+describe("MatchList — results identity", () => {
+  function captureResultsRequest() {
+    const calls: RequestInit[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string | URL, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes("/api/games?limit=")) return new Response(JSON.stringify(mockGames), { status: 200 });
+      calls.push(init ?? {});
+      return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
+    }));
+    return calls;
+  }
+
+  function guestHeaderOf(init: RequestInit | undefined) {
+    return new Headers(init?.headers).get(GUEST_TOKEN_HEADER);
+  }
+
+  beforeEach(() => {
+    // A rider who once played as a guest keeps the token after signing in.
+    localStorage.setItem(GUEST_TOKEN_STORAGE_KEY, createGuestToken());
+  });
+
+  it("never sends the guest token for a signed-in rider", async () => {
+    const user = userEvent.setup();
+    const calls = captureResultsRequest();
+    render(<MatchList authenticated limit={100} />);
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    await user.click(screen.getByRole("button", { name: /View results for Game of B\.L\.A\.D\.E — roller/i }));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(guestHeaderOf(calls[0])).toBeNull();
+  });
+
+  it("sends the guest token for a guest", async () => {
+    const user = userEvent.setup();
+    const calls = captureResultsRequest();
+    render(<MatchList authenticated={false} limit={100} />);
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    await user.click(screen.getByRole("button", { name: /View results for Game of B\.L\.A\.D\.E — roller/i }));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(guestHeaderOf(calls[0])).toBe(localStorage.getItem(GUEST_TOKEN_STORAGE_KEY));
   });
 });

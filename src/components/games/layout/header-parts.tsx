@@ -18,6 +18,7 @@ import {
   tagClass,
 } from "@/components/ui/recipes";
 import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
+import { gameTitle } from "@/lib/games/game-title";
 import type { GameState } from "@/lib/schemas/game";
 
 export const DRAWER_ID = "game-header-drawer";
@@ -226,7 +227,7 @@ export function GameShareDrawer({
     >
       <div className="flex min-h-0 flex-1 flex-col">
         <DrawerHeader
-          eyebrow={game?.gameName ?? "Session Status"}
+          eyebrow={game ? gameTitle(game) : "Session Status"}
           title={game ? "Invite A Rider" : "Game Controls"}
           titleId={DRAWER_TITLE_ID}
           closeLabel="Close game controls"
@@ -250,7 +251,7 @@ export function GameShareDrawer({
                 <ShareActions
                   url={sharePath}
                   code={game.shareCode}
-                  title={`${game.gameName} challenge`}
+                  title={`${gameTitle(game)} challenge`}
                   compact
                   className="mt-3"
                 />

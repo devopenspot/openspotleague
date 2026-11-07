@@ -174,7 +174,7 @@ describe("GameBoardControls", () => {
 
     expect(shareOrCopyUrlMock).toHaveBeenCalledWith(
       expect.stringContaining("/games/join/RIDE-123"),
-      "Play a Bike",
+      "Game of B.I.K.E",
     );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
@@ -253,7 +253,7 @@ describe("GameBoardControls", () => {
     );
 
     expect(
-      await screen.findByRole("dialog", { name: "Play a Bike" }),
+      await screen.findByRole("dialog", { name: "Game of B.I.K.E" }),
     ).toBeInTheDocument();
   });
 
@@ -391,7 +391,7 @@ describe("GameBoardControls", () => {
     render(<GameBoardControls game={game} onBackToChallenges={vi.fn()} />);
 
     expect(
-      screen.getByRole("heading", { name: "Play a Bike" }),
+      screen.getByRole("heading", { name: "Game of B.I.K.E" }),
     ).toBeInTheDocument();
     expect(screen.getByText("2 Riders")).toBeInTheDocument();
     expect(screen.getByText("Leader Leads")).toBeInTheDocument();

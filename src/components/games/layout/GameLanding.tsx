@@ -12,6 +12,8 @@ import { usePreferencesStore } from "@/stores/preferences-store";
 import { useUIStore } from "@/stores/ui-store";
 import { GameCreateForm } from "@/components/games/GameCreateForm";
 import { ResponsibilityPolicyModal } from "@/components/games/shared/ResponsibilityPolicyModal";
+import { CARD, EYEBROW, META, tagClass } from "@/components/ui/recipes";
+import { dottedWord } from "@/lib/games/game-title";
 import { ResumeGameCard } from "@/components/games/matches/ResumeGameCard";
 import {
   useMyGames,
@@ -37,14 +39,14 @@ const UI_COPY = {
   yourRecord: `Your record`,
   setupTitle: `Set up your game`,
   modeHint: `Training works anywhere and is saved to your history. Battles are verified at a registered spot and earn leaderboard points.`,
-  challengeRecord: `Challenge record`,
+  challengeRecord: `Battle rank · leaderboard points`,
   gameNotFound: `That code didn't match a game. Check it with your friend and try again.`,
   loading: `Loading`,
   unavailable: `Unavailable`,
   newRider: `New Rider`,
   played: `Played`,
   won: `Won`,
-  landed: `Landed`,
+  landed: `Tricks landed`,
   setPreference: `Set preference`,
   gameRules: `Game rules`,
   riderPolicy: `Rider policy`,
@@ -171,7 +173,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
                 aria-label={UI_TEMPLATES.eliminationWordAria(eliminationWord)}
                 className="shrink-0 font-display text-base font-bold uppercase tracking-[0.18em]"
               >
-                {eliminationWord.split("").join(".")}
+                {dottedWord(eliminationWord)}
               </span>
             ) : (
               <button
@@ -209,8 +211,12 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
         onClose={() => setPolicyOpen(false)}
       />
       {signedIn ? (
-        <MatchesDrawer isOpen={gamesOpen} onClose={() => setGamesOpen(false)}>
-          <div className="space-y-4 py-4">
+        <MatchesDrawer
+          isOpen={gamesOpen}
+          onClose={() => setGamesOpen(false)}
+          authenticated={signedIn}
+        >
+          <div className="pt-1 pb-5">
             <RiderProgressContent
               ranking={ranking}
               rankingError={rankingError}
@@ -259,23 +265,6 @@ function LandingInfo({
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div
-      className={`min-w-0 rounded-[8px] border border-outline-variant bg-surface-container px-1.5 py-3 sm:px-2`}
-    >
-      <dt className={`font-display text-2xl font-bold leading-none`}>
-        {value}
-      </dt>
-      <dd
-        className={`mt-2 font-display text-xs uppercase leading-tight tracking-[0.05em] text-secondary`}
-      >
-        {label}
-      </dd>
-    </div>
-  );
-}
-
 function RiderProgressContent({
   ranking,
   rankingError,
@@ -287,53 +276,41 @@ function RiderProgressContent({
   activity: RiderActivityData;
   activityHeadingId: string;
 }) {
+  const loading = !ranking && !rankingError;
   return (
-    <>
-      <div
-        className={`min-w-0 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 mb-20`}
+    <div className="space-y-3">
+      <section
+        className={`min-w-0 ${CARD}`}
+        aria-labelledby="rider-record-title"
       >
-        <div className={`flex items-start justify-between gap-3 sm:gap-4`}>
-          <p
-            className={`font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary`}
-          >
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="rider-record-title" className={EYEBROW}>
             {UI_COPY.yourRecord}
-          </p>
-          <span
-            className={`shrink-0 font-display text-xs uppercase tracking-widest text-secondary`}
-          >
-            {UI_COPY.challengeRecord}
-          </span>
+          </h2>
+          {ranking && !rankingError ? (
+            <span className={tagClass("outline")}>
+              {UI_TEMPLATES.points(ranking.totalPoints)}
+            </span>
+          ) : null}
         </div>
-
-        <div className={`mt-4`}>
-          <p
-            className={`font-display text-4xl font-bold uppercase leading-none sm:text-5xl`}
-          >
-            {!ranking && !rankingError
-              ? UI_COPY.loading
-              : rankingError
+        <div className="mt-3">
+          {loading ? (
+            <div
+              role="status"
+              aria-label={UI_COPY.loading}
+              className="h-9 w-40 rounded-control bg-surface-container-high"
+            />
+          ) : (
+            <p className="font-display text-4xl font-bold uppercase leading-none tracking-display text-on-surface">
+              {rankingError
                 ? UI_COPY.unavailable
                 : (ranking?.rank ?? UI_COPY.newRider)}
-          </p>
-          <p
-            className={`mt-2 font-display text-xs uppercase tracking-[0.05em] text-secondary`}
-          >
-            {!ranking || rankingError
-              ? ``
-              : UI_TEMPLATES.points(ranking.totalPoints)}
-          </p>
+            </p>
+          )}
+          <p className={`mt-2 ${META}`}>{UI_COPY.challengeRecord}</p>
         </div>
-        <dl
-          className={`${`mt-5 grid grid-cols-3 gap-2 text-center sm:mt-6`} ${!ranking || rankingError ? `opacity-40` : ``}`}
-        >
-          <Stat value={ranking?.gamesPlayed ?? 0} label={UI_COPY.played} />
-          <Stat value={ranking?.gamesWon ?? 0} label={UI_COPY.won} />
-          <Stat value={ranking?.tricksLanded ?? 0} label={UI_COPY.landed} />
-        </dl>
-      </div>
-      <div className={`min-w-0 overflow-hidden rounded-[16px] bg-on-surface`}>
-        <RiderActivityBoard data={activity} headingId={activityHeadingId} />
-      </div>
-    </>
+      </section>
+      <RiderActivityBoard data={activity} headingId={activityHeadingId} />
+    </div>
   );
 }
