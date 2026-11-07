@@ -180,7 +180,7 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-wire-border py-8 text-xs font-semibold text-wire-muted">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-wire-border pt-8 pb-20 text-xs font-semibold text-wire-muted">
           <p>
             © {new Date().getFullYear()} Open Spot League. All rights reserved.
           </p>
