@@ -60,13 +60,3 @@ export function PanelScreenBezel({
     </div>
   );
 }
-
-export function ScrewCluster() {
-  return (
-    <div className="pointer-events-none hidden items-center gap-1.5 sm:flex" aria-hidden>
-      <span className="h-1.5 w-1.5 rounded-full border border-on-surface/15 bg-surface-container-high shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.2)]" />
-      <span className="h-1.5 w-1.5 rounded-full border border-on-surface/15 bg-surface-container-high shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.2)]" />
-      <span className="h-1.5 w-1.5 rounded-full border border-on-surface/15 bg-surface-container-high shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.2)]" />
-    </div>
-  );
-}

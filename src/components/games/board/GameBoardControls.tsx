@@ -2,6 +2,8 @@
 
 import { Settings2, Share } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { buildRunAgainUrl } from "@/lib/games/prefill";
 
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import { ChallengeStartCountdownDialog } from "@/components/games/award/ChallengeStartCountdownDialog";
@@ -198,6 +200,7 @@ export function GameBoardControls({
       })
     : null;
 
+  const router = useRouter();
   function handleSheetAction(id: GameSheetActionId) {
     if (id === "join") {
       if (showGuestJoinForm) onGuestJoin();
@@ -211,6 +214,7 @@ export function GameBoardControls({
     else if (id === "voteAccept") onCategoriesVote(true);
     else if (id === "voteReject") onCategoriesVote(false);
     else if (id === "results") onViewResults?.();
+    else if (id === "runAgain" && game) router.push(buildRunAgainUrl(game));
     else onBackToChallenges();
   }
 
@@ -225,13 +229,15 @@ export function GameBoardControls({
   const connectionLed = connection === "connected" ? "live" : "pending";
   const statusLabel = !game
     ? ""
-    : game.status === "lobby"
-      ? "Lobby — Waiting to drop"
-      : game.status === "active"
-        ? "Live — Session running"
-        : game.status === "complete"
-          ? "Complete — Results in"
-          : "Closed";
+    : connection === "reconnecting"
+      ? "Reconnecting…"
+      : game.status === "lobby"
+        ? "Lobby — Waiting to drop"
+        : game.status === "active"
+          ? "Live — Session running"
+          : game.status === "complete"
+            ? "Complete — Results in"
+            : "Closed";
   const letterSummary =
     game && game.trainingVariant !== "solo" && game.status !== "lobby"
       ? game.players
@@ -277,7 +283,10 @@ export function GameBoardControls({
                   </p>
                 ) : null}
               </div>
-              <span className="hidden shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary sm:inline-flex">
+              <span
+                role="status"
+                className="hidden shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary sm:inline-flex"
+              >
                 {statusLabel}
               </span>
             </div>
@@ -375,6 +384,7 @@ export function GameBoardControls({
               onViewResults={onViewResults}
               onBackToChallenges={onBackToChallenges}
               showRunAgain={isComplete}
+              runAgainHref={buildRunAgainUrl(game)}
             />
           </div>
         ) : !isTerminal ? (

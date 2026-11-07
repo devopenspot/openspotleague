@@ -10,8 +10,11 @@ const { copyTextMock, shareOrCopyUrlMock } = vi.hoisted(() => ({
   shareOrCopyUrlMock: vi.fn(),
 }));
 
+const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/games/game-1",
+  useRouter: () => ({ push: routerPush }),
 }));
 
 vi.mock("@/lib/utils/share", () => ({
@@ -338,7 +341,7 @@ describe("GameBoardControls", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Run It Again" })).toHaveAttribute(
       "href",
-      "/games",
+      "/games?mode=challenge&spotType=rails",
     );
 
     const gameSheet = await sheet();
@@ -346,7 +349,9 @@ describe("GameBoardControls", () => {
       within(gameSheet).getByRole("button", { name: "Run It Again" }),
     );
 
-    expect(onBackToChallenges).toHaveBeenCalledOnce();
+    // Opens setup on the same game instead of dropping the rider on the list.
+    expect(routerPush).toHaveBeenCalledWith("/games?mode=challenge&spotType=rails");
+    expect(onBackToChallenges).not.toHaveBeenCalled();
   });
 
   it("shows the final non-winner and cancellation states", async () => {
@@ -478,7 +483,7 @@ describe("GameBoardControls", () => {
     );
 
     await user.click(
-      within(await sheet()).getByRole("button", { name: "Mark as failed" }),
+      within(await sheet()).getByRole("button", { name: "Mark as missed" }),
     );
 
     expect(onAttemptResult).toHaveBeenCalledWith("failed");
@@ -507,7 +512,7 @@ describe("GameBoardControls", () => {
     expect(
       within(gameSheet).getByRole("button", { name: /Waiting on Rider/ }),
     ).toBeInTheDocument();
-    expect(within(gameSheet).getByText("Leader · landed")).toBeInTheDocument();
+    expect(within(gameSheet).getByText("Leader · Landed")).toBeInTheDocument();
     expect(
       within(gameSheet).queryByRole("button", { name: "Mark as landed" }),
     ).not.toBeInTheDocument();

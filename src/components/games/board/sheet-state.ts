@@ -315,7 +315,7 @@ export function deriveGameSheetView(
   }
 
   if (context.canConfigureChallenge) {
-    return view("set-line", "Set the line", {
+    return view("set-line", "Pick the next trick", {
       actions: [{ id: "changeLine", label: "Change Line", tone: "primary" }],
       defaultDetent: "half",
     });

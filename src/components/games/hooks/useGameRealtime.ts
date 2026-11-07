@@ -19,6 +19,11 @@ function guestHeaders(): Record<string, string> {
   return headers;
 }
 
+const LOAD_FAILED = "The game couldn't load. Check your signal and try again.";
+
+/** A load failure whose message is written for riders. */
+class GameLoadError extends Error {}
+
 export async function fetchGameState(
   id: string,
   shareCode?: string,
@@ -35,7 +40,15 @@ export async function fetchGameState(
     timeoutMs: DEFAULT_READ_TIMEOUT_MS,
   });
   if (response.status === 304) return null;
-  if (!response.ok) throw new Error("Game state could not be loaded");
+  if (!response.ok) {
+    throw new GameLoadError(
+      response.status === 404
+        ? "This game no longer exists."
+        : response.status === 401 || response.status === 403
+          ? "This game is private. Ask the host for the invite link."
+          : LOAD_FAILED,
+    );
+  }
   return gameStateSchema.parse(await response.json());
 }
 
@@ -88,7 +101,7 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
       startSubscriptionRef.current?.(latestGameRef.current);
       return latestGameRef.current;
     }
-    throw new Error("Game state could not be loaded");
+    throw new GameLoadError(LOAD_FAILED);
   }, [applyGameState, id, shareCode]);
 
   useEffect(() => {
@@ -124,17 +137,15 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
       void fetchGameState(id, shareCode, undefined, { authenticated: !guestRef.current })
         .then((initial) => {
           if (cancelled) return;
-          if (!initial) throw new Error("Game state could not be loaded");
+          if (!initial) throw new GameLoadError(LOAD_FAILED);
           applyGameState(initial);
           startSubscription(initial);
         })
         .catch((reason) => {
           if (cancelled) return;
-          setError(
-            reason instanceof Error
-              ? reason.message
-              : "Game state could not be loaded",
-          );
+          // Only our own messages reach the rider; parser or network
+          // internals become the generic retry message.
+          setError(reason instanceof GameLoadError ? reason.message : LOAD_FAILED);
         })
         .finally(() => {
           initialInFlight = false;
@@ -173,7 +184,6 @@ export function useGameRealtime(id: string, shareCode?: string, options: { authe
     error,
     setError,
     latestGameRef,
-    applyGameState,
     refreshGameState,
   };
 }

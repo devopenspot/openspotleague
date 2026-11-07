@@ -59,7 +59,7 @@ describe("useGameRealtime", () => {
     fetchMock.mockRejectedValueOnce(new Error("no signal"));
     const { result } = renderHook(() => useGameRealtime("game-1"));
 
-    await waitFor(() => expect(result.current.error).toBe("no signal"));
+    await waitFor(() => expect(result.current.error).toBe("The game couldn't load. Check your signal and try again."));
     expect(subscribeMock).not.toHaveBeenCalled();
 
     fetchMock.mockResolvedValue(okResponse);

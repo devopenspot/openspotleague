@@ -137,6 +137,7 @@ export function TerminalResultBar({
   onViewResults,
   onBackToChallenges,
   showRunAgain,
+  runAgainHref = "/games",
 }: {
   tone: Extract<BadgeTone, "success" | "info">;
   label: string;
@@ -146,6 +147,8 @@ export function TerminalResultBar({
   onViewResults?: () => void;
   onBackToChallenges: () => void;
   showRunAgain: boolean;
+  /** Setup page prefilled with this game's mode, spot and spot type. */
+  runAgainHref?: string;
 }) {
   const showResults = Boolean(onViewResults) && showResultsLink;
   // One primary per bar: Run It Again when the game completed, else Results.
@@ -189,14 +192,14 @@ export function TerminalResultBar({
               <button
                 type="button"
                 onClick={onViewResults}
-                aria-label="View championship results"
+                aria-label="View results"
                 className={controlClass(resultsTone)}
               >
                 Results
               </button>
             ) : null}
             {showRunAgain ? (
-              <Link href="/games" className={controlClass("primary")}>
+              <Link href={runAgainHref} className={controlClass("primary")}>
                 Run It Again
               </Link>
             ) : null}

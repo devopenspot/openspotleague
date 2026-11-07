@@ -105,7 +105,7 @@ export function AwardDialog({
       showToast("Link copied — share your session!", "success");
     } else if (outcome === "failed" && !("share" in navigator)) {
       // A dismissed native share sheet also reports "failed": stay quiet then.
-      showToast("Couldn't share — copy the link from the address bar", "info");
+      showToast(`Couldn't share. Here's the link: ${url}`, "info");
     }
   }
 
