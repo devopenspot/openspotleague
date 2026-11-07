@@ -46,42 +46,27 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link
-                  href={ROUTES.map}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.map} className={FOOTER_LINK_CLASS}>
                   Spots Map
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.games}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.games} className={FOOTER_LINK_CLASS}>
                   Challenge Arena
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.tv}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.tv} className={FOOTER_LINK_CLASS}>
                   Open Spot TV
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.league}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.league} className={FOOTER_LINK_CLASS}>
                   Contests & Events
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.spotsNew}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.spotsNew} className={FOOTER_LINK_CLASS}>
                   Submit a Spot
                 </Link>
               </li>
@@ -136,34 +121,22 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link
-                  href={ROUTES.login}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.login} className={FOOTER_LINK_CLASS}>
                   Rider Sign In
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.profile}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.profile} className={FOOTER_LINK_CLASS}>
                   Rider Profile
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.saved}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.saved} className={FOOTER_LINK_CLASS}>
                   Saved Spots
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/support"
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href="/support" className={FOOTER_LINK_CLASS}>
                   Support & Help
                 </Link>
               </li>
@@ -177,18 +150,12 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link
-                  href={ROUTES.terms}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.terms} className={FOOTER_LINK_CLASS}>
                   Terms of Use
                 </Link>
               </li>
               <li>
-                <Link
-                  href={ROUTES.privacy}
-                  className={FOOTER_LINK_CLASS}
-                >
+                <Link href={ROUTES.privacy} className={FOOTER_LINK_CLASS}>
                   Privacy Policy
                 </Link>
               </li>
@@ -213,11 +180,11 @@ export function LandingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-wire-border pt-6 text-xs font-semibold text-wire-muted">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-wire-border py-8 text-xs font-semibold text-wire-muted">
           <p>
             © {new Date().getFullYear()} Open Spot League. All rights reserved.
           </p>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
               href={ROUTES.terms}
               className={`${FOOTER_LINK_CLASS} underline decoration-wire-border`}
