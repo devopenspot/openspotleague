@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
 import { listSpots } from "@/lib/services/spot/spots"
+import { findSpotByIdForUser } from "@/lib/services/spot/community-spots"
+import { getSessionUser } from "@/lib/auth/server"
 import { getSpotWeather } from "@/lib/weather/weather-cached"
 import { log } from "@/lib/utils/log"
 
@@ -66,6 +68,25 @@ export async function GET(request: NextRequest) {
 		// cache. The route does not need its own cache layer.
 		const spotList = await listSpots({ ids: uniqueIds })
 		const spotsById = new Map(spotList.items.map((s) => [s.id, s]))
+		// A rider's own personal spots (just added during game setup) are not
+		// in the public list. Resolve them for their owner only, and keep that
+		// answer out of shared caches.
+		let includesPersonal = false
+		const missing = uniqueIds.filter((id) => !spotsById.has(id))
+		if (missing.length > 0) {
+			const user = await getSessionUser().catch(() => null)
+			if (user) {
+				const owned = await Promise.all(
+					missing.map((id) => findSpotByIdForUser(id, user.id).catch(() => null)),
+				)
+				for (const spot of owned) {
+					if (spot && spot.visibility === "personal" && spot.createdBy === user.id) {
+						spotsById.set(spot.id, spot)
+						includesPersonal = true
+					}
+				}
+			}
+		}
 		const entries: Array<readonly [string, Awaited<ReturnType<typeof getSpotWeather>>]> = []
 
 		let cursor = 0
@@ -76,7 +97,7 @@ export async function GET(request: NextRequest) {
 				const id = uniqueIds[i]
 				if (!id) return
 				const spot = spotsById.get(id)
-				if (!spot) return
+				if (!spot) continue
 				const w = await getSpotWeather({
 					spotId: spot.id,
 					latitude: spot.location.lat,
@@ -93,7 +114,12 @@ export async function GET(request: NextRequest) {
 		const res = NextResponse.json({ weather: Object.fromEntries(entries) })
 		// Public per-spot weather — inner getSpotWeather is "use cache" (6h);
 		// short CDN TTL absorbs home-spotlight + map-marker fan-out.
-		res.headers.set("Cache-Control", "public, s-maxage=120, stale-while-revalidate=300")
+		res.headers.set(
+			"Cache-Control",
+			includesPersonal
+				? "private, no-store"
+				: "public, s-maxage=120, stale-while-revalidate=300",
+		)
 		return res
 	} catch (err) {
 		log.error(

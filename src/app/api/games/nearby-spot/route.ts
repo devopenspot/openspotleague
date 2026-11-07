@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
       latitude: parsed.data.lat,
       longitude: parsed.data.lon,
       disciplineSlug: parsed.data.disciplineSlug,
+      viewerUserId: identity.userId,
     })
     const res = NextResponse.json({
       spot,
@@ -63,8 +64,14 @@ export async function GET(request: NextRequest) {
           )
         : null,
     })
-    // Public spot payload, cached per exact query — rate limiter still applies.
-    res.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
+    // Signed-in riders can match their own personal spots, so their answer
+    // must never land in a shared cache. Anonymous answers are public-only.
+    res.headers.set(
+      "Cache-Control",
+      identity.userId
+        ? "private, no-store"
+        : "public, s-maxage=60, stale-while-revalidate=300",
+    )
     return res
   } catch (error) {
     return gameErrorResponse(error)

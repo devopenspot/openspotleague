@@ -995,7 +995,10 @@ describe("GameCreateForm", () => {
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
-    expect(within(dialog).getByText(/Where will you ride\?/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Where are you riding\?/)).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("radio", { name: "Anywhere" }),
+    ).toHaveAttribute("aria-checked", "true");
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     expect(within(dialog).getByText(/Ready to start/)).toBeInTheDocument();
     await waitFor(() =>
@@ -1022,6 +1025,59 @@ describe("GameCreateForm", () => {
       spotType: "rails",
       level: 1,
     });
+  });
+
+  it("logs Training with just a place name and no location or weather", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fetch as Mock;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/games/options")) {
+        return jsonResponse({
+          disciplineSlug: "skateboard",
+          spotTypes: [
+            { slug: "rails", name: "Rails", sortOrder: 1, levels: [1, 2, 3] },
+          ],
+        });
+      }
+      if (url === "/api/games") {
+        return jsonResponse({ id: "game-1", version: 0 }, 201);
+      }
+      return jsonResponse({ error: "Not found" }, 404);
+    });
+
+    render(<GameCreateForm signedIn />);
+    const dialog = await openSetupDialog(user);
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await within(dialog).findByRole("radio", { name: "Rails" });
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await user.click(within(dialog).getByRole("radio", { name: "Just a name" }));
+    await user.type(within(dialog).getByLabelText("Place name"), "  My driveway ");
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    expect(within(dialog).getByText(/Logged at My driveway/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(dialog).getByTestId("mobile-create-game")).toBeEnabled(),
+    );
+    await user.click(within(dialog).getByTestId("mobile-create-game"));
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
+      ).toBe(true);
+    });
+    expect(requestLocationMock).not.toHaveBeenCalled();
+    const createCall = fetchMock.mock.calls.find(
+      ([input]) => String(input) === "/api/games",
+    );
+    const body = JSON.parse(String(createCall?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
+    expect(body).toMatchObject({ mode: "training", spotLabel: "My driveway" });
+    expect(body).not.toHaveProperty("spotId");
+    expect(body).not.toHaveProperty("latitude");
+    expect(body).not.toHaveProperty("weatherForecastIcon");
+    expect(createGameInputSchema.safeParse(body).success).toBe(true);
   });
 
   it("submits Training from the mobile setup dialog", async () => {

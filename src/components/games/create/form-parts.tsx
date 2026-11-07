@@ -4,6 +4,14 @@ import type { KeyboardEvent, ReactNode } from "react";
 import { WeatherIcon } from "@/components/spots/weather/WeatherIcon";
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import { formatDistance } from "@/lib/spots/geo";
+import {
+  CARD,
+  CARD_NESTED,
+  INPUT,
+  LABEL,
+  chipClass,
+  controlClass,
+} from "@/components/ui/recipes";
 import { type useUserLocation } from "@/hooks/map/useUserLocation";
 import { formatTemp } from "@/lib/weather/format";
 import type { Spot, WeatherIconName } from "@/lib/types";
@@ -38,6 +46,9 @@ export const WEATHER_LIVE_OPTIONS: ReadonlyArray<{
 ] as const;
 
 export const GAME_CREATE_FORM_ID = "game-create-form";
+
+const EMPTY_STATE_INLINE =
+  "rounded-inner border border-dashed border-outline-variant bg-surface-container-low px-4 py-4 text-sm leading-5 text-on-surface-variant";
 
 export const SPORT_REQUIRED_MESSAGE = "Pick a sport to load spots and levels.";
 
@@ -608,6 +619,8 @@ export function ChallengeSpotStep({
   onSpotAcceptance,
   onContinueTraining,
   onRetryLocation,
+  context = "challenge",
+  quickAdd,
 }: {
   selectedSpot: Spot | null;
   selectedDistanceMeters: number | null;
@@ -619,7 +632,15 @@ export function ChallengeSpotStep({
   onSpotAcceptance: (accepted: boolean) => void;
   onContinueTraining: () => void;
   onRetryLocation: () => void;
+  /** Battle requires a spot; training only offers one. Changes the copy. */
+  context?: "challenge" | "training";
+  /** Rendered when the location is known but no registered spot is nearby. */
+  quickAdd?: ReactNode;
 }) {
+  const noSpotHere =
+    !selectedSpot && !locationLoading && locationStatus === "granted";
+  const locationFailed =
+    locationStatus === "denied" || locationStatus === "unavailable";
   return (
     <Field label="Nearby registered spot" error={fieldError}>
       <div
@@ -694,28 +715,55 @@ export function ChallengeSpotStep({
               </div>
               {spotAccepted === false ? (
                 <p className="mt-3 text-sm leading-5 text-error" role="status">
-                  Challenge creation stays locked until you accept the nearby
-                  spot.
+                  {context === "challenge"
+                    ? "Battle creation stays locked until you accept the nearby spot."
+                    : "Pick another option above, or add this place as a new spot."}
                 </p>
               ) : null}
             </div>
+            {selectedSpot.visibility === "personal" && context === "challenge" ? (
+              <p className="mt-3 text-xs leading-5 text-on-surface-variant" role="note">
+                This spot is still personal. It becomes public once your
+                opponent checks in here, and leaderboard points count from
+                then on.
+              </p>
+            ) : null}
           </div>
+        ) : noSpotHere && quickAdd ? (
+          quickAdd
         ) : (
-          <div className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low px-3 py-4 text-sm leading-5 text-on-surface-variant">
-            The challenge can only be created when a compatible spot is found
-            near your current location.
+          <div className={EMPTY_STATE_INLINE}>
+            {context === "challenge"
+              ? "A battle needs a spot near your current location. Add this place as a new spot, or play it as Training."
+              : "No registered spot nearby. Pick Anywhere or Just a name to log this session. Signed-in riders can add this place to the map."}
           </div>
         )}
         {locationStatus === "denied" ? (
           <LocationBlockedCallout onRetry={onRetryLocation} />
         ) : null}
-        {locationStatus === "denied" || locationStatus === "unavailable" ? (
+        {context === "challenge" && (locationFailed || noSpotHere) ? (
+          <div className={CARD_NESTED}>
+            <p className="text-sm leading-6 text-on-surface-variant">
+              No spot? Play it as Training: any place works and your session
+              is still saved. Battles at a registered spot earn leaderboard
+              points.
+            </p>
+            <button
+              type="button"
+              onClick={onContinueTraining}
+              className={`mt-3 ${controlClass("secondary")}`}
+            >
+              Play as Training
+            </button>
+          </div>
+        ) : null}
+        {context === "training" && locationFailed ? (
           <button
             type="button"
             onClick={onContinueTraining}
-            className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px"
+            className={controlClass("secondary")}
           >
-            Continue with Training
+            Log without a spot
           </button>
         ) : null}
         {locationStatus !== "denied" ? (
@@ -1021,5 +1069,97 @@ export function FieldError({
     >
       {children}
     </span>
+  );
+}
+
+export type TrainingPlace = "none" | "spot" | "label";
+
+const TRAINING_PLACE_OPTIONS: ReadonlyArray<{
+  value: TrainingPlace;
+  label: string;
+  hint: string;
+}> = [
+  { value: "none", label: "Anywhere", hint: "Open play. No location needed." },
+  {
+    value: "spot",
+    label: "At a spot",
+    hint: "Find the spot you are at, or add it to the map.",
+  },
+  {
+    value: "label",
+    label: "Just a name",
+    hint: "Type where you rode. No location check.",
+  },
+];
+
+/**
+ * Training is a journal, not a contest: where you rode is optional and
+ * never blocks the session. Battles are where location is verified.
+ */
+export function TrainingPlaceStep({
+  idPrefix = "",
+  place,
+  spotLabel,
+  onPlaceChange,
+  onSpotLabelChange,
+  children,
+}: {
+  idPrefix?: string;
+  place: TrainingPlace;
+  spotLabel: string;
+  onPlaceChange: (place: TrainingPlace) => void;
+  onSpotLabelChange: (value: string) => void;
+  /** The spot finder, rendered when `place === "spot"`. */
+  children?: ReactNode;
+}) {
+  const labelId = `${idPrefix}training-place-label`;
+  const inputId = `${idPrefix}training-spot-label`;
+  const active = TRAINING_PLACE_OPTIONS.find((option) => option.value === place);
+  return (
+    <div className={`${CARD} space-y-4`}>
+      <div>
+        <p id={labelId} className={LABEL}>
+          Where are you riding? (optional)
+        </p>
+        <div
+          className="mt-2 flex flex-wrap gap-2"
+          role="radiogroup"
+          aria-labelledby={labelId}
+        >
+          {TRAINING_PLACE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={place === option.value}
+              onClick={() => onPlaceChange(option.value)}
+              className={chipClass(place === option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+          {active?.hint} Every session is saved to your training history.
+        </p>
+      </div>
+      {place === "label" ? (
+        <div>
+          <label htmlFor={inputId} className={LABEL}>
+            Place name
+          </label>
+          <input
+            id={inputId}
+            className={`mt-2 ${INPUT}`}
+            value={spotLabel}
+            maxLength={80}
+            autoComplete="off"
+            placeholder="e.g. My driveway"
+            onChange={(event) => onSpotLabelChange(event.target.value)}
+          />
+        </div>
+      ) : null}
+      {place === "spot" ? children : null}
+    </div>
   );
 }

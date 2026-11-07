@@ -1,4 +1,5 @@
-import { and, arrayContains, asc, eq, inArray, sql, type SQL } from "drizzle-orm";
+import { promoteCommunitySpotsNear } from "./community-promotion";
+import { and, arrayContains, asc, eq, inArray, or, sql, type SQL } from "drizzle-orm";
 import type { drizzle } from "drizzle-orm/postgres-js";
 import {
   communitySpotSubmissions,
@@ -49,7 +50,6 @@ import { detachSpotDependents } from "./spot-delete-plan"
 import { recordContentAudit, toAuditJson } from "../admin/content-audit"
 import { BaseDrizzleRepository } from "../core/base"
 import {
-  COMMUNITY_PROMOTION_THRESHOLD,
   COMMUNITY_RADIUS_METERS,
   SPOT_LIST_HARD_CAP,
 } from "@/lib/config/constants"
@@ -424,6 +424,8 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     radiusMeters: number;
     disciplineSlug: string;
     spotTypeSlugs: readonly string[];
+    /** Also match this rider's own personal (not yet public) spots. */
+    includePersonalOf?: string | null;
   }): Promise<Spot | null> {
     const point = sql`ST_SetSRID(ST_MakePoint(${params.lon}, ${params.lat}), 4326)::geography`;
     const typeSlugs = [...params.spotTypeSlugs];
@@ -433,7 +435,12 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
     const rows = await joinedSpotSelect(this.db)
       .where(
         and(
-          eq(spots.visibility, "public"),
+          params.includePersonalOf
+            ? or(
+                eq(spots.visibility, "public"),
+                eq(spots.createdBy, params.includePersonalOf),
+              )
+            : eq(spots.visibility, "public"),
           eq(spots.adminHidden, false),
           sql`ST_DWithin(${spots.location}, ${point}, ${params.radiusMeters})`,
           arrayContains(spots.sports, [canonicalDiscipline]),
@@ -1097,32 +1104,13 @@ export class DrizzleSpotRepository extends BaseDrizzleRepository implements Spot
       })
       .onConflictDoNothing()
 
-    // Serialize promotions per hash to avoid concurrent double-promotes
-    await this.db.execute(sql`select pg_advisory_xact_lock(hashtext(${submissionHash}))`)
-
-    const point = sql`ST_SetSRID(ST_MakePoint(${input.location.lon}, ${input.location.lat}), 4326)::geography`
-    const countRows = await this.db.execute<{ cnt: string }>(
-      sql`select count(distinct css.user_id)::int as cnt from ${communitySpotSubmissions} css join ${spots} s on s.id = css.canonical_spot_id where ST_DWithin(css.location, ${point}, ${COMMUNITY_RADIUS_METERS}) and s.admin_hidden = false`,
-    )
-    const distinctCount = Number(countRows[0]?.cnt ?? 0)
-
-    if (distinctCount >= COMMUNITY_PROMOTION_THRESHOLD) {
-      await this.db.execute(sql`
-        update ${spots}
-        set visibility = 'public',
-            origin = 'community',
-            community_submission_count = ${distinctCount},
-            updated_at = now()
-        where id in (
-          select css.canonical_spot_id from ${communitySpotSubmissions} css join ${spots} s on s.id = css.canonical_spot_id
-          where ST_DWithin(css.location, ${point}, ${COMMUNITY_RADIUS_METERS})
-            and css.canonical_spot_id is not null
-            and s.admin_hidden = false
-        )
-      `)
-    } else {
-      await this.db.update(spots).set({ communitySubmissionCount: distinctCount }).where(eq(spots.id, rowId))
-    }
+    // Community rule (shared with battle check-ins): serialized per hash.
+    await promoteCommunitySpotsNear(this.db, {
+      lat: input.location.lat,
+      lon: input.location.lon,
+      lockKey: submissionHash,
+      spotId: rowId,
+    })
 
     const after = await this.auditSnapshot(rowId)
     await recordContentAudit(this.db, {

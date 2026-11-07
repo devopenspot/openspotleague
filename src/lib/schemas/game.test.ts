@@ -397,3 +397,70 @@ describe("shared game schemas", () => {
     expect(openTrainingGamesResponseSchema.safeParse([{ id: "game-2", mode: "challenge" }]).success).toBe(false)
   })
 })
+
+describe("createGameInputSchema location rules", () => {
+  const trainingBase = {
+    mode: "training",
+    disciplineSlug: "skateboard",
+    spotType: "rails",
+    level: 1,
+    expectedVersion: 0,
+    idempotencyKey: "idempotency-key-123",
+  } as const
+  const spotFix = { spotId: "spot-1", latitude: 40.4, longitude: -3.7, accuracyMeters: 10 }
+
+  it("accepts training with no location at all", () => {
+    expect(createGameInputSchema.safeParse(trainingBase).success).toBe(true)
+  })
+
+  it("accepts a training place name without a spot", () => {
+    const result = createGameInputSchema.safeParse({ ...trainingBase, spotLabel: "  My driveway " })
+    expect(result.success).toBe(true)
+    if (result.success && result.data.mode === "training") {
+      expect(result.data.spotLabel).toBe("My driveway")
+    }
+  })
+
+  it("rejects a place name together with a registered spot", () => {
+    expect(createGameInputSchema.safeParse({ ...trainingBase, ...spotFix, spotLabel: "Plaza" }).success).toBe(false)
+  })
+
+  it("accepts a training spot without weather", () => {
+    expect(createGameInputSchema.safeParse({ ...trainingBase, ...spotFix }).success).toBe(true)
+  })
+
+  it("still rejects a partial training weather report", () => {
+    expect(createGameInputSchema.safeParse({ ...trainingBase, ...spotFix, weatherForecastIcon: "sunny" }).success).toBe(false)
+  })
+
+  it("requires weather for a battle", () => {
+    const result = createGameInputSchema.safeParse({
+      mode: "challenge",
+      disciplineSlug: "skateboard",
+      spotType: "rails",
+      level: 1,
+      timezone: "Europe/Madrid",
+      expectedVersion: 0,
+      idempotencyKey: "idempotency-key-123",
+      ...spotFix,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("does not accept a place name on a battle", () => {
+    const result = createGameInputSchema.safeParse({
+      mode: "challenge",
+      disciplineSlug: "skateboard",
+      spotType: "rails",
+      level: 1,
+      timezone: "Europe/Madrid",
+      expectedVersion: 0,
+      idempotencyKey: "idempotency-key-123",
+      weatherForecastIcon: "sunny",
+      weatherConfirmed: true,
+      spotLabel: "Plaza",
+      ...spotFix,
+    })
+    expect(result.success).toBe(false)
+  })
+})

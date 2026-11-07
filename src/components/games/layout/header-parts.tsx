@@ -114,6 +114,11 @@ export function GameStatusStrip({
       {game.spotId && game.weatherForecastIcon ? (
         <GameWeatherBanner game={game} variant="compact" />
       ) : null}
+      {!game.spotId && game.spotLabel ? (
+        <span className="inline-flex min-w-0 max-w-[10rem] items-center truncate rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold text-on-surface">
+          <span className="min-w-0 truncate">@ {game.spotLabel}</span>
+        </span>
+      ) : null}
     </div>
   );
 }
