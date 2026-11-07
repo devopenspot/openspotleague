@@ -38,8 +38,27 @@ const secretNames = [
   "URL_WEATHER_IMG",
 ] as const;
 
+// Email notifications over AWS (docs/notifications.md). Opt-in until the AWS
+// stack exists, because every declared name must have a value at deploy:
+// build with OPENSPOT_NOTIFICATIONS=1 (e.g. `OPENSPOT_NOTIFICATIONS=1 pnpm
+// deploy:secrets`). Once email is permanently on, move these into
+// `secretNames` and drop the flag, so a deploy without it cannot unset them.
+const notificationSecretNames = [
+  "AWS_NOTIFY_ACCESS_KEY_ID",
+  "AWS_NOTIFY_REGION",
+  "AWS_NOTIFY_SECRET_ACCESS_KEY",
+  "NOTIFICATIONS_INTERNAL_SECRET",
+  "NOTIFICATIONS_UNSUBSCRIBE_SECRET",
+  "NOTIFY_EMAIL_QUEUE_URL",
+] as const;
+
+const declaredSecretNames: readonly string[] =
+  process.env.OPENSPOT_NOTIFICATIONS === "1"
+    ? [...secretNames, ...notificationSecretNames]
+    : secretNames;
+
 const secrets = Object.fromEntries(
-  secretNames.map((name) => [name, bindings.secret()]),
+  declaredSecretNames.map((name) => [name, bindings.secret()]),
 );
 
 // The Worker's only route to Postgres. Local dev connects through

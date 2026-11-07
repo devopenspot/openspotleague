@@ -198,6 +198,15 @@ const EnvSchema = z
 
     // Cloudflare R2 — object plane for images (spots/events). Free tier: 10GB + 10M reads.
     // ACCOUNT_ID from https://<ACCOUNT>.r2.cloudflarestorage.com, bucket names must match R2 dashboard.
+    // Email notifications over AWS (docs/notifications.md). All optional:
+    // without them delivery is off and email-eligible rows stay `pending`.
+    AWS_NOTIFY_ACCESS_KEY_ID: optionalString(),
+    AWS_NOTIFY_SECRET_ACCESS_KEY: optionalString(),
+    AWS_NOTIFY_REGION: optionalString(),
+    NOTIFY_EMAIL_QUEUE_URL: optionalString(),
+    NOTIFICATIONS_INTERNAL_SECRET: optionalString(),
+    NOTIFICATIONS_UNSUBSCRIBE_SECRET: optionalString(),
+
     R2_ACCOUNT_ID: optionalString(),
     R2_ACCESS_KEY_ID: optionalString(),
     R2_SECRET_ACCESS_KEY: optionalString(),
@@ -328,6 +337,39 @@ export function getSpotImagesBucket(): string {
 
 export function getEventImagesBucket(): string {
   return env.SUPABASE_STORAGE_BUCKET_EVENTS;
+}
+
+// ---------- email notifications (AWS) ----------
+
+export interface NotifyAwsConfig {
+  accessKeyId: string
+  secretAccessKey: string
+  region: string
+  queueUrl: string
+}
+
+/** SQS producer config, or null while any part is missing (delivery off). */
+export function getNotifyAwsConfig(): NotifyAwsConfig | null {
+  const accessKeyId = env.AWS_NOTIFY_ACCESS_KEY_ID?.trim()
+  const secretAccessKey = env.AWS_NOTIFY_SECRET_ACCESS_KEY?.trim()
+  const queueUrl = env.NOTIFY_EMAIL_QUEUE_URL?.trim()
+  if (!accessKeyId || !secretAccessKey || !queueUrl) return null
+  return {
+    accessKeyId,
+    secretAccessKey,
+    region: env.AWS_NOTIFY_REGION?.trim() || "us-east-1",
+    queueUrl,
+  }
+}
+
+/** HMAC secret shared with the AWS Lambdas for /api/internal/notifications/*. */
+export function getNotificationsInternalSecret(): string | null {
+  return env.NOTIFICATIONS_INTERNAL_SECRET?.trim() || null
+}
+
+/** HMAC secret for one-click unsubscribe tokens. */
+export function getNotificationsUnsubscribeSecret(): string | null {
+  return env.NOTIFICATIONS_UNSUBSCRIBE_SECRET?.trim() || null
 }
 
 // R2 — bucket & domain resolution. Single-bucket legacy (R2_BUCKET) falls back to per-kind bucket.

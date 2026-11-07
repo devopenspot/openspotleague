@@ -4,8 +4,9 @@ import Link from "next/link";
 import { ArrowRight, BellOff, CheckCheck, Mail } from "lucide-react";
 import { notificationHref } from "@/lib/notifications/definitions";
 import {
-  useEmailDigests,
+  useEmailPreferences,
   useNotificationList,
+  type EmailCategoryKey,
 } from "@/hooks/data/useNotifications";
 import { useUser } from "@/lib/contexts/user-context";
 import { relativeTime } from "@/lib/league/ui-state";
@@ -15,10 +16,19 @@ import {
   EYEBROW,
   META,
   PAGE_TITLE,
+  CARD,
   alertClass,
+  chipClass,
   controlClass,
   pageContainer,
 } from "@/components/ui/recipes";
+
+const EMAIL_CATEGORY_OPTIONS: readonly { key: EmailCategoryKey; label: string; hint: string }[] = [
+  { key: "contest_updates", label: "Contest updates", hint: "Registration, schedule and contest changes" },
+  { key: "reminders", label: "Reminders", hint: "Deadlines, pending scores and payments" },
+  { key: "judging", label: "Judging", hint: "New videos to score, scoring complete" },
+  { key: "results", label: "Results", hint: "Published results and placements" },
+];
 
 export default function NotificationsTab() {
   const user = useUser();
@@ -32,12 +42,12 @@ export default function NotificationsTab() {
     markAllRead,
   } = useNotificationList(user?.id ?? null);
   const {
-    enabled: emailDigests,
+    preferences,
     deliveryAvailable,
     saving,
     saveError,
-    setEnabled,
-  } = useEmailDigests(user?.id ?? null);
+    setCategory,
+  } = useEmailPreferences(user?.id ?? null);
 
   return (
     <div className={pageContainer("3xl")}>
@@ -49,26 +59,6 @@ export default function NotificationsTab() {
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {emailDigests !== null && deliveryAvailable === true ? (
-            <button
-              type="button"
-              disabled={saving}
-              aria-pressed={emailDigests}
-              onClick={() => void setEnabled(!emailDigests)}
-              title={
-                emailDigests
-                  ? "Daily email digests are on — click to turn off"
-                  : "Daily email digests are off — click to turn on"
-              }
-              className={controlClass(
-                emailDigests ? "primary" : "outline",
-                "sm",
-              )}
-            >
-              <Mail size={14} aria-hidden="true" />
-              {emailDigests ? "Emails on" : "Emails off"}
-            </button>
-          ) : null}
           {unreadCount > 0 && (
             <button
               type="button"
@@ -82,6 +72,39 @@ export default function NotificationsTab() {
         </div>
       </div>
 
+      {preferences !== null && deliveryAvailable === true ? (
+        <section aria-labelledby="email-preferences-title" className={`mb-6 ${CARD}`}>
+          <div className="mb-3 flex items-center gap-2">
+            <Mail size={16} aria-hidden="true" className="text-secondary" />
+            <h2 id="email-preferences-title" className="font-display text-sm font-semibold text-on-surface">
+              Email me about
+            </h2>
+          </div>
+          {preferences.suppressed ? (
+            <p className={`mb-3 text-sm ${alertClass("neutral")}`}>
+              Emails are paused because your inbox rejected one. Turn a category on to resume.
+            </p>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            {EMAIL_CATEGORY_OPTIONS.map((option) => {
+              const on = preferences[option.key] && !preferences.suppressed;
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  disabled={saving}
+                  aria-pressed={on}
+                  title={option.hint}
+                  onClick={() => void setCategory(option.key, !on)}
+                  className={chipClass(on)}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
       {saveError ? (
         <p role="alert" className={`mb-4 text-sm ${alertClass("error")}`}>
           {saveError}

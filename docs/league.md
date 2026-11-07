@@ -96,7 +96,7 @@ Plans are seeded from `src/data/event_plans.json` (through `src/db/seed-data/tax
   - `locked`: days 3–6. The contest is read-only, and every write except payment returns `409 EVENT_LOCKED`.
   - `disabled`: day 6 and later. Every write returns `409 EVENT_DISABLED`.
   - `settled`: the contest has an active `paid` or `comped` payment. Registering the free plan ($0) settles it immediately. Curated contests get a `comped` row at creation.
-- **Reminder emails.** `league_email_sweep()` (Supabase, payment reminders) selects contests with no active payment.
+- **Reminders.** The 15-minute notification tick warns the main organizer the day before the lock (day 2) and the day before disabling (day 5), using the same `paymentGate` (`league_payment_gate_reminder`, [`docs/notifications.md`](notifications.md)).
 
 ## Lifecycle
 
@@ -149,8 +149,8 @@ The `contest_curator` role (formerly `event_curator`) carries `content.read`, `m
 6. the fingerprint idempotency check (`event_action_requests`, `IDEMPOTENCY_CONFLICT`)
 7. a version bump
 8. the realtime signal row (`event_realtime_signals`)
-9. in-transaction notifications
-10. `queueEventTags` for post-commit invalidation
+9. in-transaction notifications (`createNotifications`; email-eligible rows enter the outbox, see [`docs/notifications.md`](notifications.md))
+10. `queueEventTags` for post-commit invalidation, and the after-commit email hand-off
 
 Mutations return `{ id, version }`, and create returns `{ id, version, slug }`.
 
