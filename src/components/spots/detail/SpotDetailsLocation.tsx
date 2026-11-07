@@ -51,10 +51,10 @@ export function SpotDetailsLocation({
           onClick={() => {
             setMapPreserveLocation();
           }}
-          aria-label={`View ${spot.name} on the map`}
+          aria-label={`View ${spot.name} and spots around it on the map`}
           className={LOCATION_SECONDARY_LINK_CLASS}
         >
-          <span>View on map</span>
+          <span>Explore spots around</span>
           <Map size={14} aria-hidden="true" className="shrink-0" />
         </Link>
         <div className="grid grid-cols-2 gap-2">

@@ -6,6 +6,7 @@ import {
   Instagram,
   MapPin,
   Navigation,
+  Route,
   Share2,
   ShieldCheck,
   Swords,
@@ -41,14 +42,33 @@ import { VerifiedWeatherDualIcons } from "@/components/spots/weather/VerifiedWea
 import { SpotWeatherVerificationDialog } from "@/components/spots/verification/SpotWeatherVerificationDialog";
 import { isWeatherIconName } from "@/lib/weather/isWeatherIcon";
 import { CloudSun } from "lucide-react";
+import {
+  controlClass,
+  iconButtonClass,
+  tagClass,
+} from "@/components/ui/recipes";
+import { cn } from "@/lib/utils/cn";
+import {
+  formatDistanceValue,
+  haversineMiles,
+  milesToMeters,
+} from "@/lib/spots/geo";
+import { useDistanceUnit } from "@/hooks/preferences/useDistanceUnit";
 
-const PHOTO_ICON_BUTTON_CLASS =
-  "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 border-surface/25 bg-on-surface/40 text-surface backdrop-blur-md transition-colors hover:bg-on-surface/60 hover:text-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2";
-const PHOTO_META_CLASS =
-  "inline-flex items-center gap-1 rounded-md border border-surface/20 bg-on-surface/40 px-2 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.05em] text-surface backdrop-blur-sm min-[380px]:text-xs";
-const ACTION_BASE_CLASS =
-  "flex min-h-12 flex-1 items-center justify-center gap-1 rounded-lg border-2 px-1 font-display text-xs font-bold uppercase tracking-[0.04em] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px md:px-2";
-const ACTION_SECONDARY_CLASS = `${ACTION_BASE_CLASS} border-outline-variant bg-surface text-on-surface hover:bg-surface-container-high`;
+const PHOTO_ICON_BUTTON_CLASS = iconButtonClass("onPhoto");
+const PHOTO_META_CLASS = tagClass("onPhoto");
+const PHOTO_LINK_FOCUS_CLASS =
+  "hover:underline focus-visible:outline-2 focus-visible:outline-offset-2";
+/** Labelled actions share the row; Share and Waze are icon buttons. */
+const ACTION_LABELLED_CLASS = "min-w-0 flex-1";
+
+/** Focused spot of the "around" deep link, for "x mi from <spot>". */
+export interface MapPopupAroundOrigin {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+}
 
 function verificationCountLabel(count: number): string {
   if (count === 0) return "No verifications yet";
@@ -65,7 +85,13 @@ function isSafeExternalUrl(value: string): boolean {
   }
 }
 
-function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
+function MapInfoPopupBase({
+  events,
+  aroundOrigin = null,
+}: {
+  events?: readonly MapEvent[];
+  aroundOrigin?: MapPopupAroundOrigin | null;
+}) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -75,20 +101,22 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
   const countrySpots = useSpotsStore((s) => s.countrySpots);
   const citySpots = useSpotsStore((s) => s.citySpots);
   const nearbySpots = useSpotsStore((s) => s.nearbySpots);
+  const areaSpots = useSpotsStore((s) => s.areaSpots);
+  const distanceUnit = useDistanceUnit();
 
   const { clearActivePin } = useMapActions();
   const event = useEventPopup(activeEventId, events);
 
-  // The pin can point at a country-, city-, or nearby-scoped spot
+  // The pin can point at a country-, city-, nearby- or area-scoped spot
   // (outside the capped base directory), so resolve against the union
   // of all slices.
   const resolvable = useMemo(
     () =>
-      [spots, citySpots, countrySpots, nearbySpots].reduce(
+      [spots, citySpots, countrySpots, nearbySpots, areaSpots].reduce(
         unionById,
         [] as readonly MapSpot[],
       ),
-    [citySpots, countrySpots, nearbySpots, spots],
+    [areaSpots, citySpots, countrySpots, nearbySpots, spots],
   );
   const spot = useMemo(
     () =>
@@ -124,6 +152,10 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
       const target = event.target as Node | null;
       if (!target) return;
       if (panelRef.current?.contains(target)) return;
+      // Map overlays that act on the open spot (the "around" bar) keep it.
+      if (target instanceof Element && target.closest("[data-map-keep-popup]")) {
+        return;
+      }
       // Overlay is portaled to document.body, so its backdrop/clicks are outside panelRef.
       // Don't close the map popup when the verification dialog is open or its backdrop is clicked.
       const verificationDialog = document.getElementById(
@@ -195,6 +227,20 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
   const wazeUrl = `https://waze.com/ul?ll=${spot.location.lat},${spot.location.lon}&navigate=yes`;
   const hasInstagram = !!spot.instagram && isSafeExternalUrl(spot.instagram);
   const verificationLabel = verificationCountLabel(spot.verificationCount);
+  const aroundDistance =
+    aroundOrigin && aroundOrigin.id !== spot.id
+      ? formatDistanceValue(
+          milesToMeters(
+            haversineMiles(
+              aroundOrigin.lat,
+              aroundOrigin.lon,
+              spot.location.lat,
+              spot.location.lon,
+            ),
+          ),
+          distanceUnit,
+        )
+      : null;
   const shortVerification =
     spot.verificationCount === 0
       ? "No verifications"
@@ -210,7 +256,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
         role="dialog"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="fixed bottom-4 left-0 right-0 z-[1150] mx-auto flex max-h-[min(46dvh,360px)] w-auto flex-col overflow-hidden rounded-t-[16px] border border-outline-variant bg-surface-bright pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_rgba(0,0,0,0.18)] outline-none animate-slide-up md:absolute md:bottom-5 md:left-auto md:right-3 md:mx-0 md:max-h-[min(72vh,520px)] md:w-96 md:rounded-[16px] md:pb-0 md:shadow-[0_8px_32px_rgba(0,0,0,0.18)]"
+        className="fixed bottom-4 left-0 right-0 z-[1150] mx-auto flex max-h-[min(46dvh,360px)] w-auto flex-col overflow-hidden rounded-t-container border border-outline-variant bg-surface-bright pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_32px_rgba(0,0,0,0.18)] outline-none animate-slide-up md:absolute md:bottom-5 md:left-auto md:right-3 md:mx-0 md:max-h-[min(72vh,520px)] md:w-96 md:rounded-container md:pb-0 md:shadow-[0_8px_32px_rgba(0,0,0,0.18)]"
       >
         {/* --- Image header: capped height so mobile map stays visible --- */}
         <div
@@ -284,7 +330,10 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
               onClick={() => setVerifyOpen(true)}
               aria-label="Confirm on-site weather condition"
               title="Confirm on-site weather (requires GPS proximity within 250m)"
-              className="absolute left-3 top-3 flex min-h-11 items-center gap-1 rounded-lg border-2 border-primary bg-primary px-2.5 shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 md:left-3.5 md:top-12"
+              className={cn(
+                controlClass("primary", "sm"),
+                "absolute left-3 top-3 shadow-sm md:left-3.5 md:top-12",
+              )}
             >
               <VerifiedWeatherDualIcons
                 apiIcon={forecastWeather?.icon}
@@ -309,16 +358,28 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
 
           {/* Bottom overlay: title + meta — guaranteed contrast via gradient above */}
           <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-3 md:p-3.5">
-            <h4
+            <h2
               id={titleId}
               className="line-clamp-2 max-w-[92%] text-pretty font-display text-lg font-bold uppercase leading-[1.2] tracking-[-0.02em] text-surface [text-shadow:0_1px_16px_rgba(0,0,0,0.55)] md:max-w-[90%] md:text-xl"
               title={spot.name}
             >
               {spot.name}
-            </h4>
+            </h2>
 
-            {/* Meta row: city + verification + instagram — compact pills that stay readable on photo */}
+            {/* Meta row: distance from the focused spot + city + verification + instagram */}
             <div className="flex flex-wrap items-center gap-1.5">
+              {aroundDistance !== null && aroundOrigin ? (
+                <span
+                  className={PHOTO_META_CLASS}
+                  title={`${aroundDistance} from ${aroundOrigin.name}`}
+                >
+                  <Route size={10} aria-hidden="true" className="shrink-0" />
+                  <span>{aroundDistance} from</span>
+                  <span className="max-w-[14ch] truncate">
+                    {aroundOrigin.name}
+                  </span>
+                </span>
+              ) : null}
               <span className={PHOTO_META_CLASS}>
                 <MapPin size={10} aria-hidden="true" className="shrink-0" />
                 <span className="max-w-[18ch] truncate">{spot.city}</span>
@@ -344,7 +405,7 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   aria-label={`${spot.name} on Instagram (opens in a new tab)`}
-                  className={`${PHOTO_META_CLASS} transition-colors hover:bg-on-surface/60 hover:text-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2`}
+                  className={cn(PHOTO_META_CLASS, PHOTO_LINK_FOCUS_CLASS)}
                 >
                   <Instagram
                     size={10}
@@ -358,47 +419,46 @@ function MapInfoPopupBase({ events }: { events?: readonly MapEvent[] }) {
           </div>
         </div>
 
-        {/* --- Action bar: outside the image so header height stays capped (4 pills, one row) --- */}
+        {/* --- Action bar: outside the image so header height stays capped --- */}
         <div className="flex shrink-0 items-center gap-1.5 bg-surface-bright px-2.5 py-2.5 md:gap-2 md:px-3.5 md:py-3">
-          <button
-            type="button"
-            onClick={() => void handleShare()}
-            aria-label={`Share ${spot.name}`}
-            className={ACTION_SECONDARY_CLASS}
+          <Link
+            href={gamePrefillHref}
+            onClick={() => clearActivePin()}
+            aria-label={`Train or challenge at ${spot.name}`}
+            className={cn(controlClass("primary"), ACTION_LABELLED_CLASS)}
           >
-            <Share2 size={12} aria-hidden="true" className="shrink-0" />
-            <span>Share</span>
-          </button>
+            <Swords size={12} aria-hidden="true" className="shrink-0" />
+            <span>Train</span>
+          </Link>
 
           <Link
             href={`/spots/${spot.id}`}
             aria-label={`Open ${spot.name} details`}
-            className={ACTION_SECONDARY_CLASS}
+            className={cn(controlClass("outline"), ACTION_LABELLED_CLASS)}
           >
             <span>Details</span>
             <ArrowUpRight size={12} aria-hidden="true" className="shrink-0" />
           </Link>
 
-          <Link
-            href={gamePrefillHref}
-            onClick={() => clearActivePin()}
-            aria-label={`Train or challenge at ${spot.name}`}
-            className={`${ACTION_BASE_CLASS} border-primary bg-primary text-on-primary hover:bg-primary/90`}
+          <button
+            type="button"
+            onClick={() => void handleShare()}
+            aria-label={`Share ${spot.name}`}
+            title="Share"
+            className={iconButtonClass("outline")}
           >
-            <Swords size={12} aria-hidden="true" className="shrink-0" />
-            <span className="hidden sm:inline">Train</span>
-            <span className="sm:hidden">Train</span>
-          </Link>
+            <Share2 size={14} aria-hidden="true" />
+          </button>
 
           <a
             href={wazeUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Open directions to ${spot.name} in Waze (opens in a new tab)`}
-            className={ACTION_SECONDARY_CLASS}
+            title="Directions in Waze"
+            className={iconButtonClass("outline")}
           >
-            <Navigation size={12} aria-hidden="true" className="shrink-0" />
-            <span>Waze</span>
+            <Navigation size={14} aria-hidden="true" />
           </a>
         </div>
       </div>

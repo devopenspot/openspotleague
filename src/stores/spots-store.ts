@@ -40,6 +40,14 @@ interface SpotsState {
    */
   nearbySpots: readonly MapSpot[]
   /**
+   * Spots around the map's focused spot ("View on map" deep link,
+   * `/map?…&spot=<id>&around=<miles>`), walked by `useSpotAreaSpots` and
+   * mirrored here by `MapTab` so MapInfoPopup / useWeatherVerification can
+   * resolve pins outside the capped directory and country list. Empty
+   * outside focus mode; independent of `nearbySpots`.
+   */
+  areaSpots: readonly MapSpot[]
+  /**
    * True while a committed city-scope change (`city` URL param change in
    * `useMapFilter.writeQuery`) is in flight: the RSC navigation refetches
    * the full scope and the store still holds the previous city's data.
@@ -59,6 +67,7 @@ interface SpotsState {
   setCountrySpots: (spots: readonly MapSpot[]) => void
   setCitySpots: (spots: readonly MapSpot[]) => void
   setNearbySpots: (spots: readonly MapSpot[]) => void
+  setAreaSpots: (spots: readonly MapSpot[]) => void
 }
 
 export const CITY_SCOPE_LOADING_TIMEOUT_MS = 6_000
@@ -73,6 +82,7 @@ export const useSpotsStore = create<SpotsState>()(
       countrySpots: [],
       citySpots: [],
       nearbySpots: [],
+      areaSpots: [],
       cityScopeLoading: false,
       setMapData: ({ spots, regions, spotTypes }) =>
         set({ spots, regions, spotTypes }),
@@ -82,6 +92,7 @@ export const useSpotsStore = create<SpotsState>()(
       setCountrySpots: (countrySpots) => set({ countrySpots }),
       setCitySpots: (citySpots) => set({ citySpots }),
       setNearbySpots: (nearbySpots) => set({ nearbySpots }),
+      setAreaSpots: (areaSpots) => set({ areaSpots }),
       setCityScopeLoading: (cityScopeLoading) => {
         if (cityScopeLoadingTimer !== null) {
           clearTimeout(cityScopeLoadingTimer)

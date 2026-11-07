@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, type ReadonlyURLSearchParams } from "next/navigation";
 import { useSpotsStore } from "@/stores/spots-store";
@@ -45,6 +45,15 @@ import { useMapModeEffects } from "@/components/map/hooks/use-map-mode-effects";
 import { useUIStore } from "@/stores/ui-store";
 import { useOptimisticGate } from "@/hooks/data/useOptimisticGate";
 import { useNearbySpots } from "@/hooks/data/useNearbySpots";
+import { useSpotAreaSpots } from "@/hooks/data/useSpotAreaSpots";
+import { MapAreaBar } from "@/components/map/controls/MapAreaBar";
+import { haversineMiles, milesToMeters } from "@/lib/spots/geo";
+import { ROUTES } from "@/lib/navigation/nav";
+import {
+  AROUND_PARAM,
+  readAroundMiles,
+  type AroundRadiusMiles,
+} from "@/lib/spots/back-to-map";
 import { showToast } from "@/hooks/ui/useToast";
 
 const LeafletCanvas = dynamic(
@@ -61,6 +70,12 @@ const LeafletCanvas = dynamic(
 );
 
 const NEAR_YOU_INITIAL_ZOOM = 10;
+/** First paint zoom per "around" radius, before `fitRadius` refines it. */
+const AROUND_INITIAL_ZOOM: Record<AroundRadiusMiles, number> = {
+  10: 11,
+  25: 10,
+  50: 9,
+};
 const NO_SPOTS: readonly MapSpot[] = [];
 
 const MAP_NOTICE_CLASS =
@@ -116,6 +131,8 @@ export default function MapTab({
   const countrySpots = useSpotsStore((s) => s.countrySpots);
   const citySpots = useSpotsStore((s) => s.citySpots);
   const nearbySpots = useSpotsStore((s) => s.nearbySpots);
+  const areaSpots = useSpotsStore((s) => s.areaSpots);
+  const setAreaSpots = useSpotsStore((s) => s.setAreaSpots);
   const cityScopeLoading = useSpotsStore((s) => s.cityScopeLoading);
   const preferredSport = usePreferencesStore((s) => s.preferredSport);
   const regions = useSpotsStore((s) => s.regions);
@@ -153,7 +170,7 @@ export default function MapTab({
   const { dismissSaved } = useMapActions();
   const user = useUser();
   const { savedIds } = useSavedSpots(user?.id ?? null);
-  const { fitRadius, fitBoundsToVisibleItems, flyToSpot } = useMapViewport();
+  const { fitRadius, fitBoundsToVisibleItems } = useMapViewport();
   const { enabled: enabledLayers } = useMapLayer();
   const setActivePin = useMapStore((s) => s.setActivePin);
   const clearActivePins = useMapStore((s) => s.clearActivePins);
@@ -172,6 +189,34 @@ export default function MapTab({
     [focusedSpotId, scopedSpots],
   );
   const hasFocus = focusedSpot !== null;
+
+  // "Explore around this spot": a focus link shows every spot within
+  // `around` miles of the focused spot (not just its city), so spots near
+  // a city edge keep their neighbours in the next town.
+  // The radius lives in local state so a chip tap re-filters at once; the
+  // URL is kept in sync with `history.replaceState` (no RSC refetch). A
+  // URL change from outside (navigation) re-seeds the state.
+  const urlAroundMiles = readAroundMiles(searchParams);
+  const [aroundMiles, setAroundMiles] =
+    useState<AroundRadiusMiles>(urlAroundMiles);
+  const [seededAroundMiles, setSeededAroundMiles] =
+    useState<AroundRadiusMiles>(urlAroundMiles);
+  if (urlAroundMiles !== seededAroundMiles) {
+    setSeededAroundMiles(urlAroundMiles);
+    setAroundMiles(urlAroundMiles);
+  }
+  const area = useSpotAreaSpots({
+    lat: focusedSpot?.location.lat ?? null,
+    lon: focusedSpot?.location.lon ?? null,
+    enabled: hasFocus,
+  });
+  // Mirror the walked area into the store so MapInfoPopup and
+  // useWeatherVerification resolve pins outside the capped directory
+  // and country list.
+  useEffect(() => {
+    setAreaSpots(hasFocus ? area.spots : NO_SPOTS);
+  }, [area.spots, hasFocus, setAreaSpots]);
+  useEffect(() => () => setAreaSpots(NO_SPOTS), [setAreaSpots]);
 
   const requestedMode: RequestedMapMode = requestedMapMode(
     new URLSearchParams(searchParams.toString()),
@@ -279,6 +324,32 @@ export default function MapTab({
         )
       : citySpots;
   }, [cityScopeActive, citySpots, preferredSport]);
+  // Focus scope: the spot, the directory + server city list (instant pins)
+  // and the walked area, cut to `aroundMiles` from the focused spot. The
+  // distance cut happens here, so `deriveMapSpotView` keeps measuring
+  // "X MI AWAY" from the rider.
+  const areaScope = useMemo(() => {
+    if (!focusedSpot) return NO_SPOTS;
+    const sportOk = (s: MapSpot) =>
+      !preferredSport ||
+      preferredSport === "all" ||
+      s.sports.includes(preferredSport as SportDiscipline);
+    const pool = unionById(
+      unionById(
+        unionById([focusedSpot], filteredSpots),
+        citySpots.filter(sportOk),
+      ),
+      areaSpots.filter(sportOk),
+    );
+    const { lat, lon } = focusedSpot.location;
+    return pool.filter(
+      (s) =>
+        s.id === focusedSpot.id ||
+        haversineMiles(lat, lon, s.location.lat, s.location.lon) <=
+          aroundMiles,
+    );
+  }, [focusedSpot, filteredSpots, citySpots, areaSpots, preferredSport, aroundMiles]);
+
   const sourceSpots = useMemo(() => {
     // Mandatory gate: when filtered mode requires region+country+city, hide spots until the gate completes.
     // Use baseNeeds (not just visual needsGate) so while willRestore (optimistic) we keep skeleton, not unfiltered spots.
@@ -286,10 +357,7 @@ export default function MapTab({
     // Ensure the deep-link target remains visible even if the URL was
     // manually tampered (country param != spot's country). Spec path
     // always produces a consistent country, so this is defensive.
-    if (hasFocus && focusedSpot) {
-      const inFiltered = filteredSpots.some((s) => s.id === focusedSpot.id);
-      if (!inFiltered) return [focusedSpot, ...filteredSpots];
-    }
+    if (hasFocus && focusedSpot) return areaScope;
     if (savedModeActive) {
       return spots.filter((s) => savedIds.has(s.id));
     }
@@ -302,6 +370,7 @@ export default function MapTab({
     baseNeeds,
     hasFocus,
     focusedSpot,
+    areaScope,
     savedModeActive,
     nearYou,
     nearbySource,
@@ -441,24 +510,73 @@ export default function MapTab({
           ? viewportPoints[0]
           : [20, 0];
   const initialZoom = hasFocus
-    ? FOCUS_ZOOM
+    ? AROUND_INITIAL_ZOOM[aroundMiles]
     : nearYou
       ? NEAR_YOU_INITIAL_ZOOM
       : city !== null
         ? FOCUS_ZOOM
         : 2;
 
-  // When the map's viewport controller is ready, centre it on the focused
-  // spot and reveal its popup. Separate from initialCenter so client-side
-  // param changes (e.g. navigating spot-to-spot) also re-fly.
+  // Reveal the focused spot's popup when the focus target changes. Keyed
+  // on the id, so a refetch (new spot object) never reopens a popup the
+  // rider closed. Desktop only: on phones the popup would cover the area
+  // bar and repeat the page the rider just left, so the pin is
+  // highlighted instead (`focusedSpotId` on LeafletCanvas) and the bar's
+  // spot name opens the popup.
   useEffect(() => {
-    if (!hasFocus || !focusedSpot) return;
-    // Ensure the pin exists in the current filtered view — if the country
-    // slug was tampered and filtered it out, still show the spot itself
-    // by not clearing it as "invisible".
-    setActivePin(focusedSpot.id);
-    flyToSpot(focusedSpot);
-  }, [focusedSpot, hasFocus, setActivePin, flyToSpot]);
+    if (!hasFocus || focusedSpotId === null) return;
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    setActivePin(focusedSpotId);
+  }, [focusedSpotId, hasFocus, setActivePin]);
+
+  const showFocusedSpot = useCallback(() => {
+    if (focusedSpotId !== null) setActivePin(focusedSpotId);
+  }, [focusedSpotId, setActivePin]);
+
+  const aroundOrigin = useMemo(
+    () =>
+      focusedSpot
+        ? {
+            id: focusedSpot.id,
+            name: focusedSpot.name,
+            lat: focusedSpot.location.lat,
+            lon: focusedSpot.location.lon,
+          }
+        : null,
+    [focusedSpot],
+  );
+
+  // Fit the whole "around" circle, centred on the focused spot, on arrival
+  // and whenever the radius chip changes.
+  const focusLat = focusedSpot?.location.lat ?? null;
+  const focusLon = focusedSpot?.location.lon ?? null;
+  useEffect(() => {
+    if (focusLat === null || focusLon === null) return;
+    fitRadius(milesToMeters(aroundMiles), { lat: focusLat, lon: focusLon });
+  }, [aroundMiles, fitRadius, focusLat, focusLon]);
+
+  const selectAroundRadius = useCallback(
+    (miles: AroundRadiusMiles) => {
+      if (miles === aroundMiles) return;
+      setAroundMiles(miles);
+      const next = new URLSearchParams(window.location.search);
+      next.set(AROUND_PARAM, String(miles));
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${ROUTES.map}?${next.toString()}`,
+      );
+    },
+    [aroundMiles],
+  );
+
+  const onlyCityHref = useMemo(() => {
+    if (!hasFocus || city === null) return null;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete("spot");
+    next.delete(AROUND_PARAM);
+    return `${ROUTES.map}?${next.toString()}`;
+  }, [city, hasFocus, searchParams]);
 
   // Minimalist feedback: when Events layer is on but the current region+country has zero events,
   // surface a single info toast per selection (deduped by region::country).
@@ -738,10 +856,33 @@ export default function MapTab({
               initialCenter={initialCenter}
               initialZoom={initialZoom}
               disableInitialFit={hasFocus || city !== null}
-              selectedCity={city}
-              cityCenter={cityFocusCenter}
+              // Focus links fit the "around" circle instead; the city
+              // controller would re-centre on the city and hide the spot.
+              selectedCity={hasFocus ? null : city}
+              cityCenter={hasFocus ? null : cityFocusCenter}
+              focusedSpotId={hasFocus ? focusedSpotId : null}
             />
-            <MapInfoPopup events={filteredEvents} />
+            <MapInfoPopup
+              events={filteredEvents}
+              aroundOrigin={hasFocus ? aroundOrigin : null}
+            />
+            {hasFocus && focusedSpot && (
+              <MapAreaBar
+                spotName={focusedSpot.name}
+                count={spotView.spots.length}
+                loading={area.loading}
+                aroundMiles={aroundMiles}
+                onSelectRadius={selectAroundRadius}
+                onShowSpot={showFocusedSpot}
+                cityName={city !== null ? focusedSpot.city || null : null}
+                onlyCityHref={onlyCityHref}
+                className={cn(
+                  "pointer-events-auto absolute bottom-8 left-3 z-[1120] max-w-[calc(100%-24px)]",
+                  (activePinId !== null || activeEventId !== null) &&
+                    "hidden md:block",
+                )}
+              />
+            )}
             {scopeLabel && (
               <div
                 className={cn(
