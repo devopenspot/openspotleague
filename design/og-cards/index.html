@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>OG Card Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Brand tokens — copied from DESIGN.md / src/app/globals.css. Keep in sync by hand. */
+  :root {
+    --wire: #0a0a0a;
+    --on-wire: #ffffff;
+    --wire-muted: rgba(255, 255, 255, 0.6);
+    --wire-border: rgba(255, 255, 255, 0.15);
+    --tv-wire: #060912;
+    --gradient-primary: linear-gradient(to right, #ea580c, #dc2626, #b91c1c);
+    --gradient-league: linear-gradient(to right, #0284c7, #2563eb, #1e40af);
+    --gradient-support: linear-gradient(to bottom, #22d3ee, #2dd4bf, #0d9488);
+    --gradient-profile: linear-gradient(to right, #ecfccb, #d9f99d, #a3e635);
+    --radius-container: 16px;
+    --radius-full: 9999px;
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: #2a2a2a;
+    color: #eee;
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    padding: 48px 40px 120px;
+  }
+
+  /* Sheet chrome (not part of any card) */
+  .sheet-head { max-width: 1200px; margin: 0 auto 40px; }
+  .sheet-head h1 { font-size: 22px; font-weight: 700; }
+  .sheet-head p { font-size: 14px; color: #aaa; margin-top: 6px; line-height: 1.5; }
+  .sheet-head label { display: inline-flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 14px; cursor: pointer; }
+  .item { width: 1200px; margin: 0 auto 56px; }
+  .item-label { display: flex; justify-content: space-between; font: 500 13px/1 ui-monospace, Menlo, monospace; color: #bbb; margin-bottom: 10px; }
+  .item-label b { color: #fff; font-weight: 600; }
+  body.solo { padding: 0; background: #000; overflow: hidden; }
+  body.solo .sheet-head, body.solo .item:not(.solo-item), body.solo .item-label { display: none; }
+  body.solo .item { margin: 0; }
+
+  /* ---- Card (exactly 1200×630) ---- */
+  .og {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    color: var(--on-wire);
+    background: var(--wire);
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+  /* Safe zone guide: central 1000×520, toggled from the sheet header, never in screenshots by default */
+  .guides .og::after {
+    content: ""; position: absolute; inset: 55px 100px;
+    outline: 2px dashed rgba(255, 0, 255, 0.7); pointer-events: none; z-index: 10;
+  }
+
+  /* Layout: art on the left, copy on the right, footer bar at the bottom */
+  .og .inner {
+    position: absolute; inset: 0;
+    display: grid; grid-template-columns: 360px 1fr; gap: 56px;
+    align-items: center;
+    padding: 56px 100px 108px;
+  }
+  .og .copy { display: flex; flex-direction: column; gap: 22px; }
+  .og .eyebrow {
+    align-self: flex-start;
+    display: inline-flex; align-items: center; gap: 10px;
+    height: 44px; padding: 0 20px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--wire-border);
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 18px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .og .eyebrow .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+  .og h2 { font-size: 66px; line-height: 1.04; font-weight: 800; letter-spacing: -0.03em; }
+  .og .sub { font-size: 26px; line-height: 1.38; font-weight: 500; color: var(--wire-muted); max-width: 580px; }
+
+  .og .art { width: 360px; height: 360px; display: grid; place-items: center; }
+  .og .art img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .og .tile { background: #fff; border-radius: var(--radius-container); overflow: hidden; }
+  .og .round { border-radius: 50%; overflow: hidden; }
+
+  .og .foot {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 100px;
+    border-top: 1px solid var(--wire-border);
+    background: rgba(0, 0, 0, 0.25);
+    font-size: 20px; font-weight: 600;
+  }
+  .og .foot .brand { display: flex; align-items: center; gap: 12px; }
+  .og .foot .brand img { width: 32px; height: 32px; border-radius: 50%; }
+  .og .foot .url { color: var(--wire-muted); }
+
+  .og .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .og .pill {
+    height: 44px; padding: 0 18px; display: inline-flex; align-items: center;
+    border-radius: var(--radius-full); border: 1px solid var(--wire-border);
+    font-size: 18px; font-weight: 600; color: var(--on-wire); background: rgba(255,255,255,0.06);
+  }
+
+  /* ---- Washes ---- */
+  .wash-default { background: var(--wire); }
+  .wash-default .glow { position: absolute; left: 0; right: 0; top: 0; height: 8px; background: var(--gradient-primary); }
+  .wash-default .eyebrow { color: #fb923c; }
+
+  .wash-tv { background: var(--tv-wire); }
+  .wash-tv .glow { position: absolute; inset: auto -200px -380px auto; width: 900px; height: 700px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 0, 255, 0.28), transparent); }
+  .wash-tv .eyebrow { color: #ff4dff; }
+
+  .wash-league { background: var(--gradient-league); }
+  .wash-league .eyebrow, .wash-support .eyebrow { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); }
+  .wash-league .sub, .wash-support .sub { color: rgba(255,255,255,0.85); }
+  .wash-league .foot, .wash-support .foot { background: rgba(0,0,0,0.18); border-color: rgba(255,255,255,0.2); }
+  .wash-league .foot .url, .wash-support .foot .url { color: rgba(255,255,255,0.8); }
+
+  .wash-training { background: var(--wire); }
+  .wash-training .glow { position: absolute; left: 0; right: 0; top: 0; height: 8px; background: #fddf5c; }
+  .wash-training .eyebrow { color: #fddf5c; }
+  .wash-battle { background: var(--wire); }
+  .wash-battle .glow { position: absolute; left: 0; right: 0; top: 0; height: 8px; background: #2e8507; }
+  .wash-battle .eyebrow { color: #7ccf4a; }
+
+  .wash-profile { background: var(--gradient-profile); color: var(--wire); }
+  .wash-profile .eyebrow { color: var(--wire); background: rgba(10,10,10,0.06); border-color: rgba(10,10,10,0.18); }
+  .wash-profile .sub { color: rgba(10,10,10,0.7); }
+  .wash-profile .foot { color: var(--wire); background: rgba(10,10,10,0.06); border-color: rgba(10,10,10,0.12); }
+  .wash-profile .foot .url { color: rgba(10,10,10,0.65); }
+
+  .wash-support { background: var(--gradient-support); }
+
+  /* Results motif: generic podium, no data */
+  .podium { display: flex; align-items: flex-end; gap: 14px; width: 360px; height: 360px; padding: 30px 20px 0; }
+  .podium .step {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding-top: 18px; border-radius: var(--radius-container) var(--radius-container) 0 0;
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); border-bottom: 0;
+    font-size: 56px; font-weight: 800;
+  }
+  .podium .s1 { height: 270px; background: rgba(255,255,255,0.95); color: #1e40af; }
+  .podium .s2 { height: 200px; }
+  .podium .s3 { height: 145px; }
+  .on-dark .podium .step { background: rgba(255,255,255,0.08); border-color: var(--wire-border); }
+  .on-dark .podium .s1 { background: #fff; color: var(--wire); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 360px; }
+  .split .tile { width: 172px; height: 172px; }
+  .split .tile img { width: 100%; height: 100%; object-fit: contain; }
+
+  /* Rider avatar placeholder */
+  .avatar { width: 320px; height: 320px; border-radius: 50%; background: var(--wire); display: grid; place-items: center;
+    box-shadow: 0 0 0 14px rgba(10,10,10,0.08); }
+  .avatar svg { width: 180px; height: 180px; }
+
+  /* Curator motif: map pins over a grid */
+  .curator-art { width: 360px; height: 360px; border-radius: var(--radius-container);
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.35);
+    background-image: linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px);
+    background-size: 50px 50px; position: relative; }
+  .curator-art .pin { position: absolute; width: 44px; height: 44px; border-radius: 4px 50% 50% 50%; transform: rotate(45deg);
+    background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+  .curator-art .pin::after { content: ""; position: absolute; inset: 14px; border-radius: 50%; background: #0d9488; }
+  .curator-art .check { position: absolute; right: 26px; bottom: 26px; width: 96px; height: 96px; border-radius: 50%;
+    background: var(--wire); display: grid; place-items: center; }
+</style>
+</head>
+<body>
+
+<header class="sheet-head">
+  <h1>OpenSpot League: share image sheet</h1>
+  <p>Local only, never deployed. Every card is exactly 1200×630. Screenshot each <code>&lt;section class="og"&gt;</code> node (steps in README.md) and save it under the filename shown above the card.</p>
+  <label><input type="checkbox" id="guides"> Show the 1000×520 safe zone (turn off before screenshots)</label>
+</header>
+
+<!-- 1. Default -->
+<div class="item">
+  <div class="item-label"><b>#default</b><span>og-default.png · every page without its own image</span></div>
+  <section class="og wash-default" id="default">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="art tile"><img src="assets/openspotleague.jpg" alt=""></div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>OpenSpot League</span>
+        <h2>Find spots.<br>Ride. Compete.</h2>
+        <p class="sub">The action sports map, with contests, trick games and TV.</p>
+        <div class="pills"><span class="pill">Skate</span><span class="pill">BMX</span><span class="pill">Scooter</span><span class="pill">Roller</span></div>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot</span><span class="url">openspotleague.com</span></div>
+  </section>
+</div>
+
+<!-- 2. TV -->
+<div class="item">
+  <div class="item-label"><b>#tv</b><span>og-tv.png · /tv landing (each video keeps its own thumbnail)</span></div>
+  <section class="og wash-tv" id="tv">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="art round"><img src="assets/osl-tv.png" alt=""></div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>Now streaming</span>
+        <h2>OpenSpot TV</h2>
+        <p class="sub">Action sports videos, edits and contest highlights, all in one place.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot TV</span><span class="url">openspotleague.com/tv</span></div>
+  </section>
+</div>
+
+<!-- 3. League -->
+<div class="item">
+  <div class="item-label"><b>#league</b><span>og-league.png · /league landing</span></div>
+  <section class="og wash-league" id="league">
+    <div class="inner">
+      <div class="art tile"><img src="assets/openspotleague.jpg" alt=""></div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>The League</span>
+        <h2>Enter contests.<br>Climb the ranking.</h2>
+        <p class="sub">Park, street and vert contests, scored by a judge panel.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot League</span><span class="url">openspotleague.com/league</span></div>
+  </section>
+</div>
+
+<!-- 4. Games: training -->
+<div class="item">
+  <div class="item-label"><b>#games-training</b><span>og-games-training.png · training games</span></div>
+  <section class="og wash-training" id="games-training">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="art tile"><img src="assets/trainings.jpg" alt=""></div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>Games · Training</span>
+        <h2>Train your<br>tricks</h2>
+        <p class="sub">Pick tricks, land them, track your progress. Ride anywhere.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot Games</span><span class="url">openspotleague.com/games</span></div>
+  </section>
+</div>
+
+<!-- 5. Games: battle -->
+<div class="item">
+  <div class="item-label"><b>#games-battle</b><span>og-games-battle.png · battle (challenge) games</span></div>
+  <section class="og wash-battle" id="games-battle">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="art tile"><img src="assets/challenges.jpg" alt=""></div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>Games · Battle</span>
+        <h2>You've been<br>challenged</h2>
+        <p class="sub">Trick for trick against other riders. Join the battle and settle it.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot Games</span><span class="url">openspotleague.com/games</span></div>
+  </section>
+</div>
+
+<!-- 6. League results -->
+<div class="item">
+  <div class="item-label"><b>#league-results</b><span>og-league-results.png · contest ended / results published</span></div>
+  <section class="og wash-league" id="league-results">
+    <div class="inner">
+      <div class="podium"><div class="step s2">2</div><div class="step s1">1</div><div class="step s3">3</div></div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>Contest closed</span>
+        <h2>The results<br>are in</h2>
+        <p class="sub">Judging is done. See the final standings and every rider's score.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot League</span><span class="url">openspotleague.com/league</span></div>
+  </section>
+</div>
+
+<!-- 7. Games results -->
+<div class="item">
+  <div class="item-label"><b>#games-results</b><span>og-games-results.png · training or battle game ended</span></div>
+  <section class="og wash-default on-dark" id="games-results">
+    <div class="glow"></div>
+    <div class="inner">
+      <div class="split">
+        <div class="tile"><img src="assets/trainings.jpg" alt=""></div>
+        <div class="tile"><img src="assets/challenges.jpg" alt=""></div>
+      </div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>Games · Results</span>
+        <h2>Game over.<br>See the results.</h2>
+        <p class="sub">The session is done. Check the tricks landed and the final score.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot Games</span><span class="url">openspotleague.com/games</span></div>
+  </section>
+</div>
+
+<!-- 8. Rider -->
+<div class="item">
+  <div class="item-label"><b>#rider</b><span>og-rider.png · rider profile (generic, no personal data)</span></div>
+  <section class="og wash-profile" id="rider">
+    <div class="inner">
+      <div class="art">
+        <div class="avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </div>
+      </div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>Rider</span>
+        <h2>Rider on<br>OpenSpot</h2>
+        <p class="sub">Spots, contests, game wins and League points in one profile.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot League</span><span class="url">openspotleague.com</span></div>
+  </section>
+</div>
+
+<!-- 9. Data curator -->
+<div class="item">
+  <div class="item-label"><b>#curator</b><span>og-data-curator.png · /support/data-curator invitation</span></div>
+  <section class="og wash-support" id="curator">
+    <div class="inner">
+      <div class="art">
+        <div class="curator-art">
+          <span class="pin" style="left:70px; top:80px"></span>
+          <span class="pin" style="left:230px; top:60px"></span>
+          <span class="pin" style="left:150px; top:200px"></span>
+          <span class="pin" style="left:60px; top:280px"></span>
+          <span class="check">
+            <svg viewBox="0 0 24 24" width="52" height="52" fill="none" stroke="#2dd4bf" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </span>
+        </div>
+      </div>
+      <div class="copy">
+        <span class="eyebrow"><span class="dot"></span>You're invited</span>
+        <h2>Become a<br>data curator</h2>
+        <p class="sub">Help keep the spot map accurate for riders in your city.</p>
+      </div>
+    </div>
+    <div class="foot"><span class="brand"><img src="assets/logo.png" alt="">OpenSpot</span><span class="url">openspotleague.com/support</span></div>
+  </section>
+</div>
+
+<script>
+  document.getElementById("guides").addEventListener("change", (e) => {
+    document.body.classList.toggle("guides", e.target.checked);
+  });
+  // ?only=<id> renders a single card flush at 0,0 (used by export.sh).
+  const only = new URLSearchParams(location.search).get("only");
+  if (only) document.body.classList.add("solo"), document.getElementById(only)?.closest(".item")?.classList.add("solo-item");
+</script>
+</body>
+</html>
