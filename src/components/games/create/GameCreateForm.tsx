@@ -1468,7 +1468,7 @@ export function GameCreateForm({
                 aria-describedby={
                   fieldErrors.discipline ? "game-discipline-error" : undefined
                 }
-                className={`scroll-mt-24 rounded-[16px] border bg-surface-container-lowest p-4 sm:p-5 ${
+                className={`scroll-mt-24 rounded-container border bg-surface-container-lowest p-4 sm:p-5 ${
                   discipline
                     ? "border-outline-variant"
                     : "border-primary ring-1 ring-primary"
@@ -1528,7 +1528,7 @@ export function GameCreateForm({
             <div
               role="group"
               aria-labelledby="game-mode-label"
-              className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+              className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
             >
               <p
                 id="game-mode-label"
@@ -1767,7 +1767,7 @@ export function GameCreateForm({
         describedBy={GAME_SETUP_DESCRIPTION_ID}
         contentId={GAME_SETUP_DIALOG_ID}
         containerClassName="lg:hidden"
-        panelClassName="mx-4 my-4 flex h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
+        panelClassName="mx-4 my-4 flex h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-container border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
       >
         <div className="flex items-start justify-between gap-4 border-b border-outline-variant p-4 sm:p-6">
           <div className="min-w-0">

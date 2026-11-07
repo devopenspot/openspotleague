@@ -69,7 +69,7 @@ export function ChallengeGameBoard({
         className={
           isPanel
             ? "flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-container-lowest"
-            : "overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest"
+            : "overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest"
         }
       >
         <h2 id="challenge-route-title" className="sr-only">
@@ -97,7 +97,7 @@ export function ChallengeGameBoard({
               aria-label={stageListLabel}
               className={
                 isPanel
-                  ? "flex min-h-0 flex-1 flex-col divide-y divide-outline-variant overflow-y-auto overscroll-contain rounded-[12px] border border-outline-variant bg-surface-container-lowest"
+                  ? "flex min-h-0 flex-1 flex-col divide-y divide-outline-variant overflow-y-auto overscroll-contain rounded-card border border-outline-variant bg-surface-container-lowest"
                   : "divide-y divide-outline-variant border-y border-outline-variant"
               }
             >
@@ -377,7 +377,7 @@ function ChallengeStageRow({
             labelledBy={instructionsTitleId}
             describedBy={instructionsDescriptionId}
             contentId={instructionsContentId}
-            panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-[16px] border border-outline-variant bg-surface-container-lowest p-6"
+            panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-container border border-outline-variant bg-surface-container-lowest p-6"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">

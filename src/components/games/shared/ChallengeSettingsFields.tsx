@@ -249,7 +249,7 @@ export function ChallengeSettingsFields({
             </span>
           </p>
           {pendingProposal ? (
-            <div className="mt-2 rounded-[12px] border border-primary bg-surface-container-low px-3 py-2.5 sm:mt-3 sm:rounded-[16px] sm:px-3 sm:py-3">
+            <div className="mt-2 rounded-card border border-primary bg-surface-container-low px-3 py-2.5 sm:mt-3 sm:rounded-container sm:px-3 sm:py-3">
               <p className="font-display text-sm font-bold uppercase tracking-[0.05em] text-primary">
                 Proposal:{" "}
                 {pendingProposal.categories.length === 0

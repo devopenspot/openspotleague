@@ -264,7 +264,7 @@ export function GameBoardControls({
       <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-2 px-1 py-2 sm:py-2.5">
         {/* [A] Identity + system — always visible, mono hierarchy per DESIGN.md */}
         {game ? (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3 sm:py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3 sm:py-2.5">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
               <Led tone={connectionLed} />
               <div className="min-w-0">
@@ -317,7 +317,7 @@ export function GameBoardControls({
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3">
             <div className="flex items-center gap-2">
               <Led tone="pending" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary">
@@ -381,7 +381,7 @@ export function GameBoardControls({
           hasPrimaryAction || hasSecondaryAction ? (
             <div
               data-testid="game-deck"
-              className="hidden flex-col gap-2 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-2.5 md:flex"
+              className="hidden flex-col gap-2 rounded-container border border-outline-variant bg-surface-container-lowest p-2.5 md:flex"
             >
               {/* tier 1: primary CTA — only one primary visually; others secondary */}
               <div className="flex flex-wrap items-center gap-1.5">
@@ -564,7 +564,7 @@ export function GameBoardControls({
         {error ? (
           <p
             role="alert"
-            className="hidden rounded-[12px] border border-error bg-error-container px-3 py-2.5 text-sm font-semibold leading-5 text-on-error-container md:block"
+            className="hidden rounded-card border border-error bg-error-container px-3 py-2.5 text-sm font-semibold leading-5 text-on-error-container md:block"
           >
             {error}
           </p>
@@ -573,7 +573,7 @@ export function GameBoardControls({
         {roundNotice ? (
           <p
             role="status"
-            className="hidden rounded-[12px] border border-primary/25 bg-primary-container/60 px-3 py-2.5 text-sm leading-5 text-on-primary-container md:block"
+            className="hidden rounded-card border border-primary/25 bg-primary-container/60 px-3 py-2.5 text-sm leading-5 text-on-primary-container md:block"
           >
             {roundNotice}
           </p>

@@ -192,7 +192,7 @@ function ChallengeSignInGate({ nextPath }: { nextPath: string }) {
 
   return (
     <div className="min-h-full px-5 py-8 sm:px-8 sm:py-12 lg:px-10 lg:py-16">
-      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
+      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
         <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
             Battle invite
@@ -269,7 +269,7 @@ function CrawlerPreview({
   const imageSrc = isChallenge ? "/challenges.jpg" : "/trainings.jpg";
   return (
     <div className="min-h-full px-5 py-8 sm:px-8 sm:py-12 lg:px-10 lg:py-16">
-      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
+      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
         <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
             {badge}
@@ -291,7 +291,7 @@ function CrawlerPreview({
               : "An open training session."}{" "}
             Join the lobby to ride together.
           </p>
-          <div className="mt-6 rounded-[12px] border border-outline-variant bg-surface-container-high px-4 py-3">
+          <div className="mt-6 rounded-card border border-outline-variant bg-surface-container-high px-4 py-3">
             <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-secondary">
               Share code
             </p>

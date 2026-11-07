@@ -10,7 +10,6 @@ import {
   CARD_NESTED,
   INPUT,
   LABEL,
-  chipClass,
   controlClass,
 } from "@/components/ui/recipes";
 import { type useUserLocation } from "@/hooks/map/useUserLocation";
@@ -99,7 +98,7 @@ export function GuestNicknameField({
   const errorId = `${id}-error`;
 
   return (
-    <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
+    <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
       <label
         htmlFor={id}
         className="font-display text-xs font-semibold uppercase tracking-[0.05em] text-secondary"
@@ -118,7 +117,7 @@ export function GuestNicknameField({
         inputMode="text"
         aria-invalid={error ? "true" : undefined}
         aria-describedby={error ? errorId : undefined}
-        className="mt-3 min-h-11 w-full rounded-[16px] border border-outline-variant bg-surface-container-lowest px-3 font-sans text-base outline-none placeholder:text-on-surface-variant focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
+        className="mt-3 min-h-11 w-full rounded-container border border-outline-variant bg-surface-container-lowest px-3 font-sans text-base outline-none placeholder:text-on-surface-variant focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 sm:text-sm"
       />
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
     </div>
@@ -130,6 +129,7 @@ export function OptionChip({
   label,
   role,
   ariaChecked,
+  pressed,
   disabled = false,
   invalid = false,
   onClick,
@@ -139,8 +139,10 @@ export function OptionChip({
 }: {
   active: boolean;
   label: string;
-  role: "radio";
-  ariaChecked: boolean;
+  /** Single choice. Leave it off and pass `pressed` for multi-select. */
+  role?: "radio";
+  ariaChecked?: boolean;
+  pressed?: boolean;
   disabled?: boolean;
   invalid?: boolean;
   onClick: () => void;
@@ -153,7 +155,8 @@ export function OptionChip({
       type="button"
       id={id}
       role={role}
-      aria-checked={ariaChecked}
+      aria-checked={role ? ariaChecked : undefined}
+      aria-pressed={role ? undefined : pressed}
       data-invalid={invalid ? "true" : undefined}
       disabled={disabled}
       tabIndex={tabIndex}
@@ -804,7 +807,7 @@ export function WeatherConfirmSection({
   return (
     <Field label={optional ? "Current weather (optional)" : "Current weather"}>
       <div className="space-y-3" data-invalid={fieldError ? "true" : undefined}>
-        <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+        <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
               Forecast at spot
@@ -842,7 +845,7 @@ export function WeatherConfirmSection({
         <div
           role="group"
           aria-labelledby={confirmedGroupId}
-          className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4"
+          className="rounded-container border border-outline-variant bg-surface-container-lowest p-4"
         >
           <p
             id={confirmedGroupId}
@@ -888,7 +891,7 @@ export function WeatherConfirmSection({
           <div
             role="group"
             aria-labelledby={observedGroupId}
-            className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4"
+            className="rounded-container border border-outline-variant bg-surface-container-lowest p-4"
           >
             <p
               id={observedGroupId}
@@ -970,7 +973,7 @@ export function ConfigurationSummary({
   ] as const;
 
   return (
-    <aside className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 lg:top-24 mb-4 text-on-surface">
+    <aside className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 lg:top-24 mb-4 text-on-surface">
       <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
         Your setup
       </p>
@@ -1043,7 +1046,7 @@ export function Field({
       >
         {label}
       </label>
-      <div className="mt-2.5 [&>input]:min-h-11 [&>input]:w-full [&>input]:rounded-[16px] [&>input]:border [&>input]:border-outline-variant [&>input]:bg-surface-container-lowest [&>input]:px-3 [&>input]:font-sans [&>input]:text-base sm:[&>input]:text-sm [&>input]:outline-none [&>input]:placeholder:text-on-surface-variant [&>input]:focus-visible:outline-2 [&>input]:focus-visible:outline-primary [&>input]:focus-visible:outline-offset-2">
+      <div className="mt-2.5 [&>input]:min-h-11 [&>input]:w-full [&>input]:rounded-container [&>input]:border [&>input]:border-outline-variant [&>input]:bg-surface-container-lowest [&>input]:px-3 [&>input]:font-sans [&>input]:text-base sm:[&>input]:text-sm [&>input]:outline-none [&>input]:placeholder:text-on-surface-variant [&>input]:focus-visible:outline-2 [&>input]:focus-visible:outline-primary [&>input]:focus-visible:outline-offset-2">
         {children}
       </div>
       {error ? <FieldError id={errorId}>{error}</FieldError> : null}
@@ -1124,16 +1127,14 @@ export function TrainingPlaceStep({
           aria-labelledby={labelId}
         >
           {TRAINING_PLACE_OPTIONS.map((option) => (
-            <button
+            <OptionChip
               key={option.value}
-              type="button"
+              active={place === option.value}
+              label={option.label}
               role="radio"
-              aria-checked={place === option.value}
+              ariaChecked={place === option.value}
               onClick={() => onPlaceChange(option.value)}
-              className={chipClass(place === option.value)}
-            >
-              {option.label}
-            </button>
+            />
           ))}
         </div>
         <p className="mt-2 text-xs leading-5 text-on-surface-variant">

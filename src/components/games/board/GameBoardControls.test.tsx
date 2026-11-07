@@ -637,7 +637,7 @@ describe("GameBoardControls", () => {
 
     const gameSheet = await sheet();
     expect(
-      within(gameSheet).getByRole("textbox", { name: "Pick A Rider Name" }),
+      within(gameSheet).getByRole("textbox", { name: "Rider name" }),
     ).toHaveValue("Rider");
     await user.click(within(gameSheet).getByRole("button", { name: "Join" }));
 

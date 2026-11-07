@@ -54,7 +54,7 @@ export function GameStatusStrip({
   pendingProposal: PendingProposal | null;
 }) {
   return (
-    <div className="order-3 flex min-w-0 basis-full flex-wrap items-center gap-2 overflow-hidden rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-1.5 font-display text-xs font-semibold tracking-[0.03em] text-on-surface-variant lg:order-none lg:flex-1 lg:flex-nowrap lg:overflow-x-auto">
+    <div className="order-3 flex min-w-0 basis-full flex-wrap items-center gap-2 overflow-hidden rounded-card border border-outline-variant bg-surface-container-low px-2.5 py-1.5 font-display text-xs font-semibold tracking-[0.03em] text-on-surface-variant lg:order-none lg:flex-1 lg:flex-nowrap lg:overflow-x-auto">
       <span className="inline-flex shrink-0 items-center rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold">
         {game.players.length} {game.players.length === 1 ? "Rider" : "Riders"}
       </span>
@@ -300,10 +300,10 @@ export function CancelSessionDialog({
       describedBy={CANCEL_DIALOG_DESCRIPTION_ID}
       contentId="game-cancel-dialog"
       role="alertdialog"
-      panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-[16px] border border-error bg-surface p-6"
+      panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-container border border-error bg-surface p-6"
     >
       <div className="flex items-start gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-error-container text-on-error-container">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-container bg-error-container text-on-error-container">
           <AlertTriangle size={20} aria-hidden="true" />
         </div>
         <div className="min-w-0">
