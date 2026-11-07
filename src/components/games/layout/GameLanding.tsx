@@ -217,7 +217,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
       />
       {signedIn ? (
         <MatchesDrawer isOpen={gamesOpen} onClose={() => setGamesOpen(false)}>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 pt-4 pb-20">
             <RiderProgressContent
               ranking={ranking}
               rankingError={rankingError}
@@ -297,7 +297,7 @@ function RiderProgressContent({
   return (
     <>
       <div
-        className={`min-w-0 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 mb-20`}
+        className={`min-w-0 rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5`}
       >
         <div className={`flex items-start justify-between gap-3 sm:gap-4`}>
           <p
@@ -338,7 +338,7 @@ function RiderProgressContent({
           <Stat value={ranking?.tricksLanded ?? 0} label={UI_COPY.landed} />
         </dl>
       </div>
-      <div className={`min-w-0 overflow-hidden rounded-[16px] bg-on-surface`}>
+      <div className={`min-w-0 overflow-hidden rounded-container bg-on-surface`}>
         <RiderActivityBoard data={activity} headingId={activityHeadingId} />
       </div>
     </>

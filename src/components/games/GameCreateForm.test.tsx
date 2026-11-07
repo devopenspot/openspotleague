@@ -158,6 +158,20 @@ describe("GameCreateForm", () => {
     expect(requestLocationMock).not.toHaveBeenCalled();
   });
 
+  it("skips the rider-name step for signed-in riders", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<GameCreateForm signedIn />);
+    let dialog = await openSetupDialog(user);
+    expect(within(dialog).getByText(/Step 1 of 3/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("radio", { name: /Flexible/ })).toBeInTheDocument();
+    unmount();
+
+    render(<GameCreateForm signedIn={false} />);
+    dialog = await openSetupDialog(user);
+    expect(within(dialog).getByText(/Step 1 of 4/)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Rider name")).toBeInTheDocument();
+  });
+
   it("renders editable trick settings with useful defaults", async () => {
     const user = userEvent.setup();
     render(<GameCreateForm signedIn />);
@@ -167,7 +181,6 @@ describe("GameCreateForm", () => {
     expect(
       within(dialog).getByRole("radio", { name: /Flexible/ }),
     ).toHaveAttribute("aria-checked", "true");
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     // S2: Trick (spotType + level + categories)
     const defaultSpotType = await within(dialog).findByRole("radio", {
       name: "Rails",
@@ -427,7 +440,6 @@ describe("GameCreateForm", () => {
     await user.click(await screen.findByRole("radio", { name: /Battle/ }));
     const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
@@ -493,7 +505,6 @@ describe("GameCreateForm", () => {
     await user.click(screen.getByRole("radio", { name: /Battle/ }));
     const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Skate" });
     expect(
       fetchMock.mock.calls.some(
@@ -589,7 +600,6 @@ describe("GameCreateForm", () => {
 
     await user.click(screen.getByRole("radio", { name: /Battle/ }));
     const dialog = await openSetupDialog(user, "Create battle");
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Skate" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(
@@ -661,12 +671,11 @@ describe("GameCreateForm", () => {
     await user.click(await screen.findByRole("radio", { name: /Battle/ }));
     const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    expect(within(dialog).getByText(/Step 1 of 5/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Step 1 of 4/)).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
     ).toBe(false);
 
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Skate" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     expect(within(dialog).getByText("Start time")).toBeInTheDocument();
@@ -736,7 +745,6 @@ describe("GameCreateForm", () => {
 
     const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
@@ -1007,7 +1015,6 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn />);
     const dialog = await openSetupDialog(user);
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     expect(within(dialog).getByText(/Where are you riding\?/)).toBeInTheDocument();
@@ -1063,7 +1070,6 @@ describe("GameCreateForm", () => {
 
     render(<GameCreateForm signedIn />);
     const dialog = await openSetupDialog(user);
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("radio", { name: "Just a name" }));
@@ -1116,7 +1122,6 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn />);
     const dialog = await openSetupDialog(user);
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));

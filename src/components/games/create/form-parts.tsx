@@ -186,7 +186,6 @@ export function GameFormatSettings({
   onSpotTypeChange,
   onLevelChange,
   onRuleModeChange,
-  clearFieldError: _clearFieldError,
 }: {
   idPrefix?: string;
   hasDiscipline: boolean;
@@ -203,17 +202,17 @@ export function GameFormatSettings({
   onSpotTypeChange: (spotType: string) => void;
   onLevelChange: (level: TrickLevel) => void;
   onRuleModeChange: (ruleMode: RuleMode) => void;
-  clearFieldError: (field: FieldName) => void;
 }) {
-  void _clearFieldError;
   const controlId = (id: string) => getControlId(idPrefix, id);
-
   const trickSettingsLabelId = controlId("trick-settings-label");
+  const hasLevelCounts = levelCounts
+    ? Array.from(levelCounts.values()).some((v) => v > 0)
+    : false;
   return (
     <div
       role="group"
       aria-labelledby={trickSettingsLabelId}
-      className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+      className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
     >
       <p
         id={trickSettingsLabelId}
@@ -223,21 +222,17 @@ export function GameFormatSettings({
       </p>
       <div className="mt-4 space-y-6">
         <div>
-          <div className="flex items-baseline justify-between gap-3">
-            <p
-              id={controlId(GAME_SETTINGS_ANCHOR_ID)}
-              tabIndex={-1}
-              className="scroll-mt-20 font-display text-xs font-bold uppercase tracking-[0.05em] outline-none"
-            >
-              Spot type
-            </p>
-            <span className="inline-flex rounded-[8px] border border-outline-variant bg-surface-container px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-variant">
-              Default selected
-            </span>
-          </div>
+          <p
+            id={controlId(GAME_SETTINGS_ANCHOR_ID)}
+            tabIndex={-1}
+            className="scroll-mt-20 font-display text-xs font-bold uppercase tracking-[0.05em] outline-none"
+          >
+            Spot type
+          </p>
           {optionsLoading ? (
             <div
-              className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
+              className="mt-3 h-11 rounded-container border border-outline-variant bg-surface-container"
+              role="status"
               aria-label="Loading spot types"
             />
           ) : activeOptionsError ? (
@@ -276,42 +271,30 @@ export function GameFormatSettings({
         </div>
 
         <div>
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="font-display text-xs font-bold uppercase tracking-[0.05em]">
-              Level
-            </p>
-            <span className="inline-flex rounded-[8px] border border-outline-variant bg-surface-container px-2 py-1 font-display text-xs font-semibold uppercase tracking-[0.05em] text-on-surface-variant">
-              Level {selectedSpotType?.levels[0] ?? 1} default
-            </span>
-          </div>
+          <p className="font-display text-xs font-bold uppercase tracking-[0.05em]">
+            Level
+          </p>
           <div
             className="mt-3 flex flex-wrap gap-2"
             role="radiogroup"
             aria-label="Trick level"
           >
-            {([1, 2, 3, 4, 5] as const).map((option, index) => {
-              const hasData = levelCounts
-                ? Array.from(levelCounts.values()).some((v) => v > 0)
-                : false;
-              return (
-                <OptionChip
-                  key={option}
-                  active={effectiveLevel === option}
-                  label={
-                    hasData
-                      ? `Level ${option} (${levelCounts?.get(option) ?? 0})`
-                      : `Level ${option}`
-                  }
-                  role="radio"
-                  ariaChecked={effectiveLevel === option}
-                  disabled={
-                    !selectedSpotType || !availableLevels.includes(option)
-                  }
-                  invalid={Boolean(fieldErrors.level) && index === 0}
-                  onClick={() => onLevelChange(option)}
-                />
-              );
-            })}
+            {([1, 2, 3, 4, 5] as const).map((option, index) => (
+              <OptionChip
+                key={option}
+                active={effectiveLevel === option}
+                label={
+                  hasLevelCounts
+                    ? `Level ${option} (${levelCounts?.get(option) ?? 0})`
+                    : `Level ${option}`
+                }
+                role="radio"
+                ariaChecked={effectiveLevel === option}
+                disabled={!selectedSpotType || !availableLevels.includes(option)}
+                invalid={Boolean(fieldErrors.level) && index === 0}
+                onClick={() => onLevelChange(option)}
+              />
+            ))}
           </div>
           {fieldErrors.level ? (
             <FieldError>{fieldErrors.level}</FieldError>
@@ -352,43 +335,47 @@ export function GameFormatSettings({
 }
 
 export function CategoriesField({
+  idPrefix = "",
   categories,
   selectedCategories,
   error,
   onToggle,
+  onClear,
   disabled,
   eligibleCount,
-  effectiveSpotType,
-  effectiveLevel,
   categoryCounts,
 }: {
+  idPrefix?: string;
   categories: readonly string[];
   selectedCategories: readonly string[];
   error?: string;
   onToggle: (category: string) => void;
+  /** Back to All. */
+  onClear: () => void;
   disabled?: boolean;
   eligibleCount?: number | null;
-  effectiveSpotType?: string;
-  effectiveLevel?: number;
   categoryCounts?: Map<string, number>;
 }) {
   const isAll = selectedCategories.length === 0;
+  const labelId = getControlId(idPrefix, "categories-field-label");
+  const hasData = categoryCounts
+    ? Array.from(categoryCounts.values()).some((v) => v > 0)
+    : false;
   return (
     <div
       role="group"
-      aria-labelledby="categories-field-label"
-      className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+      aria-labelledby={labelId}
+      className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
     >
       <p
-        id="categories-field-label"
+        id={labelId}
         className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
       >
         Categories
       </p>
       {categories.length === 0 ? (
         <p className="mt-2 text-xs leading-5 text-on-surface-variant">
-          No categories configured for this discipline — tricks will be drawn
-          from the full pool. Continue.
+          No categories for this sport yet. Tricks come from the full list.
         </p>
       ) : (
         <>
@@ -402,23 +389,9 @@ export function CategoriesField({
               aria-pressed={isAll}
               disabled={disabled}
               onClick={() => {
-                if (!isAll) {
-                  // clear to All
-                  categories.forEach((c) => {
-                    if (
-                      selectedCategories.some(
-                        (sc) => sc.toLowerCase() === c.toLowerCase(),
-                      )
-                    )
-                      onToggle(c);
-                  });
-                }
+                if (!isAll) onClear();
               }}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
-                isAll
-                  ? "border border-on-surface bg-on-surface text-surface"
-                  : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
-              }`}
+              className={categoryChipClass(isAll, false)}
             >
               All
             </button>
@@ -430,9 +403,6 @@ export function CategoriesField({
                 categoryCounts?.get(cat.toLowerCase()) ??
                 categoryCounts?.get(cat) ??
                 0;
-              const hasData = categoryCounts
-                ? Array.from(categoryCounts.values()).some((v) => v > 0)
-                : false;
               const zero = hasData && count === 0 && !active;
               return (
                 <button
@@ -443,56 +413,82 @@ export function CategoriesField({
                   disabled={disabled || zero}
                   title={
                     zero
-                      ? `No tricks for ${cat} at Level ${effectiveLevel} ${effectiveSpotType}`
+                      ? `No ${cat} tricks for this level and spot type`
                       : hasData
                         ? `${count} trick${count === 1 ? "" : "s"}`
                         : undefined
                   }
                   onClick={() => onToggle(cat)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
-                    active
-                      ? "border border-on-surface bg-on-surface text-surface"
-                      : zero
-                        ? "border border-outline-variant bg-surface-container-high text-on-surface-variant opacity-50 cursor-not-allowed"
-                        : "border border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
-                  }`}
+                  className={categoryChipClass(active, zero)}
                 >
                   {cat} {hasData ? `(${count})` : ""}
                 </button>
               );
             })}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={disabled || isAll}
-              onClick={() =>
-                [...selectedCategories].forEach((c) => onToggle(c))
-              }
-              className="rounded-full border border-outline-variant bg-surface-container-high px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest disabled:opacity-40"
-            >
-              Clear
-            </button>
-          </div>
           {error ? (
             <FieldError>{error}</FieldError>
           ) : eligibleCount === 0 ? (
-            <p role="alert" className="mt-2 text-xs leading-5 text-error">
-              No tricks match Level {effectiveLevel} at {effectiveSpotType} with{" "}
-              {selectedCategories.join(", ")} — try All, another level, or
-              another spot type.
+            <p role="alert" className="mt-2 text-sm leading-5 text-error">
+              No tricks match. Pick All, another level or another spot type.
             </p>
           ) : null}
-          <p className="mt-2 text-[11px] text-on-surface-variant">
-            {isAll
-              ? "All categories (unfiltered)"
-              : `${selectedCategories.length} selected · max 12`}
-            {eligibleCount !== null && eligibleCount !== undefined
-              ? ` · ${eligibleCount} match${eligibleCount === 1 ? "" : "es"} for current spot+level`
+          <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+            {isAll ? "All categories" : `${selectedCategories.length} selected (max 12)`}
+            {eligibleCount !== null && eligibleCount !== undefined && eligibleCount > 0
+              ? ` · ${eligibleCount} trick${eligibleCount === 1 ? "" : "s"} match`
               : ""}
           </p>
         </>
       )}
+    </div>
+  );
+}
+
+/** Same look as before, at the 44px control height. */
+function categoryChipClass(active: boolean, zero: boolean) {
+  return `inline-flex min-h-control items-center rounded-control border px-3.5 text-xs font-bold uppercase transition-[background-color,border-color,color] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 ${
+    active
+      ? "border-on-surface bg-on-surface text-surface"
+      : zero
+        ? "cursor-not-allowed border-outline-variant bg-surface-container-high text-on-surface-variant opacity-50"
+        : "border-outline-variant bg-surface text-on-surface hover:border-outline hover:bg-surface-container"
+  }`;
+}
+
+/** Compact key/value summary used on the wizard's last step. */
+export function SetupSummaryCard({
+  rows,
+  nested = false,
+}: {
+  rows: ReadonlyArray<readonly [string, string]>;
+  nested?: boolean;
+}) {
+  const list = (
+    <dl className="space-y-2 text-xs">
+      {rows.map(([label, value]) => (
+        <div key={label} className="flex justify-between gap-4">
+          <dt className="text-on-surface-variant">{label}</dt>
+          <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
+            {value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+  if (nested) {
+    return (
+      <div className="mt-4 rounded-card border border-outline-variant bg-surface-container-lowest p-3">
+        {list}
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
+      <p className="mb-3 font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
+        Summary
+      </p>
+      {list}
     </div>
   );
 }
