@@ -44,9 +44,12 @@ export function MatchHistoryRow({
   return (
     <li className="py-4">
       <div className="flex items-center gap-3">
+        {/* Whole row is a pointer shortcut; the Resume/Results control is the one tab stop. */}
         <Link
           href={`/games/${game.id}`}
-          className="group min-w-0 flex-1 rounded-inner focus-visible:outline-offset-4"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="group min-w-0 flex-1 rounded-inner"
         >
           <span className="flex flex-wrap items-center gap-1.5">
             <span className={STATUS_TAG[matchStatusTone(game)]}>

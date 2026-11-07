@@ -187,7 +187,7 @@ describe("ChallengeGameBoard", () => {
 
     const currentItem = screen.getByRole("listitem", { current: "step" })
     await user.click(within(currentItem).getByRole("button", { name: "Landed" }))
-    await user.click(within(currentItem).getByRole("button", { name: "Failed" }))
+    await user.click(within(currentItem).getByRole("button", { name: "Missed" }))
 
     expect(selected).toEqual(["landed", "failed"])
   })

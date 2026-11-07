@@ -57,6 +57,7 @@ export function GameBoard({
     return sessionStorage.getItem("openspot-guest-name") ?? generateGuestName();
   });
   const [guestJoinError, setGuestJoinError] = useState<string | null>(null);
+  const [retryingLoad, setRetryingLoad] = useState(false);
   useEffect(() => {
     if (!authenticated) loadOrCreateGuestToken();
   }, [authenticated]);
@@ -172,14 +173,6 @@ export function GameBoard({
         "info",
       );
     }
-    if (
-      prevStatus !== null &&
-      prevStatus !== game.status &&
-      game.status === "complete"
-    ) {
-      showToast("That's a Wrap — Results Are In!", "success");
-    }
-
     const isTerminal =
       game.status === "complete" || game.status === "cancelled";
     const hasLedger = (game.stageLedger?.length ?? 0) > 0;
@@ -231,7 +224,7 @@ export function GameBoard({
                 onClick={() => router.push("/games")}
                 className="min-h-9 rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.05em] hover:bg-surface-container-highest"
               >
-                Back to challenges
+                Back to games
               </button>
             </div>
             <PanelShell>
@@ -246,12 +239,16 @@ export function GameBoard({
                     </p>
                     <button
                       type="button"
-                      onClick={() =>
-                        void refreshGameState().catch(() => undefined)
-                      }
-                      className="mt-3 min-h-11 rounded-full border border-error bg-error px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-error hover:bg-error/90 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2"
+                      disabled={retryingLoad}
+                      onClick={() => {
+                        setRetryingLoad(true);
+                        void refreshGameState()
+                          .catch(() => undefined)
+                          .finally(() => setRetryingLoad(false));
+                      }}
+                      className="mt-3 min-h-11 disabled:cursor-wait disabled:opacity-60 rounded-full border border-error bg-error px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-error hover:bg-error/90 focus-visible:outline-2 focus-visible:outline-error focus-visible:outline-offset-2"
                     >
-                      Try again
+                      {retryingLoad ? "Trying…" : "Try again"}
                     </button>
                   </div>
                 </PanelScreenBezel>

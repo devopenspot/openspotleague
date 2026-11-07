@@ -15,7 +15,7 @@ type AwardHistoryState = {
 
 export const AWARD_ERROR_COPY = {
   forbidden: "You can't open these results.",
-  missing: "This game is no longer available.",
+  missing: "That game no longer exists.",
   generic: "Results couldn't load. Check your signal and try again.",
 } as const;
 
@@ -66,9 +66,11 @@ export function useAwardHistory({ authenticated }: { authenticated: boolean }) {
           signal: controller.signal,
         });
         if (!res.ok) throw new AwardRequestError(await errorCopy(res));
-        const game = gameStateSchema.parse(await res.json());
+        // A schema mismatch is our bug, not the rider's: show the generic copy.
+        const parsed = gameStateSchema.safeParse(await res.json().catch(() => null));
+        if (!parsed.success) throw new AwardRequestError(AWARD_ERROR_COPY.generic);
         if (controller.signal.aborted) return;
-        setState({ open: true, gameId, game, loading: false, error: null });
+        setState({ open: true, gameId, game: parsed.data, loading: false, error: null });
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         if (controller.signal.aborted) return;

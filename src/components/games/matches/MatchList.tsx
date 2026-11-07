@@ -1,7 +1,7 @@
 "use client";
 
 import { useMyGames, type MyGamesState } from "@/components/games/hooks/useMyGames";
-import { BODY } from "@/components/ui/recipes";
+import { BODY, controlClass } from "@/components/ui/recipes";
 import { MatchHistoryResults } from "./MatchHistoryResults";
 import { MatchHistoryRow } from "./MatchHistoryRow";
 
@@ -18,7 +18,7 @@ export function MatchList({
   list?: MyGamesState;
 }) {
   const ownList = useMyGames({ limit, enabled: list === undefined });
-  const { games, status } = list ?? ownList;
+  const { games, status, reload } = list ?? ownList;
 
   if (status === "loading") {
     return (
@@ -29,9 +29,14 @@ export function MatchList({
   }
   if (status === "error") {
     return (
-      <p role="alert" className="py-8 text-sm text-on-surface">
-        Your games couldn&apos;t load. Check your signal and try again.
-      </p>
+      <div role="alert" className="space-y-3 py-8 text-sm text-on-surface">
+        <p>Your games couldn&apos;t load. Check your signal and try again.</p>
+        {reload ? (
+          <button type="button" onClick={reload} className={controlClass("outline")}>
+            Try again
+          </button>
+        ) : null}
+      </div>
     );
   }
   if (games.length === 0) {

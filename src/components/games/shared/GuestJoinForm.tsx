@@ -39,7 +39,7 @@ export function GuestJoinForm({
       }}
     >
       <label className="sr-only" htmlFor={inputId}>
-        Pick A Rider Name
+        Rider name
       </label>
       <input
         id={inputId}
@@ -51,13 +51,13 @@ export function GuestJoinForm({
         aria-invalid={visibleError ? "true" : undefined}
         aria-describedby={visibleError ? errorId : undefined}
         autoComplete="nickname"
-        className={`min-w-0 flex-1 outline-none placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 aria-[invalid=true]:border-error aria-[invalid=true]:bg-error-container ${size === "large" ? "min-h-12 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 text-base" : "min-h-9 rounded-full border border-transparent bg-surface-container-low px-3 text-base sm:min-h-9 sm:text-sm"}`}
+        className={`min-w-0 flex-1 outline-none placeholder:text-secondary focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 aria-[invalid=true]:border-error aria-[invalid=true]:bg-error-container ${size === "large" ? "min-h-12 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 text-base" : "min-h-control rounded-full border border-transparent bg-surface-container-low px-3 text-base sm:text-sm"}`}
       />
       {showSubmit ? (
         <button
           type="submit"
           disabled={busy}
-          className="min-h-9 shrink-0 rounded-full bg-primary px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+          className="min-h-control shrink-0 rounded-full bg-primary px-4 font-display text-xs font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
         >
           {busy ? "Joining…" : "Join"}
         </button>
@@ -66,7 +66,7 @@ export function GuestJoinForm({
         <p
           id={errorId}
           role="alert"
-          className={`w-full rounded-[12px] bg-error-container px-3 py-1.5 font-semibold text-on-error-container ${size === "large" ? "text-sm" : "text-[11px] uppercase tracking-[0.04em]"}`}
+          className="w-full rounded-card bg-error-container px-3 py-1.5 text-sm font-semibold text-on-error-container"
         >
           {visibleError}
         </p>

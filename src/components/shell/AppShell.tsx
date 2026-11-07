@@ -84,11 +84,11 @@ export function AppShell({
   } else if (isGameSession) {
     mainClassName =
       "relative flex min-h-0 flex-1 flex-col overflow-hidden pb-0";
-    mainAriaLabel = "Open Spot challenges";
+    mainAriaLabel = "Open Spot games";
   } else if (isGameLanding) {
     mainClassName =
       "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto pb-[var(--mobile-nav-h)] md:pb-0";
-    mainAriaLabel = "Open Spot challenges";
+    mainAriaLabel = "Open Spot games";
   } else if (isLandingRoute) {
     mainClassName =
       "relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain pb-[var(--mobile-nav-h)] md:pb-0";

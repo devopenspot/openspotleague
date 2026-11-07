@@ -277,3 +277,28 @@ describe("MatchList — results identity", () => {
     expect(guestHeaderOf(calls[0])).toBe(localStorage.getItem(GUEST_TOKEN_STORAGE_KEY));
   });
 });
+
+describe("MatchList — row copy", () => {
+  it("names the battle spot and the status instead of raw ids", () => {
+    render(
+      <MatchList
+        authenticated
+        list={{
+          status: "ready",
+          games: [{ ...mockGames[0]!, status: "active", spotName: "Riverside Ledges" }],
+        }}
+      />,
+    );
+    expect(screen.getByText("In progress")).toBeInTheDocument();
+    expect(screen.getByText("Game of B.L.A.D.E")).toBeInTheDocument();
+    expect(screen.getByText("Battle · Riverside Ledges · Rails")).toBeInTheDocument();
+    expect(screen.queryByText(/Spot spot-1/)).toBeNull();
+  });
+
+  it("offers a retry when the list fails to load", async () => {
+    const reload = vi.fn();
+    render(<MatchList authenticated list={{ status: "error", games: [], reload }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+});

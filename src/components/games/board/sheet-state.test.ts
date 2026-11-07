@@ -210,7 +210,8 @@ describe("deriveGameSheetView", () => {
       can({ canVerifyLocation: true }),
       { ...context, locationPermission: "denied" },
     );
-    expect(view.actions[0]?.label).toBe("Fix Location To Ride");
+    expect(view.actions[0]?.label).toBe("Retry Location");
+    expect(view.status).toMatch(/Allow it for this site/);
   });
 
   it("shows GPS progress without blocking the sheet", () => {
@@ -221,6 +222,16 @@ describe("deriveGameSheetView", () => {
     );
     expect(view.status).toBe("Checking you in…");
     expect(view.actions).toEqual([]);
+  });
+
+  it("does not offer a retry that can't work when the browser has no location", () => {
+    const view = deriveGameSheetView(
+      game,
+      can({ canVerifyLocation: true }),
+      { ...context, locationPermission: "unavailable" },
+    );
+    expect(view.actions).toEqual([]);
+    expect(view.status).toMatch(/Open the game on your phone/);
   });
 
   it("offers Check In Again when permission is already granted", () => {
@@ -373,7 +384,7 @@ describe("deriveGameSheetView", () => {
       "cancel",
       "back",
     ]);
-    expect(view.sessionActions[2]?.label).toBe("Finish Challenge");
+    expect(view.sessionActions[2]?.label).toBe("Finish Game");
   });
 
   it("labels the lobby session actions by role", () => {

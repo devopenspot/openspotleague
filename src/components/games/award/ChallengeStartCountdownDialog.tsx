@@ -10,6 +10,8 @@ import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
 import type { GameState } from "@/lib/schemas/game";
 import { lobbyReadiness } from "@/components/games/board/sheet-state";
 import { GuestJoinForm } from "@/components/games/shared/GuestJoinForm";
+import { GAME_MODE_LABEL } from "@/lib/games/labels";
+import { controlClass } from "@/components/ui/recipes";
 
 const DIALOG_ID = "challenge-start-countdown-dialog";
 const TITLE_ID = "challenge-start-countdown-title";
@@ -27,6 +29,8 @@ export function ChallengeStartCountdownDialog({
   guestJoinError,
   onGuestNameChange,
   onGuestJoin,
+  onJoin,
+  checkIn,
   onClose,
   onStartNow,
 }: {
@@ -40,6 +44,10 @@ export function ChallengeStartCountdownDialog({
   guestJoinError: string | null;
   onGuestNameChange: (name: string) => void;
   onGuestJoin: () => void;
+  /** Signed-in riders who can still join. */
+  onJoin?: () => void;
+  /** Set while the viewer still has to check in at the spot. */
+  checkIn?: { label: string; pending: boolean; onCheckIn: () => void } | null;
   onClose: () => void;
   onStartNow: () => void;
 }) {
@@ -57,7 +65,7 @@ export function ChallengeStartCountdownDialog({
       labelledBy={TITLE_ID}
       describedBy={`${DESCRIPTION_ID} ${DIALOG_ID}-readiness`}
       contentId={DIALOG_ID}
-      panelClassName="mx-5 w-[min(30rem,calc(100vw-2.5rem))] overflow-hidden rounded-[16px] border border-outline-variant bg-surface-bright p-0 shadow-[0_16px_48px_rgba(18,18,18,0.16)]"
+      panelClassName="mx-5 w-[min(30rem,calc(100vw-2.5rem))] overflow-hidden rounded-container border border-outline-variant bg-surface-bright p-0 shadow-[0_16px_48px_rgba(18,18,18,0.16)]"
     >
       <div className="border-b border-outline-variant bg-on-surface px-5 py-5 text-surface sm:px-6 sm:py-6">
         <div className="flex items-start justify-between gap-4">
@@ -76,8 +84,8 @@ export function ChallengeStartCountdownDialog({
             type="button"
             onClick={onClose}
             disabled={busy}
-            aria-label="Close challenge countdown"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] border border-surface/25 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Close countdown"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-container border border-surface/25 text-surface transition-colors hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X size={16} aria-hidden="true" />
           </button>
@@ -86,26 +94,21 @@ export function ChallengeStartCountdownDialog({
           id={DESCRIPTION_ID}
           className="mt-3 max-w-md text-sm leading-5 text-surface-dim"
         >
-          Everyone Sees The Same Countdown. Host Can Drop In Early Once Both
-          Riders Are Checked In.
+          Everyone sees the same countdown. The host can drop in early once
+          every rider has checked in.
         </p>
       </div>
 
       <div className="space-y-5 p-5 sm:p-6">
-        <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 text-center">
+        <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 text-center">
           <p className="font-display text-xs font-bold uppercase tracking-[0.08em] text-secondary">
-            Dropping In
+            Starts in
           </p>
           <Countdown
             target={game.scheduledStartAt}
-            label="Session Starts In"
+            label="Starts in"
             className="mt-2 block text-3xl tracking-tight text-on-surface sm:text-4xl"
           />
-          {isOpen ? (
-            <p className="mt-2 text-xs leading-5 text-on-surface-variant">
-              Scheduled: {new Date(game.scheduledStartAt).toLocaleString()}
-            </p>
-          ) : null}
         </div>
 
         <div
@@ -116,12 +119,34 @@ export function ChallengeStartCountdownDialog({
           {readinessMessage}
         </div>
 
+        {checkIn ? (
+          <button
+            type="button"
+            onClick={checkIn.onCheckIn}
+            disabled={busy || checkIn.pending}
+            className={`w-full ${controlClass("primary", "lg")}`}
+          >
+            <span aria-live="polite">{checkIn.label}</span>
+          </button>
+        ) : null}
+
+        {authenticated && canJoin && onJoin ? (
+          <button
+            type="button"
+            onClick={onJoin}
+            disabled={busy}
+            className={`w-full ${controlClass("primary", "lg")}`}
+          >
+            Join This Lobby
+          </button>
+        ) : null}
+
         <GameWeatherBanner game={game} />
 
         {showGuestJoinForm ? (
           <section
             aria-labelledby={`${DIALOG_ID}-join-title`}
-            className="rounded-[16px] border border-primary/30 bg-primary-container p-4 text-on-primary-container"
+            className="rounded-container border border-primary/30 bg-primary-container p-4 text-on-primary-container"
           >
             <h3
               id={`${DIALOG_ID}-join-title`}
@@ -130,7 +155,7 @@ export function ChallengeStartCountdownDialog({
               Join This Lobby
             </h3>
             <p className="mt-1 text-sm leading-5">
-              Pick A Rider Name To Join Before The Host Drops In.
+              Pick a rider name to join before the host drops in.
             </p>
             <GuestJoinForm
               inputId={`${DIALOG_ID}-guest-name`}
@@ -157,7 +182,7 @@ export function ChallengeStartCountdownDialog({
                 Invite A Rider
               </h3>
               <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                Share The Code, Link, Or QR.
+                Share the code, link or QR.
               </p>
             </div>
             <code className="shrink-0 font-display text-xs font-bold tracking-[0.12em] text-on-surface">
@@ -167,7 +192,7 @@ export function ChallengeStartCountdownDialog({
           <ShareActions
             url={`/games/join/${encodeURIComponent(game.shareCode)}`}
             code={game.shareCode}
-            title={`${gameTitle(game)} challenge`}
+            title={`${gameTitle(game)} ${GAME_MODE_LABEL[game.mode].toLowerCase()}`}
             showShare={false}
             compact
             className="mt-3"
@@ -179,24 +204,16 @@ export function ChallengeStartCountdownDialog({
             type="button"
             onClick={onStartNow}
             disabled={busy || !canStartNow}
-            className="min-h-11 w-full rounded-full bg-primary px-5 font-display text-xs font-bold uppercase tracking-[0.06em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-not-allowed disabled:bg-surface-container-high disabled:text-on-surface-variant"
+            className={`w-full ${controlClass("primary", "lg")}`}
           >
             {busy ? "Dropping In…" : "Drop In Now"}
           </button>
         ) : (
-          <p className="rounded-[16px] bg-surface-container px-4 py-3 text-center font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface-variant">
-            Waiting For Host To Drop In
+          <p className="rounded-container bg-surface-container px-4 py-3 text-center font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface-variant">
+            Waiting for the host to drop in
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={busy}
-          className="min-h-11 w-full rounded-full border border-outline-variant bg-surface-container-high px-5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Continue To Lobby
-        </button>
       </div>
     </Overlay>
   );

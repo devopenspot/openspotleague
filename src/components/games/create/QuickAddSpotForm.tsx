@@ -6,9 +6,9 @@ import {
   CARD_NESTED,
   INPUT,
   LABEL,
-  chipClass,
   controlClass,
 } from "@/components/ui/recipes";
+import { OptionChip } from "./form-parts";
 import type { Spot } from "@/lib/types";
 
 type SpotTypeOption = { slug: string; name: string };
@@ -169,28 +169,32 @@ export function QuickAddSpotForm({
           aria-labelledby={typesLabelId}
         >
           {spotTypes.map((option) => (
-            <button
+            <OptionChip
               key={option.slug}
-              type="button"
-              aria-pressed={types.includes(option.slug)}
+              active={types.includes(option.slug)}
+              pressed={types.includes(option.slug)}
+              label={option.name}
               onClick={() => toggleType(option.slug)}
-              className={chipClass(types.includes(option.slug))}
-            >
-              {option.name}
-            </button>
+            />
           ))}
         </div>
       </div>
       <div>
-        <label htmlFor={photoId} className={LABEL}>
-          Photo
-        </label>
+        <p className={LABEL}>Photo</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <label htmlFor={photoId} className={`cursor-pointer ${controlClass("outline")}`}>
+            {file ? "Change photo" : "Take or pick a photo"}
+          </label>
+          <span className="min-w-0 truncate text-xs text-on-surface-variant">
+            {file ? file.name : "One photo of the spot"}
+          </span>
+        </div>
         <input
           id={photoId}
           type="file"
           accept="image/*"
           capture="environment"
-          className="mt-2 block w-full text-base text-on-surface-variant sm:text-sm"
+          className="sr-only"
           onChange={(event) => {
             setFile(event.target.files?.[0] ?? null);
             setError(null);

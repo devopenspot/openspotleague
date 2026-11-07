@@ -58,3 +58,19 @@ export function buildGamePrefillUrl(
   }
   return `/games?${params.toString()}`;
 }
+
+/** "Run It Again": the setup page, opened on the same mode, spot and spot type. */
+export function buildRunAgainUrl(game: {
+  mode: GameMode;
+  spotId: string | null;
+  nextSpotType: string;
+}): string {
+  const params = new URLSearchParams();
+  params.set("mode", game.mode);
+  if (game.spotId && spotIdSchema.safeParse(game.spotId).success) {
+    params.set("spotId", game.spotId);
+  }
+  const type = game.nextSpotType.trim().toLowerCase();
+  if (spotTypeSchema.safeParse(type).success) params.set("spotType", type);
+  return `/games?${params.toString()}`;
+}

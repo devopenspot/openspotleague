@@ -2,6 +2,8 @@
 
 import { Settings2, Share } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { buildRunAgainUrl } from "@/lib/games/prefill";
 
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
 import { ChallengeStartCountdownDialog } from "@/components/games/award/ChallengeStartCountdownDialog";
@@ -199,6 +201,7 @@ export function GameBoardControls({
       })
     : null;
 
+  const router = useRouter();
   function handleSheetAction(id: GameSheetActionId) {
     if (id === "join") {
       if (showGuestJoinForm) onGuestJoin();
@@ -212,6 +215,7 @@ export function GameBoardControls({
     else if (id === "voteAccept") onCategoriesVote(true);
     else if (id === "voteReject") onCategoriesVote(false);
     else if (id === "results") onViewResults?.();
+    else if (id === "runAgain" && game) router.push(buildRunAgainUrl(game));
     else onBackToChallenges();
   }
 
@@ -226,13 +230,15 @@ export function GameBoardControls({
   const connectionLed = connection === "connected" ? "live" : "pending";
   const statusLabel = !game
     ? ""
-    : game.status === "lobby"
-      ? "Lobby — Waiting to drop"
-      : game.status === "active"
-        ? "Live — Session running"
-        : game.status === "complete"
-          ? "Complete — Results in"
-          : "Closed";
+    : connection === "reconnecting"
+      ? "Reconnecting…"
+      : game.status === "lobby"
+        ? "Lobby — Waiting to drop"
+        : game.status === "active"
+          ? "Live — Session running"
+          : game.status === "complete"
+            ? "Complete — Results in"
+            : "Closed";
   const letterSummary =
     game && game.trainingVariant !== "solo" && game.status !== "lobby"
       ? game.players
@@ -265,7 +271,7 @@ export function GameBoardControls({
       <div className="mx-auto flex w-full max-w-7xl shrink-0 flex-col gap-2 px-1 py-2 sm:py-2.5">
         {/* [A] Identity + system — always visible, mono hierarchy per DESIGN.md */}
         {game ? (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3 sm:py-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3 sm:py-2.5">
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
               <Led tone={connectionLed} />
               <div className="min-w-0">
@@ -278,7 +284,10 @@ export function GameBoardControls({
                   </p>
                 ) : null}
               </div>
-              <span className="hidden shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary sm:inline-flex">
+              <span
+                role="status"
+                className="hidden shrink-0 items-center rounded-full border border-outline-variant bg-surface-container-lowest px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary sm:inline-flex"
+              >
                 {statusLabel}
               </span>
             </div>
@@ -318,7 +327,7 @@ export function GameBoardControls({
             </div>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-outline-variant bg-surface-container-low px-2.5 py-2 sm:px-3">
             <div className="flex items-center gap-2">
               <Led tone="pending" />
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-secondary">
@@ -376,13 +385,14 @@ export function GameBoardControls({
               onViewResults={onViewResults}
               onBackToChallenges={onBackToChallenges}
               showRunAgain={isComplete}
+              runAgainHref={buildRunAgainUrl(game)}
             />
           </div>
         ) : !isTerminal ? (
           hasPrimaryAction || hasSecondaryAction ? (
             <div
               data-testid="game-deck"
-              className="hidden flex-col gap-2 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-2.5 md:flex"
+              className="hidden flex-col gap-2 rounded-container border border-outline-variant bg-surface-container-lowest p-2.5 md:flex"
             >
               {/* tier 1: primary CTA — only one primary visually; others secondary */}
               <div className="flex flex-wrap items-center gap-1.5">
@@ -452,27 +462,20 @@ export function GameBoardControls({
                   </button>
                 ) : null}
 
-                {needsVerification ? (
+                {needsVerification && locationPermission !== "unavailable" ? (
                   <button
                     type="button"
                     disabled={busy || locationPending}
-                    aria-label={
-                      locationPermission === "denied"
-                        ? "Fix Location To Ride"
-                        : locationPermission === "unavailable"
-                          ? "Try Again"
-                          : "Check In At Spot"
-                    }
                     onClick={onVerifyLocation}
                     className="min-h-9 rounded-full border border-primary bg-primary px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
                   >
-                    {locationPending
-                      ? "Checking You In…"
-                      : locationPermission === "denied"
-                        ? "Fix Location To Ride"
-                        : locationPermission === "unavailable"
-                          ? "Try Again"
+                    <span aria-live="polite">
+                      {locationPending
+                        ? "Checking You In…"
+                        : locationPermission === "denied"
+                          ? "Retry Location"
                           : "Check In At Spot"}
+                    </span>
                   </button>
                 ) : null}
 
@@ -528,13 +531,13 @@ export function GameBoardControls({
                         title={
                           game?.trainingVariant === "solo"
                             ? "Wrap up your solo run"
-                            : "End the challenge for everyone"
+                            : "End the game for everyone"
                         }
                         className="min-h-9 rounded-full border border-outline-variant bg-surface-container-high px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
                       >
                         {game?.trainingVariant === "solo"
                           ? "Finish Run"
-                          : "Finish Challenge"}
+                          : "Finish Game"}
                       </button>
                     ) : null}
 
@@ -572,7 +575,7 @@ export function GameBoardControls({
         {error ? (
           <p
             role="alert"
-            className="hidden rounded-[12px] border border-error bg-error-container px-3 py-2.5 text-sm font-semibold leading-5 text-on-error-container md:block"
+            className="hidden rounded-card border border-error bg-error-container px-3 py-2.5 text-sm font-semibold leading-5 text-on-error-container md:block"
           >
             {error}
           </p>
@@ -581,7 +584,7 @@ export function GameBoardControls({
         {roundNotice ? (
           <p
             role="status"
-            className="hidden rounded-[12px] border border-primary/25 bg-primary-container/60 px-3 py-2.5 text-sm leading-5 text-on-primary-container md:block"
+            className="hidden rounded-card border border-primary/25 bg-primary-container/60 px-3 py-2.5 text-sm leading-5 text-on-primary-container md:block"
           >
             {roundNotice}
           </p>
@@ -651,6 +654,20 @@ export function GameBoardControls({
           guestJoinError={guestJoinError}
           onGuestNameChange={onGuestNameChange}
           onGuestJoin={onGuestJoin}
+          onJoin={onJoinLobby}
+          checkIn={
+            capabilities.canVerifyLocation && locationPermission !== "unavailable"
+              ? {
+                  label: locationPending
+                    ? "Checking You In…"
+                    : locationPermission === "denied"
+                      ? "Retry Location"
+                      : "Check In At Spot",
+                  pending: locationPending,
+                  onCheckIn: onVerifyLocation,
+                }
+              : null
+          }
           onClose={() => setIsCountdownOpen(false)}
           onStartNow={onStartNow}
         />

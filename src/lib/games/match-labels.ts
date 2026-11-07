@@ -1,3 +1,4 @@
+import { GAME_MODE_LABEL } from "@/lib/games/labels"
 import type { GameListItem } from "@/lib/schemas/game"
 
 /**
@@ -31,7 +32,7 @@ export function matchStatusTone({ status }: Pick<GameListItem, "status">): Match
 }
 
 export function matchModeLabel(mode: GameListItem["mode"]): string {
-  return mode === "challenge" ? "Battle" : "Training"
+  return GAME_MODE_LABEL[mode]
 }
 
 /** `manual_pads` → `Manual pads`. */
@@ -42,10 +43,12 @@ export function spotTypeLabel(slug: string): string {
 
 /** "Battle · Downtown Plaza · Rails" / "Training · Rails". Never shows ids. */
 export function matchMetaLine(
-  game: Pick<GameListItem, "mode" | "spotLabel" | "nextSpotType">,
+  game: Pick<GameListItem, "mode" | "spotLabel" | "spotName" | "nextSpotType">,
 ): string {
   const parts = [matchModeLabel(game.mode)]
-  if (game.spotLabel) parts.push(game.spotLabel)
+  // Registered spot name first, then a training's free-text place.
+  const place = game.spotName ?? game.spotLabel
+  if (place) parts.push(place)
   else if (game.mode === "challenge") parts.push("Registered spot")
   parts.push(spotTypeLabel(game.nextSpotType))
   return parts.join(" · ")

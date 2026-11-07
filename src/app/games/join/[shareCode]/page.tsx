@@ -194,16 +194,16 @@ function ChallengeSignInGate({ nextPath }: { nextPath: string }) {
 
   return (
     <div className="min-h-full px-5 py-8 sm:px-8 sm:py-12 lg:px-10 lg:py-16">
-      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
+      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
         <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-            Challenge invite
+            Battle invite
           </p>
           <h1 className="mt-3 max-w-xl font-display text-4xl font-bold uppercase leading-[1.05] tracking-[-0.03em] text-on-surface sm:text-6xl">
             Sign in to ride
           </h1>
           <p className="mt-5 max-w-lg text-sm leading-6 text-on-surface-variant sm:text-base">
-            This challenge is ready for you. Sign in to join the lobby and keep
+            Battles are for signed-in riders. Sign in to join the lobby and keep
             your rider progress connected to your Open Spot account.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -225,7 +225,7 @@ function ChallengeSignInGate({ nextPath }: { nextPath: string }) {
         <div className="relative min-h-[18rem] overflow-hidden bg-on-surface sm:min-h-[24rem] lg:min-h-full">
           <Image
             src="/challenges.jpg"
-            alt="Open Spot training and challenges"
+            alt="Open Spot training and battles"
             fill
             sizes="(min-width: 1024px) 42vw, 100vw"
             className="object-contain p-8 sm:p-12"
@@ -267,11 +267,11 @@ function CrawlerPreview({
     );
   }
   const isChallenge = preview.mode === "challenge";
-  const badge = isChallenge ? "Challenge Invite" : "Training Invite";
+  const badge = isChallenge ? "Battle Invite" : "Training Invite";
   const imageSrc = isChallenge ? "/challenges.jpg" : "/trainings.jpg";
   return (
     <div className="min-h-full px-5 py-8 sm:px-8 sm:py-12 lg:px-10 lg:py-16">
-      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
+      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.72fr)]">
         <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
             {badge}
@@ -293,7 +293,7 @@ function CrawlerPreview({
               : "An open training session."}{" "}
             Join the lobby to ride together.
           </p>
-          <div className="mt-6 rounded-[12px] border border-outline-variant bg-surface-container-high px-4 py-3">
+          <div className="mt-6 rounded-card border border-outline-variant bg-surface-container-high px-4 py-3">
             <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-secondary">
               Share code
             </p>
