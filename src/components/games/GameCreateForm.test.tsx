@@ -669,7 +669,7 @@ describe("GameCreateForm", () => {
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Skate" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
-    expect(within(dialog).getByText("Confirm when the lobby opens")).toBeInTheDocument();
+    expect(within(dialog).getByText("Start time")).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("radio", { name: /In 5 minutes/ }),
     );

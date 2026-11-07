@@ -520,13 +520,13 @@ export function GameBoardControls({
                         title={
                           game?.trainingVariant === "solo"
                             ? "Wrap up your solo run"
-                            : "End the challenge for everyone"
+                            : "End the game for everyone"
                         }
                         className="min-h-9 rounded-full border border-outline-variant bg-surface-container-high px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
                       >
                         {game?.trainingVariant === "solo"
                           ? "Finish Run"
-                          : "Finish Challenge"}
+                          : "Finish Game"}
                       </button>
                     ) : null}
 

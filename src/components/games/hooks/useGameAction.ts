@@ -184,8 +184,8 @@ export function useGameAction({
         }
         if (response.ok) {
           const labels: Record<string, string> = {
-            "/join": "You joined the challenge.",
-            "/start": "Challenge started.",
+            "/join": "You joined the game.",
+            "/start": "Game on.",
             "/train-alone": "Solo training started.",
             "/leave": "You left the lobby.",
           };

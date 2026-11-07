@@ -384,7 +384,7 @@ describe("deriveGameSheetView", () => {
       "cancel",
       "back",
     ]);
-    expect(view.sessionActions[2]?.label).toBe("Finish Challenge");
+    expect(view.sessionActions[2]?.label).toBe("Finish Game");
   });
 
   it("labels the lobby session actions by role", () => {

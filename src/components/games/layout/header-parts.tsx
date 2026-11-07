@@ -17,6 +17,7 @@ import {
   controlClass,
   tagClass,
 } from "@/components/ui/recipes";
+import { GAME_MODE_LABEL } from "@/lib/games/labels";
 import { GameWeatherBanner } from "@/components/games/layout/GameWeatherBanner";
 import type { GameState } from "@/lib/schemas/game";
 
@@ -253,7 +254,7 @@ export function GameShareDrawer({
                 <ShareActions
                   url={sharePath}
                   code={game.shareCode}
-                  title={`${game.gameName} challenge`}
+                  title={`${game.gameName} ${GAME_MODE_LABEL[game.mode].toLowerCase()}`}
                   compact
                   className="mt-3"
                 />
@@ -316,15 +317,18 @@ export function CancelSessionDialog({
             {isSoloRun
               ? "Finish This Run?"
               : canCancelActive
-                ? "Finish This Challenge?"
-                : "End This Session?"}
+                ? "Finish This Game?"
+                : "Close This Lobby?"}
           </h2>
           <p
             id={CANCEL_DIALOG_DESCRIPTION_ID}
             className="mt-3 text-sm leading-6 text-on-surface-variant"
           >
-            Everyone Will Head Back To The Lobby And The Session Ends
-            Immediately. You Can Start A New Run Right After.
+            {isSoloRun
+              ? "Your run ends now. You can start a new one right after."
+              : canCancelActive
+                ? "The game ends for everyone now. You can start a new one right after."
+                : "Riders can no longer join this lobby. You can start a new game right after."}
           </p>
         </div>
       </div>
@@ -348,8 +352,8 @@ export function CancelSessionDialog({
             : isSoloRun
               ? "Yes, Finish Run"
               : canCancelActive
-                ? "Yes, Finish Challenge"
-                : "Yes, End Session"}
+                ? "Yes, Finish Game"
+                : "Yes, Close Lobby"}
         </button>
       </div>
     </Overlay>

@@ -33,6 +33,7 @@ import {
   type GameSetupStep,
   type ChallengeStartDelay,
   GAME_CREATE_FORM_ID,
+  RULE_MODE_HINT,
   GAME_SETTINGS_ANCHOR_ID,
   CHALLENGE_START_OPTIONS,
   GuestNicknameField,
@@ -1865,7 +1866,7 @@ export function GameCreateForm({
                     Rule mode
                   </p>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                    Flexible: leader can move on. Strict: challenge stays open.
+                    {RULE_MODE_HINT}
                   </p>
                   <div
                     className="mt-3 flex flex-wrap gap-2"
@@ -2179,7 +2180,7 @@ export function GameCreateForm({
                   Rule mode
                 </p>
                 <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                  Flexible: leader can move on. Strict: challenge stays open.
+                  {RULE_MODE_HINT}
                 </p>
                 <div
                   className="mt-3 flex flex-wrap gap-2"

@@ -37,7 +37,7 @@ const UI_COPY = {
   yourRecord: `Your record`,
   setupTitle: `Set up your game`,
   modeHint: `Training works anywhere and is saved to your history. Battles are verified at a registered spot and earn leaderboard points.`,
-  challengeRecord: `Challenge record`,
+  challengeRecord: `Battle record`,
   gameNotFound: `That code didn't match a game. Check it with your friend and try again.`,
   gameUnavailable: `That game has ended or is full. Ask your friend for a new code.`,
   loading: `Loading`,

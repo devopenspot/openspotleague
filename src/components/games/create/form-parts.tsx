@@ -48,6 +48,10 @@ export const WEATHER_LIVE_OPTIONS: ReadonlyArray<{
 
 export const GAME_CREATE_FORM_ID = "game-create-form";
 
+/** Matches the engine: only flexible games let the leader change a live trick. */
+export const RULE_MODE_HINT =
+  "Flexible: the leader can change the trick mid-round. Strict: the trick stays until the round ends.";
+
 const EMPTY_STATE_INLINE =
   "rounded-inner border border-dashed border-outline-variant bg-surface-container-low px-4 py-4 text-sm leading-5 text-on-surface-variant";
 
@@ -319,7 +323,7 @@ export function GameFormatSettings({
             Rule mode
           </p>
           <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-            Flexible: leader can move on. Strict: challenge stays open.
+            {RULE_MODE_HINT}
           </p>
           <div
             className="mt-3 flex flex-wrap gap-2"
@@ -553,57 +557,41 @@ export function ChallengeTimeStep({
   const startLabelId = controlId("challenge-start-label");
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-[16px] border border-outline-variant bg-surface-container-low p-4">
-        <p className="font-display text-sm font-bold uppercase">
-          Confirm when the lobby opens
-        </p>
-        <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-          Riders can join during the countdown. The host can start early once
-          every active rider is ready.
-        </p>
-      </div>
-      <div
-        role="group"
-        aria-labelledby={startLabelId}
-        className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+    <div
+      role="group"
+      aria-labelledby={startLabelId}
+      className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+    >
+      <p
+        id={startLabelId}
+        className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
       >
-        <p
-          id={startLabelId}
-          className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-        >
-          Challenge start
-        </p>
-        <div
-          className="mt-3 flex flex-wrap gap-2"
-          role="radiogroup"
-          aria-labelledby={startLabelId}
-        >
-          {CHALLENGE_START_OPTIONS.map((option) => (
-            <OptionChip
-              key={option.value}
-              active={startDelayMinutes === option.value}
-              label={option.title}
-              role="radio"
-              ariaChecked={startDelayMinutes === option.value}
-              onClick={() => onStartDelayChange(option.value)}
-            />
-          ))}
-        </div>
-        <p className="mt-2 text-xs leading-5 text-on-surface-variant">
-          {CHALLENGE_START_OPTIONS.find((o) => o.value === startDelayMinutes)
-            ?.description ?? ""}
-        </p>
-        <p className="mt-3 text-xs leading-5 text-on-surface-variant">
-          Your browser timezone is applied automatically
-          {timezone ? ` (${timezone})` : ""}. The selected start is shared with
-          every rider in the lobby.
-        </p>
+        Start time
+      </p>
+      <div
+        className="mt-3 flex flex-wrap gap-2"
+        role="radiogroup"
+        aria-labelledby={startLabelId}
+      >
+        {CHALLENGE_START_OPTIONS.map((option) => (
+          <OptionChip
+            key={option.value}
+            active={startDelayMinutes === option.value}
+            label={option.title}
+            role="radio"
+            ariaChecked={startDelayMinutes === option.value}
+            onClick={() => onStartDelayChange(option.value)}
+          />
+        ))}
       </div>
-      <p className="border-t border-outline-variant pt-4 text-sm leading-6 text-on-surface-variant">
-        Every joined rider must be signed in and verified at the registered spot
-        before the challenge can start. The start window includes a 15-minute
-        grace period.
+      <p className="mt-3 text-sm leading-6 text-on-surface-variant">
+        {CHALLENGE_START_OPTIONS.find((o) => o.value === startDelayMinutes)
+          ?.description ?? ""}{" "}
+        Riders join and check in at the spot during the countdown, with a
+        15-minute grace period.
+      </p>
+      <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+        Times use your timezone{timezone ? ` (${timezone})` : ""}.
       </p>
     </div>
   );

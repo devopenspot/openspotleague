@@ -231,7 +231,7 @@ export function GameBoard({
                 onClick={() => router.push("/games")}
                 className="min-h-9 rounded-full border border-outline-variant bg-surface-container-high px-3 font-display text-[11px] font-bold uppercase tracking-[0.05em] hover:bg-surface-container-highest"
               >
-                Back to challenges
+                Back to games
               </button>
             </div>
             <PanelShell>

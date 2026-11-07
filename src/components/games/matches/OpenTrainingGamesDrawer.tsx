@@ -12,6 +12,8 @@ import {
   openTrainingGamesResponseSchema,
   type OpenTrainingGame,
 } from "@/lib/schemas/game";
+import { GAME_STATUS_LABEL } from "@/lib/games/labels";
+import { controlClass } from "@/components/ui/recipes";
 
 const DRAWER_TITLE_ID = "open-training-games-title";
 
@@ -29,6 +31,7 @@ export function OpenTrainingGamesDrawer({
   const [error, setError] = useState<string | null>(null);
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
@@ -50,10 +53,11 @@ export function OpenTrainingGamesDrawer({
             (await response.json().catch(() => null))?.error ??
               "Open games could not be loaded.",
           );
-        const nextGames = openTrainingGamesResponseSchema.parse(
-          await response.json(),
+        const parsed = openTrainingGamesResponseSchema.safeParse(
+          await response.json().catch(() => null),
         );
-        if (!cancelled) setGames(nextGames);
+        if (!parsed.success) throw new Error("Open games could not be loaded.");
+        if (!cancelled) setGames(parsed.data);
       } catch (reason) {
         if (!cancelled)
           setError(
@@ -68,7 +72,7 @@ export function OpenTrainingGamesDrawer({
     return () => {
       cancelled = true;
     };
-  }, [authenticated, isOpen]);
+  }, [authenticated, isOpen, reloadKey]);
 
   async function cancelGame(game: OpenTrainingGame) {
     setCancelingId(game.id);
@@ -90,18 +94,17 @@ export function OpenTrainingGamesDrawer({
         }),
       });
       const rawData = await response.json().catch(() => null);
-      const data = response.ok
-        ? gameMutationResponseSchema.parse(rawData)
-        : rawData;
       if (!response.ok)
-        throw new Error(data?.error ?? "Game could not be cancelled.");
+        throw new Error(rawData?.error ?? "Game could not be closed.");
+      if (!gameMutationResponseSchema.safeParse(rawData).success)
+        throw new Error("Game could not be closed. Refresh and try again.");
       setGames((current) => current.filter((item) => item.id !== game.id));
       setConfirmingId(null);
     } catch (reason) {
       setError(
         reason instanceof Error
           ? reason.message
-          : "Game could not be cancelled.",
+          : "Game could not be closed.",
       );
     } finally {
       setCancelingId(null);
@@ -130,13 +133,20 @@ export function OpenTrainingGamesDrawer({
         </p>
       </DrawerHeader>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
-        {loading ? <LoadingList /> : null}
+        {loading && games.length === 0 ? <LoadingList /> : null}
         {error ? (
           <div
             className="mt-6 border border-on-surface bg-surface-container-low px-4 py-3 text-sm"
             role="alert"
           >
-            {error}
+            <p>{error}</p>
+            <button
+              type="button"
+              onClick={() => setReloadKey((value) => value + 1)}
+              className={`mt-3 ${controlClass("outline")}`}
+            >
+              Try again
+            </button>
           </div>
         ) : null}
         {!loading && games.length === 0 && !error ? (
@@ -145,7 +155,7 @@ export function OpenTrainingGamesDrawer({
               No open training games
             </p>
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-              Your next training challenge will appear here while it is open.
+              Your next training game will appear here while it is open.
             </p>
             <Link
               href="/games"
@@ -169,7 +179,7 @@ export function OpenTrainingGamesDrawer({
                       {game.gameName}
                     </p>
                     <p className="mt-1 font-display text-xs uppercase tracking-[0.08em] text-secondary">
-                      {meta?.name ?? game.disciplineSlug} / {game.status} /{" "}
+                      {meta?.name ?? game.disciplineSlug} / {GAME_STATUS_LABEL[game.status]} /{" "}
                       {game.nextSpotType}
                     </p>
                   </div>
@@ -180,7 +190,7 @@ export function OpenTrainingGamesDrawer({
                 {confirming ? (
                   <div className="mt-4 border border-on-surface bg-surface-container-low p-3">
                     <p className="text-sm text-on-surface-variant">
-                      Finish This Run? Your Crew Won’t Be Able To Continue It.
+                      Close this game? Riders in it won&apos;t be able to continue.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
@@ -189,7 +199,7 @@ export function OpenTrainingGamesDrawer({
                         disabled={canceling}
                         className="min-h-11 rounded-full bg-on-surface px-4 font-display text-xs font-bold uppercase tracking-[0.08em] text-surface transition-colors hover:bg-inverse-surface disabled:opacity-50"
                       >
-                        {canceling ? "Finishing…" : "Yes, Finish Run"}
+                        {canceling ? "Closing…" : "Yes, Close Game"}
                       </button>
                       <button
                         type="button"
@@ -215,7 +225,7 @@ export function OpenTrainingGamesDrawer({
                       onClick={() => setConfirmingId(game.id)}
                       className="min-h-11 rounded-full border border-outline px-4 font-display text-xs font-bold uppercase tracking-[0.08em] transition-colors hover:border-on-surface hover:bg-surface-container"
                     >
-                      Finish Run
+                      Close Game
                     </button>
                   </div>
                 )}
@@ -230,7 +240,7 @@ export function OpenTrainingGamesDrawer({
 
 function LoadingList() {
   return (
-    <div className="mt-6 space-y-4" aria-label="Loading open games">
+    <div className="mt-6 space-y-4" role="status" aria-label="Loading open games">
       <div className="h-20  border-y border-outline" />
       <div className="h-20  border-y border-outline" />
     </div>

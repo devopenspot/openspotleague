@@ -411,12 +411,12 @@ describe("GameBoardControls", () => {
     );
 
     const finish = within(await sheet()).getByRole("button", {
-      name: "Finish Challenge",
+      name: "Finish Game",
     });
     await user.click(finish);
 
     expect(
-      screen.getByRole("alertdialog", { name: "Finish This Challenge?" }),
+      screen.getByRole("alertdialog", { name: "Finish This Game?" }),
     ).toBeInTheDocument();
     expect(onCancelActive).not.toHaveBeenCalled();
 
@@ -428,7 +428,7 @@ describe("GameBoardControls", () => {
 
     await user.click(finish);
     await user.click(
-      screen.getByRole("button", { name: "Yes, Finish Challenge" }),
+      screen.getByRole("button", { name: "Yes, Finish Game" }),
     );
 
     expect(onCancelActive).toHaveBeenCalledOnce();

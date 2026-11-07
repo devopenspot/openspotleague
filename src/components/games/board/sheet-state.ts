@@ -134,7 +134,7 @@ function sessionActionsFor(
     actions.push({
       id: "cancel",
       label:
-        game.trainingVariant === "solo" ? "Finish Run" : "Finish Challenge",
+        game.trainingVariant === "solo" ? "Finish Run" : "Finish Game",
     });
   } else if (header.canCancelLobby) {
     actions.push({ id: "cancel", label: "End Session" });

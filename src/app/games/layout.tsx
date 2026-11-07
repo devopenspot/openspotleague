@@ -1,26 +1,26 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Training & challenges",
+  title: "Training & battles",
   description:
-    "Train and challenge riders with Open Spot. Share a lobby and ride together.",
+    "Train anywhere or battle riders at a spot with Open Spot. Share a lobby and ride together.",
   openGraph: {
     type: "website",
-    title: "Open Spot training & challenges",
+    title: "Open Spot training & battles",
     description:
-      "Train and challenge riders with Open Spot. Share a lobby and ride together.",
+      "Train anywhere or battle riders at a spot with Open Spot. Share a lobby and ride together.",
     images: [
       {
         url: "/challenges.jpg",
-        alt: "Open Spot training and challenges",
+        alt: "Open Spot training and battles",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Open Spot training & challenges",
+    title: "Open Spot training & battles",
     description:
-      "Train and challenge riders with Open Spot. Share a lobby and ride together.",
+      "Train anywhere or battle riders at a spot with Open Spot. Share a lobby and ride together.",
     images: ["/challenges.jpg"],
   },
 };
