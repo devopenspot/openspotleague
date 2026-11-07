@@ -119,9 +119,10 @@ export function MapController({
           () => isMounted.current,
         );
       },
-      fitRadius: (radiusMeters) => {
-        if (!userLocation || !Number.isFinite(radiusMeters) || radiusMeters <= 0) return;
-        const bounds = L.latLng(userLocation.lat, userLocation.lon).toBounds(radiusMeters * 2);
+      fitRadius: (radiusMeters, center) => {
+        const origin = center ?? userLocation;
+        if (!origin || !Number.isFinite(radiusMeters) || radiusMeters <= 0) return;
+        const bounds = L.latLng(origin.lat, origin.lon).toBounds(radiusMeters * 2);
         safeMapCall(map, () => {
           const options = {
             padding: FIT_PADDING,

@@ -201,6 +201,11 @@ interface LeafletCanvasProps {
   disableInitialFit?: boolean;
   selectedCity?: string | null;
   cityCenter?: [number, number] | null;
+  /**
+   * Focus deep-link target (`/map?…&spot=<id>`). Drawn as active while no
+   * popup is open, so phones (which open bar-first) still mark the spot.
+   */
+  focusedSpotId?: string | null;
 }
 
 function MapCityRecenterController({
@@ -305,6 +310,7 @@ export function LeafletCanvas({
   disableInitialFit = false,
   selectedCity,
   cityCenter,
+  focusedSpotId = null,
 }: LeafletCanvasProps) {
   const activeId = useMapStore((s) => s.activePinId);
   const activeEventId = useMapStore((s) => s.activeEventId);
@@ -419,7 +425,10 @@ export function LeafletCanvas({
             <SpotMarker
               key={item.key}
               spot={item.spot}
-              isActive={activeId === item.spot.id}
+              isActive={
+                activeId === item.spot.id ||
+                (activeId === null && focusedSpotId === item.spot.id)
+              }
               isSaved={savedIds.has(item.spot.id)}
               showWeather={isWeatherEnabled}
               weather={weather[item.spot.id]}

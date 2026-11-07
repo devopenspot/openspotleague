@@ -206,7 +206,7 @@ describe("SpotDetailsLocation", () => {
     expect(trainLink.className).toContain("text-on-primary");
 
     // View on map is secondary CTA
-    const mapLink = screen.getByRole("link", { name: /view largo do intendente spot on the map/i });
+    const mapLink = screen.getByRole("link", { name: /view largo do intendente spot and spots around it on the map/i });
     expect(mapLink.className).toContain("bg-surface-container-high");
     expect(mapLink.className).toContain("text-on-surface");
     expect(mapLink.className).not.toContain("bg-primary");

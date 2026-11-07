@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { Spot } from "@/lib/types";
 import { useSpotsStore } from "@/stores/spots-store";
 import { useMapStore } from "@/stores/map-store";
@@ -11,8 +11,16 @@ vi.mock("@/components/ui/AppImage", () => ({
   ),
 }));
 
+const { clearActivePinMock } = vi.hoisted(() => ({
+  clearActivePinMock: vi.fn(),
+}));
+
 vi.mock("@/components/map/hooks/use-map-actions", () => ({
-  useMapActions: () => ({ clearActivePin: vi.fn() }),
+  useMapActions: () => ({ clearActivePin: clearActivePinMock }),
+}));
+
+vi.mock("@/hooks/preferences/useDistanceUnit", () => ({
+  useDistanceUnit: () => "mi",
 }));
 
 const mockWeatherSummary = vi.fn().mockReturnValue(null);
@@ -73,8 +81,10 @@ beforeEach(() => {
     countrySpots: [],
     citySpots: [],
     nearbySpots: [],
+    areaSpots: [],
   });
   useMapStore.setState({ activePinId: null, activeEventId: null });
+  clearActivePinMock.mockClear();
 });
 
 describe("MapInfoPopup active spot resolution", () => {
@@ -163,5 +173,70 @@ describe("MapInfoPopup active spot resolution", () => {
     expect(screen.getByRole("button", { name: /confirm on-site weather/i })).toBeTruthy();
     expect(screen.getByText("4")).toBeTruthy();
     mockWeatherSummary.mockReturnValue(null);
+  });
+});
+
+describe("MapInfoPopup around the focused spot", () => {
+  const origin = {
+    id: "sopo",
+    name: "SOPO SKATEPARK",
+    lat: 4.907,
+    lon: -73.942,
+  };
+
+  it("shows the dialog for a pin pointing at an area-only spot", () => {
+    const areaOnlySpot = { ...countryOnlySpot, id: "area-1", name: "Area Spot" };
+    useSpotsStore.setState({ areaSpots: [areaOnlySpot] });
+    useMapStore.setState({ activePinId: areaOnlySpot.id });
+
+    render(<MapInfoPopup events={[]} aroundOrigin={origin} />);
+
+    expect(screen.getByRole("dialog", { hidden: false })).toBeTruthy();
+    expect(screen.getByText("Area Spot")).toBeTruthy();
+  });
+
+  it("shows the distance from the focused spot for a neighbour", () => {
+    useSpotsStore.setState({ spots: [countryOnlySpot] });
+    useMapStore.setState({ activePinId: countryOnlySpot.id });
+
+    render(<MapInfoPopup events={[]} aroundOrigin={origin} />);
+
+    expect(screen.getByText(/^\d+(\.\d)? MI from$/)).toBeTruthy();
+    expect(screen.getByText("SOPO SKATEPARK")).toBeTruthy();
+  });
+
+  it("hides the distance on the focused spot itself", () => {
+    useSpotsStore.setState({ spots: [countryOnlySpot] });
+    useMapStore.setState({ activePinId: countryOnlySpot.id });
+
+    render(
+      <MapInfoPopup
+        events={[]}
+        aroundOrigin={{ ...origin, id: countryOnlySpot.id }}
+      />,
+    );
+
+    expect(screen.queryByText(/ from$/)).toBeNull();
+  });
+
+  it("stays open on taps inside [data-map-keep-popup] and closes elsewhere", () => {
+    useSpotsStore.setState({ spots: [countryOnlySpot] });
+    useMapStore.setState({ activePinId: countryOnlySpot.id });
+
+    render(
+      <>
+        <div data-map-keep-popup="">
+          <button type="button">25 mi</button>
+        </div>
+        <p>map</p>
+        <MapInfoPopup events={[]} />
+      </>,
+    );
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "25 mi" }));
+    expect(clearActivePinMock).not.toHaveBeenCalled();
+
+    fireEvent.pointerDown(screen.getByText("map"));
+    expect(clearActivePinMock).toHaveBeenCalledTimes(1);
   });
 });

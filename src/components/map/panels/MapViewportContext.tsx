@@ -10,16 +10,22 @@ import {
 } from "react";
 import type { MapSpot } from "@/lib/types";
 
+/** Optional centre for `fitRadius`; defaults to the rider's location. */
+export interface MapRadiusCenter {
+  lat: number;
+  lon: number;
+}
+
 export interface MapViewportController {
   flyTo: (spot: MapSpot) => void;
   fitBoundsToVisibleItems: () => void;
-  fitRadius: (radiusMeters: number) => void;
+  fitRadius: (radiusMeters: number, center?: MapRadiusCenter) => void;
 }
 
 interface MapViewportContextValue {
   flyToSpot: (spot: MapSpot) => void;
   fitBoundsToVisibleItems: () => void;
-  fitRadius: (radiusMeters: number) => void;
+  fitRadius: (radiusMeters: number, center?: MapRadiusCenter) => void;
   registerController: (controller: MapViewportController | null) => void;
 }
 
@@ -40,7 +46,8 @@ export function MapViewportProvider({ children }: { children: ReactNode }) {
       flyToSpot: (spot) => controllerRef.current?.flyTo(spot),
       fitBoundsToVisibleItems: () =>
         controllerRef.current?.fitBoundsToVisibleItems(),
-      fitRadius: (radiusMeters) => controllerRef.current?.fitRadius(radiusMeters),
+      fitRadius: (radiusMeters, center) =>
+        controllerRef.current?.fitRadius(radiusMeters, center),
       registerController,
     }),
     [registerController],

@@ -47,12 +47,17 @@ export function formatDistanceMiles(miles: number): string {
   return `${Math.round(miles / 10) * 10} MI AWAY`;
 }
 
-export function formatDistance(meters: number, unit: DistanceUnit): string {
+/** "4.2 MI" / "12 KM": a distance with its unit, no "away" suffix. */
+export function formatDistanceValue(meters: number, unit: DistanceUnit): string {
   const value = metersToUnit(meters, unit);
-  const suffix = unit === "km" ? "KM AWAY" : "MI AWAY";
+  const suffix = unit === "km" ? "KM" : "MI";
   if (value < 10) return `${value.toFixed(1)} ${suffix}`;
   if (value < 100) return `${Math.round(value)} ${suffix}`;
   return `${Math.round(value / 10) * 10} ${suffix}`;
+}
+
+export function formatDistance(meters: number, unit: DistanceUnit): string {
+  return `${formatDistanceValue(meters, unit)} AWAY`;
 }
 
 export const SPOT_DISTANCE_CTA_LABEL = "DISTANCE";

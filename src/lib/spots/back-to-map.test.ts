@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildBackToMapUrl, buildBackToMapUrlFromParams } from "./back-to-map";
+import {
+  AROUND_DEFAULT_MILES,
+  buildBackToMapUrl,
+  buildBackToMapUrlFromParams,
+  readAroundMiles,
+} from "./back-to-map";
 import type { Region, Spot } from "@/lib/types";
 
 function createMockSpot(overrides: Partial<Spot> = {}): Spot {
@@ -46,7 +51,7 @@ describe("buildBackToMapUrl", () => {
     const url = buildBackToMapUrl(spot, mockRegions);
 
     expect(url).toBe(
-      "/map?country=united-states&city=new-york&region=north-america&spot=spot-123",
+      "/map?country=united-states&city=new-york&region=north-america&spot=spot-123&around=10",
     );
   });
 
@@ -54,7 +59,7 @@ describe("buildBackToMapUrl", () => {
     const spot = createMockSpot();
     const url = buildBackToMapUrl(spot);
 
-    expect(url).toBe("/map?country=united-states&city=new-york&spot=spot-123");
+    expect(url).toBe("/map?country=united-states&city=new-york&spot=spot-123&around=10");
   });
 
   it("handles spots without citySlug", () => {
@@ -62,7 +67,7 @@ describe("buildBackToMapUrl", () => {
     const url = buildBackToMapUrl(spot, mockRegions);
 
     expect(url).toBe(
-      "/map?country=united-states&region=north-america&spot=spot-123",
+      "/map?country=united-states&region=north-america&spot=spot-123&around=10",
     );
   });
 
@@ -72,7 +77,22 @@ describe("buildBackToMapUrl", () => {
     const url = buildBackToMapUrlFromParams(dummyParams, spot, mockRegions);
 
     expect(url).toBe(
-      "/map?country=united-states&city=new-york&region=north-america&spot=spot-123",
+      "/map?country=united-states&city=new-york&region=north-america&spot=spot-123&around=10",
     );
+  });
+});
+
+describe("readAroundMiles", () => {
+  const params = (value: string | null) => ({ get: () => value });
+
+  it("returns a valid radius option", () => {
+    expect(readAroundMiles(params("25"))).toBe(25);
+    expect(readAroundMiles(params("50"))).toBe(50);
+  });
+
+  it("falls back to the default for missing or tampered values", () => {
+    expect(readAroundMiles(params(null))).toBe(AROUND_DEFAULT_MILES);
+    expect(readAroundMiles(params("13"))).toBe(AROUND_DEFAULT_MILES);
+    expect(readAroundMiles(params("abc"))).toBe(AROUND_DEFAULT_MILES);
   });
 });

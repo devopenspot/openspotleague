@@ -153,3 +153,17 @@ describe("nearbySpots slice", () => {
   });
 });
 
+describe("areaSpots slice", () => {
+  it("sets the focus-area list independently of the nearby slice", () => {
+    const area = [{ id: "area-1" }, { id: "area-2" }] as unknown as readonly Spot[];
+    useSpotsStore.setState({ nearbySpots: [], areaSpots: [] });
+
+    useSpotsStore.getState().setAreaSpots(area);
+
+    expect(useSpotsStore.getState().areaSpots).toBe(area);
+    expect(useSpotsStore.getState().nearbySpots).toEqual([]);
+
+    useSpotsStore.getState().setAreaSpots([]);
+    expect(useSpotsStore.getState().areaSpots).toEqual([]);
+  });
+});
