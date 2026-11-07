@@ -256,7 +256,7 @@ export function buildAwardResult(
 
   const copy = buildCopy(game, winner, ranked, soloRow, totals);
   const imageSrc = game.mode === "challenge" ? "/challenges.jpg" : "/trainings.jpg";
-  const imageAlt = `${game.mode === "challenge" ? "Challenge" : "Training"} award \u2014 ${game.disciplineSlug} \u00B7 championship results`;
+  const imageAlt = `${game.mode === "challenge" ? "Battle" : "Training"} award \u2014 ${game.disciplineSlug} \u00B7 championship results`;
 
   return {
     gameId: game.id,

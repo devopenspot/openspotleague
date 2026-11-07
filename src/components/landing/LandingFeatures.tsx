@@ -187,7 +187,7 @@ export function LandingFeatures() {
               Add a Spot
             </Link>
             <Link
-              href={ROUTES.login}
+              href={ROUTES.league}
               className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-2 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-surface transition-colors hover:bg-surface-container-high"
             >
               Join the League

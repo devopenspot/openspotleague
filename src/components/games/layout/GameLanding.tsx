@@ -31,13 +31,15 @@ type Ranking = {
   tricksLanded: number;
 };
 
-// Centralized UI copy using template literals — single source for all user-visible strings
+// User-visible strings for the landing page.
 const UI_COPY = {
   yourGames: `Your games`,
   yourRecord: `Your record`,
   setupTitle: `Set up your game`,
-  challengeRecord: `Challenge record`,
+  modeHint: `Training works anywhere and is saved to your history. Battles are verified at a registered spot and earn leaderboard points.`,
+  challengeRecord: `Battle record`,
   gameNotFound: `That code didn't match a game. Check it with your friend and try again.`,
+  gameUnavailable: `That game has ended or is full. Ask your friend for a new code.`,
   loading: `Loading`,
   unavailable: `Unavailable`,
   newRider: `New Rider`,
@@ -52,9 +54,9 @@ const UI_COPY = {
     suffix: `.`,
     fallback: `Pick Roller, Skateboard, BMX or Scooter — your elimination word appears here.`,
   },
-  rankingErrorTitle: `ranking request failed`,
-  apiRankingPath: `/api/ranking/me`,
 } as const;
+
+const RANKING_PATH = "/api/ranking/me";
 
 const UI_TEMPLATES = {
   eliminationWordAria: (word: string) => `Elimination word ${word}`,
@@ -76,7 +78,13 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   const [gamesOpen, setGamesOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
   const searchParams = useNextSearchParams();
-  const joinFailed = searchParams.get("error") === "game-not-found";
+  const joinError = searchParams.get("error");
+  const joinFailedMessage =
+    joinError === "game-not-found"
+      ? UI_COPY.gameNotFound
+      : joinError === "game-unavailable"
+        ? UI_COPY.gameUnavailable
+        : null;
   const prefill = useMemo(() => parseGamePrefill(searchParams), [searchParams]);
   const preferredSport = usePreferencesStore((s) => s.preferredSport);
   const preferencesHydrationStatus = usePreferencesStore(
@@ -106,9 +114,9 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   useEffect(() => {
     if (!signedIn) return;
     const controller = new AbortController();
-    void fetch(UI_COPY.apiRankingPath, { signal: controller.signal })
+    void fetch(RANKING_PATH, { signal: controller.signal })
       .then(async (response) => {
-        if (!response.ok) throw new Error(UI_COPY.rankingErrorTitle);
+        if (!response.ok) throw new Error("ranking request failed");
         return response.json() as Promise<Ranking>;
       })
       .then((value) => setRanking(value))
@@ -139,12 +147,12 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               </button>
             ) : null}
           </div>
-          {joinFailed ? (
+          {joinFailedMessage ? (
             <p
               role="alert"
               className="mt-2 rounded-lg border-2 border-error bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container"
             >
-              {UI_COPY.gameNotFound}
+              {joinFailedMessage}
             </p>
           ) : null}
           {resumableGame ? (
@@ -190,6 +198,9 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               >
                 {UI_COPY.setupTitle}
               </h2>
+              <p className="mt-1 text-sm leading-6 text-on-primary/80">
+                {UI_COPY.modeHint}
+              </p>
               <GameCreateForm signedIn={signedIn} initialPrefill={prefill} />
             </div>
           </section>
@@ -206,7 +217,7 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
       />
       {signedIn ? (
         <MatchesDrawer isOpen={gamesOpen} onClose={() => setGamesOpen(false)}>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 pt-4 pb-20">
             <RiderProgressContent
               ranking={ranking}
               rankingError={rankingError}
@@ -286,7 +297,7 @@ function RiderProgressContent({
   return (
     <>
       <div
-        className={`min-w-0 rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 mb-20`}
+        className={`min-w-0 rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5`}
       >
         <div className={`flex items-start justify-between gap-3 sm:gap-4`}>
           <p
@@ -327,7 +338,7 @@ function RiderProgressContent({
           <Stat value={ranking?.tricksLanded ?? 0} label={UI_COPY.landed} />
         </dl>
       </div>
-      <div className={`min-w-0 overflow-hidden rounded-[16px] bg-on-surface`}>
+      <div className={`min-w-0 overflow-hidden rounded-container bg-on-surface`}>
         <RiderActivityBoard data={activity} headingId={activityHeadingId} />
       </div>
     </>

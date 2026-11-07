@@ -46,8 +46,8 @@ export function RulesModal({
       <div className="grid gap-6 p-6 sm:grid-cols-2">
         <Rule
           number="01"
-          title="Verify"
-           copy="Ranked riders check in at the registered spot before each round. Casual games skip location checks."
+          title="Check in"
+          copy="In a battle, every rider checks in at the registered spot before each round. Training skips location checks."
         />
         <Rule
           number="02"
@@ -62,7 +62,7 @@ export function RulesModal({
         <Rule
           number="04"
           title="Track"
-           copy="A failed response adds the next letter of your discipline's word. Complete BLADE, SKATE, BIKE or SCOOT and you are out."
+          copy="A missed response adds the next letter of your discipline's word. Complete BLADE, SKATE, BIKE or SCOOT and you are out."
         />
       </div>
       <div className="flex justify-end border-t border-outline p-6">

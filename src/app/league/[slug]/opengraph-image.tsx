@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { findEventBySlug } from "@/lib/services/event/events";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
-import { OG_SIZE } from "@/lib/og/config";
+import { OG_SIZE, contestOgCard } from "@/lib/og/config";
 import { loadPublicImageAsDataUrl } from "@/lib/og/images";
 
 export const alt = "Contest — Open Spot League";
@@ -21,7 +21,7 @@ export default async function Image({
     null,
     "findEventBySlug(og-image)",
   );
-  const leagueDataUrl = await loadPublicImageAsDataUrl("/opengraph.png");
+  const leagueDataUrl = await loadPublicImageAsDataUrl("/logo.png");
 
   if (!event) {
     return new ImageResponse(
@@ -63,10 +63,12 @@ export default async function Image({
     );
   }
 
+  // The contest's own cover wins; otherwise the League card, or the
+  // results card once the contest is completed (docs/og-cards.md).
   const eventImageSrc =
     event.image && /^https?:\/\//.test(event.image)
       ? event.image
-      : leagueDataUrl;
+      : await loadPublicImageAsDataUrl(contestOgCard(event.status));
 
   return new ImageResponse(
     <div

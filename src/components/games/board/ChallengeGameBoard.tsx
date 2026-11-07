@@ -1,5 +1,6 @@
 "use client";
 
+import { ATTEMPT_RESULT_LABEL } from "@/lib/games/labels";
 import { useState } from "react";
 import {
   Check,
@@ -69,7 +70,7 @@ export function ChallengeGameBoard({
         className={
           isPanel
             ? "flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-container-lowest"
-            : "overflow-hidden rounded-[16px] border border-outline-variant bg-surface-container-lowest"
+            : "overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest"
         }
       >
         <h2 id="challenge-route-title" className="sr-only">
@@ -97,7 +98,7 @@ export function ChallengeGameBoard({
               aria-label={stageListLabel}
               className={
                 isPanel
-                  ? "flex min-h-0 flex-1 flex-col divide-y divide-outline-variant overflow-y-auto overscroll-contain rounded-[12px] border border-outline-variant bg-surface-container-lowest"
+                  ? "flex min-h-0 flex-1 flex-col divide-y divide-outline-variant overflow-y-auto overscroll-contain rounded-card border border-outline-variant bg-surface-container-lowest"
                   : "divide-y divide-outline-variant border-y border-outline-variant"
               }
             >
@@ -285,8 +286,9 @@ function ChallengeStageRow({
           </div>
         ) : isCurrent && resultAction ? (
           <div
-            className="mt-2.5 hidden items-center gap-2 md:flex"
+            role="group"
             aria-label={resultAction.label}
+            className="mt-2.5 hidden items-center gap-2 md:flex"
           >
             <button
               type="button"
@@ -304,7 +306,7 @@ function ChallengeStageRow({
               className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-full border-2 border-on-surface bg-surface-container-lowest px-5 font-display text-sm font-bold uppercase tracking-[0.05em] text-on-surface hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
             >
               <X size={18} strokeWidth={2.5} aria-hidden="true" />
-              Failed
+              Missed
             </button>
             {canAdvanceToNextTrick && onNextTrick ? (
               <button
@@ -325,7 +327,7 @@ function ChallengeStageRow({
         {isCurrent && stage.attempts.length > 0 ? (
           <div
             className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-1.5"
-            aria-label={`Stage ${stage.sequence} rider results`}
+            aria-label={`Round ${stage.sequence} rider results`}
           >
             <span className="mr-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
               {game.trainingVariant === "solo" ? "Result" : "Responses"}
@@ -339,7 +341,7 @@ function ChallengeStageRow({
                   key={attempt.playerId}
                   className={`rounded-[6px] border px-1.5 py-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em] ${attempt.result === "landed" ? "border-on-surface bg-on-surface text-surface" : "border-outline-variant bg-surface-container-high text-on-surface-variant"}`}
                 >
-                  {player?.displayName ?? "Rider"} / {attempt.result}
+                  {player?.displayName ?? "Rider"} / {ATTEMPT_RESULT_LABEL[attempt.result]}
                 </span>
               );
             })}
@@ -349,7 +351,7 @@ function ChallengeStageRow({
         {isCurrent && game.mode === "challenge" && stage.scores.length > 0 ? (
           <div
             className="mt-1.5 flex flex-wrap items-center gap-1 sm:mt-2 sm:gap-1.5"
-            aria-label={`Stage ${stage.sequence} points posted`}
+            aria-label={`Round ${stage.sequence} points posted`}
           >
             <span className="mr-0.5 font-display text-sm md:text-[11px] font-semibold uppercase tracking-[0.05em] text-secondary">
               Points
@@ -377,7 +379,7 @@ function ChallengeStageRow({
             labelledBy={instructionsTitleId}
             describedBy={instructionsDescriptionId}
             contentId={instructionsContentId}
-            panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-[16px] border border-outline-variant bg-surface-container-lowest p-6"
+            panelClassName="mx-5 w-[min(32rem,calc(100vw-2.5rem))] rounded-container border border-outline-variant bg-surface-container-lowest p-6"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">

@@ -87,6 +87,14 @@ Workers ties sockets and promises to the request that created them, so the Node 
 - Local Hyperdrive runs on Node and connects without verifying the certificate, so it has no pooling or query cache. Production Hyperdrive must keep query caching disabled: it would otherwise serve reads up to 60 seconds old, which breaks `expectedVersion` checks and polling. The app's own cache layers handle caching.
 - Node scripts are unaffected and keep using the pooler URLs.
 
+## Game location rules
+
+- **Training** never requires a location. The rider can play anywhere, tag a nearby spot (verified within 250 m like a battle, with weather as an optional journal note), add a new spot, or type a free-text place name (`game_sessions.spot_label`, training only, never together with `spot_id`). Training never awards points.
+- **Battle (challenge)** requires a spot, and every rider is verified within 250 m of it (the creator at create time, the joiner through `verifyGameLocation`). Weather confirmation is required. With no spot nearby, setup offers to add the place inline (`QuickAddSpotForm` posts to `POST /api/spots` with `autoAddress=true`, and the server reverse-geocodes city and address) or to play as Training.
+- Nearest-spot lookups (`findNearbyChallengeSpot`, `findNearestChallengeSpotRow`) match public, non-hidden spots plus the requesting rider's own personal spots. Signed-in answers from `/api/games/nearby-spot` are `private, no-store`.
+- **Community rule:** a spot a rider adds starts `personal`. It becomes `public` once `COMMUNITY_PROMOTION_THRESHOLD` (2) distinct riders vouch for it, either by submitting a spot within 300 m or by verifying their location there in a battle (`confirmCommunitySpot`, `src/lib/repositories/spot/community-promotion.ts`, which runs inside the game transaction).
+- **Points** (`awardScoreEvent`) are awarded only when the battle's spot is public at resolution time (`isRankedSpot`). A battle at a still-personal spot records stats but no ranking points.
+
 ## Deletion lifecycle
 
 - Deletes of spots and TV entries go through `deleteWithOccAudit` (`src/lib/repositories/core/occ-delete.ts`). It enforces `expectedDate` (If-Match) against `updatedAt` and writes to `content_audit_log`.

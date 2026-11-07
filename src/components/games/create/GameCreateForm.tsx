@@ -40,15 +40,19 @@ import {
   GameFormatSettings,
   CategoriesField,
   SetupProgress,
+  SetupSummaryCard,
   ChallengeTimeStep,
   ChallengeSpotStep,
+  TrainingPlaceStep,
+  type TrainingPlace,
   WeatherConfirmSection,
   ConfigurationSummary,
   CreateSubmitButton,
   FieldError,
   SPORT_REQUIRED_MESSAGE,
-  getEmptySpotTypesMessage,
 } from "./form-parts";
+import { QuickAddSpotForm } from "./QuickAddSpotForm";
+import { controlClass } from "@/components/ui/recipes";
 
 import type { Spot, WeatherIconName } from "@/lib/types";
 import {
@@ -63,6 +67,7 @@ import {
 } from "@/lib/games/guest";
 import { loadLastSetup, saveLastSetup } from "@/lib/games/last-setup";
 import { showToast } from "@/hooks/ui/useToast";
+import { weatherLabel } from "@/lib/games/labels";
 import {
   computeLevelsForSpotAndCategories,
   countEligibleTricks,
@@ -80,27 +85,29 @@ const GUEST_NICKNAME_SETUP_ID = "guest-nickname-setup";
 const GAME_SPORT_CARD_ID = "game-sport-card";
 const GAME_SPORTS = ["skateboard", "bmx", "scooter", "roller"] as const;
 const GUEST_NAME_STORAGE_KEY = "openspot-guest-name";
-const CHALLENGE_SETUP_STEPS = [
-  { id: "settings", label: "Player", title: "Who & how you play" },
-  { id: "trick", label: "Trick", title: "Pick spot, level & categories" },
+type SetupStepDef = { id: GameSetupStep; label: string; title: string };
+const GUEST_SETUP_STEP: SetupStepDef = {
+  id: "settings",
+  label: "Rider",
+  title: "Your name in the lobby",
+};
+const TRAINING_SETUP_STEPS: readonly SetupStepDef[] = [
+  { id: "trick", label: "Trick", title: "Spot type, level & rules" },
+  { id: "spot", label: "Place", title: "Where you're riding" },
+  { id: "confirm", label: "Confirm", title: "Summary" },
+];
+const CHALLENGE_SETUP_STEPS: readonly SetupStepDef[] = [
+  { id: "trick", label: "Trick", title: "Spot type, level & rules" },
   { id: "time", label: "Time", title: "When the lobby opens" },
-  { id: "spot", label: "Spot", title: "Verify the spot" },
+  { id: "spot", label: "Spot", title: "Confirm the spot" },
   { id: "confirm", label: "Confirm", title: "Weather & summary" },
-] as const satisfies ReadonlyArray<{
-  id: GameSetupStep;
-  label: string;
-  title: string;
-}>;
-const TRAINING_SETUP_STEPS = [
-  { id: "settings", label: "Player", title: "Who & how you play" },
-  { id: "trick", label: "Trick", title: "Pick spot, level & categories" },
-  { id: "spot", label: "Spot", title: "Choose where to record" },
-  { id: "confirm", label: "Confirm", title: "Weather & summary" },
-] as const satisfies ReadonlyArray<{
-  id: GameSetupStep;
-  label: string;
-  title: string;
-}>;
+];
+
+/** Guests type a rider name first; signed-in riders start on the trick step. */
+function setupStepsFor(mode: GameMode, signedIn: boolean): readonly SetupStepDef[] {
+  if (mode === "challenge") return CHALLENGE_SETUP_STEPS;
+  return signedIn ? TRAINING_SETUP_STEPS : [GUEST_SETUP_STEP, ...TRAINING_SETUP_STEPS];
+}
 
 function moveRadioFocus(
   event: KeyboardEvent<HTMLButtonElement>,
@@ -117,7 +124,6 @@ function moveRadioFocus(
   select(nextIndex);
   document.getElementById(ids[nextIndex] ?? "")?.focus();
 }
-void moveRadioFocus;
 
 function getStoredGuestName() {
   if (typeof window === "undefined") return "";
@@ -208,6 +214,12 @@ export function GameCreateForm({
   const [nearbySpot, setNearbySpot] = useState<Spot | null>(null);
   const [spotAccepted, setSpotAccepted] = useState<boolean | null>(null);
   const [trainingSpotEnabled, setTrainingSpotEnabled] = useState(false);
+  // Training journal: a free-text place name instead of a verified spot.
+  const [trainingLabelEnabled, setTrainingLabelEnabled] = useState(false);
+  const [spotLabel, setSpotLabel] = useState("");
+  // A spot the rider just added from this form; keeps the nearby lookup
+  // from replacing it while their GPS fix keeps updating.
+  const [quickAddedSpot, setQuickAddedSpot] = useState<Spot | null>(null);
   const [weatherConfirmed, setWeatherConfirmed] = useState<boolean | null>(
     null,
   );
@@ -413,7 +425,7 @@ export function GameCreateForm({
     mode === "challenge" || (mode === "training" && trainingSpotEnabled);
 
   useEffect(() => {
-    if (prefillSpot) return;
+    if (prefillSpot || quickAddedSpot) return;
     if (
       !needsSpot ||
       locationStatus !== "granted" ||
@@ -471,6 +483,7 @@ export function GameCreateForm({
     trainingSpotEnabled,
     signedIn,
     prefillSpot,
+    quickAddedSpot,
   ]);
 
   const selectedSpot = nearbySpot;
@@ -645,51 +658,32 @@ export function GameCreateForm({
     availableSpotTypes.length === 0 ||
     !selectedSpotType;
   const prefillPending = Boolean(initialPrefill?.spotId && prefillLoading);
-  const requiresWeather =
-    needsSpot && Boolean(selectedSpot) && spotAccepted === true;
-  const weatherPending =
-    requiresWeather &&
-    (weatherConfirmed === null ||
-      (weatherConfirmed === false && !weatherObservedIcon) ||
-      !forecastWeather);
+  const trainingPlace: TrainingPlace = trainingSpotEnabled
+    ? "spot"
+    : trainingLabelEnabled
+      ? "label"
+      : "none";
+  const normalizedSpotLabel = spotLabel.trim().slice(0, 80);
+  // Disabled only while loading: everything else is explained by validation
+  // on submit, which focuses the first missing answer.
   const createDisabled =
     busy ||
     prefillPending ||
     !discipline ||
     Boolean(activeOptionsError) ||
-    hasMissingOptions ||
-    (mode === "challenge" &&
-      (locationLoading ||
-        locationStatus !== "granted" ||
-        !location ||
-        !selectedSpot ||
-        spotAccepted !== true)) ||
-    (mode === "training" &&
-      trainingSpotEnabled &&
-      (locationLoading ||
-        locationStatus !== "granted" ||
-        !location ||
-        !selectedSpot ||
-        spotAccepted !== true)) ||
-    weatherPending;
-  const trainingStepIndex = Math.max(
+    hasMissingOptions;
+  const setupSteps = setupStepsFor(mode, signedIn);
+  const firstSetupStep = setupSteps[0]?.id ?? "trick";
+  // "settings" means "start": signed-in riders land on their first real step.
+  const activeSetupStep = setupSteps.some((step) => step.id === setupStep)
+    ? setupStep
+    : firstSetupStep;
+  const setupStepIndex = Math.max(
     0,
-    TRAINING_SETUP_STEPS.findIndex((step) => step.id === setupStep),
+    setupSteps.findIndex((step) => step.id === activeSetupStep),
   );
-  const challengeStepIndex = Math.max(
-    0,
-    CHALLENGE_SETUP_STEPS.findIndex((step) => step.id === setupStep),
-  );
-  const setupStepIndex =
-    mode === "training" ? trainingStepIndex : challengeStepIndex;
-  const setupStepCount =
-    mode === "training"
-      ? TRAINING_SETUP_STEPS.length
-      : CHALLENGE_SETUP_STEPS.length;
-  const setupStepDetails =
-    mode === "training"
-      ? (TRAINING_SETUP_STEPS[trainingStepIndex] ?? TRAINING_SETUP_STEPS[0])
-      : (CHALLENGE_SETUP_STEPS[challengeStepIndex] ?? CHALLENGE_SETUP_STEPS[0]);
+  const setupStepCount = setupSteps.length;
+  const setupStepDetails = setupSteps[setupStepIndex] ?? GUEST_SETUP_STEP;
 
   useEffect(() => {
     if (!setupOpen) return;
@@ -716,6 +710,7 @@ export function GameCreateForm({
       // keep spot state but do not auto-enable; user opts in
     } else {
       setTrainingSpotEnabled(false);
+      setTrainingLabelEnabled(false);
       // Challenge can't start without a spot, so ask for location from this tap.
       if (locationStatus !== "granted") void retryLocation();
     }
@@ -749,6 +744,34 @@ export function GameCreateForm({
     ) {
       void retryLocation();
     }
+  }
+
+  function handleTrainingPlaceChange(place: TrainingPlace) {
+    setTrainingLabelEnabled(place === "label");
+    const wantsSpot = place === "spot";
+    if (wantsSpot !== trainingSpotEnabled) handleTrainingSpotToggle(wantsSpot);
+  }
+
+  function handleQuickAddCreated(spot: Spot) {
+    setQuickAddedSpot(spot);
+    setNearbySpot(spot);
+    handleSpotAcceptance(true);
+    showToast(`${spot.name} added. It is personal until another rider checks in.`, "success");
+  }
+
+  function renderQuickAdd(context: "challenge" | "training") {
+    if (!signedIn || !discipline || !activeOptions) return undefined;
+    return (
+      <QuickAddSpotForm
+        location={location ?? null}
+        disciplineSlug={discipline}
+        spotTypes={activeOptions.spotTypes}
+        defaultSpotType={effectiveSpotType || null}
+        context={context}
+        onCreated={handleQuickAddCreated}
+        parseSpot={parseNearbySpot}
+      />
+    );
   }
 
   function handleSpotTypeChange(nextSpotType: string) {
@@ -812,8 +835,14 @@ export function GameCreateForm({
   }
 
   function handleWeatherConfirm(confirmed: boolean) {
-    setWeatherConfirmed(confirmed);
-    if (confirmed) setWeatherObservedIcon(null);
+    // Training weather is optional: a second tap on the chosen answer clears it.
+    if (mode === "training" && weatherConfirmed === confirmed) {
+      setWeatherConfirmed(null);
+      setWeatherObservedIcon(null);
+    } else {
+      setWeatherConfirmed(confirmed);
+      if (confirmed) setWeatherObservedIcon(null);
+    }
     setFieldErrors((current) => ({
       ...current,
       weather: undefined,
@@ -835,6 +864,7 @@ export function GameCreateForm({
 
   async function retryLocation() {
     setError(null);
+    setQuickAddedSpot(null);
     setNearbySpot(null);
     setSpotAccepted(null);
     setLocationLoading(true);
@@ -872,7 +902,7 @@ export function GameCreateForm({
     }
     // Game AND logic: level ∧ spotType ∧ categories must have at least one trick
     if (eligibleTrickCount !== null && eligibleTrickCount === 0) {
-      nextErrors.categories = `No tricks for Level ${effectiveLevel} at ${effectiveSpotType} with ${selectedCategories.join(", ")} — switch to All, change level/spot, or pick another category.`;
+      nextErrors.categories = `No tricks for Level ${effectiveLevel} on ${selectedSpotType?.name ?? "this spot type"} with ${selectedCategories.join(", ")}. Pick All, another level or another spot type.`;
     }
 
     return nextErrors;
@@ -884,8 +914,8 @@ export function GameCreateForm({
       return {
         spot:
           mode === "challenge"
-            ? "Accept the nearby spot to create the challenge."
-            : "Accept the nearby spot to record this training.",
+            ? "Accept the nearby spot to create the battle."
+            : "Accept the nearby spot, add one, or pick Anywhere.",
       };
     }
     return {};
@@ -893,6 +923,11 @@ export function GameCreateForm({
 
   function getWeatherErrors(): FieldErrors {
     if (!needsSpot || !selectedSpot || spotAccepted !== true) return {};
+    if (mode === "training") {
+      return weatherConfirmed === false && !weatherObservedIcon
+        ? { weatherObserved: "Pick the live weather, or tap No again to skip." }
+        : {};
+    }
     if (weatherConfirmed === null) {
       return {
         weather: "Confirm whether the forecast matches the live weather.",
@@ -998,7 +1033,7 @@ export function GameCreateForm({
   }
 
   function advanceSetup() {
-    const nextErrors = validateSetupStep(setupStep);
+    const nextErrors = validateSetupStep(activeSetupStep);
     if (Object.keys(nextErrors).length > 0) {
       window.setTimeout(() => {
         const dialog = document.getElementById(GAME_SETUP_DIALOG_ID);
@@ -1006,44 +1041,21 @@ export function GameCreateForm({
       }, 0);
       return;
     }
-
-    let nextStep: GameSetupStep;
-    if (mode === "training") {
-      if (setupStep === "settings") nextStep = "trick";
-      else if (setupStep === "trick") nextStep = "spot";
-      else if (setupStep === "spot") nextStep = "confirm";
-      else nextStep = "confirm";
-    } else {
-      if (setupStep === "settings") nextStep = "trick";
-      else if (setupStep === "trick") nextStep = "time";
-      else if (setupStep === "time") nextStep = "spot";
-      else if (setupStep === "spot") nextStep = "confirm";
-      else nextStep = "confirm";
-    }
+    const next = setupSteps[setupStepIndex + 1]?.id ?? "confirm";
     setError(null);
-    setSetupStep(nextStep);
+    setSetupStep(next);
   }
 
   function retreatSetup() {
-    if (mode === "training") {
-      if (setupStep === "confirm") setSetupStep("spot");
-      else if (setupStep === "spot") setSetupStep("trick");
-      else if (setupStep === "trick") setSetupStep("settings");
-    } else {
-      if (setupStep === "confirm") setSetupStep("spot");
-      else if (setupStep === "spot") setSetupStep("time");
-      else if (setupStep === "time") setSetupStep("trick");
-      else if (setupStep === "trick") setSetupStep("settings");
-    }
+    const previous = setupSteps[setupStepIndex - 1]?.id;
+    if (previous) setSetupStep(previous);
     setError(null);
   }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    const finalStep: GameSetupStep =
-      mode === "training" ? "confirm" : "confirm";
-    if (setupOpen && setupStep !== finalStep) {
+    if (setupOpen && activeSetupStep !== "confirm") {
       advanceSetup();
       return;
     }
@@ -1185,15 +1197,31 @@ export function GameCreateForm({
                 }
               : {}),
           ...(mode === "training" &&
+          !trainingSpotEnabled &&
+          trainingLabelEnabled &&
+          normalizedSpotLabel
+            ? { spotLabel: normalizedSpotLabel }
+            : {}),
+          ...(mode === "training" &&
           trainingSpotEnabled &&
           selectedSpot &&
-          spotAccepted === true &&
-          forecastWeather
+          spotAccepted === true
             ? {
                 spotId: selectedSpot.id,
                 latitude: location?.lat,
                 longitude: location?.lon,
                 accuracyMeters: location?.accuracy,
+              }
+            : {}),
+          // Training weather is optional: sent only when the rider answered.
+          ...(mode === "training" &&
+          trainingSpotEnabled &&
+          selectedSpot &&
+          spotAccepted === true &&
+          forecastWeather &&
+          (weatherConfirmed === true ||
+            (weatherConfirmed === false && weatherObservedIcon))
+            ? {
                 weatherForecastIcon: forecastWeather.icon,
                 weatherForecastDescription:
                   forecastWeather.description ?? forecastWeather.icon,
@@ -1281,7 +1309,13 @@ export function GameCreateForm({
   const selectedSpotTypeLabel =
     selectedSpotType?.name ??
     (effectiveSpotType ? effectiveSpotType : "Choose a spot type");
-  const summarySpot = selectedSpot?.name ?? "Not selected";
+  const summarySpot =
+    selectedSpot?.name ??
+    (mode === "training"
+      ? trainingPlace === "label" && normalizedSpotLabel
+        ? normalizedSpotLabel
+        : "Anywhere"
+      : "Not selected");
   const summaryStart =
     CHALLENGE_START_OPTIONS.find((option) => option.value === startDelayMinutes)
       ?.title ?? "Not selected";
@@ -1291,10 +1325,12 @@ export function GameCreateForm({
       : !forecastWeather
         ? "Loading..."
         : weatherConfirmed === true
-          ? `Forecast ${forecastWeather.icon} confirmed`
+          ? `${weatherLabel(forecastWeather.icon)}, confirmed`
           : weatherConfirmed === false && weatherObservedIcon
-            ? `Observed ${weatherObservedIcon} (forecast ${forecastWeather.icon})`
-            : "Awaiting confirmation";
+            ? `${weatherLabel(weatherObservedIcon)} (forecast ${weatherLabel(forecastWeather.icon).toLowerCase()})`
+            : mode === "training"
+              ? "Not recorded"
+              : "Awaiting confirmation";
   const summaryProps = {
     mode,
     ruleMode,
@@ -1313,9 +1349,103 @@ export function GameCreateForm({
     selectedSpotType?.name,
     `Level ${effectiveLevel}`,
     ruleMode === "flexible" ? "Flexible" : "Strict",
+    mode === "training"
+      ? trainingPlace === "label" && normalizedSpotLabel
+        ? `@ ${normalizedSpotLabel}`
+        : trainingPlace === "spot"
+          ? selectedSpot && spotAccepted
+            ? `@ ${selectedSpot.name}`
+            : "At a spot"
+          : "Anywhere"
+      : null,
   ]
     .filter(Boolean)
     .join(" · ");
+
+  const disciplineSport = discipline
+    ? DISCIPLINE_TO_SPORT[discipline as keyof typeof DISCIPLINE_TO_SPORT]
+    : null;
+  const prefillSportMismatch = Boolean(
+    signedIn &&
+      prefillSpot &&
+      prefillSpot.sports.length > 0 &&
+      disciplineSport &&
+      !prefillSpot.sports.includes(disciplineSport),
+  );
+  const prefillNotices = (
+    <PrefillNotices
+      loading={prefillLoading}
+      error={prefillError}
+      mismatchSport={prefillSportMismatch ? disciplineSport : null}
+    />
+  );
+  const formatSettingsProps = {
+    hasDiscipline: Boolean(discipline),
+    optionsLoading,
+    activeOptionsError,
+    availableSpotTypes,
+    effectiveSpotType,
+    selectedSpotType,
+    effectiveLevel,
+    availableLevels,
+    levelCounts,
+    ruleMode,
+    fieldErrors,
+    onSpotTypeChange: handleSpotTypeChange,
+    onLevelChange: (nextLevel: TrickLevel) => {
+      setLevel(nextLevel);
+      clearFieldError("level");
+    },
+    onRuleModeChange: setRuleMode,
+  };
+  const categoriesProps = {
+    categories: availableCategories,
+    selectedCategories,
+    error: fieldErrors.categories,
+    onToggle: handleCategoryToggle,
+    onClear: () => {
+      setSelectedCategories([]);
+      clearFieldError("categories");
+    },
+    disabled: optionsLoading || !!activeOptionsError,
+    eligibleCount: eligibleTrickCount,
+    categoryCounts,
+  };
+  const spotStepProps = {
+    selectedSpot,
+    selectedDistanceMeters,
+    distanceUnit,
+    locationStatus,
+    locationLoading: locationLoading || prefillLoading,
+    spotAccepted,
+    fieldError: fieldErrors.spot,
+    onSpotAcceptance: handleSpotAcceptance,
+    onRetryLocation: () => void retryLocation(),
+  };
+  const weatherProps = {
+    forecastWeather,
+    weatherConfirmed,
+    weatherObservedIcon,
+    fieldError: fieldErrors.weather,
+    observedFieldError: fieldErrors.weatherObserved,
+    onConfirm: handleWeatherConfirm,
+    onObservedChange: handleWeatherObservedChange,
+    temperatureUnit,
+  };
+  const wizardSummaryRows: Array<[string, string]> = [
+    ["Spot type", selectedSpotType?.name ?? effectiveSpotType],
+    ["Level", `Level ${effectiveLevel}`],
+    ["Rules", ruleMode === "flexible" ? "Flexible" : "Strict"],
+    ["Categories", selectedCategories.length > 0 ? selectedCategories.join(", ") : "All"],
+    ...(needsSpot
+      ? ([["Spot", selectedSpot?.name ?? "Not selected"]] as Array<[string, string]>)
+      : trainingPlace === "label" && normalizedSpotLabel
+        ? ([["Place", normalizedSpotLabel]] as Array<[string, string]>)
+        : []),
+    ...(mode === "challenge"
+      ? ([["Start", summaryStart]] as Array<[string, string]>)
+      : []),
+  ];
 
   return (
     <section
@@ -1338,7 +1468,7 @@ export function GameCreateForm({
                 aria-describedby={
                   fieldErrors.discipline ? "game-discipline-error" : undefined
                 }
-                className={`scroll-mt-24 rounded-[16px] border bg-surface-container-lowest p-4 sm:p-5 ${
+                className={`scroll-mt-24 rounded-container border bg-surface-container-lowest p-4 sm:p-5 ${
                   discipline
                     ? "border-outline-variant"
                     : "border-primary ring-1 ring-primary"
@@ -1398,7 +1528,7 @@ export function GameCreateForm({
             <div
               role="group"
               aria-labelledby="game-mode-label"
-              className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
+              className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
             >
               <p
                 id="game-mode-label"
@@ -1467,9 +1597,9 @@ export function GameCreateForm({
                   href="/login"
                   className="font-display font-bold uppercase underline decoration-2 underline-offset-4"
                 >
-                  Sign in to unlock Challenge
+                  Sign in to unlock Battle
                 </Link>{" "}
-                games. Training is available to guests with a rider name.
+                games. Training is open to guests with a rider name.
               </p>
             ) : null}
             {initialPrefill?.mode === "challenge" && !signedIn ? (
@@ -1510,79 +1640,9 @@ export function GameCreateForm({
                   onChange={handleGuestNicknameChange}
                 />
               ) : null}
-              {prefillLoading ? (
-                <p
-                  role="status"
-                  aria-live="polite"
-                  className="rounded-[8px] border border-outline-variant bg-surface-container px-4 py-3 text-sm text-on-surface-variant"
-                >
-                  Loading spot…
-                </p>
-              ) : null}
-              {prefillError ? (
-                <p
-                  role="alert"
-                  className="rounded-[8px] bg-error-container px-4 py-3 text-sm text-on-error-container"
-                >
-                  {prefillError} You can still create a classic training without
-                  a spot.
-                </p>
-              ) : null}
-              {signedIn &&
-              prefillSpot &&
-              prefillSpot.sports.length > 0 &&
-              discipline &&
-              DISCIPLINE_TO_SPORT[
-                discipline as keyof typeof DISCIPLINE_TO_SPORT
-              ] &&
-              !prefillSpot.sports.includes(
-                DISCIPLINE_TO_SPORT[
-                  discipline as keyof typeof DISCIPLINE_TO_SPORT
-                ],
-              ) ? (
-                <p role="note" className="text-xs text-secondary">
-                  This spot isn&apos;t tagged for{" "}
-                  {
-                    DISCIPLINE_TO_SPORT[
-                      discipline as keyof typeof DISCIPLINE_TO_SPORT
-                    ]
-                  }{" "}
-                  — you can still create the game; available spot types are
-                  filtered to this spot.
-                </p>
-              ) : null}
-              <GameFormatSettings
-                idPrefix="desktop"
-                hasDiscipline={Boolean(discipline)}
-                optionsLoading={optionsLoading}
-                activeOptionsError={activeOptionsError}
-                availableSpotTypes={availableSpotTypes}
-                effectiveSpotType={effectiveSpotType}
-                selectedSpotType={selectedSpotType}
-                effectiveLevel={effectiveLevel}
-                availableLevels={availableLevels}
-                levelCounts={levelCounts}
-                ruleMode={ruleMode}
-                fieldErrors={fieldErrors}
-                onSpotTypeChange={handleSpotTypeChange}
-                onLevelChange={(nextLevel) => {
-                  setLevel(nextLevel);
-                  clearFieldError("level");
-                }}
-                onRuleModeChange={setRuleMode}
-                clearFieldError={clearFieldError}
-              />
-              <CategoriesField
-                categories={availableCategories}
-                selectedCategories={selectedCategories}
-                error={fieldErrors.categories}
-                onToggle={handleCategoryToggle}
-                disabled={optionsLoading || !!activeOptionsError}
-                eligibleCount={eligibleTrickCount}
-                effectiveSpotType={effectiveSpotType}
-                effectiveLevel={effectiveLevel}
-                categoryCounts={categoryCounts}
-              />
+              {prefillNotices}
+              <GameFormatSettings idPrefix="desktop" {...formatSettingsProps} />
+              <CategoriesField idPrefix="desktop" {...categoriesProps} />
 
               {mode === "challenge" ? (
                 <>
@@ -1593,84 +1653,37 @@ export function GameCreateForm({
                     timezone={timezone}
                   />
                   <ChallengeSpotStep
-                    selectedSpot={selectedSpot}
-                    selectedDistanceMeters={selectedDistanceMeters}
-                    distanceUnit={distanceUnit}
-                    locationStatus={locationStatus}
-                    locationLoading={locationLoading || prefillLoading}
-                    spotAccepted={spotAccepted}
-                    fieldError={fieldErrors.spot}
-                    onSpotAcceptance={handleSpotAcceptance}
+                    {...spotStepProps}
                     onContinueTraining={() => handleModeChange("training")}
-                    onRetryLocation={() => void retryLocation()}
+                    quickAdd={renderQuickAdd("challenge")}
                   />
                   {selectedSpot && spotAccepted === true ? (
-                    <WeatherConfirmSection
-                      idPrefix="desktop"
-                      forecastWeather={forecastWeather}
-                      weatherConfirmed={weatherConfirmed}
-                      weatherObservedIcon={weatherObservedIcon}
-                      fieldError={fieldErrors.weather}
-                      observedFieldError={fieldErrors.weatherObserved}
-                      onConfirm={handleWeatherConfirm}
-                      onObservedChange={handleWeatherObservedChange}
-                      temperatureUnit={temperatureUnit}
-                    />
+                    <WeatherConfirmSection idPrefix="desktop" {...weatherProps} />
                   ) : null}
                 </>
               ) : null}
               {mode === "training" ? (
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={trainingSpotEnabled}
-                      onChange={(event) =>
-                        handleTrainingSpotToggle(event.target.checked)
-                      }
-                      className="mt-1 h-4 w-4 rounded border-outline-variant accent-primary"
-                    />
-                    <span className="min-w-0">
-                      <span className="block font-display text-xs font-bold uppercase tracking-[0.05em]">
-                        Record at registered spot
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-on-surface-variant">
-                        Attach this training to the nearby spot and confirm live
-                        weather. This powers the spot&apos;s current weather and
-                        your session record.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              ) : null}
-              {mode === "training" && trainingSpotEnabled ? (
-                <>
+                <TrainingPlaceStep
+                  idPrefix="desktop-"
+                  place={trainingPlace}
+                  spotLabel={spotLabel}
+                  onPlaceChange={handleTrainingPlaceChange}
+                  onSpotLabelChange={setSpotLabel}
+                >
                   <ChallengeSpotStep
-                    selectedSpot={selectedSpot}
-                    selectedDistanceMeters={selectedDistanceMeters}
-                    distanceUnit={distanceUnit}
-                    locationStatus={locationStatus}
-                    locationLoading={locationLoading || prefillLoading}
-                    spotAccepted={spotAccepted}
-                    fieldError={fieldErrors.spot}
-                    onSpotAcceptance={handleSpotAcceptance}
-                    onContinueTraining={() => handleTrainingSpotToggle(false)}
-                    onRetryLocation={() => void retryLocation()}
+                    context="training"
+                    {...spotStepProps}
+                    onContinueTraining={() => handleTrainingPlaceChange("none")}
+                    quickAdd={renderQuickAdd("training")}
                   />
                   {selectedSpot && spotAccepted === true ? (
                     <WeatherConfirmSection
                       idPrefix="desktop-training"
-                      forecastWeather={forecastWeather}
-                      weatherConfirmed={weatherConfirmed}
-                      weatherObservedIcon={weatherObservedIcon}
-                      fieldError={fieldErrors.weather}
-                      observedFieldError={fieldErrors.weatherObserved}
-                      onConfirm={handleWeatherConfirm}
-                      onObservedChange={handleWeatherObservedChange}
-                      temperatureUnit={temperatureUnit}
+                      optional
+                      {...weatherProps}
                     />
                   ) : null}
-                </>
+                </TrainingPlaceStep>
               ) : null}
             </div>
 
@@ -1742,7 +1755,7 @@ export function GameCreateForm({
               ? "Creating game..."
               : mode === "training"
                 ? "Start Training"
-                : "Create Challenge"}
+                : "Create Battle"}
           </button>
         )}
       </div>
@@ -1754,7 +1767,7 @@ export function GameCreateForm({
         describedBy={GAME_SETUP_DESCRIPTION_ID}
         contentId={GAME_SETUP_DIALOG_ID}
         containerClassName="lg:hidden"
-        panelClassName="mx-4 my-4 flex h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[16px] border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
+        panelClassName="mx-4 my-4 flex h-[calc(100dvh-2rem)] w-[min(42rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-container border border-outline-variant bg-surface shadow-[0_16px_48px_rgba(18,18,18,0.16)] sm:mx-auto"
       >
         <div className="flex items-start justify-between gap-4 border-b border-outline-variant p-4 sm:p-6">
           <div className="min-w-0">
@@ -1768,7 +1781,7 @@ export function GameCreateForm({
               tabIndex={-1}
               className="mt-2 font-display text-3xl font-bold uppercase leading-none outline-none"
             >
-              {mode === "training" ? "Start training" : "Create challenge"}
+              {mode === "training" ? "Start training" : "Create battle"}
             </h2>
             <p
               id={GAME_SETUP_DESCRIPTION_ID}
@@ -1783,647 +1796,88 @@ export function GameCreateForm({
             disabled={busy}
           />
         </div>
-        <SetupProgress
-          currentStep={setupStep}
-          steps={
-            mode === "training" ? TRAINING_SETUP_STEPS : CHALLENGE_SETUP_STEPS
-          }
-        />
+        <SetupProgress currentStep={activeSetupStep} steps={setupSteps} />
         <div
           ref={setupContentRef}
           className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6"
         >
-          {mode === "training" ? (
-            setupStep === "settings" ? (
-              <div className="space-y-6">
-                {!signedIn ? (
-                  <GuestNicknameField
-                    id={GUEST_NICKNAME_SETUP_ID}
-                    value={guestNickname}
-                    error={fieldErrors.guestNickname}
-                    onChange={handleGuestNicknameChange}
-                  />
-                ) : null}
-                <div
-                  role="group"
-                  aria-labelledby="mobile-challenge-rule-mode-label"
-                  className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
-                >
-                  <p
-                    id="mobile-challenge-rule-mode-label"
-                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-                  >
-                    Rule mode
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                    Flexible: leader can move on. Strict: challenge stays open.
-                  </p>
-                  <div
-                    className="mt-3 flex flex-wrap gap-2"
-                    role="radiogroup"
-                    aria-label="Rule mode"
-                  >
-                    <OptionChip
-                      active={ruleMode === "flexible"}
-                      label="Flexible"
-                      role="radio"
-                      ariaChecked={ruleMode === "flexible"}
-                      onClick={() => setRuleMode("flexible")}
-                    />
-                    <OptionChip
-                      active={ruleMode === "strict"}
-                      label="Strict"
-                      role="radio"
-                      ariaChecked={ruleMode === "strict"}
-                      onClick={() => setRuleMode("strict")}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : setupStep === "trick" ? (
-              <div className="space-y-6">
-                {prefillLoading ? (
-                  <p
-                    role="status"
-                    aria-live="polite"
-                    className="rounded-[8px] border border-outline-variant bg-surface-container px-4 py-3 text-sm text-on-surface-variant"
-                  >
-                    Loading spot…
-                  </p>
-                ) : null}
-                {prefillError ? (
-                  <p
-                    role="alert"
-                    className="rounded-[8px] bg-error-container px-4 py-3 text-sm text-on-error-container"
-                  >
-                    {prefillError} You can still create a classic training
-                    without a spot.
-                  </p>
-                ) : null}
-                {signedIn &&
-                prefillSpot &&
-                prefillSpot.sports.length > 0 &&
-                discipline &&
-                DISCIPLINE_TO_SPORT[
-                  discipline as keyof typeof DISCIPLINE_TO_SPORT
-                ] &&
-                !prefillSpot.sports.includes(
-                  DISCIPLINE_TO_SPORT[
-                    discipline as keyof typeof DISCIPLINE_TO_SPORT
-                  ],
-                ) ? (
-                  <p role="note" className="text-xs text-secondary">
-                    This spot isn&apos;t tagged for{" "}
-                    {
-                      DISCIPLINE_TO_SPORT[
-                        discipline as keyof typeof DISCIPLINE_TO_SPORT
-                      ]
-                    }{" "}
-                    — you can still create the game; available spot types are
-                    filtered to this spot.
-                  </p>
-                ) : null}
-                <div
-                  role="group"
-                  aria-labelledby="mobile-challenge-spot-type-label"
-                  className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
-                >
-                  <p
-                    id="mobile-challenge-spot-type-label"
-                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-                  >
-                    Spot type
-                  </p>
-                  {optionsLoading ? (
-                    <div
-                      className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
-                      aria-label="Loading spot types"
-                    />
-                  ) : activeOptionsError ? (
-                    <p
-                      className="mt-3 rounded-[8px] bg-error-container px-3 py-3 text-sm text-on-error-container"
-                      role="alert"
-                    >
-                      {activeOptionsError}
-                    </p>
-                  ) : availableSpotTypes.length === 0 ? (
-                    <p className="mt-3 rounded-[8px] bg-surface-container px-3 py-3 text-sm text-on-surface-variant">
-                      {getEmptySpotTypesMessage(Boolean(discipline))}
-                    </p>
-                  ) : (
-                    <div
-                      className="mt-3 flex flex-wrap gap-2"
-                      role="radiogroup"
-                      aria-label="Spot type"
-                    >
-                      {availableSpotTypes.map((option, index) => (
-                        <OptionChip
-                          key={option.slug}
-                          active={effectiveSpotType === option.slug}
-                          label={option.name}
-                          role="radio"
-                          ariaChecked={effectiveSpotType === option.slug}
-                          invalid={Boolean(fieldErrors.spotType) && index === 0}
-                          onClick={() => handleSpotTypeChange(option.slug)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {fieldErrors.spotType ? (
-                    <FieldError>{fieldErrors.spotType}</FieldError>
-                  ) : null}
-                </div>
-                <div
-                  role="group"
-                  aria-labelledby="mobile-challenge-level-label"
-                  className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
-                >
-                  <p
-                    id="mobile-challenge-level-label"
-                    className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-                  >
-                    Level
-                  </p>
-                  <div
-                    className="mt-3 flex flex-wrap gap-2"
-                    role="radiogroup"
-                    aria-label="Trick level"
-                  >
-                    {([1, 2, 3, 4, 5] as const).map((option, index) => {
-                      const hasData = levelCounts
-                        ? Array.from(levelCounts.values()).some((v) => v > 0)
-                        : false;
-                      return (
-                        <OptionChip
-                          key={option}
-                          active={effectiveLevel === option}
-                          label={
-                            hasData
-                              ? `Level ${option} (${levelCounts?.get(option) ?? 0})`
-                              : `Level ${option}`
-                          }
-                          role="radio"
-                          ariaChecked={effectiveLevel === option}
-                          disabled={
-                            !selectedSpotType ||
-                            !availableLevels.includes(option)
-                          }
-                          invalid={Boolean(fieldErrors.level) && index === 0}
-                          onClick={() => {
-                            setLevel(option);
-                            clearFieldError("level");
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                  {fieldErrors.level ? (
-                    <FieldError>{fieldErrors.level}</FieldError>
-                  ) : null}
-                </div>
-                <CategoriesField
-                  categories={availableCategories}
-                  selectedCategories={selectedCategories}
-                  error={fieldErrors.categories}
-                  onToggle={handleCategoryToggle}
-                  disabled={optionsLoading || !!activeOptionsError}
-                  eligibleCount={eligibleTrickCount}
-                  effectiveSpotType={effectiveSpotType}
-                  categoryCounts={categoryCounts}
-                  effectiveLevel={effectiveLevel}
-                />
-              </div>
-            ) : setupStep === "spot" ? (
-              <div className="space-y-6">
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-low p-4">
-                  <p className="font-display text-sm font-bold uppercase">
-                    Where will you ride?
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                    Training can be open play or anchored to a registered spot.
-                    Anchoring records weather and powers the spot&apos;s live
-                    status.
-                  </p>
-                </div>
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={trainingSpotEnabled}
-                      onChange={(event) =>
-                        handleTrainingSpotToggle(event.target.checked)
-                      }
-                      className="mt-1 h-4 w-4 rounded border-outline-variant accent-primary"
-                    />
-                    <span className="min-w-0">
-                      <span className="block font-display text-xs font-bold uppercase tracking-[0.05em]">
-                        Record at registered spot
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-on-surface-variant">
-                        Attach this training to the nearby spot and confirm live
-                        weather. This powers the spot&apos;s current weather and
-                        your session record.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-                {trainingSpotEnabled ? (
-                  <ChallengeSpotStep
-                    selectedSpot={selectedSpot}
-                    selectedDistanceMeters={selectedDistanceMeters}
-                    distanceUnit={distanceUnit}
-                    locationStatus={locationStatus}
-                    locationLoading={locationLoading || prefillLoading}
-                    spotAccepted={spotAccepted}
-                    fieldError={fieldErrors.spot}
-                    onSpotAcceptance={handleSpotAcceptance}
-                    onContinueTraining={() => handleTrainingSpotToggle(false)}
-                    onRetryLocation={() => void retryLocation()}
-                  />
-                ) : (
-                  <div className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low px-4 py-4">
-                    <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-                      Open training
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      No spot required. Continue to confirm and start the lobby.
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {trainingSpotEnabled &&
-                selectedSpot &&
-                spotAccepted === true ? (
-                  <>
-                    <WeatherConfirmSection
-                      forecastWeather={forecastWeather}
-                      weatherConfirmed={weatherConfirmed}
-                      weatherObservedIcon={weatherObservedIcon}
-                      fieldError={fieldErrors.weather}
-                      observedFieldError={fieldErrors.weatherObserved}
-                      onConfirm={handleWeatherConfirm}
-                      onObservedChange={handleWeatherObservedChange}
-                      temperatureUnit={temperatureUnit}
-                    />
-                    <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-                      <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-                        Summary
-                      </p>
-                      <dl className="mt-3 space-y-2 text-xs">
-                        <div className="flex justify-between gap-4">
-                          <dt className="text-on-surface-variant">Spot type</dt>
-                          <dd className="font-display font-bold uppercase">
-                            {selectedSpotType?.name ?? effectiveSpotType}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <dt className="text-on-surface-variant">Level</dt>
-                          <dd className="font-display font-bold uppercase">
-                            Level {effectiveLevel}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <dt className="text-on-surface-variant">
-                            Categories
-                          </dt>
-                          <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
-                            {selectedCategories.length > 0
-                              ? selectedCategories.join(", ")
-                              : "All"}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <dt className="text-on-surface-variant">Spot</dt>
-                          <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
-                            {selectedSpot.name}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                  </>
-                ) : trainingSpotEnabled ? (
-                  <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-                    <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-                      Spot required
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      Go back and accept the nearby spot to record weather. Or
-                      disable recording to start open training.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="rounded-[16px] border border-outline-variant bg-surface-container-low p-4">
-                    <p className="font-display text-sm font-bold uppercase">
-                      Ready to start
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      Training will start as open play without a registered
-                      spot.
-                    </p>
-                    <dl className="mt-4 space-y-2 rounded-[8px] border border-outline-variant bg-surface-container-lowest p-3 text-xs">
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Spot type</dt>
-                        <dd className="font-display font-bold uppercase">
-                          {selectedSpotType?.name ?? effectiveSpotType}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Level</dt>
-                        <dd className="font-display font-bold uppercase">
-                          Level {effectiveLevel}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Categories</dt>
-                        <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
-                          {selectedCategories.length > 0
-                            ? selectedCategories.join(", ")
-                            : "All"}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                )}
-              </div>
-            )
-          ) : setupStep === "settings" ? (
+          {activeSetupStep === "settings" ? (
             <div className="space-y-6">
-              <div
-                role="group"
-                aria-labelledby="mobile-training-rule-mode-label"
-                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
-              >
-                <p
-                  id="mobile-training-rule-mode-label"
-                  className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-                >
-                  Rule mode
-                </p>
-                <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                  Flexible: leader can move on. Strict: challenge stays open.
-                </p>
-                <div
-                  className="mt-3 flex flex-wrap gap-2"
-                  role="radiogroup"
-                  aria-label="Rule mode"
-                >
-                  <OptionChip
-                    active={ruleMode === "flexible"}
-                    label="Flexible"
-                    role="radio"
-                    ariaChecked={ruleMode === "flexible"}
-                    onClick={() => setRuleMode("flexible")}
-                  />
-                  <OptionChip
-                    active={ruleMode === "strict"}
-                    label="Strict"
-                    role="radio"
-                    ariaChecked={ruleMode === "strict"}
-                    onClick={() => setRuleMode("strict")}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : setupStep === "trick" ? (
-            <div className="space-y-6">
-              {prefillLoading ? (
-                <p
-                  role="status"
-                  aria-live="polite"
-                  className="rounded-[8px] border border-outline-variant bg-surface-container px-4 py-3 text-sm text-on-surface-variant"
-                >
-                  Loading spot…
-                </p>
-              ) : null}
-              {prefillError ? (
-                <p
-                  role="alert"
-                  className="rounded-[8px] bg-error-container px-4 py-3 text-sm text-on-error-container"
-                >
-                  {prefillError} You can still create a classic training without
-                  a spot.
-                </p>
-              ) : null}
-              {signedIn &&
-              prefillSpot &&
-              prefillSpot.sports.length > 0 &&
-              discipline &&
-              DISCIPLINE_TO_SPORT[
-                discipline as keyof typeof DISCIPLINE_TO_SPORT
-              ] &&
-              !prefillSpot.sports.includes(
-                DISCIPLINE_TO_SPORT[
-                  discipline as keyof typeof DISCIPLINE_TO_SPORT
-                ],
-              ) ? (
-                <p role="note" className="text-xs text-secondary">
-                  This spot isn&apos;t tagged for{" "}
-                  {
-                    DISCIPLINE_TO_SPORT[
-                      discipline as keyof typeof DISCIPLINE_TO_SPORT
-                    ]
-                  }{" "}
-                  — you can still create the game; available spot types are
-                  filtered to this spot.
-                </p>
-              ) : null}
-              <div
-                role="group"
-                aria-labelledby="challenge-step-spot-type-label"
-                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
-              >
-                <p
-                  id="challenge-step-spot-type-label"
-                  className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-                >
-                  Spot type
-                </p>
-                {optionsLoading ? (
-                  <div
-                    className="mt-3 h-11  rounded-[16px] border border-outline-variant bg-surface-container"
-                    aria-label="Loading spot types"
-                  />
-                ) : activeOptionsError ? (
-                  <p
-                    className="mt-3 rounded-[8px] bg-error-container px-3 py-3 text-sm text-on-error-container"
-                    role="alert"
-                  >
-                    {activeOptionsError}
-                  </p>
-                ) : availableSpotTypes.length === 0 ? (
-                  <p className="mt-3 rounded-[8px] bg-surface-container px-3 py-3 text-sm text-on-surface-variant">
-                    {getEmptySpotTypesMessage(Boolean(discipline))}
-                  </p>
-                ) : (
-                  <div
-                    className="mt-3 flex flex-wrap gap-2"
-                    role="radiogroup"
-                    aria-label="Spot type"
-                  >
-                    {availableSpotTypes.map((option, index) => (
-                      <OptionChip
-                        key={option.slug}
-                        active={effectiveSpotType === option.slug}
-                        label={option.name}
-                        role="radio"
-                        ariaChecked={effectiveSpotType === option.slug}
-                        invalid={Boolean(fieldErrors.spotType) && index === 0}
-                        onClick={() => handleSpotTypeChange(option.slug)}
-                      />
-                    ))}
-                  </div>
-                )}
-                {fieldErrors.spotType ? (
-                  <FieldError>{fieldErrors.spotType}</FieldError>
-                ) : null}
-              </div>
-              <div
-                role="group"
-                aria-labelledby="challenge-step-level-label"
-                className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5"
-              >
-                <p
-                  id="challenge-step-level-label"
-                  className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary"
-                >
-                  Level
-                </p>
-                <div
-                  className="mt-3 flex flex-wrap gap-2"
-                  role="radiogroup"
-                  aria-label="Trick level"
-                >
-                  {([1, 2, 3, 4, 5] as const).map((option, index) => {
-                    const hasData = levelCounts
-                      ? Array.from(levelCounts.values()).some((v) => v > 0)
-                      : false;
-                    return (
-                      <OptionChip
-                        key={option}
-                        active={effectiveLevel === option}
-                        label={
-                          hasData
-                            ? `Level ${option} (${levelCounts?.get(option) ?? 0})`
-                            : `Level ${option}`
-                        }
-                        role="radio"
-                        ariaChecked={effectiveLevel === option}
-                        disabled={
-                          !selectedSpotType || !availableLevels.includes(option)
-                        }
-                        invalid={Boolean(fieldErrors.level) && index === 0}
-                        onClick={() => {
-                          setLevel(option);
-                          clearFieldError("level");
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-                {fieldErrors.level ? (
-                  <FieldError>{fieldErrors.level}</FieldError>
-                ) : null}
-              </div>
-              <CategoriesField
-                categories={availableCategories}
-                selectedCategories={selectedCategories}
-                error={fieldErrors.categories}
-                onToggle={handleCategoryToggle}
-                disabled={optionsLoading || !!activeOptionsError}
-                eligibleCount={eligibleTrickCount}
-                effectiveSpotType={effectiveSpotType}
-                categoryCounts={categoryCounts}
-                effectiveLevel={effectiveLevel}
+              <GuestNicknameField
+                id={GUEST_NICKNAME_SETUP_ID}
+                value={guestNickname}
+                error={fieldErrors.guestNickname}
+                onChange={handleGuestNicknameChange}
               />
             </div>
-          ) : setupStep === "time" ? (
+          ) : activeSetupStep === "trick" ? (
+            <div className="space-y-6">
+              {prefillNotices}
+              <GameFormatSettings idPrefix="mobile" {...formatSettingsProps} />
+              <CategoriesField idPrefix="mobile" {...categoriesProps} />
+            </div>
+          ) : activeSetupStep === "time" ? (
             <ChallengeTimeStep
               startDelayMinutes={startDelayMinutes}
               onStartDelayChange={setStartDelayMinutes}
               timezone={timezone}
             />
-          ) : setupStep === "spot" ? (
+          ) : activeSetupStep === "spot" ? (
             <div className="space-y-6">
-              <ChallengeSpotStep
-                selectedSpot={selectedSpot}
-                selectedDistanceMeters={selectedDistanceMeters}
-                distanceUnit={distanceUnit}
-                locationStatus={locationStatus}
-                locationLoading={locationLoading || prefillLoading}
-                spotAccepted={spotAccepted}
-                fieldError={fieldErrors.spot}
-                onSpotAcceptance={handleSpotAcceptance}
-                onContinueTraining={() => handleModeChange("training")}
-                onRetryLocation={() => void retryLocation()}
-              />
+              {mode === "training" ? (
+                <TrainingPlaceStep
+                  place={trainingPlace}
+                  spotLabel={spotLabel}
+                  onPlaceChange={handleTrainingPlaceChange}
+                  onSpotLabelChange={setSpotLabel}
+                >
+                  <ChallengeSpotStep
+                    context="training"
+                    {...spotStepProps}
+                    onContinueTraining={() => handleTrainingPlaceChange("none")}
+                    quickAdd={renderQuickAdd("training")}
+                  />
+                </TrainingPlaceStep>
+              ) : (
+                <ChallengeSpotStep
+                  {...spotStepProps}
+                  onContinueTraining={() => handleModeChange("training")}
+                  quickAdd={renderQuickAdd("challenge")}
+                />
+              )}
             </div>
           ) : (
             <div className="space-y-6">
-              {selectedSpot && spotAccepted === true ? (
+              {needsSpot && selectedSpot && spotAccepted === true ? (
                 <>
                   <WeatherConfirmSection
-                    forecastWeather={forecastWeather}
-                    weatherConfirmed={weatherConfirmed}
-                    weatherObservedIcon={weatherObservedIcon}
-                    fieldError={fieldErrors.weather}
-                    observedFieldError={fieldErrors.weatherObserved}
-                    onConfirm={handleWeatherConfirm}
-                    onObservedChange={handleWeatherObservedChange}
-                    temperatureUnit={temperatureUnit}
+                    optional={mode === "training"}
+                    {...weatherProps}
                   />
-                  <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
-                    <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-                      Summary
-                    </p>
-                    <dl className="mt-3 space-y-2 text-xs">
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Spot type</dt>
-                        <dd className="font-display font-bold uppercase">
-                          {selectedSpotType?.name ?? effectiveSpotType}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Level</dt>
-                        <dd className="font-display font-bold uppercase">
-                          Level {effectiveLevel}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Categories</dt>
-                        <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
-                          {selectedCategories.length > 0
-                            ? selectedCategories.join(", ")
-                            : "All"}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Spot</dt>
-                        <dd className="max-w-[10rem] truncate text-right font-display font-bold uppercase">
-                          {selectedSpot.name}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <dt className="text-on-surface-variant">Start</dt>
-                        <dd className="font-display font-bold uppercase">
-                          {CHALLENGE_START_OPTIONS.find(
-                            (o) => o.value === startDelayMinutes,
-                          )?.title ?? ""}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
+                  <SetupSummaryCard rows={wizardSummaryRows} />
                 </>
-              ) : (
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+              ) : needsSpot ? (
+                <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
                   <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
                     Spot required
                   </p>
                   <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                    Accept the nearby spot to confirm weather. Go back to the
-                    Spot step.
+                    {mode === "training"
+                      ? "Go back and accept the nearby spot or add it to the map. Or pick Anywhere to start open training."
+                      : "Go back to the Spot step and accept the nearby spot, or add it to the map."}
                   </p>
+                </div>
+              ) : (
+                <div className="rounded-container border border-outline-variant bg-surface-container-low p-4">
+                  <p className="font-display text-sm font-bold uppercase">
+                    Ready to start
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+                    {trainingPlace === "label" && normalizedSpotLabel
+                      ? `Logged at ${normalizedSpotLabel}. No location check in training.`
+                      : "Training will start as open play. Any place works."}
+                  </p>
+                  <SetupSummaryCard rows={wizardSummaryRows} nested />
                 </div>
               )}
             </div>
@@ -2438,26 +1892,24 @@ export function GameCreateForm({
           ) : null}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant p-4 sm:p-6">
-          {(mode === "training" && setupStep !== "settings") ||
-          (mode === "challenge" && setupStep !== "settings") ? (
+          {activeSetupStep !== firstSetupStep ? (
             <button
               type="button"
               onClick={retreatSetup}
               disabled={busy}
-              className="min-h-12 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-colors hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-50"
+              className={controlClass("secondary")}
             >
               Back
             </button>
           ) : (
             <span aria-hidden="true" />
           )}
-          {(mode === "training" && setupStep !== "confirm") ||
-          (mode === "challenge" && setupStep !== "confirm") ? (
+          {activeSetupStep !== "confirm" ? (
             <button
               type="button"
               onClick={advanceSetup}
               disabled={busy}
-              className="min-h-12 rounded-full border border-primary bg-primary px-5 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-primary shadow-[0_8px_24px_rgba(18,18,18,0.12)] transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-not-allowed disabled:border-outline-variant disabled:bg-surface-container-high disabled:text-on-surface-variant disabled:shadow-none"
+              className={controlClass("primary")}
             >
               Continue
             </button>
@@ -2474,5 +1926,43 @@ export function GameCreateForm({
       </Overlay>
       <GameTransitionLoader isOpen={busy} variant="creating" mode={mode} />
     </section>
+  );
+}
+
+function PrefillNotices({
+  loading,
+  error,
+  mismatchSport,
+}: {
+  loading: boolean;
+  error: string | null;
+  mismatchSport: string | null;
+}) {
+  return (
+    <>
+      {loading ? (
+        <p
+          role="status"
+          aria-live="polite"
+          className="rounded-[8px] border border-outline-variant bg-surface-container px-4 py-3 text-sm text-on-surface-variant"
+        >
+          Loading spot…
+        </p>
+      ) : null}
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-[8px] bg-error-container px-4 py-3 text-sm text-on-error-container"
+        >
+          {error} You can still start a training without a spot.
+        </p>
+      ) : null}
+      {mismatchSport ? (
+        <p role="note" className="text-xs text-secondary">
+          This spot isn&apos;t tagged for {mismatchSport}. You can still create
+          the game; spot types are limited to the ones this spot has.
+        </p>
+      ) : null}
+    </>
   );
 }

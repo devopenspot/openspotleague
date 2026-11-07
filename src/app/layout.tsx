@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { cn } from "@/lib/utils/cn";
 import { env } from "@/lib/config/env";
+import { OG_IMAGES } from "@/lib/og/config";
 import { getServerUserFromCookies } from "@/lib/auth/auth";
 import { listRegions } from "@/lib/services/spot/regions";
 import { listSpotTypes } from "@/lib/services/spot/spot-types";
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
       "Is a directory and activity board for riders to maintain a consistent training routine and discover new spots to ride.",
     images: [
       {
-        url: "/opengraph.png",
+        url: OG_IMAGES.default,
         width: 1200,
         height: 630,
         alt: "OpenSpot League",
@@ -76,7 +77,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Open Spot League",
     description: "Discover Spots & Track your Training.",
-    images: ["/opengraph.png"],
+    images: [OG_IMAGES.default],
   },
   robots: {
     index: true,

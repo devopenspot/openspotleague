@@ -528,6 +528,8 @@ export const gameSessions = pgTable(
     // challenge/training CHECKs below stay strict for every other write path.
     spotRemoved: boolean("spot_removed").notNull().default(false),
     spotNameSnapshot: text("spot_name_snapshot"),
+    // Free-text training journal place (0008). Training only, never with spot_id.
+    spotLabel: text("spot_label"),
     spotCitySnapshot: text("spot_city_snapshot"),
     scheduledStartAt: timestamp("scheduled_start_at", { withTimezone: true }),
     timezone: text("timezone"),
@@ -611,6 +613,7 @@ export const gameSessions = pgTable(
       (${t.disciplineSlug} = 'bmx' and ${t.challengeKey} = 'bike' and ${t.gameName} = 'Play a Bike' and ${t.eliminationWord} = 'BIKE' and ${t.wordLength} = 4) or
       (${t.disciplineSlug} = 'scooter' and ${t.challengeKey} = 'scoot' and ${t.gameName} = 'Play a Scoot' and ${t.eliminationWord} = 'SCOOT' and ${t.wordLength} = 5)
     )`),
+    check("game_sessions_spot_label_check", sql`${t.spotLabel} is null or (${t.mode} = 'training' and ${t.spotId} is null and char_length(${t.spotLabel}) between 1 and 80)`),
     check("game_sessions_next_level_check", sql`${t.nextLevel} is null or ${t.nextLevel} between 1 and 5`),
     check("game_sessions_version_check", sql`${t.version} >= 0`),
     check("game_sessions_rotation_index_check", sql`${t.rotationIndex} >= 0`),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { loadGuestToken } from "@/lib/games/guest";
 import {
   gameListResponseSchema,
@@ -11,6 +11,8 @@ import {
 export type MyGamesState = {
   games: GameListItem[];
   status: "loading" | "ready" | "error";
+  /** Loads the list again (after an error). */
+  reload?: () => void;
 };
 
 const LOADING_STATE: MyGamesState = { games: [], status: "loading" };
@@ -23,6 +25,7 @@ export function useMyGames({
   enabled?: boolean;
 }): MyGamesState {
   const [state, setState] = useState<MyGamesState>(LOADING_STATE);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!enabled) return;
@@ -41,9 +44,14 @@ export function useMyGames({
         }
       });
     return () => controller.abort();
-  }, [enabled, limit]);
+  }, [enabled, limit, attempt]);
 
-  return state;
+  const reload = useCallback(() => {
+    setState(LOADING_STATE);
+    setAttempt((value) => value + 1);
+  }, []);
+
+  return { ...state, reload };
 }
 
 export type ResumableGame = {

@@ -68,8 +68,11 @@ describe("GET /api/games/nearby-spot", () => {
       latitude: 40.4168,
       longitude: -3.7038,
       disciplineSlug: "skateboard",
+      viewerUserId: "user-1",
     })
     expect(enforceRateLimitMock).toHaveBeenCalledWith(expect.any(NextRequest), identity)
+    // A signed-in answer may include the rider's own personal spots.
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
   })
 
   it("returns an empty spot when no compatible place is nearby", async () => {

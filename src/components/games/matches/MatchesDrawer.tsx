@@ -14,7 +14,7 @@ export function MatchesDrawer({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  /** Rendered above the list. */
+  /** Rendered below the list (record, activity). */
   children?: ReactNode;
 }) {
   return (
@@ -34,8 +34,8 @@ export function MatchesDrawer({
         onClose={onClose}
       />
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
-        {children}
         <MatchList bare limit={100} />
+        {children}
       </div>
     </SideDrawer>
   );

@@ -222,6 +222,9 @@ export const gameStateSchema = z.object({
   wordLength: z.union([z.literal(4), z.literal(5)]),
   catalogId: z.string().min(1).nullable(),
   spotId: z.string().min(1).nullable(),
+  spotLabel: z.string().min(1).nullable().optional(),
+  /** Registered spot's name (or its snapshot once removed), for display. */
+  spotName: z.string().min(1).nullable().optional(),
   scheduledStartAt: wireDateSchema.nullable(),
   timezone: z.string().min(1).nullable(),
   locationRadiusMeters: z.number().finite().positive().nullable(),
@@ -273,6 +276,8 @@ export const gameListItemSchema = z.object({
   disciplineSlug: disciplineSlugSchema,
   gameName: z.string().min(1),
   spotId: z.string().min(1).nullable(),
+  spotLabel: z.string().min(1).nullable().optional(),
+  spotName: z.string().min(1).nullable().optional(),
   scheduledStartAt: wireDateSchema.nullable(),
   nextSpotType: z.string().min(1),
   version: z.number().int().nonnegative(),
@@ -345,6 +350,7 @@ function validateWeather(
     weatherConfirmed?: boolean
   },
   context: z.RefinementCtx,
+  options: { required: boolean },
 ) {
   if (!input.spotId) {
     if (input.weatherForecastIcon !== undefined || input.weatherConfirmed !== undefined || input.weatherObservedIcon !== undefined) {
@@ -352,6 +358,13 @@ function validateWeather(
     }
     return
   }
+  // Training treats weather as an optional journal note: skipped entirely is
+  // fine, but a partial report still has to be coherent.
+  const reported =
+    input.weatherForecastIcon !== undefined ||
+    input.weatherConfirmed !== undefined ||
+    input.weatherObservedIcon !== undefined
+  if (!options.required && !reported) return
   if (input.weatherForecastIcon === undefined) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["weatherForecastIcon"], message: "Forecast weather is required when a spot is attached" })
   }
@@ -399,6 +412,8 @@ export const createGameInputSchema = z.discriminatedUnion("mode", [
     ...categoriesField,
     disciplineSlug: disciplineSlugSchema,
     spotId: z.string().min(1).optional(),
+    /** Free-text place name for the training journal; no location check. */
+    spotLabel: z.string().trim().min(1).max(80).optional(),
     latitude: z.number().finite().min(-90).max(90).optional(),
     longitude: z.number().finite().min(-180).max(180).optional(),
     accuracyMeters: z.number().finite().positive().optional(),
@@ -408,7 +423,12 @@ export const createGameInputSchema = z.discriminatedUnion("mode", [
   }).strict(),
 ]).superRefine((value, context) => {
   validateCreateFormat(value as Parameters<typeof validateCreateFormat>[0], context)
-  validateWeather(value as Parameters<typeof validateWeather>[0], context)
+  validateWeather(value as Parameters<typeof validateWeather>[0], context, {
+    required: value.mode === "challenge",
+  })
+  if (value.mode === "training" && value.spotId && value.spotLabel) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["spotLabel"], message: "Use either a registered spot or a spot name, not both" })
+  }
   if (value.mode === "training" && value.spotId) {
     if (value.latitude === undefined || value.longitude === undefined || value.accuracyMeters === undefined) {
       context.addIssue({ code: z.ZodIssueCode.custom, path: ["spotId"], message: "Location is required when a training spot is attached" })

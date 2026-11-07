@@ -116,4 +116,5 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - `docs/database.md`: environment, migrations, seeding, RBAC/RLS, realtime, storage.
 - `docs/notifications.md`: in-app and email notifications, the email policy, the outbox, AWS setup and runbook.
 - `docs/league.md`: League contests — routes, the contest hub, divisions and video contests, the Article 9 rating, leaderboards, public listing rule, plans and payment gate, covers, contest curation, write path, errors.
+- `docs/og-cards.md`: share (Open Graph) images — generated vs static, the `design/og-cards/` card sheet, export, shipping a card, scaling to generated images.
 - `docs/ui-conventions.md`: UI rules and component organization.

@@ -74,7 +74,7 @@ describe("spot metadata", () => {
     const result = await generateMetadata({
       params: Promise.resolve({ id: "spot-2" }),
     });
-    const expected = new URL("/opengraph.png", env.APP_URL).toString();
+    const expected = new URL("/og/og-default.png", env.APP_URL).toString();
 
     expect(result.openGraph).toMatchObject({
       images: [{ url: expected, alt: "Imageless Ledge" }],
@@ -88,7 +88,7 @@ describe("spot metadata", () => {
     const result = await generateMetadata({
       params: Promise.resolve({ id: "missing" }),
     });
-    const expected = new URL("/opengraph.png", env.APP_URL).toString();
+    const expected = new URL("/og/og-default.png", env.APP_URL).toString();
 
     expect(result.openGraph).toMatchObject({
       images: [{ url: expected, alt: "OpenSpot League" }],

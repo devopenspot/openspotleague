@@ -3,12 +3,20 @@ import { NextRequest } from "next/server"
 
 const listSpotsMock = vi.fn()
 const getSpotWeatherMock = vi.fn()
+const getSessionUserMock = vi.fn()
+const findSpotByIdForUserMock = vi.fn()
 
 vi.mock("@/lib/services/spot/spots", () => ({
   listSpots: (...args: unknown[]) => listSpotsMock(...args),
 }))
 vi.mock("@/lib/weather/weather-cached", () => ({
   getSpotWeather: (...args: unknown[]) => getSpotWeatherMock(...args),
+}))
+vi.mock("@/lib/auth/server", () => ({
+  getSessionUser: () => getSessionUserMock(),
+}))
+vi.mock("@/lib/services/spot/community-spots", () => ({
+  findSpotByIdForUser: (...args: unknown[]) => findSpotByIdForUserMock(...args),
 }))
 vi.mock("@/lib/utils/log", () => ({
   log: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
@@ -59,6 +67,8 @@ const weatherB = { ...weatherA, current: 15, icon: "cloudy" }
 
 beforeEach(() => {
   vi.resetAllMocks()
+  getSessionUserMock.mockResolvedValue(null)
+  findSpotByIdForUserMock.mockResolvedValue(null)
   listSpotsMock.mockResolvedValue({ items: [spotA, spotB], nextCursor: null })
   getSpotWeatherMock.mockImplementation(
     async (args: { spotId: string }) =>
@@ -135,5 +145,34 @@ describe("GET /api/weather", () => {
     listSpotsMock.mockRejectedValue(new Error("db down"))
     const res = await GET(makeRequest(`?spotIds=${spotA.id}`))
     expect(res.status).toBe(500)
+  })
+})
+
+describe("GET /api/weather for a rider's personal spot", () => {
+  it("serves the owner's personal spot privately", async () => {
+    listSpotsMock.mockResolvedValue({ items: [] })
+    getSessionUserMock.mockResolvedValue({ id: "rider-1" })
+    findSpotByIdForUserMock.mockResolvedValue({ ...spotA, visibility: "personal", createdBy: "rider-1" })
+    getSpotWeatherMock.mockResolvedValue(weatherA)
+
+    const res = await GET(makeRequest(`?spotIds=${spotA.id}`))
+
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ weather: { [spotA.id]: weatherA } })
+    expect(res.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(findSpotByIdForUserMock).toHaveBeenCalledWith(spotA.id, "rider-1")
+  })
+
+  it("does not resolve unknown spots for anonymous visitors", async () => {
+    listSpotsMock.mockResolvedValue({ items: [spotB] })
+    getSessionUserMock.mockResolvedValue(null)
+    getSpotWeatherMock.mockResolvedValue(weatherB)
+
+    const res = await GET(makeRequest(`?spotIds=${spotA.id},${spotB.id}`))
+
+    // The unknown id no longer stops the loop: spot B is still served.
+    expect(await res.json()).toEqual({ weather: { [spotB.id]: weatherB } })
+    expect(findSpotByIdForUserMock).not.toHaveBeenCalled()
+    expect(res.headers.get("Cache-Control")).toBe("public, s-maxage=120, stale-while-revalidate=300")
   })
 })

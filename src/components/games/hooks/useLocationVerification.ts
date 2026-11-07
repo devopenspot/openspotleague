@@ -4,13 +4,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
 import { VERIFICATION_LOCATION_OPTIONS } from "@/lib/geo/options";
 import type { GameState } from "@/lib/schemas/game";
+import { DEFAULT_LOCATION_RADIUS_METERS } from "@/lib/games/definitions";
+import { useDistanceUnit } from "@/hooks/preferences/useDistanceUnit";
+import { formatRadius } from "@/lib/spots/geo";
+import type { LocationPermission } from "@/components/games/layout/header-state";
 
-type LocationPermission =
-  | "unknown"
-  | "granted"
-  | "prompt"
-  | "denied"
-  | "unavailable";
+export type { LocationPermission };
+
+const TIMEOUT_MESSAGE =
+  "Location lookup timed out. Try again where you have a clearer signal.";
 
 type GameAction = (
   path: string,
@@ -66,6 +68,11 @@ export function useLocationVerification({
   setError: (message: string | null) => void;
 }) {
   const [locationPending, setLocationPending] = useState(false);
+  const distanceUnit = useDistanceUnit();
+  const distanceUnitRef = useRef(distanceUnit);
+  useEffect(() => {
+    distanceUnitRef.current = distanceUnit;
+  }, [distanceUnit]);
   const [locationPermission, setLocationPermission] =
     useState<LocationPermission>("unknown");
   const roundId = game?.currentRound?.id;
@@ -105,9 +112,7 @@ export function useLocationVerification({
         settled = true;
         clearRequest();
         if (!mountedRef.current) return;
-        setError(
-          "Location lookup timed out. Try again where you have a clearer signal.",
-        );
+        setError(TIMEOUT_MESSAGE);
       }, GEOLOCATION_SAFETY_TIMEOUT_MS);
 
       const clearRequest = () => {
@@ -136,38 +141,26 @@ export function useLocationVerification({
               clearRequest();
               return;
             }
-            void action(`/rounds/${roundId}/location`, locationPayload, {
-              silentStale: true,
-              isSuperseded: (refreshedGame) =>
-                !canRequestLocation(
-                  refreshedGame ?? latestGameRef.current,
-                  roundId,
-                  force,
-                ),
-              })
+            const submit = () =>
+              action(`/rounds/${roundId}/location`, locationPayload, {
+                silentStale: true,
+                isSuperseded: (refreshedGame) =>
+                  !canRequestLocation(
+                    refreshedGame ?? latestGameRef.current,
+                    roundId,
+                    force,
+                  ),
+              });
+            const superseded = { ok: true as const, data: { status: "superseded" } };
+            void submit()
               .then(async (result) => {
                 const errorCode = !result?.ok ? (result?.data as { code?: string })?.code : undefined;
-                if (errorCode === "STALE_VERSION") {
-                  if (
-                    !canRequestLocation(latestGameRef.current, roundId, force)
-                  ) {
-                    return { ok: true as const, data: { status: "superseded" } } as unknown as typeof result;
-                  }
-                  const retry = await action(`/rounds/${roundId}/location`, locationPayload, {
-                    silentStale: true,
-                    isSuperseded: (refreshedGame) =>
-                      !canRequestLocation(
-                        refreshedGame ?? latestGameRef.current,
-                        roundId,
-                        force,
-                      ),
-                  });
-                  const retryCode = !retry?.ok ? (retry?.data as { code?: string })?.code : undefined;
-                  return retryCode === "STALE_VERSION"
-                    ? ({ ok: true as const, data: { status: "superseded" } } as unknown as typeof retry)
-                    : retry;
-                }
-                return result;
+                if (errorCode !== "STALE_VERSION") return result;
+                // Someone else moved the game on: retry once, unless check-in is no longer needed.
+                if (!canRequestLocation(latestGameRef.current, roundId, force)) return superseded;
+                const retry = await submit();
+                const retryCode = !retry?.ok ? (retry?.data as { code?: string })?.code : undefined;
+                return retryCode === "STALE_VERSION" ? superseded : retry;
               })
               .then((result) => {
                 if (!mountedRef.current) return;
@@ -179,15 +172,17 @@ export function useLocationVerification({
                 }
                 if (result?.ok && (result.data as { status?: string })?.status === "rejected") {
                   const reason = (result.data as { reason?: string | null })?.reason;
+                  const radius = formatRadius(
+                    latestGameRef.current?.locationRadiusMeters ?? DEFAULT_LOCATION_RADIUS_METERS,
+                    distanceUnitRef.current,
+                  );
                   setError(
                     reason === "too_far"
-                      ? "You are too far from this spot to verify the round."
-                      : "Your GPS accuracy is not sufficient to verify this round.",
+                      ? `You're too far from the spot. Get within ${radius}, then tap Check In Again.`
+                      : "Your GPS signal is too weak here. Step into the open, then tap Check In Again.",
                   );
                 } else if (!result?.ok) {
-                  setError(
-                    "Location verification could not be completed. Try again.",
-                  );
+                  setError("Check-in didn't go through. Try again.");
                 }
               })
               .finally(clearRequest);
@@ -200,12 +195,12 @@ export function useLocationVerification({
             if (positionError.code === positionError.PERMISSION_DENIED) {
               setLocationPermission("denied");
               setError(
-                "Location is blocked. Allow location in your browser settings, close this tab and open again, then tap Try again.",
+                "Location is blocked. Allow it for this site in your browser settings, then tap Retry Location.",
               );
             } else {
               setError(
                 positionError.code === positionError.TIMEOUT
-                  ? "Location lookup timed out. Try again where you have a clearer signal."
+                  ? TIMEOUT_MESSAGE
                   : "Your location is temporarily unavailable. Try again.",
               );
             }
@@ -339,7 +334,7 @@ export function useLocationVerification({
     if (!game?.currentRound || currentPlayer?.status !== "active") return;
     if (!navigator.geolocation) {
       setLocationPermission("unavailable");
-      setError("This browser does not provide location access.");
+      setError("This browser can't share location. Open the game on your phone to check in.");
       return;
     }
     // Do not optimistically set to granted; let success/error drive state

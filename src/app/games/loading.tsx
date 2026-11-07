@@ -25,7 +25,7 @@ export default function Loading() {
             <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-10">
               {/* Form steps column */}
               <div className="min-w-0 space-y-6">
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 space-y-3">
+                <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 space-y-3">
                   <div className="h-3 w-20 animate-pulse rounded bg-surface-container-high" />
                   <div className="flex gap-2 pt-1">
                     <div className="h-9 w-24 animate-pulse rounded-full bg-surface-container-high" />
@@ -33,7 +33,7 @@ export default function Loading() {
                   </div>
                 </div>
 
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 space-y-3">
+                <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 space-y-3">
                   <div className="h-3 w-24 animate-pulse rounded bg-surface-container-high" />
                   <div className="flex gap-2 pt-1">
                     <div className="h-9 w-28 animate-pulse rounded-full bg-surface-container-high" />
@@ -45,7 +45,7 @@ export default function Loading() {
               {/* Desktop sidebar column — ConfigurationSummary */}
               <div className="min-w-0 hidden lg:block">
                 <div className="space-y-4">
-                  <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 space-y-3">
+                  <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4 sm:p-5 space-y-3">
                     <div className="h-4 w-32 animate-pulse rounded bg-surface-container-high" />
                     <div className="space-y-2 pt-2 border-t border-outline-variant">
                       <div className="h-3 w-full animate-pulse rounded bg-surface-container-high" />

@@ -11,7 +11,7 @@ export function PanelShell({
 }) {
   return (
     <div
-      className={`panel-chassis relative overflow-hidden rounded-[16px] border-[1.5px] border-on-surface bg-surface-container-high shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_24px_rgba(18,18,18,0.08)] md:rounded-[24px] md:p-2 ${className}`}
+      className={`panel-chassis relative overflow-hidden rounded-container border-[1.5px] border-on-surface bg-surface-container-high shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_8px_24px_rgba(18,18,18,0.08)] md:rounded-[24px] md:p-2 ${className}`}
     >
       {/* top screws */}
       <div className="pointer-events-none absolute left-3 top-3 hidden h-1.5 w-1.5 rounded-full border border-on-surface/20 bg-surface-container-lowest sm:block" />
@@ -39,7 +39,7 @@ export function PanelScreenBezel({
   const isFlex = className.includes("flex");
   return (
     <div
-      className={`panel-screen relative overflow-hidden rounded-[14px] bg-on-surface md:border-[2px] md:border-on-surface md:p-2 ${label ? "p-1.5" : ""} ${className}`}
+      className={`panel-screen relative overflow-hidden rounded-inner bg-on-surface md:border-[2px] md:border-on-surface md:p-2 ${label ? "p-1.5" : ""} ${className}`}
     >
       {label ? (
         <div className="mb-1.5 flex shrink-0 items-center justify-between px-1 sm:mb-2">
@@ -53,20 +53,10 @@ export function PanelScreenBezel({
         </div>
       ) : null}
       <div
-        className={`panel-screen-inner relative overflow-hidden rounded-[12px] border border-outline-variant bg-surface-container-lowest ${isFlex ? "flex min-h-0 flex-1 flex-col overflow-hidden" : ""}`}
+        className={`panel-screen-inner relative overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest ${isFlex ? "flex min-h-0 flex-1 flex-col overflow-hidden" : ""}`}
       >
         {children}
       </div>
-    </div>
-  );
-}
-
-export function ScrewCluster() {
-  return (
-    <div className="pointer-events-none hidden items-center gap-1.5 sm:flex" aria-hidden>
-      <span className="h-1.5 w-1.5 rounded-full border border-on-surface/15 bg-surface-container-high shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.2)]" />
-      <span className="h-1.5 w-1.5 rounded-full border border-on-surface/15 bg-surface-container-high shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.2)]" />
-      <span className="h-1.5 w-1.5 rounded-full border border-on-surface/15 bg-surface-container-high shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.2)]" />
     </div>
   );
 }

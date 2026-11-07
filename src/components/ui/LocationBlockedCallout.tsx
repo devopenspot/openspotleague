@@ -41,7 +41,7 @@ export function LocationBlockedCallout({
       <div className="min-w-0 flex-[1_1_14rem]">
         <p className={EYEBROW}>Location blocked</p>
         <p className="mt-1 text-sm leading-5 text-on-surface-variant">
-          Allow location in your browser settings, close this tab and open again, then tap Try again.
+          Allow location for this site in your browser settings, then tap Try again. If it still fails, tap Refresh.
         </p>
       </div>
       <div className={cn("flex shrink-0 flex-wrap gap-2", !isBanner && "mt-3")}>

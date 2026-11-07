@@ -1,5 +1,6 @@
 "use client";
 
+import { ATTEMPT_RESULT_LABEL } from "@/lib/games/labels";
 import { AlertTriangle, Check, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 
@@ -254,7 +255,7 @@ export function GameSheet({
                 >
                   {game.players.find((player) => player.id === attempt.playerId)
                     ?.displayName ?? "Rider"}{" "}
-                  · {attempt.result}
+                  · {ATTEMPT_RESULT_LABEL[attempt.result]}
                 </li>
               ))}
             </ul>
@@ -306,11 +307,11 @@ function ResultButtons({
         type="button"
         disabled={busy}
         onClick={() => onSelect("failed")}
-        aria-label="Mark as failed"
+        aria-label="Mark as missed"
         className={`${ACTION_BASE} ${ACTION_SECONDARY}`}
       >
         <X size={24} strokeWidth={2.75} aria-hidden="true" />
-        Failed
+        Missed
       </button>
       <button
         type="button"

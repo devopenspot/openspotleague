@@ -3,6 +3,7 @@ import { getSpotRepositoryAsync } from "@/lib/repositories"
 import type { NewSpot, SpotListResult, SpotQuery } from "@/lib/repositories/core/types"
 import type { Spot } from "@/lib/types"
 import { COMMUNITY_RADIUS_METERS } from "@/lib/config/constants"
+import { queueTagRevalidate } from "@/lib/cache/deferred"
 import { IMAGE_CACHE_LIFE, LIST_CACHE_LIFE, ITEM_CACHE_LIFE, WEATHER_CACHE_LIFE } from "@/lib/cache/lifetimes"
 
 function slugify(value: string): string {
@@ -22,6 +23,23 @@ function stripAnonymous(spot: Spot, requesterId: string | null): Spot {
   // Curator check is service-layer; for v1 we strip for non-owners.
   // Admin/curator reads go via findByIdForUser which bypasses strip.
   return { ...spot, createdBy: null }
+}
+
+/**
+ * Post-commit invalidation for spots promoted to public inside another
+ * domain's transaction (a battle check-in). Tags only: queued so they flush
+ * after the game write commits.
+ */
+export function queueCommunityPromotionRevalidate(spotIds: readonly string[]): void {
+  if (spotIds.length === 0) return
+  queueTagRevalidate("spots:list", LIST_CACHE_LIFE)
+  queueTagRevalidate("spots:home", LIST_CACHE_LIFE)
+  queueTagRevalidate("regions:all", LIST_CACHE_LIFE)
+  queueTagRevalidate("spots:nearby", LIST_CACHE_LIFE)
+  queueTagRevalidate("directory:common", LIST_CACHE_LIFE)
+  for (const spotId of spotIds) {
+    queueTagRevalidate(`spots:item:${spotId}`, ITEM_CACHE_LIFE)
+  }
 }
 
 function revalidateCommunityCaches(spotId: string, slug: string | null): void {

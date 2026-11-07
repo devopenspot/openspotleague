@@ -97,7 +97,7 @@ type TestUser = ReturnType<typeof userEvent.setup>;
 
 async function openSetupDialog(
   user: TestUser,
-  name: "Start training" | "Create challenge" = "Start training",
+  name: "Start training" | "Create battle" = "Start training",
 ) {
   await user.click(screen.getByTestId("mobile-review-trigger"));
   return screen.findByRole("dialog", { name });
@@ -158,6 +158,20 @@ describe("GameCreateForm", () => {
     expect(requestLocationMock).not.toHaveBeenCalled();
   });
 
+  it("skips the rider-name step for signed-in riders", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<GameCreateForm signedIn />);
+    let dialog = await openSetupDialog(user);
+    expect(within(dialog).getByText(/Step 1 of 3/)).toBeInTheDocument();
+    expect(within(dialog).getByRole("radio", { name: /Flexible/ })).toBeInTheDocument();
+    unmount();
+
+    render(<GameCreateForm signedIn={false} />);
+    dialog = await openSetupDialog(user);
+    expect(within(dialog).getByText(/Step 1 of 4/)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Rider name")).toBeInTheDocument();
+  });
+
   it("renders editable trick settings with useful defaults", async () => {
     const user = userEvent.setup();
     render(<GameCreateForm signedIn />);
@@ -167,7 +181,6 @@ describe("GameCreateForm", () => {
     expect(
       within(dialog).getByRole("radio", { name: /Flexible/ }),
     ).toHaveAttribute("aria-checked", "true");
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     // S2: Trick (spotType + level + categories)
     const defaultSpotType = await within(dialog).findByRole("radio", {
       name: "Rails",
@@ -305,9 +318,9 @@ describe("GameCreateForm", () => {
 
     render(<GameCreateForm signedIn />);
 
-    await user.click(await screen.findByRole("radio", { name: /Challenge/ }));
+    await user.click(await screen.findByRole("radio", { name: /Battle/ }));
     expect(
-      await screen.findByText(/Santa Cruz is the only compatible spot/),
+      await screen.findByText(/Santa Cruz is the closest spot for this game/),
     ).toBeInTheDocument();
     await user.click(screen.getByRole("radio", { name: /In 5 minutes/ }));
     await user.click(screen.getByRole("button", { name: "Yes, use this spot" }));
@@ -424,10 +437,9 @@ describe("GameCreateForm", () => {
     });
 
     render(<GameCreateForm signedIn />);
-    await user.click(await screen.findByRole("radio", { name: /Challenge/ }));
-    const dialog = await openSetupDialog(user, "Create challenge");
+    await user.click(await screen.findByRole("radio", { name: /Battle/ }));
+    const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
@@ -435,10 +447,10 @@ describe("GameCreateForm", () => {
     fireEvent.submit(document.getElementById("game-create-form")!);
 
     expect(
-      await within(dialog).findByText("Verify the spot"),
+      await within(dialog).findByText("Confirm the spot"),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByText("Accept the nearby spot to create the challenge."),
+      within(dialog).getByText("Accept the nearby spot to create the battle."),
     ).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
@@ -490,10 +502,9 @@ describe("GameCreateForm", () => {
 
     render(<GameCreateForm signedIn />);
 
-    await user.click(screen.getByRole("radio", { name: /Challenge/ }));
-    const dialog = await openSetupDialog(user, "Create challenge");
+    await user.click(screen.getByRole("radio", { name: /Battle/ }));
+    const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Skate" });
     expect(
       fetchMock.mock.calls.some(
@@ -510,23 +521,32 @@ describe("GameCreateForm", () => {
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
 
     expect(
-      await within(dialog).findByText(/Santa Cruz is the only compatible spot/),
+      await within(dialog).findByText(/Santa Cruz is the closest spot for this game/),
     ).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "No, not this spot" }),
     );
-    expect(within(dialog).getByText(/stays locked/i)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Add the place you're at as a new spot, or play it as Training/),
+    ).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Play as Training" })).toBeInTheDocument();
     // Continue should not advance while No is selected (validation)
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
-    expect(await within(dialog).findByText(/Santa Cruz is the only compatible spot/)).toBeInTheDocument();
+    expect(await within(dialog).findByText(/Santa Cruz is the closest spot for this game/)).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Yes, use this spot" }),
     );
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     const createButton = within(dialog).getByTestId("mobile-create-game");
-    expect(createButton).toBeDisabled();
+    // Enabled: tapping it explains what's missing instead of doing nothing.
+    await user.click(createButton);
+    expect(
+      await within(dialog).findByText("Confirm whether the forecast matches the live weather."),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
+    ).toBe(false);
     await user.click(within(dialog).getByRole("radio", { name: "Yes, correct" }));
-    expect(createButton).toBeEnabled();
 
     await user.click(createButton);
 
@@ -578,16 +598,15 @@ describe("GameCreateForm", () => {
 
     render(<GameCreateForm signedIn />);
 
-    await user.click(screen.getByRole("radio", { name: /Challenge/ }));
-    const dialog = await openSetupDialog(user, "Create challenge");
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await user.click(screen.getByRole("radio", { name: /Battle/ }));
+    const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).findByRole("radio", { name: "Skate" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(
       within(dialog).getByRole("radio", { name: /In 5 minutes/ }),
     );
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
-    await within(dialog).findByText(/Santa Cruz is the only compatible spot/);
+    await within(dialog).findByText(/Santa Cruz is the closest spot for this game/);
     await user.click(
       within(dialog).getByRole("button", { name: "Yes, use this spot" }),
     );
@@ -649,32 +668,37 @@ describe("GameCreateForm", () => {
     });
 
     render(<GameCreateForm signedIn />);
-    await user.click(await screen.findByRole("radio", { name: /Challenge/ }));
-    const dialog = await openSetupDialog(user, "Create challenge");
+    await user.click(await screen.findByRole("radio", { name: /Battle/ }));
+    const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    expect(within(dialog).getByText(/Step 1 of 5/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Step 1 of 4/)).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
     ).toBe(false);
 
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Skate" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
-    expect(within(dialog).getByText("Confirm when the lobby opens")).toBeInTheDocument();
+    expect(within(dialog).getByText("Start time")).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("radio", { name: /In 5 minutes/ }),
     );
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
 
-    expect(within(dialog).getByText("Verify the spot")).toBeInTheDocument();
+    expect(within(dialog).getByText("Confirm the spot")).toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Yes, use this spot" }),
     );
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     const createButton = within(dialog).getByTestId("mobile-create-game");
-    expect(createButton).toBeDisabled();
+    // Enabled: tapping it explains what's missing instead of doing nothing.
+    await user.click(createButton);
+    expect(
+      await within(dialog).findByText("Confirm whether the forecast matches the live weather."),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
+    ).toBe(false);
     await user.click(within(dialog).getByRole("radio", { name: "Yes, correct" }));
-    expect(createButton).toBeEnabled();
     await user.click(createButton);
 
     await waitFor(() =>
@@ -717,18 +741,17 @@ describe("GameCreateForm", () => {
     });
 
     render(<GameCreateForm signedIn />);
-    await user.click(screen.getByRole("radio", { name: /Challenge/ }));
+    await user.click(screen.getByRole("radio", { name: /Battle/ }));
 
-    const dialog = await openSetupDialog(user, "Create challenge");
+    const dialog = await openSetupDialog(user, "Create battle");
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
 
     expect(
-      await within(dialog).findByText(/No compatible registered spot/),
+      await within(dialog).findByText(/No registered spot for this game/),
     ).toBeInTheDocument();
     // still on spot step, create not yet visible; Continue blocked by validation
     expect(within(dialog).queryByTestId("mobile-create-game")).not.toBeInTheDocument();
@@ -961,11 +984,11 @@ describe("GameCreateForm", () => {
       const user = userEvent.setup();
       render(<GameCreateForm signedIn />);
 
-      await user.click(await screen.findByRole("radio", { name: "Challenge" }));
+      await user.click(await screen.findByRole("radio", { name: "Battle" }));
 
       expect(screen.queryByRole("button", { name: "Ride Solo" })).toBeNull();
       expect(
-        screen.getAllByRole("button", { name: "Create Challenge" }).length,
+        screen.getAllByRole("button", { name: "Create Battle" }).length,
       ).toBeGreaterThan(0);
     });
   });
@@ -992,10 +1015,12 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn />);
     const dialog = await openSetupDialog(user);
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
-    expect(within(dialog).getByText(/Where will you ride\?/)).toBeInTheDocument();
+    expect(within(dialog).getByText(/Where are you riding\?/)).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("radio", { name: "Anywhere" }),
+    ).toHaveAttribute("aria-checked", "true");
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     expect(within(dialog).getByText(/Ready to start/)).toBeInTheDocument();
     await waitFor(() =>
@@ -1024,6 +1049,58 @@ describe("GameCreateForm", () => {
     });
   });
 
+  it("logs Training with just a place name and no location or weather", async () => {
+    const user = userEvent.setup();
+    const fetchMock = fetch as Mock;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/api/games/options")) {
+        return jsonResponse({
+          disciplineSlug: "skateboard",
+          spotTypes: [
+            { slug: "rails", name: "Rails", sortOrder: 1, levels: [1, 2, 3] },
+          ],
+        });
+      }
+      if (url === "/api/games") {
+        return jsonResponse({ id: "game-1", version: 0 }, 201);
+      }
+      return jsonResponse({ error: "Not found" }, 404);
+    });
+
+    render(<GameCreateForm signedIn />);
+    const dialog = await openSetupDialog(user);
+    await within(dialog).findByRole("radio", { name: "Rails" });
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    await user.click(within(dialog).getByRole("radio", { name: "Just a name" }));
+    await user.type(within(dialog).getByLabelText("Place name"), "  My driveway ");
+    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
+    expect(within(dialog).getByText(/Logged at My driveway/)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(dialog).getByTestId("mobile-create-game")).toBeEnabled(),
+    );
+    await user.click(within(dialog).getByTestId("mobile-create-game"));
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(([input]) => String(input) === "/api/games"),
+      ).toBe(true);
+    });
+    expect(requestLocationMock).not.toHaveBeenCalled();
+    const createCall = fetchMock.mock.calls.find(
+      ([input]) => String(input) === "/api/games",
+    );
+    const body = JSON.parse(String(createCall?.[1]?.body)) as Record<
+      string,
+      unknown
+    >;
+    expect(body).toMatchObject({ mode: "training", spotLabel: "My driveway" });
+    expect(body).not.toHaveProperty("spotId");
+    expect(body).not.toHaveProperty("latitude");
+    expect(body).not.toHaveProperty("weatherForecastIcon");
+    expect(createGameInputSchema.safeParse(body).success).toBe(true);
+  });
+
   it("submits Training from the mobile setup dialog", async () => {
     const user = userEvent.setup();
     const fetchMock = fetch as Mock;
@@ -1045,7 +1122,6 @@ describe("GameCreateForm", () => {
     render(<GameCreateForm signedIn />);
     const dialog = await openSetupDialog(user);
     await within(dialog).getByRole("radio", { name: /Flexible/ });
-    await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await within(dialog).findByRole("radio", { name: "Rails" });
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
     await user.click(within(dialog).getByRole("button", { name: "Continue" }));
@@ -1072,7 +1148,7 @@ describe("GameCreateForm", () => {
     const user = userEvent.setup();
     render(<GameCreateForm signedIn />);
 
-    const challenge = screen.getByRole("radio", { name: /Challenge/ });
+    const challenge = screen.getByRole("radio", { name: /Battle/ });
     challenge.focus();
 
     await user.keyboard("{ArrowLeft}");
@@ -1093,7 +1169,7 @@ describe("GameCreateForm", () => {
       within(gameMode).getByRole("radio", { name: /Training/ }),
     ).toBeInTheDocument();
     expect(
-      within(gameMode).getByRole("radio", { name: /Challenge/ }),
+      within(gameMode).getByRole("radio", { name: /Battle/ }),
     ).toBeInTheDocument();
   });
 

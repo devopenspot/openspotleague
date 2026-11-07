@@ -94,6 +94,8 @@ import {
   readCurrentTrickCatalog,
 } from "@/lib/repositories/taxonomy/trick-catalog-store"
 import { queueTagRevalidate } from "@/lib/cache/deferred"
+import { confirmCommunitySpot } from "@/lib/repositories/spot/community-promotion"
+import { queueCommunityPromotionRevalidate } from "@/lib/services/spot/community-spots"
 import { LIST_CACHE_LIFE, PROFILE_CACHE_LIFE, REPORT_CACHE_LIFE } from "@/lib/cache/lifetimes"
 import {
   DEFAULT_GAME_HISTORY_LIMIT,
@@ -179,6 +181,7 @@ function fingerprintFor(input: CreateGameInput): string {
     ghostMode: input.ghostMode ? "global_best" : "off",
     disciplineSlug: input.disciplineSlug,
     spotId: (input as { spotId?: string }).spotId ?? null,
+    spotLabel: (input as { spotLabel?: string }).spotLabel ?? null,
     spotType: input.spotType ?? null,
     level: input.level ?? null,
     latitude: (input as { latitude?: number }).latitude ?? null,
@@ -339,7 +342,8 @@ export async function cancelExpiredChallengeGames(tx: Tx, now = new Date()) {
       or(
         and(
           eq(gameSessions.status, "lobby"),
-          sql`coalesce(${gameSessions.scheduledStartAt}, ${gameSessions.updatedAt}) < ${lobbyExpiry}`,
+          // Raw template: postgres-js cannot bind a bare Date here, so send ISO + cast.
+          sql`coalesce(${gameSessions.scheduledStartAt}, ${gameSessions.updatedAt}) < ${lobbyExpiry.toISOString()}::timestamptz`,
         ),
         and(
           eq(gameSessions.status, "active"),
@@ -517,6 +521,8 @@ export async function findNearbyChallengeSpot(input: {
   latitude: number
   longitude: number
   disciplineSlug: DisciplineSlug
+  /** Signed-in rider: their own personal spots are eligible too. */
+  viewerUserId?: string | null
 }) {
   const options = await getGameCreationOptions(input.disciplineSlug)
   const repo = await getSpotRepositoryAsync()
@@ -526,6 +532,7 @@ export async function findNearbyChallengeSpot(input: {
     radiusMeters: DEFAULT_LOCATION_RADIUS_METERS,
     disciplineSlug: input.disciplineSlug,
     spotTypeSlugs: options.spotTypes.map((spotType) => spotType.slug),
+    includePersonalOf: input.viewerUserId ?? null,
   })
 }
 
@@ -576,15 +583,21 @@ async function findNearestChallengeSpotRow(
     longitude: number
     disciplineSlug: DisciplineSlug
     spotTypeSlugs: readonly string[]
+    /** Creator's own personal spots are eligible alongside public ones. */
+    viewerUserId: string | null
   },
 ) {
   const point = sql`ST_SetSRID(ST_MakePoint(${input.longitude}, ${input.latitude}), 4326)::geography`
   if (input.spotTypeSlugs.length === 0) return null
   const sportName = GAME_DEFINITIONS[input.disciplineSlug].sportPreference
   const rows = await tx
-    .select({ id: spots.id, location: spots.location })
+    .select({ id: spots.id, location: spots.location, visibility: spots.visibility })
     .from(spots)
     .where(and(
+      eq(spots.adminHidden, false),
+      input.viewerUserId
+        ? or(eq(spots.visibility, "public"), eq(spots.createdBy, input.viewerUserId))
+        : eq(spots.visibility, "public"),
       sql`ST_DWithin(${spots.location}, ${point}, ${DEFAULT_LOCATION_RADIUS_METERS})`,
       arrayContains(spots.sports, [sportName]),
       sql`exists (
@@ -887,6 +900,7 @@ type InitialGamePersistenceInput = {
   gameFormat?: GameFormat
   lapCount?: number | null
   ghostMode?: boolean
+  spotLabel?: string | null
   weather?: {
     forecastIcon: string
     observedIcon: string
@@ -940,6 +954,7 @@ export async function persistInitialGame(tx: Tx, input: InitialGamePersistenceIn
     spotId,
     scheduledStartAt,
     timezone,
+    spotLabel: spotId ? null : (input.spotLabel ?? null),
     locationRadiusMeters: spotId ? DEFAULT_LOCATION_RADIUS_METERS : null,
     locationMaxAccuracyMeters: policy?.maxAccuracy ?? null,
     locationVerificationTtlSeconds: policy?.ttlSeconds ?? null,
@@ -1036,6 +1051,20 @@ async function refreshRoundVerificationStatus(tx: Tx, gameId: string, roundId: s
   }
 }
 
+/**
+ * Leaderboard points only count at a public spot. A rider's freshly added
+ * spot stays personal until a second rider verifies there, so a battle at an
+ * unconfirmed spot still records stats but no ranking points.
+ */
+async function isRankedSpot(tx: Tx, spotId: string | null): Promise<boolean> {
+  if (!spotId) return false
+  const [row] = await tx
+    .select({ visibility: spots.visibility, adminHidden: spots.adminHidden })
+    .from(spots)
+    .where(eq(spots.id, spotId))
+  return row?.visibility === "public" && !row.adminHidden
+}
+
 async function awardScoreEvent(
   tx: Tx,
   event: { userId: string; gameId: string; roundId: string | null; eventType: string; points: number; trickLevel: TrickLevel | null; eventKey: string },
@@ -1119,6 +1148,7 @@ async function resolveVerifiedNearbySpot(
     spotId: string
     maxAccuracyMeters: number
     lowAccuracyMessage: string
+    viewerUserId: string | null
   },
 ) {
   const compatibleSpotTypeSlugs = [...new Set(
@@ -1129,6 +1159,7 @@ async function resolveVerifiedNearbySpot(
     longitude: args.longitude,
     disciplineSlug: args.disciplineSlug,
     spotTypeSlugs: compatibleSpotTypeSlugs,
+    viewerUserId: args.viewerUserId,
   })
   if (!nearest) {
     throw new GameDomainError(
@@ -1272,6 +1303,7 @@ export async function createGame(identity: Identity, input: CreateGameInput, con
         spotId: input.spotId,
         maxAccuracyMeters: policy.maxAccuracy,
         lowAccuracyMessage: "Your location accuracy is not sufficient to create a challenge",
+        viewerUserId: identity.userId,
       })
       const loaded = await loadSpotTypeSnapshots(tx, input.spotId)
       snapshots = loaded.snapshots
@@ -1310,6 +1342,7 @@ export async function createGame(identity: Identity, input: CreateGameInput, con
         spotId: tInput.spotId,
         maxAccuracyMeters: policy.maxAccuracy,
         lowAccuracyMessage: "Your location accuracy is not sufficient to attach this spot",
+        viewerUserId: identity.userId,
       })
       const loaded = await loadSpotTypeSnapshots(tx, tInput.spotId)
       snapshots = loaded.snapshots
@@ -1348,27 +1381,31 @@ export async function createGame(identity: Identity, input: CreateGameInput, con
       const fIcon = weatherInput.weatherForecastIcon
       const confirmed = weatherInput.weatherConfirmed
       const oIcon = weatherInput.weatherObservedIcon
-      if (!fIcon || confirmed === undefined) {
-        throw new GameDomainError("INVALID_INPUT", "Weather confirmation is required when a spot is attached")
-      }
-      if (confirmed === false && !oIcon) {
-        throw new GameDomainError("INVALID_INPUT", "Select the correct live weather when the forecast is incorrect")
-      }
-      const observedIcon = confirmed ? fIcon : (oIcon as string)
-      weatherData = {
-        forecastIcon: fIcon,
-        observedIcon,
-        confirmed,
-        forecastDescription: weatherInput.weatherForecastDescription ?? null,
-        forecastTemp: weatherInput.weatherForecastTemp ?? null,
-        reportedAt: new Date(),
-        snapshot: {
-          icon: fIcon as "sunny",
-          description: weatherInput.weatherForecastDescription ?? "",
-          temp: weatherInput.weatherForecastTemp ?? null,
-          humidity: null,
-          wind: null,
-        },
+      // Battle needs the weather check; training may skip it entirely.
+      const skipped = !challenge && fIcon === undefined && confirmed === undefined && oIcon === undefined
+      if (!skipped) {
+        if (!fIcon || confirmed === undefined) {
+          throw new GameDomainError("INVALID_INPUT", "Weather confirmation is required when a spot is attached")
+        }
+        if (confirmed === false && !oIcon) {
+          throw new GameDomainError("INVALID_INPUT", "Select the correct live weather when the forecast is incorrect")
+        }
+        const observedIcon = confirmed ? fIcon : (oIcon as string)
+        weatherData = {
+          forecastIcon: fIcon,
+          observedIcon,
+          confirmed,
+          forecastDescription: weatherInput.weatherForecastDescription ?? null,
+          forecastTemp: weatherInput.weatherForecastTemp ?? null,
+          reportedAt: new Date(),
+          snapshot: {
+            icon: fIcon as "sunny",
+            description: weatherInput.weatherForecastDescription ?? "",
+            temp: weatherInput.weatherForecastTemp ?? null,
+            humidity: null,
+            wind: null,
+          },
+        }
       }
     }
 
@@ -1407,6 +1444,7 @@ export async function createGame(identity: Identity, input: CreateGameInput, con
       gameFormat,
       lapCount: input.lapCount ?? null,
       ghostMode: input.ghostMode ?? false,
+      spotLabel: challenge ? null : ((input as { spotLabel?: string }).spotLabel ?? null),
       weather: weatherData,
     })
     if (spotId && creatorVerification) {
@@ -1722,6 +1760,13 @@ export async function verifyGameLocation(identity: Identity, gameId: string, rou
       expiresAt,
     }).where(and(eq(gameLocationVerifications.roundId, roundId), eq(gameLocationVerifications.playerId, player.id))).returning({ id: gameLocationVerifications.id })
     if (updated.length === 0) throw new GameDomainError("INVALID_TRANSITION", "No verification record exists for this participant")
+    // Community rule: a rider physically checking in at a personal spot
+    // vouches for it. The second distinct rider makes it public, which is
+    // also what unlocks leaderboard points for battles there.
+    if (decision.status === "verified" && identity.userId) {
+      const promotion = await confirmCommunitySpot(tx, { spotId: game.spotId, userId: identity.userId })
+      if (promotion?.promoted) queueCommunityPromotionRevalidate(promotion.promotedSpotIds)
+    }
     await refreshRoundVerificationStatus(tx, gameId, roundId, now)
     const version = game.version + 1
     await tx.update(gameSessions).set({ version, updatedAt: now }).where(eq(gameSessions.id, gameId))
@@ -2089,17 +2134,19 @@ export async function submitGameResponse(identity: Identity, gameId: string, inp
       const level = aggregate.state.currentRound?.level
       if (!level) throw new GameDomainError("INVALID_TRANSITION", "Resolved round has no level")
       const challenge = locked.mode === "challenge"
+      // Points need a public spot: two riders verified there (fair play).
+      const ranked = challenge && await isRankedSpot(tx, locked.spotId)
       if (challenge) {
         const points = LEVEL_POINTS[level]
         const challenger = next.players.find((candidate) => candidate.id === aggregate.state.currentRound?.challengerPlayerId)
         if (!challenger) throw new GameDomainError("INVALID_TRANSITION", "Resolved round has no challenger")
-        await awardScoreEvent(tx, { userId: requireUserIdentity(challenger), gameId, roundId: input.roundId, eventType: "challenger_landed", points, trickLevel: level, eventKey: `game:${gameId}:round:${input.roundId}:challenger_landed` })
+        if (ranked) await awardScoreEvent(tx, { userId: requireUserIdentity(challenger), gameId, roundId: input.roundId, eventType: "challenger_landed", points, trickLevel: level, eventKey: `game:${gameId}:round:${input.roundId}:challenger_landed` })
         await incrementRiderStats(tx, requireUserIdentity(challenger), { tricksLanded: 1 })
         for (const attempt of nextRound.attempts) {
           const attemptPlayer = next.players.find((candidate) => candidate.id === attempt.playerId)
           if (!attemptPlayer) continue
           if (attempt.result === "landed") {
-            await awardScoreEvent(tx, { userId: requireUserIdentity(attemptPlayer), gameId, roundId: input.roundId, eventType: "response_landed", points, trickLevel: level, eventKey: `game:${gameId}:round:${input.roundId}:response:${attempt.playerId}:landed` })
+            if (ranked) await awardScoreEvent(tx, { userId: requireUserIdentity(attemptPlayer), gameId, roundId: input.roundId, eventType: "response_landed", points, trickLevel: level, eventKey: `game:${gameId}:round:${input.roundId}:response:${attempt.playerId}:landed` })
             await incrementRiderStats(tx, requireUserIdentity(attemptPlayer), { tricksLanded: 1 })
           } else {
             await incrementRiderStats(tx, requireUserIdentity(attemptPlayer), { tricksFailed: 1 })
@@ -2114,7 +2161,7 @@ export async function submitGameResponse(identity: Identity, gameId: string, inp
         const winner = next.players.find((candidate) => candidate.status === "active")
         if (!winner) throw new GameDomainError("INVALID_TRANSITION", "Completed game has no winner")
         if (challenge) {
-          await awardScoreEvent(tx, { userId: requireUserIdentity(winner), gameId, roundId: null, eventType: "winner_bonus", points: WINNER_BONUS_POINTS, trickLevel: null, eventKey: `game:${gameId}:winner_bonus` })
+          if (ranked) await awardScoreEvent(tx, { userId: requireUserIdentity(winner), gameId, roundId: null, eventType: "winner_bonus", points: WINNER_BONUS_POINTS, trickLevel: null, eventKey: `game:${gameId}:winner_bonus` })
           for (const candidate of next.players) {
             if (candidate.status !== "left") await incrementRiderStats(tx, requireUserIdentity(candidate), { gamesPlayed: 1, gamesWon: candidate.id === winner.id ? 1 : 0 })
           }
@@ -2352,10 +2399,13 @@ export async function getGameState(identity: Identity, gameId: string, shareCode
   const game = await loadAuthorizedGame(db, identity, gameId, shareCode)
   if (knownVersion !== undefined && game.version === knownVersion) return null
 
-  const [players, recentRoundRows, raceLapRows] = await Promise.all([
+  const [players, recentRoundRows, raceLapRows, spotNameRows] = await Promise.all([
     db.select().from(gamePlayers).where(eq(gamePlayers.gameId, gameId)),
     db.select().from(gameRounds).where(eq(gameRounds.gameId, gameId)).orderBy(desc(gameRounds.sequence)).limit(DEFAULT_GAME_HISTORY_LIMIT),
     db.select().from(gameRaceLaps).where(eq(gameRaceLaps.gameId, gameId)).orderBy(asc(gameRaceLaps.lapNumber), asc(gameRaceLaps.submittedAt)).limit(RACE_LAP_STATE_LIMIT),
+    game.spotId
+      ? db.select({ name: spots.name }).from(spots).where(eq(spots.id, game.spotId)).limit(1)
+      : Promise.resolve([] as { name: string }[]),
   ])
   let roundRows = recentRoundRows
   if (game.currentRoundId && !roundRows.some((round) => round.id === game.currentRoundId)) {
@@ -2437,6 +2487,8 @@ export async function getGameState(identity: Identity, gameId: string, shareCode
     wordLength: game.wordLength,
     catalogId: game.catalogId,
     spotId: game.spotId,
+    spotLabel: game.spotLabel ?? null,
+    spotName: spotNameRows[0]?.name ?? (game.spotRemoved ? game.spotNameSnapshot : null) ?? null,
     scheduledStartAt: game.scheduledStartAt?.toISOString() ?? null,
     timezone: game.timezone,
     locationRadiusMeters: game.locationRadiusMeters,
@@ -2838,11 +2890,15 @@ export async function listGamesForUser(userId: string, limit = 20): Promise<Game
       disciplineSlug: gameSessions.disciplineSlug,
       gameName: gameSessions.gameName,
       spotId: gameSessions.spotId,
+      spotLabel: gameSessions.spotLabel,
+      spotName: sql<string | null>`coalesce(${spots.name}, ${gameSessions.spotNameSnapshot})`,
       scheduledStartAt: gameSessions.scheduledStartAt,
       nextSpotType: gameSessions.nextSpotType,
       version: gameSessions.version,
       updatedAt: gameSessions.updatedAt,
-    }).from(gameSessions).where(inArray(gameSessions.id, ids)).orderBy(desc(gameSessions.updatedAt)).limit(limit),
+    }).from(gameSessions)
+      .leftJoin(spots, eq(spots.id, gameSessions.spotId))
+      .where(inArray(gameSessions.id, ids)).orderBy(desc(gameSessions.updatedAt)).limit(limit),
   )
   return gameListResponseSchema.parse(games.map((game) => ({
     ...game,

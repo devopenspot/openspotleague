@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGamePrefillUrl, parseGamePrefill } from "./prefill";
+import { buildGamePrefillUrl, buildRunAgainUrl, parseGamePrefill } from "./prefill";
 
 const VALID_UUID = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -66,5 +66,25 @@ describe("buildGamePrefillUrl", () => {
     expect(parsed.spotId).toBe(VALID_UUID);
     expect(parsed.spotType).toBe("plaza");
     expect(parsed.mode).toBe("challenge");
+  });
+});
+
+describe("buildRunAgainUrl", () => {
+  it("reopens setup on the same mode, spot and spot type", () => {
+    const url = buildRunAgainUrl({
+      mode: "challenge",
+      spotId: "6f1c2e3a-1b2c-4d5e-8f90-123456789abc",
+      nextSpotType: "Rails",
+    });
+    const params = new URL(url, "https://x.test").searchParams;
+    expect(params.get("mode")).toBe("challenge");
+    expect(params.get("spotId")).toBe("6f1c2e3a-1b2c-4d5e-8f90-123456789abc");
+    expect(params.get("spotType")).toBe("rails");
+  });
+
+  it("leaves the spot out of a location-free training", () => {
+    expect(buildRunAgainUrl({ mode: "training", spotId: null, nextSpotType: "ledges" })).toBe(
+      "/games?mode=training&spotType=ledges",
+    );
   });
 });
