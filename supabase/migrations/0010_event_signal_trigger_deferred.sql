@@ -1,4 +1,4 @@
--- 0009: keep the League service's specific realtime signal types.
+-- 0010: keep the League service's specific realtime signal types.
 -- `sport_events_realtime_signal_trigger` ran AFTER UPDATE OF version, i.e.
 -- inside the mutation's `bumpEventVersion` statement, and inserted a generic
 -- `event_state_changed` / `event_cancelled` row for (event_id, version)

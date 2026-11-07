@@ -1,4 +1,4 @@
--- 0008: notification delivery (email over AWS SQS → Lambda → SES).
+-- 0009: notification delivery (email over AWS SQS → Lambda → SES).
 -- `user_notifications` becomes the transactional outbox: a row whose type is
 -- email-eligible (EMAIL_POLICY in src/lib/notifications/definitions.ts) is
 -- inserted with email_status = 'pending' and an urgency. The Worker enqueues

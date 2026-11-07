@@ -17,9 +17,9 @@ function squash(sql: string): string {
 }
 
 const migrations = loadMigrationFiles(MIGRATIONS_DIR)
-const fix = migrations.find((migration) => migration.id === "0009_event_signal_trigger_deferred")
+const fix = migrations.find((migration) => migration.id === "0010_event_signal_trigger_deferred")
 
-describe("0009 deferred event signal trigger", () => {
+describe("0010 deferred event signal trigger", () => {
   it("exists", () => {
     expect(fix).toBeDefined()
   })

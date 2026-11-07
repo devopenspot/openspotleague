@@ -74,7 +74,7 @@ Reminders carry `dedupe_key` (unique), for example `vdl24:<event>:<user>` or `jd
 
 ## Preferences
 
-`user_email_preferences` holds four booleans (`contest_updates`, `reminders`, `judging`, `results`, default on) plus `suppressed_at` / `suppressed_reason` from SES feedback. Turning any category on lifts a suppression. `email_digests_enabled` is deprecated (backfilled into the categories by 0008) and will be dropped by a later migration.
+`user_email_preferences` holds four booleans (`contest_updates`, `reminders`, `judging`, `results`, default on) plus `suppressed_at` / `suppressed_reason` from SES feedback. Turning any category on lifts a suppression. `email_digests_enabled` is deprecated (backfilled into the categories by 0009) and will be dropped by a later migration.
 
 ## Free tier
 

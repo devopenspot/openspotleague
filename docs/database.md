@@ -32,8 +32,8 @@ How each tool picks its connection string:
 - Apply migrations with `pnpm db:apply` (`src/db/apply-sql.ts`). It holds a session advisory lock (`hashtextextended('openspot:database-apply', 0)`) and records progress in `schema_migrations` using normalized per-statement SHA-256 hashes (`detectMigrationDrift`). Old-format ledger hashes are rewritten in place and logged with `↻`.
 - **Applied migrations are immutable.** Ship any fix as a new migration file.
 - League migrations `0005_contests_drop_origin`, `0006_contest_curator_role` and `0007_league_divisions_rating` are described in [`docs/league.md`](league.md#data-model).
-- `0008_notification_delivery` turns `user_notifications` into the email outbox, adds per-category email preferences, and retires the pg_cron email sweep (`league_email_sweep`, `league_email_log`). See [`docs/notifications.md`](notifications.md). After applying it in production, delete the unused Vault secrets `resend_api_key` and `email_from`.
-- `0009_event_signal_trigger_deferred` makes the `sport_events` realtime signal trigger deferred, so the League service's specific signal types are no longer overwritten by the generic one (see Realtime below).
+- `0009_notification_delivery` turns `user_notifications` into the email outbox, adds per-category email preferences, and retires the pg_cron email sweep (`league_email_sweep`, `league_email_log`). See [`docs/notifications.md`](notifications.md). After applying it in production, delete the unused Vault secrets `resend_api_key` and `email_from`.
+- `0010_event_signal_trigger_deferred` makes the `sport_events` realtime signal trigger deferred, so the League service's specific signal types are no longer overwritten by the generic one (see Realtime below).
 
 ## Seeding
 
