@@ -52,6 +52,8 @@ export interface SpotRepository {
     radiusMeters: number
     disciplineSlug: string
     spotTypeSlugs: readonly string[]
+    /** Also match this rider's own personal (not yet public) spots. */
+    includePersonalOf?: string | null
   }): Promise<Spot | null>
   findNearby(params: { lat: number; lon: number; radiusMeters: number }): Promise<readonly Spot[]>
   /**

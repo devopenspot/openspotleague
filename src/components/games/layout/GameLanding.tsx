@@ -36,6 +36,7 @@ const UI_COPY = {
   yourGames: `Your games`,
   yourRecord: `Your record`,
   setupTitle: `Set up your game`,
+  modeHint: `Training works anywhere and is saved to your history. Battles are verified at a registered spot and earn leaderboard points.`,
   challengeRecord: `Challenge record`,
   gameNotFound: `That code didn't match a game. Check it with your friend and try again.`,
   loading: `Loading`,
@@ -190,6 +191,9 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               >
                 {UI_COPY.setupTitle}
               </h2>
+              <p className="mt-1 text-sm leading-6 text-on-primary/80">
+                {UI_COPY.modeHint}
+              </p>
               <GameCreateForm signedIn={signedIn} initialPrefill={prefill} />
             </div>
           </section>

@@ -6,6 +6,7 @@ import { createPersonalSpot, findNearbyPublicSpots } from "@/lib/services/spot/c
 import { log } from "@/lib/utils/log"
 import { mapDomainErrorToResponse } from "@/lib/api/error"
 import { requireUser } from "@/lib/auth/server"
+import { reverseGeocodeAddress } from "@/lib/geocode/reverse-address"
 import { isRateLimited, rateLimitKey } from "@/lib/api/rate-limit"
 import { COMMUNITY_RADIUS_METERS, MAX_LOCATION_ACCURACY_METERS, MAX_UPLOAD_BYTES } from "@/lib/config/constants"
 import { UploadValidationError } from "@/lib/storage/errors"
@@ -174,11 +175,14 @@ export async function POST(request: NextRequest) {
   }
 
   const name = String(form.get("name") ?? "").trim()
-  const city = String(form.get("city") ?? "").trim()
-  const address = String(form.get("address") ?? "").trim()
-  const country = String(form.get("country") ?? "").trim()
+  let city = String(form.get("city") ?? "").trim()
+  let address = String(form.get("address") ?? "").trim()
+  let country = String(form.get("country") ?? "").trim()
   const countryCodeRaw = String(form.get("countryCode") ?? "").trim()
-  const countryCode = countryCodeRaw || undefined
+  let countryCode = countryCodeRaw || undefined
+  // Quick-add from game setup sends only name, types, photo and GPS: the
+  // address comes from the rider's coordinates.
+  const autoAddress = String(form.get("autoAddress") ?? "").trim() === "true"
   const instagramRaw = String(form.get("instagram") ?? "").trim()
   const instagram = instagramRaw || undefined
   const latRaw = String(form.get("lat") ?? "").trim()
@@ -191,6 +195,23 @@ export async function POST(request: NextRequest) {
   const sports = sportsRaw ? sportsRaw.split(",").map((s) => s.trim()).filter(Boolean) : []
   const types = typesRaw ? typesRaw.split(",").map((s) => s.trim()).filter(Boolean) : []
   const imageFile = form.get("image")
+
+  if (autoAddress && (!city || !address || (!country && !countryCode))) {
+    const lat = Number(String(form.get("lat") ?? ""))
+    const lon = Number(String(form.get("lon") ?? ""))
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      const resolved = await reverseGeocodeAddress(lat, lon)
+      if (resolved) {
+        city ||= resolved.city
+        address ||= resolved.address
+        country ||= resolved.country
+        countryCode ??= resolved.countryCode ?? undefined
+      }
+    }
+    if (!city || !address || (!country && !countryCode)) {
+      return NextResponse.json({ error: "We could not find an address for your location. Try again in a moment." }, { status: 400 })
+    }
+  }
 
   if (!name || !city || !address) {
     return NextResponse.json({ error: "Missing required fields: name, city, address" }, { status: 400 })

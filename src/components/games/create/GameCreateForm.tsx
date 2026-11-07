@@ -42,6 +42,8 @@ import {
   SetupProgress,
   ChallengeTimeStep,
   ChallengeSpotStep,
+  TrainingPlaceStep,
+  type TrainingPlace,
   WeatherConfirmSection,
   ConfigurationSummary,
   CreateSubmitButton,
@@ -49,6 +51,7 @@ import {
   SPORT_REQUIRED_MESSAGE,
   getEmptySpotTypesMessage,
 } from "./form-parts";
+import { QuickAddSpotForm } from "./QuickAddSpotForm";
 
 import type { Spot, WeatherIconName } from "@/lib/types";
 import {
@@ -208,6 +211,12 @@ export function GameCreateForm({
   const [nearbySpot, setNearbySpot] = useState<Spot | null>(null);
   const [spotAccepted, setSpotAccepted] = useState<boolean | null>(null);
   const [trainingSpotEnabled, setTrainingSpotEnabled] = useState(false);
+  // Training journal: a free-text place name instead of a verified spot.
+  const [trainingLabelEnabled, setTrainingLabelEnabled] = useState(false);
+  const [spotLabel, setSpotLabel] = useState("");
+  // A spot the rider just added from this form; keeps the nearby lookup
+  // from replacing it while their GPS fix keeps updating.
+  const [quickAddedSpot, setQuickAddedSpot] = useState<Spot | null>(null);
   const [weatherConfirmed, setWeatherConfirmed] = useState<boolean | null>(
     null,
   );
@@ -413,7 +422,7 @@ export function GameCreateForm({
     mode === "challenge" || (mode === "training" && trainingSpotEnabled);
 
   useEffect(() => {
-    if (prefillSpot) return;
+    if (prefillSpot || quickAddedSpot) return;
     if (
       !needsSpot ||
       locationStatus !== "granted" ||
@@ -471,6 +480,7 @@ export function GameCreateForm({
     trainingSpotEnabled,
     signedIn,
     prefillSpot,
+    quickAddedSpot,
   ]);
 
   const selectedSpot = nearbySpot;
@@ -645,13 +655,23 @@ export function GameCreateForm({
     availableSpotTypes.length === 0 ||
     !selectedSpotType;
   const prefillPending = Boolean(initialPrefill?.spotId && prefillLoading);
+  // Battle verifies weather; in training it is an optional journal note.
   const requiresWeather =
-    needsSpot && Boolean(selectedSpot) && spotAccepted === true;
+    mode === "challenge" && Boolean(selectedSpot) && spotAccepted === true;
   const weatherPending =
-    requiresWeather &&
-    (weatherConfirmed === null ||
-      (weatherConfirmed === false && !weatherObservedIcon) ||
-      !forecastWeather);
+    (requiresWeather &&
+      (weatherConfirmed === null ||
+        (weatherConfirmed === false && !weatherObservedIcon) ||
+        !forecastWeather)) ||
+    (mode === "training" &&
+      weatherConfirmed === false &&
+      !weatherObservedIcon);
+  const trainingPlace: TrainingPlace = trainingSpotEnabled
+    ? "spot"
+    : trainingLabelEnabled
+      ? "label"
+      : "none";
+  const normalizedSpotLabel = spotLabel.trim().slice(0, 80);
   const createDisabled =
     busy ||
     prefillPending ||
@@ -716,6 +736,7 @@ export function GameCreateForm({
       // keep spot state but do not auto-enable; user opts in
     } else {
       setTrainingSpotEnabled(false);
+      setTrainingLabelEnabled(false);
       // Challenge can't start without a spot, so ask for location from this tap.
       if (locationStatus !== "granted") void retryLocation();
     }
@@ -749,6 +770,34 @@ export function GameCreateForm({
     ) {
       void retryLocation();
     }
+  }
+
+  function handleTrainingPlaceChange(place: TrainingPlace) {
+    setTrainingLabelEnabled(place === "label");
+    const wantsSpot = place === "spot";
+    if (wantsSpot !== trainingSpotEnabled) handleTrainingSpotToggle(wantsSpot);
+  }
+
+  function handleQuickAddCreated(spot: Spot) {
+    setQuickAddedSpot(spot);
+    setNearbySpot(spot);
+    handleSpotAcceptance(true);
+    showToast(`${spot.name} added. It is personal until another rider checks in.`, "success");
+  }
+
+  function renderQuickAdd(context: "challenge" | "training") {
+    if (!signedIn || !discipline || !activeOptions) return undefined;
+    return (
+      <QuickAddSpotForm
+        location={location ?? null}
+        disciplineSlug={discipline}
+        spotTypes={activeOptions.spotTypes}
+        defaultSpotType={effectiveSpotType || null}
+        context={context}
+        onCreated={handleQuickAddCreated}
+        parseSpot={parseNearbySpot}
+      />
+    );
   }
 
   function handleSpotTypeChange(nextSpotType: string) {
@@ -835,6 +884,7 @@ export function GameCreateForm({
 
   async function retryLocation() {
     setError(null);
+    setQuickAddedSpot(null);
     setNearbySpot(null);
     setSpotAccepted(null);
     setLocationLoading(true);
@@ -885,7 +935,7 @@ export function GameCreateForm({
         spot:
           mode === "challenge"
             ? "Accept the nearby spot to create the challenge."
-            : "Accept the nearby spot to record this training.",
+            : "Accept the nearby spot, add one, or pick Anywhere.",
       };
     }
     return {};
@@ -893,6 +943,11 @@ export function GameCreateForm({
 
   function getWeatherErrors(): FieldErrors {
     if (!needsSpot || !selectedSpot || spotAccepted !== true) return {};
+    if (mode === "training") {
+      return weatherConfirmed === false && !weatherObservedIcon
+        ? { weatherObserved: "Select the correct live weather, or skip it." }
+        : {};
+    }
     if (weatherConfirmed === null) {
       return {
         weather: "Confirm whether the forecast matches the live weather.",
@@ -1185,15 +1240,31 @@ export function GameCreateForm({
                 }
               : {}),
           ...(mode === "training" &&
+          !trainingSpotEnabled &&
+          trainingLabelEnabled &&
+          normalizedSpotLabel
+            ? { spotLabel: normalizedSpotLabel }
+            : {}),
+          ...(mode === "training" &&
           trainingSpotEnabled &&
           selectedSpot &&
-          spotAccepted === true &&
-          forecastWeather
+          spotAccepted === true
             ? {
                 spotId: selectedSpot.id,
                 latitude: location?.lat,
                 longitude: location?.lon,
                 accuracyMeters: location?.accuracy,
+              }
+            : {}),
+          // Training weather is optional: sent only when the rider answered.
+          ...(mode === "training" &&
+          trainingSpotEnabled &&
+          selectedSpot &&
+          spotAccepted === true &&
+          forecastWeather &&
+          (weatherConfirmed === true ||
+            (weatherConfirmed === false && weatherObservedIcon))
+            ? {
                 weatherForecastIcon: forecastWeather.icon,
                 weatherForecastDescription:
                   forecastWeather.description ?? forecastWeather.icon,
@@ -1281,7 +1352,13 @@ export function GameCreateForm({
   const selectedSpotTypeLabel =
     selectedSpotType?.name ??
     (effectiveSpotType ? effectiveSpotType : "Choose a spot type");
-  const summarySpot = selectedSpot?.name ?? "Not selected";
+  const summarySpot =
+    selectedSpot?.name ??
+    (mode === "training"
+      ? trainingPlace === "label" && normalizedSpotLabel
+        ? normalizedSpotLabel
+        : "Anywhere"
+      : "Not selected");
   const summaryStart =
     CHALLENGE_START_OPTIONS.find((option) => option.value === startDelayMinutes)
       ?.title ?? "Not selected";
@@ -1603,6 +1680,7 @@ export function GameCreateForm({
                     onSpotAcceptance={handleSpotAcceptance}
                     onContinueTraining={() => handleModeChange("training")}
                     onRetryLocation={() => void retryLocation()}
+                    quickAdd={renderQuickAdd("challenge")}
                   />
                   {selectedSpot && spotAccepted === true ? (
                     <WeatherConfirmSection
@@ -1620,32 +1698,15 @@ export function GameCreateForm({
                 </>
               ) : null}
               {mode === "training" ? (
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={trainingSpotEnabled}
-                      onChange={(event) =>
-                        handleTrainingSpotToggle(event.target.checked)
-                      }
-                      className="mt-1 h-4 w-4 rounded border-outline-variant accent-primary"
-                    />
-                    <span className="min-w-0">
-                      <span className="block font-display text-xs font-bold uppercase tracking-[0.05em]">
-                        Record at registered spot
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-on-surface-variant">
-                        Attach this training to the nearby spot and confirm live
-                        weather. This powers the spot&apos;s current weather and
-                        your session record.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              ) : null}
-              {mode === "training" && trainingSpotEnabled ? (
-                <>
+                <TrainingPlaceStep
+                  idPrefix="desktop-"
+                  place={trainingPlace}
+                  spotLabel={spotLabel}
+                  onPlaceChange={handleTrainingPlaceChange}
+                  onSpotLabelChange={setSpotLabel}
+                >
                   <ChallengeSpotStep
+                    context="training"
                     selectedSpot={selectedSpot}
                     selectedDistanceMeters={selectedDistanceMeters}
                     distanceUnit={distanceUnit}
@@ -1654,8 +1715,9 @@ export function GameCreateForm({
                     spotAccepted={spotAccepted}
                     fieldError={fieldErrors.spot}
                     onSpotAcceptance={handleSpotAcceptance}
-                    onContinueTraining={() => handleTrainingSpotToggle(false)}
+                    onContinueTraining={() => handleTrainingPlaceChange("none")}
                     onRetryLocation={() => void retryLocation()}
+                    quickAdd={renderQuickAdd("training")}
                   />
                   {selectedSpot && spotAccepted === true ? (
                     <WeatherConfirmSection
@@ -1670,7 +1732,7 @@ export function GameCreateForm({
                       temperatureUnit={temperatureUnit}
                     />
                   ) : null}
-                </>
+                </TrainingPlaceStep>
               ) : null}
             </div>
 
@@ -1995,40 +2057,14 @@ export function GameCreateForm({
               </div>
             ) : setupStep === "spot" ? (
               <div className="space-y-6">
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-low p-4">
-                  <p className="font-display text-sm font-bold uppercase">
-                    Where will you ride?
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                    Training can be open play or anchored to a registered spot.
-                    Anchoring records weather and powers the spot&apos;s live
-                    status.
-                  </p>
-                </div>
-                <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4 sm:p-5">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={trainingSpotEnabled}
-                      onChange={(event) =>
-                        handleTrainingSpotToggle(event.target.checked)
-                      }
-                      className="mt-1 h-4 w-4 rounded border-outline-variant accent-primary"
-                    />
-                    <span className="min-w-0">
-                      <span className="block font-display text-xs font-bold uppercase tracking-[0.05em]">
-                        Record at registered spot
-                      </span>
-                      <span className="mt-1 block text-xs leading-5 text-on-surface-variant">
-                        Attach this training to the nearby spot and confirm live
-                        weather. This powers the spot&apos;s current weather and
-                        your session record.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-                {trainingSpotEnabled ? (
+                <TrainingPlaceStep
+                  place={trainingPlace}
+                  spotLabel={spotLabel}
+                  onPlaceChange={handleTrainingPlaceChange}
+                  onSpotLabelChange={setSpotLabel}
+                >
                   <ChallengeSpotStep
+                    context="training"
                     selectedSpot={selectedSpot}
                     selectedDistanceMeters={selectedDistanceMeters}
                     distanceUnit={distanceUnit}
@@ -2037,19 +2073,11 @@ export function GameCreateForm({
                     spotAccepted={spotAccepted}
                     fieldError={fieldErrors.spot}
                     onSpotAcceptance={handleSpotAcceptance}
-                    onContinueTraining={() => handleTrainingSpotToggle(false)}
+                    onContinueTraining={() => handleTrainingPlaceChange("none")}
                     onRetryLocation={() => void retryLocation()}
+                    quickAdd={renderQuickAdd("training")}
                   />
-                ) : (
-                  <div className="rounded-[16px] border border-dashed border-outline-variant bg-surface-container-low px-4 py-4">
-                    <p className="font-display text-xs font-bold uppercase tracking-[0.05em] text-secondary">
-                      Open training
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      No spot required. Continue to confirm and start the lobby.
-                    </p>
-                  </div>
-                )}
+                </TrainingPlaceStep>
               </div>
             ) : (
               <div className="space-y-6">
@@ -2109,8 +2137,8 @@ export function GameCreateForm({
                       Spot required
                     </p>
                     <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      Go back and accept the nearby spot to record weather. Or
-                      disable recording to start open training.
+                      Go back and accept the nearby spot or add it to the map.
+                      Or pick Anywhere to start open training.
                     </p>
                   </div>
                 ) : (
@@ -2119,8 +2147,9 @@ export function GameCreateForm({
                       Ready to start
                     </p>
                     <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                      Training will start as open play without a registered
-                      spot.
+                      {trainingPlace === "label" && normalizedSpotLabel
+                        ? `Logged at ${normalizedSpotLabel}. No location check in training.`
+                        : "Training will start as open play. Any place works."}
                     </p>
                     <dl className="mt-4 space-y-2 rounded-[8px] border border-outline-variant bg-surface-container-lowest p-3 text-xs">
                       <div className="flex justify-between gap-4">
@@ -2357,6 +2386,7 @@ export function GameCreateForm({
                 onSpotAcceptance={handleSpotAcceptance}
                 onContinueTraining={() => handleModeChange("training")}
                 onRetryLocation={() => void retryLocation()}
+                quickAdd={renderQuickAdd("challenge")}
               />
             </div>
           ) : (

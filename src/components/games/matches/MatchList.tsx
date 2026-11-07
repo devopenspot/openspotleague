@@ -148,7 +148,9 @@ function ListBody({
                 <span className="font-display text-xs uppercase tracking-[0.08em] text-secondary">
                   {game.mode === "challenge" && game.spotId
                     ? `Spot ${game.spotId.slice(0, 8)} / ${game.nextSpotType}`
-                    : `${game.gameName} / ${game.nextSpotType}`}
+                    : game.spotLabel
+                      ? `${game.gameName} @ ${game.spotLabel} / ${game.nextSpotType}`
+                      : `${game.gameName} / ${game.nextSpotType}`}
                   {meta ? (
                     <>
                       {" "}
