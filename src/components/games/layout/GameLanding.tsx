@@ -39,6 +39,7 @@ const UI_COPY = {
   modeHint: `Training works anywhere and is saved to your history. Battles are verified at a registered spot and earn leaderboard points.`,
   challengeRecord: `Challenge record`,
   gameNotFound: `That code didn't match a game. Check it with your friend and try again.`,
+  gameUnavailable: `That game has ended or is full. Ask your friend for a new code.`,
   loading: `Loading`,
   unavailable: `Unavailable`,
   newRider: `New Rider`,
@@ -77,7 +78,13 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
   const [gamesOpen, setGamesOpen] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
   const searchParams = useNextSearchParams();
-  const joinFailed = searchParams.get("error") === "game-not-found";
+  const joinError = searchParams.get("error");
+  const joinFailedMessage =
+    joinError === "game-not-found"
+      ? UI_COPY.gameNotFound
+      : joinError === "game-unavailable"
+        ? UI_COPY.gameUnavailable
+        : null;
   const prefill = useMemo(() => parseGamePrefill(searchParams), [searchParams]);
   const preferredSport = usePreferencesStore((s) => s.preferredSport);
   const preferencesHydrationStatus = usePreferencesStore(
@@ -140,12 +147,12 @@ function GameLandingContent({ signedIn }: { signedIn: boolean }) {
               </button>
             ) : null}
           </div>
-          {joinFailed ? (
+          {joinFailedMessage ? (
             <p
               role="alert"
               className="mt-2 rounded-lg border-2 border-error bg-error-container px-4 py-3 text-sm font-semibold text-on-error-container"
             >
-              {UI_COPY.gameNotFound}
+              {joinFailedMessage}
             </p>
           ) : null}
           {resumableGame ? (

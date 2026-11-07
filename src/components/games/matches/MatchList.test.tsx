@@ -150,8 +150,8 @@ describe("MatchList — award history replay", () => {
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
     render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getAllByText("complete").length).toBeGreaterThanOrEqual(2));
-    const buttons = screen.getAllByRole("button", { name: /View championship results/i });
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBeGreaterThanOrEqual(2));
+    const buttons = screen.getAllByRole("button", { name: /View results/i });
     expect(buttons).toHaveLength(3);
   });
 
@@ -163,13 +163,13 @@ describe("MatchList — award history replay", () => {
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
     render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getByText("lobby")).toBeInTheDocument());
-    const buttons = screen.getAllByRole("button", { name: /View championship results/i });
+    await waitFor(() => expect(screen.getByText("Lobby")).toBeInTheDocument());
+    const buttons = screen.getAllByRole("button", { name: /View results/i });
     // only 3 terminal
     expect(buttons).toHaveLength(3);
     // ensure active/lobby labels exist but not as buttons
-    expect(screen.getByText("active")).toBeInTheDocument();
-    expect(screen.getByText("lobby")).toBeInTheDocument();
+    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText("Lobby")).toBeInTheDocument();
   });
 
 
@@ -187,8 +187,8 @@ describe("MatchList — award history replay", () => {
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
     render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getAllByText("complete").length).toBe(2));
-    const btn = screen.getByRole("button", { name: /View championship results for Play a Blade — roller/i });
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    const btn = screen.getByRole("button", { name: /View results for Play a Blade — roller/i });
     await user.click(btn);
     await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument(), { timeout: 3000 });
     expect(screen.getByText(/Alice takes BLADE!/)).toBeInTheDocument();
@@ -207,9 +207,33 @@ describe("MatchList — award history replay", () => {
       return new Response(JSON.stringify({ error: "not found" }), { status: 404 });
     }));
     render(<MatchList bare limit={100} />);
-    await waitFor(() => expect(screen.getAllByText("complete").length).toBe(2));
-    const btn = screen.getByRole("button", { name: /View championship results for Play a Blade — roller/i });
+    await waitFor(() => expect(screen.getAllByText("Finished").length).toBe(2));
+    const btn = screen.getByRole("button", { name: /View results for Play a Blade — roller/i });
     await user.click(btn);
     await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+  });
+});
+
+describe("MatchList — row copy", () => {
+  it("names the battle spot and the status instead of raw ids", () => {
+    render(
+      <MatchList
+        bare
+        list={{
+          status: "ready",
+          games: [{ ...mockGames[0]!, status: "active", spotName: "Riverside Ledges" }],
+        }}
+      />,
+    );
+    expect(screen.getByText("Live")).toBeInTheDocument();
+    expect(screen.getByText(/Battle \/ Play a Blade @ Riverside Ledges/)).toBeInTheDocument();
+    expect(screen.queryByText(/Spot spot-1/)).toBeNull();
+  });
+
+  it("offers a retry when the list fails to load", async () => {
+    const reload = vi.fn();
+    render(<MatchList bare list={{ status: "error", games: [], reload }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 });

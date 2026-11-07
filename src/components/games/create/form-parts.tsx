@@ -3,7 +3,8 @@
 import type { KeyboardEvent, ReactNode } from "react";
 import { WeatherIcon } from "@/components/spots/weather/WeatherIcon";
 import { LocationBlockedCallout } from "@/components/ui/LocationBlockedCallout";
-import { formatDistance } from "@/lib/spots/geo";
+import { formatDistance, formatRadius } from "@/lib/spots/geo";
+import { DEFAULT_LOCATION_RADIUS_METERS } from "@/lib/games/definitions";
 import {
   CARD,
   CARD_NESTED,
@@ -641,6 +642,26 @@ export function ChallengeSpotStep({
     !selectedSpot && !locationLoading && locationStatus === "granted";
   const locationFailed =
     locationStatus === "denied" || locationStatus === "unavailable";
+  const spotRejected = Boolean(selectedSpot) && spotAccepted === false;
+  const battle = context === "challenge";
+  const radius = formatRadius(DEFAULT_LOCATION_RADIUS_METERS, distanceUnit);
+  const checking = locationStatus === "requesting" || locationLoading;
+  const status =
+    locationStatus === "requesting"
+      ? "Checking your location..."
+      : locationLoading
+        ? `Looking for a spot within ${radius}...`
+        : selectedSpot
+          ? `${selectedSpot.name} is the closest spot for this game.`
+          : locationStatus === "granted"
+            ? `No registered spot for this game within ${radius}.`
+            : locationStatus === "denied"
+              ? "Location is blocked on this device."
+              : locationStatus === "unavailable"
+                ? battle
+                  ? "A battle needs your location to find the spot. Try again, or play it as Training."
+                  : "Your location isn't available right now. Try again, or log without a spot."
+                : "Allow location to find the spot you're at.";
   return (
     <Field label="Nearby registered spot" error={fieldError}>
       <div
@@ -653,22 +674,10 @@ export function ChallengeSpotStep({
           role="status"
           aria-live="polite"
         >
-          {locationStatus === "requesting"
-            ? "Checking your location..."
-            : locationLoading
-              ? "Finding the nearest compatible spot within 250 meters..."
-              : selectedSpot
-                ? `${selectedSpot.name} is the only compatible spot found within 250 meters.`
-                : locationStatus === "granted"
-                  ? "No compatible registered spot was found within 250 meters."
-                  : locationStatus === "denied"
-                    ? "Location is blocked. Allow location in your browser settings, close this tab and open again, then tap Try again. Or continue with Training."
-                    : locationStatus === "unavailable"
-                      ? "Challenge needs your location to find a registered spot. Tap Try again or continue with Training."
-                      : "Location is required to show a registered spot. Tap Try again to allow it."}
+          {status}
         </p>
         {selectedSpot ? (
-          <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
+          <div className="rounded-container border border-outline-variant bg-surface-container-lowest p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="truncate font-display text-lg font-bold uppercase">
@@ -713,15 +722,15 @@ export function ChallengeSpotStep({
                   No, not this spot
                 </button>
               </div>
-              {spotAccepted === false ? (
-                <p className="mt-3 text-sm leading-5 text-error" role="status">
-                  {context === "challenge"
-                    ? "Battle creation stays locked until you accept the nearby spot."
-                    : "Pick another option above, or add this place as a new spot."}
+              {spotRejected ? (
+                <p className="mt-3 text-sm leading-5 text-on-surface-variant" role="status">
+                  {battle
+                    ? "Add the place you're at as a new spot, or play it as Training."
+                    : "Add the place you're at as a new spot, or pick Anywhere or Just a name."}
                 </p>
               ) : null}
             </div>
-            {selectedSpot.visibility === "personal" && context === "challenge" ? (
+            {selectedSpot.visibility === "personal" && battle ? (
               <p className="mt-3 text-xs leading-5 text-on-surface-variant" role="note">
                 This spot is still personal. It becomes public once your
                 opponent checks in here, and leaderboard points count from
@@ -729,19 +738,18 @@ export function ChallengeSpotStep({
               </p>
             ) : null}
           </div>
-        ) : noSpotHere && quickAdd ? (
-          quickAdd
-        ) : (
+        ) : noSpotHere && quickAdd ? null : (
           <div className={EMPTY_STATE_INLINE}>
-            {context === "challenge"
-              ? "A battle needs a spot near your current location. Add this place as a new spot, or play it as Training."
+            {battle
+              ? "A battle needs a registered spot near you. Add the place you're at as a new spot, or play it as Training."
               : "No registered spot nearby. Pick Anywhere or Just a name to log this session. Signed-in riders can add this place to the map."}
           </div>
         )}
+        {(noSpotHere || spotRejected) && quickAdd ? quickAdd : null}
         {locationStatus === "denied" ? (
           <LocationBlockedCallout onRetry={onRetryLocation} />
         ) : null}
-        {context === "challenge" && (locationFailed || noSpotHere) ? (
+        {battle && (locationFailed || noSpotHere || spotRejected) ? (
           <div className={CARD_NESTED}>
             <p className="text-sm leading-6 text-on-surface-variant">
               No spot? Play it as Training: any place works and your session
@@ -757,7 +765,7 @@ export function ChallengeSpotStep({
             </button>
           </div>
         ) : null}
-        {context === "training" && locationFailed ? (
+        {!battle && locationFailed ? (
           <button
             type="button"
             onClick={onContinueTraining}
@@ -766,17 +774,14 @@ export function ChallengeSpotStep({
             Log without a spot
           </button>
         ) : null}
-        {locationStatus !== "denied" ? (
+        {locationStatus !== "denied" && spotAccepted !== true ? (
           <button
             type="button"
             onClick={onRetryLocation}
-            disabled={locationStatus === "requesting" || locationLoading}
-            aria-label="Retry location"
-            className="min-h-11 rounded-full border border-outline-variant bg-surface-container-high px-4 font-display text-xs font-bold uppercase tracking-[0.05em] text-on-surface transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-highest focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-4 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
+            disabled={checking}
+            className={controlClass("outline")}
           >
-            {locationStatus === "requesting" || locationLoading
-              ? "Checking location..."
-              : "Retry location"}
+            {checking ? "Checking location..." : "Retry location"}
           </button>
         ) : null}
       </div>
@@ -794,8 +799,11 @@ export function WeatherConfirmSection({
   onConfirm,
   onObservedChange,
   temperatureUnit,
+  optional = false,
 }: {
   idPrefix?: string;
+  /** Training: weather is a journal note, never a blocker. */
+  optional?: boolean;
   forecastWeather?: SpotWeather | null;
   weatherConfirmed: boolean | null;
   weatherObservedIcon: WeatherIconName | null;
@@ -810,7 +818,7 @@ export function WeatherConfirmSection({
   const observedGroupId = controlId("weather-observed-group");
 
   return (
-    <Field label="Current weather" error={fieldError}>
+    <Field label={optional ? "Current weather (optional)" : "Current weather"}>
       <div className="space-y-3" data-invalid={fieldError ? "true" : undefined}>
         <div className="rounded-[16px] border border-outline-variant bg-surface-container-lowest p-4">
           <div className="flex items-center justify-between gap-3">
@@ -885,6 +893,11 @@ export function WeatherConfirmSection({
             </button>
           </div>
           {fieldError ? <FieldError>{fieldError}</FieldError> : null}
+          {optional && weatherConfirmed !== null ? (
+            <p className="mt-2 text-xs leading-5 text-on-surface-variant">
+              Tap your answer again to skip the weather.
+            </p>
+          ) : null}
         </div>
 
         {weatherConfirmed === false ? (
@@ -955,7 +968,7 @@ export function ConfigurationSummary({
   weather: string;
 }) {
   const items = [
-    ["Mode", mode === "training" ? "Training" : "Challenge"],
+    ["Mode", mode === "training" ? "Training" : "Battle"],
     ["Rule", ruleMode === "flexible" ? "Flexible" : "Strict"],
     ["Spot type", spotType],
     ["Level", `Level ${level}`],
@@ -1021,7 +1034,7 @@ export function CreateSubmitButton({
         ? "Creating game..."
         : mode === "training"
           ? "Start Training"
-          : "Create Challenge"}
+          : "Create Battle"}
     </button>
   );
 }

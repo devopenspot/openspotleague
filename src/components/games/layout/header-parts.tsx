@@ -58,7 +58,7 @@ export function GameStatusStrip({
         {game.players.length} {game.players.length === 1 ? "Rider" : "Riders"}
       </span>
       <span className="inline-flex shrink-0 items-center rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold capitalize">
-        {game.mode === "training" ? "Training" : "Challenge"}
+        {game.mode === "training" ? "Training" : "Battle"}
       </span>
       <span className="inline-flex shrink-0 items-center rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold">
         {game.trainingVariant === "solo"
@@ -114,9 +114,12 @@ export function GameStatusStrip({
       {game.spotId && game.weatherForecastIcon ? (
         <GameWeatherBanner game={game} variant="compact" />
       ) : null}
-      {!game.spotId && game.spotLabel ? (
-        <span className="inline-flex min-w-0 max-w-[10rem] items-center truncate rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold text-on-surface">
-          <span className="min-w-0 truncate">@ {game.spotLabel}</span>
+      {game.spotName || game.spotLabel ? (
+        <span
+          className="inline-flex min-w-0 max-w-[10rem] items-center truncate rounded-full bg-surface-container-high px-2.5 py-1 text-xs font-bold text-on-surface"
+          title={game.spotName ?? game.spotLabel ?? undefined}
+        >
+          <span className="min-w-0 truncate">@ {game.spotName ?? game.spotLabel}</span>
         </span>
       ) : null}
     </div>

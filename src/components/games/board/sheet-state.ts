@@ -71,9 +71,32 @@ export type GameSheetView = {
 
 function checkInLabel(permission: LocationPermission, pending: boolean) {
   if (pending) return "Checking You In…";
-  if (permission === "denied") return "Fix Location To Ride";
-  if (permission === "unavailable") return "Try Again";
+  if (permission === "denied") return "Retry Location";
   return "Check In At Spot";
+}
+
+/** Status line for a rider who still has to check in. */
+function checkInStatus(permission: LocationPermission) {
+  if (permission === "denied") {
+    return "Location is blocked. Allow it for this site in your browser settings, then tap Retry Location.";
+  }
+  if (permission === "unavailable") {
+    return "This browser can't share location. Open the game on your phone to check in.";
+  }
+  return "Check in at the spot";
+}
+
+/** Retrying can't help when the browser has no location support at all. */
+function checkInActions(context: { locationPermission: LocationPermission; locationPending: boolean }): GameSheetAction[] {
+  if (context.locationPermission === "unavailable") return [];
+  return [
+    {
+      id: "checkIn",
+      label: checkInLabel(context.locationPermission, context.locationPending),
+      tone: "primary",
+      disabled: context.locationPending,
+    },
+  ];
 }
 
 /** What a scheduled lobby is still waiting for. */
@@ -195,18 +218,8 @@ export function deriveGameSheetView(
       });
     }
     if (needsCheckIn) {
-      return view("check-in", "Check in at the spot", {
-        actions: [
-          {
-            id: "checkIn",
-            label: checkInLabel(
-              context.locationPermission,
-              context.locationPending,
-            ),
-            tone: "primary",
-            disabled: context.locationPending,
-          },
-        ],
+      return view("check-in", checkInStatus(context.locationPermission), {
+        actions: checkInActions(context),
       });
     }
     if (capabilities.canStartNow && game.scheduledStartAt) {
@@ -248,27 +261,15 @@ export function deriveGameSheetView(
   if (needsCheckIn || context.locationPending) {
     return view(
       "check-in",
-      context.locationPending ? "Checking you in…" : "Check in at the spot",
-      {
-        actions: needsCheckIn
-          ? [
-              {
-                id: "checkIn",
-                label: checkInLabel(
-                  context.locationPermission,
-                  context.locationPending,
-                ),
-                tone: "primary",
-                disabled: context.locationPending,
-              },
-            ]
-          : [],
-      },
+      context.locationPending
+        ? "Checking you in…"
+        : checkInStatus(context.locationPermission),
+      { actions: needsCheckIn ? checkInActions(context) : [] },
     );
   }
 
   if (checkInAgain) {
-    return view("check-in", "Check in at the spot", {
+    return view("check-in", "You're not checked in yet", {
       actions: [{ id: "checkIn", label: "Check In Again", tone: "primary" }],
     });
   }

@@ -66,6 +66,7 @@ import {
 } from "@/lib/games/guest";
 import { loadLastSetup, saveLastSetup } from "@/lib/games/last-setup";
 import { showToast } from "@/hooks/ui/useToast";
+import { weatherLabel } from "@/lib/games/labels";
 import {
   computeLevelsForSpotAndCategories,
   countEligibleTricks,
@@ -85,9 +86,9 @@ const GAME_SPORTS = ["skateboard", "bmx", "scooter", "roller"] as const;
 const GUEST_NAME_STORAGE_KEY = "openspot-guest-name";
 const CHALLENGE_SETUP_STEPS = [
   { id: "settings", label: "Player", title: "Who & how you play" },
-  { id: "trick", label: "Trick", title: "Pick spot, level & categories" },
+  { id: "trick", label: "Trick", title: "Spot type, level & categories" },
   { id: "time", label: "Time", title: "When the lobby opens" },
-  { id: "spot", label: "Spot", title: "Verify the spot" },
+  { id: "spot", label: "Spot", title: "Confirm the spot" },
   { id: "confirm", label: "Confirm", title: "Weather & summary" },
 ] as const satisfies ReadonlyArray<{
   id: GameSetupStep;
@@ -96,9 +97,9 @@ const CHALLENGE_SETUP_STEPS = [
 }>;
 const TRAINING_SETUP_STEPS = [
   { id: "settings", label: "Player", title: "Who & how you play" },
-  { id: "trick", label: "Trick", title: "Pick spot, level & categories" },
-  { id: "spot", label: "Spot", title: "Choose where to record" },
-  { id: "confirm", label: "Confirm", title: "Weather & summary" },
+  { id: "trick", label: "Trick", title: "Spot type, level & categories" },
+  { id: "spot", label: "Place", title: "Where you're riding" },
+  { id: "confirm", label: "Confirm", title: "Summary" },
 ] as const satisfies ReadonlyArray<{
   id: GameSetupStep;
   label: string;
@@ -655,43 +656,20 @@ export function GameCreateForm({
     availableSpotTypes.length === 0 ||
     !selectedSpotType;
   const prefillPending = Boolean(initialPrefill?.spotId && prefillLoading);
-  // Battle verifies weather; in training it is an optional journal note.
-  const requiresWeather =
-    mode === "challenge" && Boolean(selectedSpot) && spotAccepted === true;
-  const weatherPending =
-    (requiresWeather &&
-      (weatherConfirmed === null ||
-        (weatherConfirmed === false && !weatherObservedIcon) ||
-        !forecastWeather)) ||
-    (mode === "training" &&
-      weatherConfirmed === false &&
-      !weatherObservedIcon);
   const trainingPlace: TrainingPlace = trainingSpotEnabled
     ? "spot"
     : trainingLabelEnabled
       ? "label"
       : "none";
   const normalizedSpotLabel = spotLabel.trim().slice(0, 80);
+  // Disabled only while loading: everything else is explained by validation
+  // on submit, which focuses the first missing answer.
   const createDisabled =
     busy ||
     prefillPending ||
     !discipline ||
     Boolean(activeOptionsError) ||
-    hasMissingOptions ||
-    (mode === "challenge" &&
-      (locationLoading ||
-        locationStatus !== "granted" ||
-        !location ||
-        !selectedSpot ||
-        spotAccepted !== true)) ||
-    (mode === "training" &&
-      trainingSpotEnabled &&
-      (locationLoading ||
-        locationStatus !== "granted" ||
-        !location ||
-        !selectedSpot ||
-        spotAccepted !== true)) ||
-    weatherPending;
+    hasMissingOptions;
   const trainingStepIndex = Math.max(
     0,
     TRAINING_SETUP_STEPS.findIndex((step) => step.id === setupStep),
@@ -861,8 +839,14 @@ export function GameCreateForm({
   }
 
   function handleWeatherConfirm(confirmed: boolean) {
-    setWeatherConfirmed(confirmed);
-    if (confirmed) setWeatherObservedIcon(null);
+    // Training weather is optional: a second tap on the chosen answer clears it.
+    if (mode === "training" && weatherConfirmed === confirmed) {
+      setWeatherConfirmed(null);
+      setWeatherObservedIcon(null);
+    } else {
+      setWeatherConfirmed(confirmed);
+      if (confirmed) setWeatherObservedIcon(null);
+    }
     setFieldErrors((current) => ({
       ...current,
       weather: undefined,
@@ -922,7 +906,7 @@ export function GameCreateForm({
     }
     // Game AND logic: level ∧ spotType ∧ categories must have at least one trick
     if (eligibleTrickCount !== null && eligibleTrickCount === 0) {
-      nextErrors.categories = `No tricks for Level ${effectiveLevel} at ${effectiveSpotType} with ${selectedCategories.join(", ")} — switch to All, change level/spot, or pick another category.`;
+      nextErrors.categories = `No tricks for Level ${effectiveLevel} on ${selectedSpotType?.name ?? "this spot type"} with ${selectedCategories.join(", ")}. Pick All, another level or another spot type.`;
     }
 
     return nextErrors;
@@ -934,7 +918,7 @@ export function GameCreateForm({
       return {
         spot:
           mode === "challenge"
-            ? "Accept the nearby spot to create the challenge."
+            ? "Accept the nearby spot to create the battle."
             : "Accept the nearby spot, add one, or pick Anywhere.",
       };
     }
@@ -945,7 +929,7 @@ export function GameCreateForm({
     if (!needsSpot || !selectedSpot || spotAccepted !== true) return {};
     if (mode === "training") {
       return weatherConfirmed === false && !weatherObservedIcon
-        ? { weatherObserved: "Select the correct live weather, or skip it." }
+        ? { weatherObserved: "Pick the live weather, or tap No again to skip." }
         : {};
     }
     if (weatherConfirmed === null) {
@@ -1368,10 +1352,12 @@ export function GameCreateForm({
       : !forecastWeather
         ? "Loading..."
         : weatherConfirmed === true
-          ? `Forecast ${forecastWeather.icon} confirmed`
+          ? `${weatherLabel(forecastWeather.icon)}, confirmed`
           : weatherConfirmed === false && weatherObservedIcon
-            ? `Observed ${weatherObservedIcon} (forecast ${forecastWeather.icon})`
-            : "Awaiting confirmation";
+            ? `${weatherLabel(weatherObservedIcon)} (forecast ${weatherLabel(forecastWeather.icon).toLowerCase()})`
+            : mode === "training"
+              ? "Not recorded"
+              : "Awaiting confirmation";
   const summaryProps = {
     mode,
     ruleMode,
@@ -1544,9 +1530,9 @@ export function GameCreateForm({
                   href="/login"
                   className="font-display font-bold uppercase underline decoration-2 underline-offset-4"
                 >
-                  Sign in to unlock Challenge
+                  Sign in to unlock Battle
                 </Link>{" "}
-                games. Training is available to guests with a rider name.
+                games. Training is open to guests with a rider name.
               </p>
             ) : null}
             {initialPrefill?.mode === "challenge" && !signedIn ? (
@@ -1721,6 +1707,7 @@ export function GameCreateForm({
                   />
                   {selectedSpot && spotAccepted === true ? (
                     <WeatherConfirmSection
+                      optional
                       idPrefix="desktop-training"
                       forecastWeather={forecastWeather}
                       weatherConfirmed={weatherConfirmed}
@@ -1804,7 +1791,7 @@ export function GameCreateForm({
               ? "Creating game..."
               : mode === "training"
                 ? "Start Training"
-                : "Create Challenge"}
+                : "Create Battle"}
           </button>
         )}
       </div>
@@ -1830,7 +1817,7 @@ export function GameCreateForm({
               tabIndex={-1}
               className="mt-2 font-display text-3xl font-bold uppercase leading-none outline-none"
             >
-              {mode === "training" ? "Start training" : "Create challenge"}
+              {mode === "training" ? "Start training" : "Create battle"}
             </h2>
             <p
               id={GAME_SETUP_DESCRIPTION_ID}
@@ -2086,6 +2073,7 @@ export function GameCreateForm({
                 spotAccepted === true ? (
                   <>
                     <WeatherConfirmSection
+                      optional
                       forecastWeather={forecastWeather}
                       weatherConfirmed={weatherConfirmed}
                       weatherObservedIcon={weatherObservedIcon}

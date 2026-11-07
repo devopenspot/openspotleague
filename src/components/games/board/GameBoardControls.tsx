@@ -451,27 +451,20 @@ export function GameBoardControls({
                   </button>
                 ) : null}
 
-                {needsVerification ? (
+                {needsVerification && locationPermission !== "unavailable" ? (
                   <button
                     type="button"
                     disabled={busy || locationPending}
-                    aria-label={
-                      locationPermission === "denied"
-                        ? "Fix Location To Ride"
-                        : locationPermission === "unavailable"
-                          ? "Try Again"
-                          : "Check In At Spot"
-                    }
                     onClick={onVerifyLocation}
                     className="min-h-9 rounded-full border border-primary bg-primary px-3.5 font-display text-[11px] font-bold uppercase tracking-[0.04em] text-on-primary transition-[background-color,transform] hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px disabled:cursor-wait disabled:opacity-50"
                   >
-                    {locationPending
-                      ? "Checking You In…"
-                      : locationPermission === "denied"
-                        ? "Fix Location To Ride"
-                        : locationPermission === "unavailable"
-                          ? "Try Again"
+                    <span aria-live="polite">
+                      {locationPending
+                        ? "Checking You In…"
+                        : locationPermission === "denied"
+                          ? "Retry Location"
                           : "Check In At Spot"}
+                    </span>
                   </button>
                 ) : null}
 
@@ -650,6 +643,20 @@ export function GameBoardControls({
           guestJoinError={guestJoinError}
           onGuestNameChange={onGuestNameChange}
           onGuestJoin={onGuestJoin}
+          onJoin={onJoinLobby}
+          checkIn={
+            capabilities.canVerifyLocation && locationPermission !== "unavailable"
+              ? {
+                  label: locationPending
+                    ? "Checking You In…"
+                    : locationPermission === "denied"
+                      ? "Retry Location"
+                      : "Check In At Spot",
+                  pending: locationPending,
+                  onCheckIn: onVerifyLocation,
+                }
+              : null
+          }
           onClose={() => setIsCountdownOpen(false)}
           onStartNow={onStartNow}
         />

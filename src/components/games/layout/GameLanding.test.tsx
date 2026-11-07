@@ -18,7 +18,7 @@ vi.mock("@/components/games/create/GameCreateForm", () => ({
   GameCreateForm: () => (
     <section aria-label="Game setup">
       <button role="radio" aria-checked="true">Training</button>
-      <button role="radio" aria-checked="false">Challenge</button>
+      <button role="radio" aria-checked="false">Battle</button>
     </section>
   ),
 }))
@@ -65,7 +65,7 @@ describe("GameLanding", () => {
     expect(screen.getByTestId("join-game-trigger")).toHaveAttribute("aria-expanded", "false")
     expect(screen.queryByRole("heading", { name: "Have a share code?" })).not.toBeInTheDocument()
     expect(screen.getByRole("radio", { name: "Training" })).toBeInTheDocument()
-    expect(screen.getByRole("radio", { name: "Challenge" })).toBeInTheDocument()
+    expect(screen.getByRole("radio", { name: "Battle" })).toBeInTheDocument()
   })
 
   it("routes a valid share code to the join page", async () => {
@@ -203,20 +203,25 @@ describe("GameLanding", () => {
     expect(pushMock).not.toHaveBeenCalled()
   })
 
-  it("renders active and recent matches section when signed in", () => {
+  it("opens your games from the landing when signed in", async () => {
+    const user = userEvent.setup()
     render(<GameLanding signedIn />)
 
-    expect(
-      screen.getByRole("heading", { name: "Active & Recent" }),
-    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "Your games" }))
+    expect(screen.getByRole("dialog", { name: "Your games" })).toBeInTheDocument()
   })
 
-  it("does not render active and recent matches section when signed out", () => {
+  it("does not offer your games when signed out", () => {
     render(<GameLanding signedIn={false} />)
 
-    expect(
-      screen.queryByRole("heading", { name: "Active & Recent" }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Your games" })).not.toBeInTheDocument()
+  })
+
+  it("explains a join link to a game that has ended", () => {
+    searchParams.value = new URLSearchParams("error=game-unavailable")
+    render(<GameLanding signedIn={false} />)
+
+    expect(screen.getByRole("alert")).toHaveTextContent("That game has ended or is full")
   })
 
   it("exposes game rules and rider policy modal triggers from LandingInfo", async () => {
