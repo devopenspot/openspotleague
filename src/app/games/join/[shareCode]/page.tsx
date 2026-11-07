@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/og/config";
 import { connection } from "next/server";
 import { getSessionUser } from "@/lib/auth/server";
 import { GameDomainError } from "@/lib/games/definitions";
@@ -43,7 +44,7 @@ export async function generateMetadata({
         description: "This Open Spot invite could not be found.",
         images: [
           {
-            url: "/opengraph.png",
+            url: OG_IMAGES.default,
             width: 1200,
             height: 630,
             alt: "OpenSpot League",
@@ -52,7 +53,7 @@ export async function generateMetadata({
       },
       twitter: {
         card: "summary_large_image",
-        images: ["/opengraph.png"],
+        images: [OG_IMAGES.default],
       },
     };
   }

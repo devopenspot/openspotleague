@@ -35,6 +35,21 @@
         "dev"
       ],
       "port": 3000
+    },
+    {
+      "name": "prod-preview",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=postgresql://postgres:postgres@127.0.0.1:54399/postgres",
+        "pnpm", "start", "--port", "4173", "--strictPort"
+      ],
+      "port": 4173
+    },
+    {
+      "name": "og-cards",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4178", "--bind", "127.0.0.1", "--directory", "design/og-cards"],
+      "port": 4178
     }
   ]
 }

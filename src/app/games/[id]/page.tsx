@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES } from "@/lib/og/config";
 import { connection } from "next/server";
 import { getSessionUser } from "@/lib/auth/server";
 import { GameBoard } from "@/components/games/board/GameBoard";
@@ -32,7 +33,7 @@ export async function generateMetadata({
       openGraph: {
         images: [
           {
-            url: "/opengraph.png",
+            url: OG_IMAGES.default,
             width: 1200,
             height: 630,
             alt: "OpenSpot League",

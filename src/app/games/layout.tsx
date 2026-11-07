@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_IMAGES, ogImage } from "@/lib/og/config";
 
 export const metadata: Metadata = {
   title: "Training & battles",
@@ -9,19 +10,14 @@ export const metadata: Metadata = {
     title: "Open Spot training & battles",
     description:
       "Train anywhere or battle riders at a spot with Open Spot. Share a lobby and ride together.",
-    images: [
-      {
-        url: "/challenges.jpg",
-        alt: "Open Spot training and battles",
-      },
-    ],
+    images: [ogImage(OG_IMAGES.gamesTraining, "Open Spot training and battles")],
   },
   twitter: {
     card: "summary_large_image",
     title: "Open Spot training & battles",
     description:
       "Train anywhere or battle riders at a spot with Open Spot. Share a lobby and ride together.",
-    images: ["/challenges.jpg"],
+    images: [OG_IMAGES.gamesTraining],
   },
 };
 

@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getSessionUser } from "@/lib/auth/server";
 import { OG_SIZE } from "@/lib/og/config";
-import { loadPublicImageAsDataUrl } from "@/lib/og/images";
 import { getRiderResultCard } from "@/lib/services/league/result-card";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
 
@@ -26,8 +25,9 @@ export default async function Image({
     null,
     "getRiderResultCard(og)",
   );
-  const fallback = await loadPublicImageAsDataUrl("/opengraph.png");
-  const cover = card && /^https?:\/\//.test(card.contest.image) ? card.contest.image : fallback;
+  // No cover: the League wash (gradient-league in DESIGN.md) instead of an
+  // image, so the rider's text never stacks on another card's text.
+  const cover = card && /^https?:\/\//.test(card.contest.image) ? card.contest.image : null;
   const best = card ? [...card.results].sort((a, b) => a.rank - b.rank)[0] : null;
 
   return new ImageResponse(
@@ -38,6 +38,7 @@ export default async function Image({
         display: "flex",
         position: "relative",
         backgroundColor: "#0a0a0a",
+        backgroundImage: cover ? undefined : "linear-gradient(to right, #0284c7, #2563eb, #1e40af)",
         color: "#fff",
         fontFamily: "sans-serif",
       }}

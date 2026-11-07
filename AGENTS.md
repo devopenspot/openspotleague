@@ -107,4 +107,5 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 - `docs/caching-and-egress.md`: Cache Components, invalidation, the Supabase egress budget, RSC payloads, polling.
 - `docs/database.md`: environment, migrations, seeding, RBAC/RLS, realtime, storage.
 - `docs/league.md`: League contests — routes, the contest hub, divisions and video contests, the Article 9 rating, leaderboards, public listing rule, plans and payment gate, covers, contest curation, write path, errors.
+- `docs/og-cards.md`: share (Open Graph) images — generated vs static, the `design/og-cards/` card sheet, export, shipping a card, scaling to generated images.
 - `docs/ui-conventions.md`: UI rules and component organization.

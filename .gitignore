@@ -15,3 +15,6 @@ src/data-backup/*
 /dist/
 .vinext/
 .cloudflare/
+
+# OG card sheet renders (design/og-cards/export.sh)
+/design/og-cards/out/

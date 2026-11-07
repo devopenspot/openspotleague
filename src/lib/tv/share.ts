@@ -1,8 +1,9 @@
 import type { TvCard } from "@/types/tv";
 import { youtubeThumbUrl } from "@/lib/tv/urls";
+import { OG_IMAGES } from "@/lib/og/config";
 
-/** Static OG asset for TV shares (exact public/ filename, typo included). */
-export const TV_OG_IMAGE_PATH = "/opengrapgh-tv.png";
+/** Static OG card for TV shares (`og-tv` in design/og-cards/). */
+export const TV_OG_IMAGE_PATH = OG_IMAGES.tv;
 
 export interface TvOgImageResult {
   url: string;

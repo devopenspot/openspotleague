@@ -1,14 +1,31 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import countriesRaw from "@/data/countries.json";
 import { DataCuratorForm } from "@/components/support/DataCuratorForm";
 import type { CountryOption } from "@/components/support/DataCuratorForm";
 import { EYEBROW_ON_WASH, PAGE_TITLE, controlClass } from "@/components/ui/recipes";
+import { OG_IMAGES, ogImage } from "@/lib/og/config";
 
-export const metadata = {
+const CURATOR_DESCRIPTION =
+  "Apply to become a scoped data curator for spots, TV videos or tricks on Open Spot.";
+
+export const metadata: Metadata = {
   title: "Become a data curator",
-  description:
-    "Apply to become a scoped data curator for spots, TV videos or tricks on Open Spot.",
+  description: CURATOR_DESCRIPTION,
   robots: { index: false, follow: false },
+  // noindex keeps it out of search; link unfurls still read OpenGraph.
+  openGraph: {
+    type: "website",
+    title: "Become a data curator",
+    description: CURATOR_DESCRIPTION,
+    images: [ogImage(OG_IMAGES.curator, "Become a data curator on Open Spot")],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Become a data curator",
+    description: CURATOR_DESCRIPTION,
+    images: [OG_IMAGES.curator],
+  },
 };
 
 // Project to the two fields the client renders (RSC wire slimming).

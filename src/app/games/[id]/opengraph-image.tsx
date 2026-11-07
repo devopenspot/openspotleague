@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getGameOgPreviewById } from "@/lib/services/games";
 import { withSafeDefault } from "@/lib/utils/safe-fetch";
-import { OG_SIZE } from "@/lib/og/config";
+import { OG_IMAGES, OG_SIZE, gameOgCard } from "@/lib/og/config";
 import { loadPublicImageAsDataUrl } from "@/lib/og/images";
 
 export const alt = "Game preview — Open Spot";
@@ -22,7 +22,7 @@ export default async function Image({
     "getGameOgPreviewById(og-image)",
   );
 
-  const leagueDataUrl = await loadPublicImageAsDataUrl("/opengraph.png");
+  const leagueDataUrl = await loadPublicImageAsDataUrl("/logo.png");
 
   if (!preview) {
     return new ImageResponse(
@@ -60,8 +60,10 @@ export default async function Image({
   }
 
   const isChallenge = preview.mode === "challenge";
-  const baseImagePath = isChallenge ? "/challenges.jpg" : "/trainings.jpg";
-  const baseDataUrl = await loadPublicImageAsDataUrl(baseImagePath) ?? leagueDataUrl;
+  // Full 1200x630 cards from design/og-cards/ (docs/og-cards.md).
+  const baseDataUrl =
+    (await loadPublicImageAsDataUrl(gameOgCard(preview.mode, preview.status))) ??
+    (await loadPublicImageAsDataUrl(OG_IMAGES.default));
 
   return new ImageResponse(
     <div
