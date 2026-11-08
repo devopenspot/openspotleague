@@ -65,7 +65,11 @@ Controls and containers are told apart by shape, never by colour.
   - `manage/ManageConsole.tsx` (the hub's Run the contest tab) with `manage-parts.tsx`, and `hooks/useLeagueRealtime.ts`.
   - `PaymentGateNotice.tsx`: the pending/locked/disabled payment notice in the console (copy from `src/lib/league/notices.ts`).
   - Join entry points: `JoinByCodeEntry` and `JoinWithInvite`.
-- `src/components/profile/league/ProfileLeagueCard.tsx`: League stats and recent results on the profile Overview.
+- `src/components/profile/`: the `/profile` page. `page.tsx` reads the summary on the server (`getProfileSummary`) and passes it to `ProfileClient`.
+  - Each fact appears once: points, rank progress and the current streak in `layout/ProfileHero`, the 12-week totals and best streak in `RiderActivityBoard`, games/tricks/spots totals in the `layout/ProfileStats` jump tiles, League numbers in `league/ProfileLeagueCard`.
+  - Tabs (`tabs/profile-tabs.ts`): Overview, Games, Spots, Tricks, Account, mirrored to `?tab=` (`hooks/useProfileTab`; `play` and `settings` still parse). `ProfileTabBar` follows the ARIA tabs keyboard pattern.
+  - The Overview shows previews (`ProfileGamesList variant="preview"`, `ProfileTricksPanel variant="summary"`); the full lists live in their tabs. Tricks are fetched once per page (`hooks/useProfileTricks`).
+  - `settings/ProfileAccount.tsx` edits preferences through `useSavePreferences` (`src/hooks/preferences/`), the same writer as the Preferences dialog, so it updates `usePreferencesStore` for the whole app. Never add a second preferences writer.
 - `src/components/admin/league/`: `contests/` (`AdminContestsTable`, `AdminContestFilters`, `ContestCurationPanel`) for curation, `plans/` (`AdminLeaguePlansTable`, `AdminAccountPlansPanel`) and `payments/AdminLeaguePaymentsTable`. See `docs/league.md`.
 - Overlays pick their initial focus from a `data-autofocus` element (`useFocusTrap`); mark the dialog's main action with it.
 - `src/components/feedback/`: `BottomSheet` is the non-modal game-sheet, `SideDrawer` plus `DrawerParts` are for anything opened on purpose. See `DESIGN.md`, `components.overlays`.

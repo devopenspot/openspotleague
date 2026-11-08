@@ -19,16 +19,15 @@ const VARIANT_CLASSES: Record<SignOutVariant, string> = {
   drawer: `${controlClass('outline')} w-full`,
   // Full-width labelled pill in the black mobile drawer.
   wire: `${controlClass('onWireOutline')} w-full`,
-  // Profile settings row: full width on phones, a 44px circle from sm.
-  profile:
-    'inline-flex h-control w-full shrink-0 items-center justify-center rounded-control border border-outline-variant bg-surface-container-high text-on-surface transition-[background-color,border-color,transform] duration-150 ease-out hover:border-outline active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 sm:w-control',
+  // Profile Account card: labelled pill, full width on phones, content width from sm.
+  profile: `${controlClass('outline')} w-full sm:w-auto`,
 };
 
 const SHOWS_LABEL: Record<SignOutVariant, boolean> = {
   icon: false,
   drawer: true,
   wire: true,
-  profile: false,
+  profile: true,
 };
 
 export function SignOutButton({ variant = 'icon', className }: SignOutButtonProps) {

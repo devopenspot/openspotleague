@@ -4,18 +4,18 @@ import { ProfileOverviewSkeleton } from "./ProfileOverviewSkeleton";
 import { ProfileShell } from "./ProfileShell";
 import { ProfileTabBarSkeleton } from "../tabs/ProfileTabBar";
 import { RiderActivityBoardSkeleton } from "@/components/games/board/RiderActivityBoard";
-import { EYEBROW } from "@/components/ui/recipes";
+import { EYEBROW_ON_WASH } from "@/components/ui/recipes";
 
-/** Single loading mirror for /profile — used by loading.tsx and ProfileClient. */
+/** Loading mirror for /profile (loading.tsx); same frame as ProfileClient. */
 export function ProfileSkeleton() {
   return (
     <ProfileShell role="status" aria-busy="true" aria-label="Loading profile">
-      <p className={EYEBROW}>Your profile</p>
+      <p className={EYEBROW_ON_WASH}>Your profile</p>
       <div
-        className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-5"
+        className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-start lg:gap-5"
         aria-hidden="true"
       >
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-3">
           <ProfileHeroSkeleton />
           <ProfileStatsSkeleton />
         </div>

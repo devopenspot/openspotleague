@@ -6,7 +6,7 @@ import { useUIStore } from "@/stores/ui-store"
 import { useUser } from "@/lib/contexts/user-context"
 import { fetchWithTimeout } from "@/lib/utils/fetch-timeout"
 import type { DistanceUnit, TemperatureUnit } from "@/stores/preferences-store"
-import { SPORT_DISCIPLINES, type SportPreference } from "@/types/disciplines"
+import { sportPreferenceFromSlug, sportPreferenceToSlug } from "@/types/disciplines"
 
 export function HydrationGate({ children }: { children: ReactNode }) {
   const user = useUser()
@@ -49,12 +49,7 @@ export function HydrationGate({ children }: { children: ReactNode }) {
         if (cancelled) return
 
         const local = usePreferencesStore.getState()
-        const accountSport: SportPreference | null =
-          data.disciplineSlug === "all"
-            ? "all"
-            : SPORT_DISCIPLINES.find(
-                (sport) => sport.toLowerCase() === data.disciplineSlug,
-              ) ?? null
+        const accountSport = sportPreferenceFromSlug(data.disciplineSlug)
         const shouldSyncGuest =
           local.preferenceAccountId === null && local.hasLocalChanges
 
@@ -66,10 +61,7 @@ export function HydrationGate({ children }: { children: ReactNode }) {
             body: JSON.stringify({
               distanceUnit: local.distanceUnit,
               temperatureUnit: local.temperatureUnit,
-              disciplineSlug:
-                local.preferredSport === "all"
-                  ? "all"
-                  : local.preferredSport?.toLowerCase() ?? null,
+              disciplineSlug: sportPreferenceToSlug(local.preferredSport),
             }),
             signal: abortController.signal,
             timeoutMs: 10_000,
@@ -79,12 +71,7 @@ export function HydrationGate({ children }: { children: ReactNode }) {
           }
           const synced = await syncResponse.json() as typeof data
           if (cancelled) return
-          const syncedSport: SportPreference | null =
-            synced.disciplineSlug === "all"
-              ? "all"
-              : SPORT_DISCIPLINES.find(
-                  (sport) => sport.toLowerCase() === synced.disciplineSlug,
-                ) ?? null
+          const syncedSport = sportPreferenceFromSlug(synced.disciplineSlug)
           setPreferences({
             distanceUnit: synced.distanceUnit,
             temperatureUnit: synced.temperatureUnit,

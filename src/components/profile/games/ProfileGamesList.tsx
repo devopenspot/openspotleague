@@ -2,52 +2,67 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Trophy, GraduationCap, Flame, Clock } from "lucide-react";
-import { BODY, EMPTY_STATE, EYEBROW, META, SEGMENTED_TRACK, controlClass, segmentClass, tagClass } from "@/components/ui/recipes";
+import { ChevronRight, Flame, GraduationCap, Trophy } from "lucide-react";
+import { BODY, EMPTY_STATE, META, SEGMENTED_TRACK, controlClass, segmentClass, tagClass } from "@/components/ui/recipes";
+import { GAME_MODE_LABEL } from "@/lib/games/labels";
+import { matchStatusLabel } from "@/lib/games/match-labels";
+import { gameModeSchema, gameStatusSchema, type GameMode } from "@/lib/schemas/game";
+import { ROUTES } from "@/lib/navigation/nav";
 import type { ProfileGame } from "@/lib/services/profile/profile";
+import { disciplineName, formatShortDate, plural } from "@/components/profile/format";
 
-type Mode = "training" | "challenge";
+const MODES: readonly GameMode[] = ["challenge", "training"];
+
+function gameLabels(game: ProfileGame): { mode: string; status: string | null; isTraining: boolean } {
+  const mode = gameModeSchema.safeParse(game.mode);
+  const status = gameStatusSchema.safeParse(game.status);
+  if (!mode.success) return { mode: "Game", status: null, isTraining: false };
+  return {
+    mode: GAME_MODE_LABEL[mode.data],
+    status: status.success ? matchStatusLabel({ mode: mode.data, status: status.data }) : null,
+    isTraining: mode.data === "training",
+  };
+}
 
 function GameCard({ game }: { game: ProfileGame }) {
-  const isTraining = game.mode === "training";
+  const labels = gameLabels(game);
+  const details = [
+    formatShortDate(game.updatedAt),
+    labels.status,
+    game.opponents > 0 ? `vs ${plural(game.opponents, "rider")}` : "Solo",
+    game.role === "creator" ? "You started it" : "You joined",
+  ].filter(Boolean);
+
   return (
     <Link
       href={`/games/${game.id}`}
-      className="flex items-center gap-2.5 rounded-container border border-outline-variant bg-surface-container-lowest p-3 transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
+      className="group flex items-center gap-3 rounded-inner border border-outline-variant bg-surface-container-lowest p-3 transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:translate-y-px"
     >
-      <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control border ${isTraining ? "border-outline-variant bg-surface-container" : "border-primary bg-primary text-on-primary"}`}
+      <span
+        aria-hidden="true"
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control border ${labels.isTraining ? "border-outline-variant bg-surface-container" : "border-primary bg-primary text-on-primary"}`}
       >
-        {isTraining ? <GraduationCap size={15} /> : <Trophy size={15} />}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
+        {labels.isTraining ? <GraduationCap size={15} /> : <Trophy size={15} />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex flex-wrap items-center gap-1.5">
           <span className="font-display text-sm font-bold uppercase leading-none tracking-dense text-on-surface">
-            {isTraining ? "Training" : "Challenge"}
+            {labels.mode}
           </span>
-          <span className={tagClass("neutral")}>
-            {game.disciplineSlug}
-          </span>
+          <span className={tagClass("neutral")}>{disciplineName(game.disciplineSlug)}</span>
           {game.isWinner ? (
             <span className={tagClass("solid")}>
-              <Flame size={12} /> Won
+              <Flame size={12} aria-hidden="true" /> Won
             </span>
           ) : null}
-        </div>
-        <div
-          className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 ${META}`}
-        >
-          <span className="inline-flex items-center gap-1">
-            <Clock size={12} /> {new Date(game.updatedAt).toLocaleDateString()}
-          </span>
-          <span>• {game.status}</span>
-          <span>• {game.opponents} rivals</span>
-          <span>• {game.role}</span>
-        </div>
-      </div>
-      <span className="shrink-0 font-display text-sm font-bold uppercase tracking-dense text-primary">
-        Open
+        </span>
+        <span className={`mt-1.5 block truncate ${META}`}>{details.join(" · ")}</span>
       </span>
+      <ChevronRight
+        size={18}
+        aria-hidden="true"
+        className="shrink-0 text-secondary transition-transform group-hover:translate-x-0.5"
+      />
     </Link>
   );
 }
@@ -56,7 +71,7 @@ function GameCardSkeleton() {
   return (
     <div
       aria-hidden="true"
-      className="flex items-center gap-2.5 rounded-container border border-outline-variant bg-surface-container-lowest p-3"
+      className="flex items-center gap-3 rounded-inner border border-outline-variant bg-surface-container-lowest p-3"
     >
       <div className="h-9 w-9 shrink-0 rounded-control bg-surface-container-high" />
       <div className="min-w-0 flex-1 space-y-2">
@@ -66,14 +81,13 @@ function GameCardSkeleton() {
         </div>
         <div className="h-4 max-w-48 rounded bg-surface-container-high" />
       </div>
-      <div className="h-4 w-10 rounded bg-surface-container-high shrink-0" />
     </div>
   );
 }
 
 export function ProfileGamesListSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div aria-hidden="true" className="space-y-2 ">
+    <div aria-hidden="true" className="space-y-2">
       {Array.from({ length: count }).map((_, i) => (
         <GameCardSkeleton key={i} />
       ))}
@@ -81,11 +95,29 @@ export function ProfileGamesListSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
-export function ProfileGamesList() {
-  const [mode, setMode] = useState<Mode>("challenge");
+function EmptyGames({ mode }: { mode: GameMode | null }) {
+  const noun = mode ? `${GAME_MODE_LABEL[mode].toLowerCase()}s` : "games";
+  return (
+    <div className={EMPTY_STATE}>
+      <p className="font-display text-sm font-bold uppercase tracking-dense">No {noun} yet</p>
+      <p className={`mt-1 ${BODY}`}>Start one from Games and it shows up here.</p>
+      <Link href={ROUTES.games} className={`mt-3 ${controlClass("primary")}`}>
+        Go to Games
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * `full` is the Games tab: a Battles/Trainings toggle with Load more.
+ * `preview` is the Overview card: the latest few games of any mode, no paging.
+ */
+export function ProfileGamesList({ variant = "full" }: { variant?: "full" | "preview" }) {
+  const preview = variant === "preview";
+  const [mode, setMode] = useState<GameMode>("challenge");
   const [items, setItems] = useState<readonly ProfileGame[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Bumped on every load; responses from a superseded load are discarded so a
   // quick mode switch can never append stale results into the newer list.
@@ -96,7 +128,8 @@ export function ProfileGamesList() {
     setLoading(true);
     setError(false);
     try {
-      const params = new URLSearchParams({ mode, limit: "10" });
+      const params = new URLSearchParams({ limit: preview ? "3" : "10" });
+      if (!preview) params.set("mode", mode);
       if (!reset && cursor) params.set("cursor", cursor);
       const res = await fetch(`/api/profile/games?${params.toString()}`);
       if (!res.ok) throw new Error("failed");
@@ -106,7 +139,7 @@ export function ProfileGamesList() {
       };
       if (generation !== loadGenerationRef.current) return;
       setItems((prev) => (reset ? data.items : [...prev, ...data.items]));
-      setCursor(data.nextCursor);
+      setCursor(preview ? null : data.nextCursor);
     } catch {
       if (generation !== loadGenerationRef.current) return;
       setError(true);
@@ -125,80 +158,63 @@ export function ProfileGamesList() {
   }, [mode]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  const list =
+    loading && items.length === 0 ? (
+      <ProfileGamesListSkeleton count={preview ? 3 : 4} />
+    ) : error && items.length === 0 ? (
+      <p className={BODY}>
+        Couldn’t load your games.{" "}
+        <button type="button" onClick={() => void load(true)} className="font-semibold text-on-surface underline">
+          Try again
+        </button>
+      </p>
+    ) : items.length === 0 ? (
+      <EmptyGames mode={preview ? null : mode} />
+    ) : (
+      <div className="space-y-2">
+        {items.map((g) => (
+          <GameCard key={g.id} game={g} />
+        ))}
+        {loading ? <ProfileGamesListSkeleton count={2} /> : null}
+      </div>
+    );
+
+  if (preview) return <div aria-busy={loading}>{list}</div>;
+
   return (
     <div className="space-y-3" aria-busy={loading && items.length === 0}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className={EYEBROW}>Your sessions</h3>
-        <div className={SEGMENTED_TRACK}>
+      <div className={`sm:max-w-xs ${SEGMENTED_TRACK}`} role="group" aria-label="Game mode">
+        {MODES.map((m) => (
           <button
+            key={m}
             type="button"
-            onClick={() => setMode("challenge")}
-            aria-pressed={mode === "challenge"}
-            className={segmentClass(mode === "challenge")}
+            onClick={() => setMode(m)}
+            aria-pressed={mode === m}
+            className={segmentClass(mode === m)}
           >
-            Challenges
+            {GAME_MODE_LABEL[m]}s
           </button>
-          <button
-            type="button"
-            onClick={() => setMode("training")}
-            aria-pressed={mode === "training"}
-            className={segmentClass(mode === "training")}
-          >
-            Trainings
-          </button>
-        </div>
+        ))}
       </div>
 
-      {loading && items.length === 0 ? (
-        <ProfileGamesListSkeleton count={4} />
-      ) : items.length === 0 ? (
-        <div className={EMPTY_STATE}>
-          <p className="font-display text-sm font-bold uppercase tracking-dense">
-            No {mode}s yet
-          </p>
-          <p className={`mt-1 ${BODY}`}>
-            Start your first {mode} from League
-          </p>
-          <Link
-            href="/games"
-            className={`mt-3 ${controlClass("primary")}`}
-          >
-            Go to League
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {items.map((g) => (
-            <GameCard key={g.id} game={g} />
-          ))}
-          {loading ? <ProfileGamesListSkeleton count={2} /> : null}
-        </div>
-      )}
+      {list}
 
-      {error ? (
-        <p className="text-sm leading-5 text-error">
-          Couldn’t load sessions
-        </p>
+      {error && items.length > 0 ? (
+        <p className="text-sm leading-5 text-error">Couldn’t load more games.</p>
       ) : null}
 
-      <div className="flex min-h-control justify-center">
-        {cursor ? (
+      {cursor ? (
+        <div className="flex justify-center">
           <button
             type="button"
-            onClick={() => load(false)}
+            onClick={() => void load(false)}
             disabled={loading}
             className={`${controlClass("outline")} disabled:opacity-50`}
           >
             {loading ? "Loading…" : "Load more"}
           </button>
-        ) : items.length > 0 ? (
-          <span
-            className={`inline-flex min-h-control items-center ${META}`}
-          >
-            You’re all caught up
-          </span>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

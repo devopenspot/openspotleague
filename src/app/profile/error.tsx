@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { log } from "@/lib/utils/log";
 import { ProfileShell } from "@/components/profile/layout/ProfileShell";
-import { CARD, controlClass, SECTION_TITLE } from "@/components/ui/recipes";
+import { BODY, CARD, META, controlClass, SECTION_TITLE } from "@/components/ui/recipes";
 
 export default function ProfileError({
   error,
@@ -41,7 +41,8 @@ export default function ProfileError({
     <ProfileShell>
       <div role="alert" className={`${CARD} mx-auto my-6 max-w-md text-center sm:p-8`}>
         <h2 className={`${SECTION_TITLE} text-on-surface`}>Profile is off the grid</h2>
-        <p className="mt-2 text-sm leading-5 text-on-surface-variant">{error.message || "Profile threw while rendering."}</p>
+        <p className={`mt-2 ${BODY}`}>Something went wrong showing your profile. Try again, or reload the page.</p>
+        {error.digest ? <p className={`mt-2 ${META}`}>Ref {error.digest}</p> : null}
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <button type="button" onClick={reset} className={controlClass("primary")}>
             Try again

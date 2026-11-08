@@ -186,7 +186,7 @@ export function RiderActivityBoard({
         <PanelStat label="Events" value={summary.events} />
         <PanelStat label="Points" value={summary.points} />
         <PanelStat label="Active days" value={summary.activeDays} />
-        <PanelStat label="Streak" value={summary.bestStreak} unit="d" />
+        <PanelStat label="Best streak" value={summary.bestStreak} unit="d" />
       </dl>
 
       <div className="relative mx-auto mt-4 w-full max-w-lg">

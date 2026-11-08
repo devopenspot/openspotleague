@@ -4,10 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Heart, CheckCircle, MapPinned } from "lucide-react";
 import { AppImage } from "@/components/ui/AppImage";
-import { BODY, EMPTY_STATE, EYEBROW, META, SEGMENTED_TRACK, controlClass, segmentClass, tagClass } from "@/components/ui/recipes";
+import { BODY, EMPTY_STATE, META, SEGMENTED_TRACK, controlClass, segmentClass, tagClass } from "@/components/ui/recipes";
+import { ROUTES } from "@/lib/navigation/nav";
 import type { Spot } from "@/lib/types";
+import { formatCount } from "@/components/profile/format";
 
 type Kind = "saved" | "verified" | "visited";
+
+const KINDS: readonly { id: Kind; label: string; icon: typeof Heart }[] = [
+  { id: "saved", label: "Saved", icon: Heart },
+  { id: "verified", label: "Verified", icon: CheckCircle },
+  { id: "visited", label: "Visited", icon: MapPinned },
+];
+
+const EMPTY_COPY: Record<Kind, { hint: string; cta: string; href: string }> = {
+  saved: { hint: "Tap the heart on any spot to keep it here.", cta: "Explore spots", href: ROUTES.home },
+  verified: { hint: "Verify a spot when you check it out in person.", cta: "Explore spots", href: ROUTES.home },
+  visited: { hint: "Spots you verify or play a game at show up here.", cta: "Go to Games", href: ROUTES.games },
+};
 
 function SpotCard({ spot }: { spot: Spot }) {
   return (
@@ -80,11 +94,16 @@ export function ProfileSpotsGridSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
-export function ProfileSpotsGrid() {
+export function ProfileSpotsGrid({
+  counts,
+}: {
+  /** Totals from the profile summary, shown on each segment. */
+  counts?: Readonly<Record<Kind, number>>;
+} = {}) {
   const [kind, setKind] = useState<Kind>("saved");
   const [items, setItems] = useState<readonly Spot[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   // Bumped on every load; responses from a superseded load are discarded so a
   // quick kind switch can never append stale results into the newer list.
@@ -125,34 +144,19 @@ export function ProfileSpotsGrid() {
 
   return (
     <div className="space-y-3" aria-busy={loading && items.length === 0}>
-      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className={EYEBROW}>Your spots</h3>
-        <div className={`self-start ${SEGMENTED_TRACK}`}>
+      <div className={`sm:max-w-md ${SEGMENTED_TRACK}`} role="group" aria-label="Spot list">
+        {KINDS.map(({ id, label, icon: Icon }) => (
           <button
+            key={id}
             type="button"
-            onClick={() => setKind("saved")}
-            aria-pressed={kind === "saved"}
-            className={segmentClass(kind === "saved")}
+            onClick={() => setKind(id)}
+            aria-pressed={kind === id}
+            className={segmentClass(kind === id)}
           >
-            <Heart size={14} /> Saved
+            <Icon size={14} aria-hidden="true" /> {label}
+            {counts ? <span className="tabular-nums opacity-70">{formatCount(counts[id])}</span> : null}
           </button>
-          <button
-            type="button"
-            onClick={() => setKind("verified")}
-            aria-pressed={kind === "verified"}
-            className={segmentClass(kind === "verified")}
-          >
-            <CheckCircle size={14} /> Verified
-          </button>
-          <button
-            type="button"
-            onClick={() => setKind("visited")}
-            aria-pressed={kind === "visited"}
-            className={segmentClass(kind === "visited")}
-          >
-            <MapPinned size={14} /> Visited
-          </button>
-        </div>
+        ))}
       </div>
 
       {loading && items.length === 0 ? (
@@ -162,18 +166,9 @@ export function ProfileSpotsGrid() {
           <p className="font-display text-sm font-bold uppercase tracking-dense">
             No {kind} spots
           </p>
-          <p className={`mt-1 ${BODY}`}>
-            {kind === "saved"
-              ? "Tap ♥ on any spot to save it"
-              : kind === "verified"
-                ? "Verify spots you’ve checked in person"
-                : "Play a challenge to mark spots as visited"}
-          </p>
-          <Link
-            href={kind === "visited" ? "/games" : "/"}
-            className={`mt-3 ${controlClass("primary")}`}
-          >
-            Explore spots
+          <p className={`mt-1 ${BODY}`}>{EMPTY_COPY[kind].hint}</p>
+          <Link href={EMPTY_COPY[kind].href} className={`mt-3 ${controlClass("primary")}`}>
+            {EMPTY_COPY[kind].cta}
           </Link>
         </div>
       ) : (
@@ -195,8 +190,8 @@ export function ProfileSpotsGrid() {
         </p>
       ) : null}
 
-      <div className="flex min-h-control justify-center">
-        {cursor ? (
+      {cursor ? (
+        <div className="flex justify-center">
           <button
             type="button"
             onClick={() => load(false)}
@@ -205,14 +200,8 @@ export function ProfileSpotsGrid() {
           >
             {loading ? "Loading…" : "Load more"}
           </button>
-        ) : items.length > 0 ? (
-          <span
-            className={`inline-flex min-h-control items-center ${META}`}
-          >
-            End of list
-          </span>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

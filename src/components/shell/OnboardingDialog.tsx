@@ -11,7 +11,8 @@ import {
   type DistanceUnit,
   type TemperatureUnit,
 } from "@/stores/preferences-store";
-import { SPORT_DISCIPLINES, type SportPreference } from "@/types/disciplines";
+import type { SportPreference } from "@/types/disciplines";
+import { useSavePreferences } from "@/hooks/preferences/useSavePreferences";
 import { useUser } from "@/lib/contexts/user-context";
 import { SignInLink } from "@/components/shell/SignInLink";
 import {
@@ -47,7 +48,7 @@ export function OnboardingDialog() {
   const pendingAction = useUIStore((s) => s.pendingOnboardingAction);
   const pendingNext = useUIStore((s) => s.pendingOnboardingNext);
 
-  const setPreferences = usePreferencesStore((s) => s.setPreferences);
+  const savePreferences = useSavePreferences();
   const hydrationStatus = usePreferencesStore((s) => s.hydrationStatus);
   const storedDistance = usePreferencesStore((s) => s.distanceUnit);
   const storedTemperature = usePreferencesStore((s) => s.temperatureUnit);
@@ -89,53 +90,9 @@ export function OnboardingDialog() {
             }
           }}
           onSubmitEdit={() => closeOnboarding()}
-          onSave={async (d, t, sport) => {
-            if (user) {
-              const response = await fetch("/api/preferences", {
-                method: "PATCH",
-                cache: "no-store",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                  distanceUnit: d,
-                  temperatureUnit: t,
-                  disciplineSlug:
-                    sport === "all"
-                      ? "all"
-                      : sport
-                        ? sport.toLowerCase()
-                        : null,
-                }),
-              });
-              if (!response.ok) {
-                throw new Error("Preferences could not be saved");
-              }
-              const saved = (await response.json()) as {
-                distanceUnit: DistanceUnit;
-                temperatureUnit: TemperatureUnit;
-                disciplineSlug: string | null;
-              };
-              const savedSport: SportPreference | null =
-                saved.disciplineSlug === "all"
-                  ? "all"
-                  : (SPORT_DISCIPLINES.find(
-                      (candidate) =>
-                        candidate.toLowerCase() === saved.disciplineSlug,
-                    ) ?? null);
-              setPreferences(
-                {
-                  distanceUnit: saved.distanceUnit,
-                  temperatureUnit: saved.temperatureUnit,
-                  preferredSport: savedSport,
-                },
-                { accountId: user.id, hasLocalChanges: false },
-              );
-              return;
-            }
-            setPreferences(
-              { distanceUnit: d, temperatureUnit: t, preferredSport: sport },
-              { accountId: null, hasLocalChanges: true },
-            );
-          }}
+          onSave={(distanceUnit, temperatureUnit, preferredSport) =>
+            savePreferences({ distanceUnit, temperatureUnit, preferredSport })
+          }
           onBack={isOnboarding ? undefined : handleBack}
         />
       ) : (

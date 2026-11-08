@@ -1,89 +1,79 @@
-"use client";
-
 import { UserAvatar } from "@/components/ui";
 import { Badge } from "@/components/ui/Badge";
-import { BODY, CARD, META, tagClass } from "@/components/ui/recipes";
+import { CARD, META, tagClass } from "@/components/ui/recipes";
 import type { ProfileSummary } from "@/lib/services/profile/profile";
+import { formatCount } from "@/components/profile/format";
 
+/**
+ * Identity and rank: who you are, where you stand, how far to the next rank.
+ * Points and the current streak live here only; email lives in Account.
+ */
 export function ProfileHero({ summary }: { summary: ProfileSummary }) {
   const { user, rank, totalPoints, nextRank, progress, streakDays } = summary;
-  const initials = user.initials || user.name.slice(0, 2).toUpperCase() || "OS";
   const displayName = user.name || user.email.split("@")[0] || "Rider";
+  const initials = user.initials || displayName.slice(0, 2).toUpperCase() || "OS";
+  const percent = Math.round(progress * 100);
 
   return (
-    <div className={`relative overflow-hidden ${CARD}`}>
-      <div className="flex items-start gap-3 sm:gap-3.5">
+    <section className={CARD} aria-label="Rider card">
+      <div className="flex items-center gap-3 sm:gap-4">
         <UserAvatar
           user={{ name: displayName, initials, avatarUrl: null }}
           size="lg"
-          className="h-12 w-12 text-sm sm:h-14 sm:w-14"
+          className="h-14 w-14 text-base"
         />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <h1 className="max-w-full truncate font-display text-2xl font-bold uppercase leading-tight tracking-display text-on-surface">
-              {displayName}
-            </h1>
+          <h1 className="truncate font-display text-2xl font-bold uppercase leading-tight tracking-display text-on-surface">
+            {displayName}
+          </h1>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            <Badge tone="accent">{rank}</Badge>
+            <span className={`${META} tabular-nums`}>{formatCount(totalPoints)} pts</span>
             {streakDays >= 2 ? (
-              <span className={tagClass("solid")}>
-                🔥 {streakDays}d streak
+              <span className={tagClass("solid")} title="Days in a row with activity">
+                🔥 {streakDays}-day streak
               </span>
             ) : null}
-          </div>
-          <p className={`truncate ${BODY}`}>{user.email}</p>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <Badge tone="accent">{rank}</Badge>
-            <span className={META}>{totalPoints} pts</span>
           </div>
         </div>
       </div>
 
-      {/* progress to next rank */}
       <div className="mt-4">
-        <div className="flex items-center justify-between gap-2">
-          <span className={`shrink-0 ${META}`}>
-            Level progress
-          </span>
-          <span className={`truncate ${META}`}>
-            {nextRank
-              ? `${nextRank.pointsNeeded} to ${nextRank.label}`
-              : "Max rank!"}
-          </span>
-        </div>
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-container-high">
+        <div
+          className="h-2 overflow-hidden rounded-full bg-surface-container-high"
+          role="progressbar"
+          aria-valuenow={percent}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={nextRank ? `Progress to ${nextRank.label}` : "Top rank reached"}
+        >
           <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
-            style={{ width: `${Math.round(progress * 100)}%` }}
-            role="progressbar"
-            aria-valuenow={Math.round(progress * 100)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Progress to next rank"
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{ width: `${percent}%` }}
           />
         </div>
-        <p className={`mt-1.5 ${BODY}`}>
+        <p className={`mt-1.5 ${META} tabular-nums`}>
           {nextRank
-            ? `Keep riding to unlock ${nextRank.label}`
-            : "Top rank — stay legendary"}
+            ? `${formatCount(nextRank.pointsNeeded)} pts to ${nextRank.label}`
+            : "Top rank reached"}
         </p>
       </div>
-    </div>
+    </section>
   );
 }
 
 export function ProfileHeroSkeleton() {
   return (
     <div className={CARD}>
-      <div className="flex gap-3">
-        <div className="h-12 w-12 rounded-full bg-surface-container-high sm:h-14 sm:w-14" />
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="h-14 w-14 shrink-0 rounded-full bg-surface-container-high" />
         <div className="min-w-0 flex-1">
           <div className="h-8 w-40 max-w-full rounded bg-surface-container-high" />
-          <div className="h-5 w-44 max-w-full rounded bg-surface-container-high" />
-          <div className="mt-2 h-7 w-32 rounded-control bg-surface-container-high" />
+          <div className="mt-1.5 h-6 w-44 max-w-full rounded-control bg-surface-container-high" />
         </div>
       </div>
-      <div className="mt-4 h-4 w-full rounded bg-surface-container-high" />
-      <div className="mt-1.5 h-1.5 rounded-full bg-surface-container-high" />
-      <div className="mt-1.5 h-5 w-52 max-w-full rounded bg-surface-container-high" />
+      <div className="mt-4 h-2 rounded-full bg-surface-container-high" />
+      <div className="mt-1.5 h-4 w-36 rounded bg-surface-container-high" />
     </div>
   );
 }

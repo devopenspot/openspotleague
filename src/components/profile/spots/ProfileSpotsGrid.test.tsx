@@ -74,6 +74,23 @@ describe("ProfileSpotsGrid", () => {
     expect(screen.queryByText("STALE SPOT")).not.toBeInTheDocument()
   })
 
+  it("shows summary counts on the segments", async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse({ items: [], nextCursor: null })))
+    render(<ProfileSpotsGrid counts={{ saved: 4, verified: 2, visited: 1200 }} />)
+    expect(screen.getByRole("button", { name: /saved\s*4/i })).toHaveAttribute("aria-pressed", "true")
+    expect(screen.getByRole("button", { name: /visited\s*1,200/i })).toBeInTheDocument()
+  })
+
+  it("points an empty visited list at Games, not the map", async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse({ items: [], nextCursor: null })))
+    render(<ProfileSpotsGrid />)
+    await userEvent.click(screen.getByRole("button", { name: /visited/i }))
+
+    const cta = await screen.findByRole("link", { name: "Go to Games" })
+    expect(cta).toHaveAttribute("href", "/games")
+    expect(screen.getByText("No visited spots")).toBeInTheDocument()
+  })
+
   it("keeps appended results when load more resolves after mount load", async () => {
     fetchMock.mockImplementationOnce(() =>
       Promise.resolve(

@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag, revalidateTag } from "next/cache"
-import { and, count, desc, eq, gte, inArray, isNotNull, sql, type SQL } from "drizzle-orm"
+import { and, count, desc, eq, gte, inArray, isNotNull, ne, type SQL } from "drizzle-orm"
 import { getDbClient, withDbRead } from "@/lib/db/client"
 import {
   gamePlayers,
@@ -20,6 +20,7 @@ import {
 import type { Preferences } from "@/lib/schemas/preferences"
 import { getSpotRepositoryAsync } from "@/lib/repositories"
 import type { Spot } from "@/lib/types"
+import type { TrickLevel } from "@/lib/schemas/game"
 import { PROFILE_CACHE_LIFE } from "@/lib/cache/lifetimes"
 import {
   listLeagueHistory,
@@ -105,6 +106,30 @@ function streakFromActivity(days: readonly RiderActivityDay[]): number {
   return streak
 }
 
+/**
+ * Distinct spots the rider has been to: spots they verified plus spots of
+ * games they played. Two independent reads, no transaction (one round trip each).
+ */
+async function loadVisitedSpotIds(userId: string): Promise<string[]> {
+  const { db } = getDbClient()
+  const [verified, games] = await Promise.all([
+    withDbRead("profile.visited.verified", () =>
+      db.select({ spotId: verifiedSpots.spotId }).from(verifiedSpots).where(eq(verifiedSpots.userId, userId)),
+    ),
+    withDbRead("profile.visited.games", () =>
+      db
+        .select({ spotId: gameSessions.spotId })
+        .from(gameSessions)
+        .innerJoin(gamePlayers, eq(gamePlayers.gameId, gameSessions.id))
+        .where(and(eq(gamePlayers.userId, userId), isNotNull(gameSessions.spotId))),
+    ),
+  ])
+  const ids = new Set<string>()
+  for (const row of verified) ids.add(row.spotId)
+  for (const row of games) if (row.spotId) ids.add(row.spotId)
+  return [...ids]
+}
+
 export async function runGetProfileSummary(userId: string): Promise<ProfileSummary> {
   const { db } = getDbClient()
 
@@ -114,71 +139,38 @@ export async function runGetProfileSummary(userId: string): Promise<ProfileSumma
   const [profileRow, statsRow, savedCountRows, verifiedCountRows, visitedRows, activityEvents, leagueHistory] =
     await Promise.all([
       withDbRead("profile.summary.profile", () =>
-        db.transaction((tx) => tx.select().from(profiles).where(eq(profiles.id, userId)).limit(1)),
+        db.select().from(profiles).where(eq(profiles.id, userId)).limit(1),
       ).then((rows) => rows[0] ?? null),
       withDbRead("profile.summary.riderStats", () =>
-        db.transaction((tx) => tx.select().from(riderStats).where(eq(riderStats.userId, userId)).limit(1)),
+        db.select().from(riderStats).where(eq(riderStats.userId, userId)).limit(1),
       ).then((rows) => rows[0] ?? null),
       withDbRead("profile.summary.savedCount", () =>
-        db.transaction((tx) =>
-          tx.select({ c: count() }).from(savedSpots).where(eq(savedSpots.userId, userId)),
-        ),
+        db.select({ c: count() }).from(savedSpots).where(eq(savedSpots.userId, userId)),
       ),
       withDbRead("profile.summary.verifiedCount", () =>
-        db.transaction((tx) =>
-          tx.select({ c: count() }).from(verifiedSpots).where(eq(verifiedSpots.userId, userId)),
-        ),
+        db.select({ c: count() }).from(verifiedSpots).where(eq(verifiedSpots.userId, userId)),
       ),
       // visited = distinct verifiedSpots + distinct challenge spots via gamePlayers->gameSessions where spotId not null
-      withDbRead("profile.summary.visited", () =>
-        db.transaction(async (tx) => {
-          const verified = await tx
-            .select({ spotId: verifiedSpots.spotId })
-            .from(verifiedSpots)
-            .where(eq(verifiedSpots.userId, userId))
-          const verifiedIds = new Set(verified.map((r) => r.spotId))
-          const gameSpotRows = await tx
-            .select({ spotId: gameSessions.spotId })
-            .from(gameSessions)
-            .innerJoin(gamePlayers, eq(gamePlayers.gameId, gameSessions.id))
-            .where(and(eq(gamePlayers.userId, userId), sql`${gameSessions.spotId} is not null`))
-          for (const row of gameSpotRows) {
-            if (row.spotId) verifiedIds.add(row.spotId)
-          }
-          return verifiedIds.size
-        }),
-      ),
+      loadVisitedSpotIds(userId).then((ids) => ids.length),
       Promise.all([
-        withDbRead("profile.summary.activityEvents.score", () => {
-          const start = new Date()
-          start.setUTCDate(start.getUTCDate() - 84 + 1)
-          start.setUTCHours(0, 0, 0, 0)
-          return db.transaction((tx) =>
-            tx
-              .select({ createdAt: riderScoreEvents.createdAt, points: riderScoreEvents.points })
-              .from(riderScoreEvents)
-              .where(and(eq(riderScoreEvents.userId, userId), gte(riderScoreEvents.createdAt, start))),
-          )
-        }),
-        withDbRead("profile.summary.activityEvents.verified", () => {
-          const start = new Date()
-          start.setUTCDate(start.getUTCDate() - 84 + 1)
-          start.setUTCHours(0, 0, 0, 0)
-          return db.transaction((tx) =>
-            tx.select({ createdAt: verifiedSpots.createdAt }).from(verifiedSpots).where(and(eq(verifiedSpots.userId, userId), gte(verifiedSpots.createdAt, start))),
-          )
-        }),
-        withDbRead("profile.summary.activityEvents.gameSpot", () => {
-          const start = new Date()
-          start.setUTCDate(start.getUTCDate() - 84 + 1)
-          start.setUTCHours(0, 0, 0, 0)
-          return db.transaction((tx) =>
-            tx
-              .select({ createdAt: gameSessions.createdAt })
-              .from(gameSessions)
-              .where(and(eq(gameSessions.createdBy, userId), isNotNull(gameSessions.spotId), gte(gameSessions.createdAt, start))),
-          )
-        }),
+        withDbRead("profile.summary.activityEvents.score", () =>
+          db
+            .select({ createdAt: riderScoreEvents.createdAt, points: riderScoreEvents.points })
+            .from(riderScoreEvents)
+            .where(and(eq(riderScoreEvents.userId, userId), gte(riderScoreEvents.createdAt, activityStart))),
+        ),
+        withDbRead("profile.summary.activityEvents.verified", () =>
+          db
+            .select({ createdAt: verifiedSpots.createdAt })
+            .from(verifiedSpots)
+            .where(and(eq(verifiedSpots.userId, userId), gte(verifiedSpots.createdAt, activityStart))),
+        ),
+        withDbRead("profile.summary.activityEvents.gameSpot", () =>
+          db
+            .select({ createdAt: gameSessions.createdAt })
+            .from(gameSessions)
+            .where(and(eq(gameSessions.createdBy, userId), isNotNull(gameSessions.spotId), gte(gameSessions.createdAt, activityStart))),
+        ),
         loadLeagueActivityEvents(userId, activityStart),
       ]).then(([scoreEvents, verifiedEvents, gameSpotEvents, leagueEvents]) => [
         ...scoreEvents,
@@ -286,76 +278,68 @@ export async function runListProfileGames(
 ): Promise<{ items: readonly ProfileGame[]; nextCursor: string | null }> {
   const limit = Math.min(Math.max(opts?.limit ?? 20, 1), 50)
   const { db } = getDbClient()
-  const rows = await withDbRead("profile.games", () =>
-    db.transaction(async (tx) => {
-      // cursor is simple offset encoded as integer index for MVP; future can be updatedAt cursor
-      let offset = 0
-      if (opts?.cursor) {
-        const parsed = Number.parseInt(opts.cursor, 10)
-        if (Number.isFinite(parsed) && parsed >= 0) offset = parsed
-      }
-      const conditions: SQL[] = [eq(gamePlayers.userId, userId)]
-      if (opts?.mode) conditions.push(eq(gameSessions.mode, opts.mode))
-      const joined = await tx
-        .select({
-          id: gameSessions.id,
-          mode: gameSessions.mode,
-          gameFormat: gameSessions.gameFormat,
-          disciplineSlug: gameSessions.disciplineSlug,
-          status: gameSessions.status,
-          spotId: gameSessions.spotId,
-          createdAt: gameSessions.createdAt,
-          updatedAt: gameSessions.updatedAt,
-          createdBy: gameSessions.createdBy,
-          winnerPlayerId: gameSessions.winnerPlayerId,
-        })
-        .from(gameSessions)
-        .innerJoin(gamePlayers, eq(gamePlayers.gameId, gameSessions.id))
-        .where(and(...conditions))
-        .orderBy(desc(gameSessions.updatedAt), desc(gameSessions.createdAt))
-        .limit(limit + 1)
-        .offset(offset)
-
-      // enrich with participant counts and winner check in batch
-      const gameIds = joined.map((r) => r.id)
-      const playerCounts = new Map<string, number>()
-      const playerIdByGame = new Map<string, string>()
-      if (gameIds.length > 0) {
-        const counts = await tx
-          .select({ gameId: gamePlayers.gameId, c: count() })
-          .from(gamePlayers)
-          .where(inArray(gamePlayers.gameId, gameIds))
-          .groupBy(gamePlayers.gameId)
-        for (const row of counts) playerCounts.set(row.gameId, Number(row.c))
-        const me = await tx
-          .select({ gameId: gamePlayers.gameId, id: gamePlayers.id })
-          .from(gamePlayers)
-          .where(and(eq(gamePlayers.userId, userId), inArray(gamePlayers.gameId, gameIds)))
-        for (const row of me) playerIdByGame.set(row.gameId, row.id)
-      }
-
-      const hasMore = joined.length > limit
-      const slice = hasMore ? joined.slice(0, limit) : joined
-      const nextCursor = hasMore ? String(offset + limit) : null
-      return {
-        items: slice.map((r) => ({
-          id: r.id,
-          mode: r.mode,
-          gameFormat: r.gameFormat,
-          disciplineSlug: r.disciplineSlug,
-          status: r.status,
-          spotId: r.spotId,
-          createdAt: (r.createdAt as Date).toISOString(),
-          updatedAt: (r.updatedAt as Date).toISOString(),
-          role: r.createdBy === userId ? ("creator" as const) : ("participant" as const),
-          opponents: Math.max(0, (playerCounts.get(r.id) ?? 1) - 1),
-          isWinner: r.winnerPlayerId !== null && r.winnerPlayerId === playerIdByGame.get(r.id),
-        })),
-        nextCursor,
-      }
-    }),
+  // Cursor is an integer offset for now; an updatedAt cursor can replace it later.
+  let offset = 0
+  if (opts?.cursor) {
+    const parsed = Number.parseInt(opts.cursor, 10)
+    if (Number.isFinite(parsed) && parsed >= 0) offset = parsed
+  }
+  const conditions: SQL[] = [eq(gamePlayers.userId, userId)]
+  if (opts?.mode) conditions.push(eq(gameSessions.mode, opts.mode))
+  const joined = await withDbRead("profile.games", () =>
+    db
+      .select({
+        id: gameSessions.id,
+        mode: gameSessions.mode,
+        gameFormat: gameSessions.gameFormat,
+        disciplineSlug: gameSessions.disciplineSlug,
+        status: gameSessions.status,
+        spotId: gameSessions.spotId,
+        createdAt: gameSessions.createdAt,
+        updatedAt: gameSessions.updatedAt,
+        createdBy: gameSessions.createdBy,
+        winnerPlayerId: gameSessions.winnerPlayerId,
+        myPlayerId: gamePlayers.id,
+      })
+      .from(gameSessions)
+      .innerJoin(gamePlayers, eq(gamePlayers.gameId, gameSessions.id))
+      .where(and(...conditions))
+      .orderBy(desc(gameSessions.updatedAt), desc(gameSessions.createdAt))
+      .limit(limit + 1)
+      .offset(offset),
   )
-  return rows
+
+  const hasMore = joined.length > limit
+  const slice = hasMore ? joined.slice(0, limit) : joined
+  const gameIds = slice.map((r) => r.id)
+  const playerCounts = new Map<string, number>()
+  if (gameIds.length > 0) {
+    const counts = await withDbRead("profile.games.playerCounts", () =>
+      db
+        .select({ gameId: gamePlayers.gameId, c: count() })
+        .from(gamePlayers)
+        .where(inArray(gamePlayers.gameId, gameIds))
+        .groupBy(gamePlayers.gameId),
+    )
+    for (const row of counts) playerCounts.set(row.gameId, Number(row.c))
+  }
+
+  return {
+    items: slice.map((r) => ({
+      id: r.id,
+      mode: r.mode,
+      gameFormat: r.gameFormat,
+      disciplineSlug: r.disciplineSlug,
+      status: r.status,
+      spotId: r.spotId,
+      createdAt: (r.createdAt as Date).toISOString(),
+      updatedAt: (r.updatedAt as Date).toISOString(),
+      role: r.createdBy === userId ? ("creator" as const) : ("participant" as const),
+      opponents: Math.max(0, (playerCounts.get(r.id) ?? 1) - 1),
+      isWinner: r.winnerPlayerId !== null && r.winnerPlayerId === r.myPlayerId,
+    })),
+    nextCursor: hasMore ? String(offset + limit) : null,
+  }
 }
 
 export async function listProfileGames(
@@ -393,16 +377,13 @@ export async function runListProfileSpots(
 
   if (kind === "saved") {
     const ids = await withDbRead("profile.spots.savedIds", () =>
-      db.transaction(async (tx) => {
-        const rows = await tx
-          .select({ spotId: savedSpots.spotId })
-          .from(savedSpots)
-          .where(eq(savedSpots.userId, userId))
-          .orderBy(desc(savedSpots.createdAt))
-          .limit(limit + 1)
-          .offset(offset)
-        return rows
-      }),
+      db
+        .select({ spotId: savedSpots.spotId })
+        .from(savedSpots)
+        .where(eq(savedSpots.userId, userId))
+        .orderBy(desc(savedSpots.createdAt))
+        .limit(limit + 1)
+        .offset(offset),
     )
     const hasMore = ids.length > limit
     const pageIds = hasMore ? ids.slice(0, limit).map((r) => r.spotId) : ids.map((r) => r.spotId)
@@ -415,16 +396,13 @@ export async function runListProfileSpots(
 
   if (kind === "verified") {
     const ids = await withDbRead("profile.spots.verifiedIds", () =>
-      db.transaction(async (tx) => {
-        const rows = await tx
-          .select({ spotId: verifiedSpots.spotId })
-          .from(verifiedSpots)
-          .where(eq(verifiedSpots.userId, userId))
-          .orderBy(desc(verifiedSpots.createdAt))
-          .limit(limit + 1)
-          .offset(offset)
-        return rows
-      }),
+      db
+        .select({ spotId: verifiedSpots.spotId })
+        .from(verifiedSpots)
+        .where(eq(verifiedSpots.userId, userId))
+        .orderBy(desc(verifiedSpots.createdAt))
+        .limit(limit + 1)
+        .offset(offset),
     )
     const hasMore = ids.length > limit
     const pageIds = hasMore ? ids.slice(0, limit).map((r) => r.spotId) : ids.map((r) => r.spotId)
@@ -435,25 +413,13 @@ export async function runListProfileSpots(
   }
 
   // visited = distinct verified + distinct game spotIds
-  const distinctIds = await withDbRead("profile.spots.visitedIds", () =>
-    db.transaction(async (tx) => {
-      const verified = await tx.select({ spotId: verifiedSpots.spotId }).from(verifiedSpots).where(eq(verifiedSpots.userId, userId))
-      const games = await tx
-        .select({ spotId: gameSessions.spotId })
-        .from(gameSessions)
-        .innerJoin(gamePlayers, eq(gamePlayers.gameId, gameSessions.id))
-        .where(and(eq(gamePlayers.userId, userId), sql`${gameSessions.spotId} is not null`))
-      const set = new Map<string, number>()
-      for (const r of verified) set.set(r.spotId, 1)
-      for (const r of games) if (r.spotId) set.set(r.spotId, 1)
-      const all = [...set.keys()]
-      // simple sort stable, paginate slice
-      all.sort()
-      const hasMore = all.length > offset + limit
-      const page = all.slice(offset, offset + limit)
-      return { page, hasMore, total: all.length }
-    }),
-  )
+  // Sorted for a stable page order across requests.
+  const allVisited = (await loadVisitedSpotIds(userId)).sort()
+  const distinctIds = {
+    page: allVisited.slice(offset, offset + limit),
+    hasMore: allVisited.length > offset + limit,
+    total: allVisited.length,
+  }
   const spotsList =
     distinctIds.page.length > 0 ? await spotRepo.list({ ids: distinctIds.page, limit: limit }) : { items: [], nextCursor: null }
   const map = new Map(spotsList.items.map((s) => [s.id, s]))
@@ -478,104 +444,85 @@ export async function listProfileSpots(
 
 // ---------- tricks ----------
 
+export type TrickLevelCounts = Record<TrickLevel, number>
+
 export interface ProfileTricks {
-  byLevel: { 1: number; 2: number; 3: number }
+  /** Lifetime landings per trick level (1–5). */
+  byLevel: TrickLevelCounts
   totalLanded: number
   totalFailed: number
   recent: readonly { name: string; level: number; points: number; date: string }[]
 }
 
+const TRICK_LEVELS: readonly TrickLevel[] = [1, 2, 3, 4, 5]
+
+/** Grouped `(trick_level, count)` rows → a full 1–5 map; unknown levels are dropped. */
+export function tricksByLevel(rows: readonly { level: number | null; count: number | string }[]): TrickLevelCounts {
+  const byLevel: TrickLevelCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  for (const row of rows) {
+    const level = TRICK_LEVELS.find((candidate) => candidate === row.level)
+    if (level !== undefined) byLevel[level] += Number(row.count)
+  }
+  return byLevel
+}
+
+function landingName(eventType: string): string {
+  return eventType === "challenger_landed" ? "Challenger landed" : eventType === "response_landed" ? "Response landed" : "Trick"
+}
+
 export async function runGetProfileTricks(userId: string): Promise<ProfileTricks> {
   const { db } = getDbClient()
-  const rows = await withDbRead("profile.tricks", () =>
-    db.transaction((tx) =>
-      tx
+  const landed = and(
+    eq(riderScoreEvents.userId, userId),
+    ne(riderScoreEvents.eventType, "winner_bonus"),
+    isNotNull(riderScoreEvents.trickLevel),
+  )
+  const [levelRows, statsRows, recentRows] = await Promise.all([
+    withDbRead("profile.tricks.byLevel", () =>
+      db
+        .select({ level: riderScoreEvents.trickLevel, count: count() })
+        .from(riderScoreEvents)
+        .where(landed)
+        .groupBy(riderScoreEvents.trickLevel),
+    ),
+    withDbRead("profile.tricks.stats", () =>
+      db
+        .select({ tricksLanded: riderStats.tricksLanded, tricksFailed: riderStats.tricksFailed })
+        .from(riderStats)
+        .where(eq(riderStats.userId, userId))
+        .limit(1),
+    ),
+    withDbRead("profile.tricks.recent", () =>
+      db
         .select({
+          trickName: gameRounds.trickNameSnapshot,
           trickLevel: riderScoreEvents.trickLevel,
           points: riderScoreEvents.points,
           eventType: riderScoreEvents.eventType,
           createdAt: riderScoreEvents.createdAt,
-          // try to get trick name via round -> catalog? Fallback to eventType
         })
         .from(riderScoreEvents)
-        .where(eq(riderScoreEvents.userId, userId))
+        .leftJoin(gameRounds, eq(gameRounds.id, riderScoreEvents.roundId))
+        .where(landed)
         .orderBy(desc(riderScoreEvents.createdAt))
-        .limit(50),
+        .limit(10),
     ),
-  )
+  ])
 
-  // Separate landings vs fails via riderStats? riderScoreEvents only has landed events (points >0)
-  // So byLevel counts landings per trickLevel where eventType in challenger/response landed
-  const byLevel = { 1: 0, 2: 0, 3: 0 } as ProfileTricks["byLevel"]
-  let totalLanded = 0
-  for (const r of rows) {
-    if (r.trickLevel !== null && r.trickLevel >= 1 && r.trickLevel <= 3 && r.eventType !== "winner_bonus") {
-      const k = r.trickLevel as 1 | 2 | 3
-      byLevel[k] += 1
-      totalLanded += 1
-    }
-  }
-
-  // totalFailed from riderStats
-  const [stats] = await withDbRead("profile.tricks.stats", () =>
-    db.transaction((tx) => tx.select().from(riderStats).where(eq(riderStats.userId, userId)).limit(1)),
-  )
-  const totalFailed = stats?.tricksFailed ?? 0
-  // if landed not in stats, fallback to counted
-  if (stats?.tricksLanded) totalLanded = stats.tricksLanded
-
-  // recent landings with trick name via joining gameRounds if possible (best effort via roundId)
-  // For now map without name lookup; enrich with trickLevel label
-  const recent = rows
-    .filter((r) => r.eventType !== "winner_bonus" && r.trickLevel !== null)
-    .slice(0, 10)
-    .map((r) => ({
-      name: r.eventType === "challenger_landed" ? "Challenger landed" : r.eventType === "response_landed" ? "Response landed" : "Trick",
+  const byLevel = tricksByLevel(levelRows)
+  const counted = TRICK_LEVELS.reduce((sum, level) => sum + byLevel[level], 0)
+  const stats = statsRows[0]
+  return {
+    byLevel,
+    totalLanded: stats?.tricksLanded || counted,
+    totalFailed: stats?.tricksFailed ?? 0,
+    recent: recentRows.map((r) => ({
+      name: r.trickName ?? landingName(r.eventType),
       level: r.trickLevel as number,
       points: r.points,
       date: (r.createdAt as Date).toISOString(),
-    }))
-
-  // Enrich names from gameRounds trickNameSnapshot in batch
-  try {
-    if (rows.length > 0) {
-      const withRounds = await withDbRead("profile.tricks.enrich", () =>
-        db.transaction((tx) =>
-          tx
-            .select({
-              trickName: gameRounds.trickNameSnapshot,
-              trickLevel: riderScoreEvents.trickLevel,
-              points: riderScoreEvents.points,
-              eventType: riderScoreEvents.eventType,
-              createdAt: riderScoreEvents.createdAt,
-            })
-            .from(riderScoreEvents)
-            .leftJoin(gameRounds, eq(gameRounds.id, riderScoreEvents.roundId))
-            .where(eq(riderScoreEvents.userId, userId))
-            .orderBy(desc(riderScoreEvents.createdAt))
-            .limit(10),
-        ),
-      )
-      if (withRounds.length > 0) {
-        const enrichedRecent = withRounds
-          .filter((r) => r.eventType !== "winner_bonus" && r.trickLevel !== null)
-          .slice(0, 10)
-          .map((r) => ({
-            name: r.trickName ?? (r.eventType === "challenger_landed" ? "Challenger landed" : "Response landed"),
-            level: r.trickLevel as number,
-            points: r.points,
-            date: (r.createdAt as Date).toISOString(),
-          }))
-        if (enrichedRecent.length > 0) {
-          return { byLevel, totalLanded, totalFailed, recent: enrichedRecent }
-        }
-      }
-    }
-  } catch {
-    // ignore enrichment failures
+    })),
   }
-
-  return { byLevel, totalLanded, totalFailed, recent }
 }
 
 export async function getProfileTricks(userId: string): Promise<ProfileTricks> {

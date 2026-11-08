@@ -256,7 +256,7 @@ components:
     border: 1px solid var(--color-outline-variant)
     padding: 16px
     recipe: "CARD (CARD_FRAME + p-4 sm:p-5), CARD_NESTED, TILE, EMPTY_STATE, PANEL_ON_WIRE, alertClass(tone)"
-    note: "Default card is rounded-container (16px): SpotCard, ContestCard, SurfaceCard, CARD. Rows nested INSIDE a 16px card use rounded-inner (14px). Never a card inside a card — drop the inner frame (e.g. ProfileTricksPanel bare). Borders are 1px."
+    note: "Default card is rounded-container (16px): SpotCard, ContestCard, SurfaceCard, CARD. Rows nested INSIDE a 16px card use rounded-inner (14px). Never a card inside a card — drop the inner frame (e.g. ProfileTricksPanel variant="summary"). Borders are 1px."
   badges:
     radius: var(--radius-control)
     padding: 4px 10px
