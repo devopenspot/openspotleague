@@ -83,7 +83,7 @@ export function LegalLayout({
       <div className={pageContainer("7xl")}>
         {/* Top Breadcrumb & Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant pb-6 print:hidden">
-          <Link
+          <Link prefetch={false}
             href={ROUTES.home}
             className={controlClass("outline", "sm")}
           >
@@ -93,13 +93,13 @@ export function LegalLayout({
 
           {/* Doc Switcher Tabs */}
           <nav aria-label="Legal document selection" className={SEGMENTED_TRACK}>
-            <Link
+            <Link prefetch={false}
               href="/terms"
               className={segmentClass(activeDoc === "terms")}
             >
               Terms of Use
             </Link>
-            <Link
+            <Link prefetch={false}
               href="/privacy"
               className={segmentClass(activeDoc === "privacy")}
             >
@@ -230,7 +230,7 @@ export function LegalLayout({
                 Need to remove a spot, delete your data, or report a copied photo?
               </p>
               <div className="pt-1">
-                <Link
+                <Link prefetch={false}
                   href="/support"
                   className={`w-full ${controlClass("outline")}`}
                 >

@@ -277,3 +277,102 @@ describe("safe realtime subscriptions", () => {
     vi.useRealTimers()
   })
 })
+
+describe("polling fallback back-off", () => {
+  it("resets on change, backs off gently when unchanged and harder on failure", async () => {
+    const { nextPollDelayMs, POLL_INITIAL_DELAY_MS, POLL_IDLE_MAX_DELAY_MS, POLL_MAX_DELAY_MS } =
+      await import("@/lib/games/realtime")
+    expect(nextPollDelayMs(12_000, "changed")).toBe(POLL_INITIAL_DELAY_MS)
+    expect(nextPollDelayMs(2_000, "unchanged")).toBe(3_000)
+    expect(nextPollDelayMs(14_000, "unchanged")).toBe(POLL_IDLE_MAX_DELAY_MS)
+    expect(nextPollDelayMs(2_000, "failed")).toBe(4_000)
+    expect(nextPollDelayMs(20_000, "failed")).toBe(POLL_MAX_DELAY_MS)
+  })
+
+  it("guest polling slows down while the game version does not change", async () => {
+    vi.useFakeTimers()
+    const { subscribeToGame } = await import("@/lib/games/realtime")
+    const fetchState = vi.fn(async () => ({ version: 1 }))
+
+    const controller = subscribeToGame({
+      gameId: "game-1",
+      initialState: { version: 1 },
+      fetchState,
+      onState: vi.fn(),
+      useChannel: false,
+    })
+
+    // 2s, then 3s, then 4.5s between polls.
+    await vi.advanceTimersByTimeAsync(2_000)
+    expect(fetchState).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(2_999)
+    expect(fetchState).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(fetchState).toHaveBeenCalledTimes(2)
+    await vi.advanceTimersByTimeAsync(4_500)
+    expect(fetchState).toHaveBeenCalledTimes(3)
+
+    // Two quiet minutes at the 15s cap stay far below the old 2s cadence (60 polls).
+    fetchState.mockClear()
+    await vi.advanceTimersByTimeAsync(120_000)
+    expect(fetchState.mock.calls.length).toBeLessThanOrEqual(12)
+
+    controller.stop()
+    vi.useRealTimers()
+  })
+
+  it("returns to the fast cadence when a poll brings a new version", async () => {
+    vi.useFakeTimers()
+    const { subscribeToGame } = await import("@/lib/games/realtime")
+    let version = 1
+    const fetchState = vi.fn(async () => ({ version }))
+
+    const controller = subscribeToGame({
+      gameId: "game-1",
+      initialState: { version: 1 },
+      fetchState,
+      onState: vi.fn(),
+      useChannel: false,
+    })
+
+    await vi.advanceTimersByTimeAsync(2_000 + 3_000) // two unchanged polls, next in 4.5s
+    expect(fetchState).toHaveBeenCalledTimes(2)
+    version = 2
+    await vi.advanceTimersByTimeAsync(4_500) // changed: next poll back at 2s
+    expect(fetchState).toHaveBeenCalledTimes(3)
+    await vi.advanceTimersByTimeAsync(2_000)
+    expect(fetchState).toHaveBeenCalledTimes(4)
+
+    controller.stop()
+    vi.useRealTimers()
+  })
+  it("returns to the fast cadence when a new version arrives outside the poll loop", async () => {
+    vi.useFakeTimers()
+    const { subscribeToGame } = await import("@/lib/games/realtime")
+    let version = 1
+    const fetchState = vi.fn(async () => ({ version }))
+
+    const controller = subscribeToGame({
+      gameId: "game-1",
+      initialState: { version: 1 },
+      fetchState,
+      onState: vi.fn(),
+      useChannel: false,
+    })
+
+    await vi.advanceTimersByTimeAsync(2_000 + 3_000 + 4_500) // three quiet polls, next in 6.75s
+    expect(fetchState).toHaveBeenCalledTimes(3)
+
+    // The player's own action refreshes and brings a new version.
+    version = 2
+    await controller.refresh()
+    expect(fetchState).toHaveBeenCalledTimes(4)
+
+    // The pending slow poll is replaced by one at the initial delay.
+    await vi.advanceTimersByTimeAsync(2_000)
+    expect(fetchState).toHaveBeenCalledTimes(5)
+
+    controller.stop()
+    vi.useRealTimers()
+  })
+})

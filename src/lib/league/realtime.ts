@@ -3,18 +3,19 @@
  * writes land in `event_realtime_signals`; the browser subscribes to
  * `league:event:<id>` filtered on the signal row and refetches the
  * authorized state through the application API (never trusts the payload).
- * Polling fallback 2s → 30s cap, 5s channel-stall grace, visibility pause.
+ * Polling fallback starts at 2s and backs off (15s cap while unchanged, 30s
+ * while failing), 5s channel-stall grace, visibility pause.
  * All league viewers are signed in — no guest polling path needed.
  */
 
 import { createSupabaseBrowserClient, uniqueChannelTopic } from "@/lib/supabase/browser"
 import {
   createRefreshCoordinator,
+  nextPollDelayMs,
+  POLL_INITIAL_DELAY_MS,
   type RealtimeController,
 } from "@/lib/games/realtime"
 
-const POLL_INITIAL_DELAY_MS = 2_000
-const POLL_MAX_DELAY_MS = 30_000
 const FALLBACK_GRACE_MS = 5_000
 
 export function subscribeToLeagueEvent(options: {
@@ -50,11 +51,17 @@ export function subscribeToLeagueEvent(options: {
       pollTimer = null
       if (stopped) return
       pollInFlight = true
+      const versionBefore = options.getCurrentVersion?.()
       try {
         await coordinator.refresh()
-        pollDelayMs = POLL_INITIAL_DELAY_MS
+        // Without a version getter a change can't be detected: back off.
+        const after = options.getCurrentVersion?.()
+        pollDelayMs = nextPollDelayMs(
+          pollDelayMs,
+          after != null && after !== versionBefore ? "changed" : "unchanged",
+        )
       } catch {
-        pollDelayMs = Math.min(POLL_MAX_DELAY_MS, pollDelayMs * 2)
+        pollDelayMs = nextPollDelayMs(pollDelayMs, "failed")
       } finally {
         pollInFlight = false
         schedulePolling()

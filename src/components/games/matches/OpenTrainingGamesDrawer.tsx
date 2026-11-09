@@ -158,7 +158,7 @@ export function OpenTrainingGamesDrawer({
             <p className="mt-2 text-sm leading-6 text-on-surface-variant">
               Your next training game will appear here while it is open.
             </p>
-            <Link
+            <Link prefetch={false}
               href="/games"
               onClick={onClose}
               className="mt-5 inline-flex min-h-11 items-center rounded-full bg-on-surface px-4 font-display text-xs font-bold uppercase tracking-[0.08em] text-surface transition-colors hover:bg-inverse-surface"
@@ -214,7 +214,7 @@ export function OpenTrainingGamesDrawer({
                   </div>
                 ) : (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
+                    <Link prefetch={false}
                       href={`/games/${game.id}`}
                       onClick={onClose}
                       className="inline-flex min-h-11 items-center gap-2 rounded-full bg-on-surface px-4 font-display text-xs font-bold uppercase tracking-[0.08em] text-surface transition-colors hover:bg-inverse-surface"

@@ -25,7 +25,7 @@ const EMPTY_COPY: Record<Kind, { hint: string; cta: string; href: string }> = {
 
 function SpotCard({ spot }: { spot: Spot }) {
   return (
-    <Link
+    <Link prefetch={false}
       href={`/spots/${spot.id}`}
       className="group overflow-hidden rounded-container border border-outline-variant bg-surface-container-lowest transition-[border-color,transform] hover:border-outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:translate-y-px"
     >
@@ -167,7 +167,7 @@ export function ProfileSpotsGrid({
             No {kind} spots
           </p>
           <p className={`mt-1 ${BODY}`}>{EMPTY_COPY[kind].hint}</p>
-          <Link href={EMPTY_COPY[kind].href} className={`mt-3 ${controlClass("primary")}`}>
+          <Link prefetch={false} href={EMPTY_COPY[kind].href} className={`mt-3 ${controlClass("primary")}`}>
             {EMPTY_COPY[kind].cta}
           </Link>
         </div>

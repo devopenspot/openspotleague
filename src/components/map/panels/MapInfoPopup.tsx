@@ -421,7 +421,7 @@ function MapInfoPopupBase({
 
         {/* --- Action bar: outside the image so header height stays capped --- */}
         <div className="flex shrink-0 items-center gap-1.5 bg-surface-bright px-2.5 py-2.5 md:gap-2 md:px-3.5 md:py-3">
-          <Link
+          <Link prefetch={false}
             href={gamePrefillHref}
             onClick={() => clearActivePin()}
             aria-label={`Train or challenge at ${spot.name}`}
@@ -431,7 +431,7 @@ function MapInfoPopupBase({
             <span>Train</span>
           </Link>
 
-          <Link
+          <Link prefetch={false}
             href={`/spots/${spot.id}`}
             aria-label={`Open ${spot.name} details`}
             className={cn(controlClass("outline"), ACTION_LABELLED_CLASS)}

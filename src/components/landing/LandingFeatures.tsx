@@ -154,7 +154,7 @@ export function LandingFeatures() {
                 </div>
 
                 <div className="pt-6 mt-4 border-t border-outline-variant/40">
-                  <Link
+                  <Link prefetch={false}
                     href={feature.ctaHref}
                     className="inline-flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-surface transition-colors hover:text-primary group-hover:translate-x-0.5 transition-transform"
                   >
@@ -179,14 +179,14 @@ export function LandingFeatures() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Link
+            <Link prefetch={false}
               href={ROUTES.spotsNew}
               className="inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-5 py-2 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-primary transition-colors hover:bg-primary/90"
             >
               <PlusCircle size={16} aria-hidden="true" />
               Add a Spot
             </Link>
-            <Link
+            <Link prefetch={false}
               href={ROUTES.league}
               className="inline-flex min-h-10 items-center gap-2 rounded-full border border-outline-variant bg-surface-container-lowest px-5 py-2 font-display text-xs font-bold uppercase tracking-[0.08em] text-on-surface transition-colors hover:bg-surface-container-high"
             >

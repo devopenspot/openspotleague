@@ -45,7 +45,7 @@ export function MatchHistoryRow({
     <li className="py-4">
       <div className="flex items-center gap-3">
         {/* Whole row is a pointer shortcut; the Resume/Results control is the one tab stop. */}
-        <Link
+        <Link prefetch={false}
           href={`/games/${game.id}`}
           tabIndex={-1}
           aria-hidden="true"
@@ -76,7 +76,7 @@ export function MatchHistoryRow({
             {loading ? "Loading…" : "Results"}
           </button>
         ) : (
-          <Link
+          <Link prefetch={false}
             href={`/games/${game.id}`}
             aria-label={`Resume ${title}`}
             className={controlClass("primary")}

@@ -113,7 +113,7 @@ export default function SavedTab() {
             </button>
           ))}
         </div>
-        <Link
+        <Link prefetch={false}
           href={ROUTES.spotsNew}
           data-testid="create-spot-saved"
           aria-label="Create new spot"
@@ -145,7 +145,7 @@ export default function SavedTab() {
           </h2>
           <p className={`mt-3 max-w-sm ${BODY}`}>{emptyForFilter.desc}</p>
           {filter === "created" ? (
-            <Link
+            <Link prefetch={false}
               href={ROUTES.spotsNew}
               data-testid="create-spot-saved-empty"
               aria-label="Create new spot"

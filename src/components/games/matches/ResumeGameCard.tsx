@@ -7,7 +7,7 @@ import type { ResumableGame } from "@/components/games/hooks/useMyGames";
 
 export function ResumeGameCard({ game }: { game: ResumableGame }) {
   return (
-    <Link
+    <Link prefetch={false}
       href={`/games/${game.id}`}
       className="flex min-h-[72px] items-center justify-between gap-3 rounded-lg border-2 border-on-surface bg-surface-container-lowest px-4 py-3 text-on-surface focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2 active:translate-y-px"
     >

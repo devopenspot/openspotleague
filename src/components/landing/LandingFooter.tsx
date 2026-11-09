@@ -17,7 +17,7 @@ export function LandingFooter() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand Column */}
           <div className="col-span-2 sm:col-span-2 md:col-span-4 lg:col-span-2 space-y-3">
-            <Link
+            <Link prefetch={false}
               href={ROUTES.home}
               className="inline-flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
@@ -46,27 +46,27 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link href={ROUTES.map} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.map} className={FOOTER_LINK_CLASS}>
                   Spots Map
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.games} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.games} className={FOOTER_LINK_CLASS}>
                   Challenge Arena
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.tv} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.tv} className={FOOTER_LINK_CLASS}>
                   Open Spot TV
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.league} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.league} className={FOOTER_LINK_CLASS}>
                   Contests & Events
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.spotsNew} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.spotsNew} className={FOOTER_LINK_CLASS}>
                   Submit a Spot
                 </Link>
               </li>
@@ -80,7 +80,7 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link
+                <Link prefetch={false}
                   href={`${ROUTES.map}?discipline=skateboard`}
                   className={FOOTER_LINK_CLASS}
                 >
@@ -88,7 +88,7 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
-                <Link
+                <Link prefetch={false}
                   href={`${ROUTES.map}?discipline=bmx`}
                   className={FOOTER_LINK_CLASS}
                 >
@@ -96,7 +96,7 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
-                <Link
+                <Link prefetch={false}
                   href={`${ROUTES.map}?discipline=roller`}
                   className={FOOTER_LINK_CLASS}
                 >
@@ -104,7 +104,7 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
-                <Link
+                <Link prefetch={false}
                   href={`${ROUTES.map}?discipline=scooter`}
                   className={FOOTER_LINK_CLASS}
                 >
@@ -121,22 +121,22 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link href={ROUTES.login} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.login} className={FOOTER_LINK_CLASS}>
                   Rider Sign In
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.profile} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.profile} className={FOOTER_LINK_CLASS}>
                   Rider Profile
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.saved} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.saved} className={FOOTER_LINK_CLASS}>
                   Saved Spots
                 </Link>
               </li>
               <li>
-                <Link href="/support" className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href="/support" className={FOOTER_LINK_CLASS}>
                   Support & Help
                 </Link>
               </li>
@@ -150,17 +150,17 @@ export function LandingFooter() {
             </h4>
             <ul className="space-y-2 text-sm font-semibold text-wire-muted">
               <li>
-                <Link href={ROUTES.terms} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.terms} className={FOOTER_LINK_CLASS}>
                   Terms of Use
                 </Link>
               </li>
               <li>
-                <Link href={ROUTES.privacy} className={FOOTER_LINK_CLASS}>
+                <Link prefetch={false} href={ROUTES.privacy} className={FOOTER_LINK_CLASS}>
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link
+                <Link prefetch={false}
                   href={`${ROUTES.terms}#risk-waiver`}
                   className={FOOTER_LINK_CLASS}
                 >
@@ -168,7 +168,7 @@ export function LandingFooter() {
                 </Link>
               </li>
               <li>
-                <Link
+                <Link prefetch={false}
                   href={`${ROUTES.terms}#spots-property`}
                   className={FOOTER_LINK_CLASS}
                 >
@@ -185,14 +185,14 @@ export function LandingFooter() {
             © {new Date().getFullYear()} Open Spot League. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
+            <Link prefetch={false}
               href={ROUTES.terms}
               className={`${FOOTER_LINK_CLASS} underline decoration-wire-border`}
             >
               Terms
             </Link>
             <span aria-hidden="true">•</span>
-            <Link
+            <Link prefetch={false}
               href={ROUTES.privacy}
               className={`${FOOTER_LINK_CLASS} underline decoration-wire-border`}
             >

@@ -113,7 +113,7 @@ export default function NotificationsTab() {
             const unread = !item.readAt;
             return (
               <li key={item.id}>
-                <Link
+                <Link prefetch={false}
                   href={href ?? "/notifications"}
                   data-read={Boolean(item.readAt)}
                   onClick={unread ? () => void markRead([item.id]) : undefined}

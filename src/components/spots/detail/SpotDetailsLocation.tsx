@@ -38,7 +38,7 @@ export function SpotDetailsLocation({
       </address>
 
       <div className="flex flex-col gap-2">
-        <Link
+        <Link prefetch={false}
           href={gamePrefillHref}
           aria-label={`Start training or challenge at ${spot.name}`}
           className={LOCATION_PRIMARY_LINK_CLASS}
@@ -46,7 +46,7 @@ export function SpotDetailsLocation({
           <span>Train / Challenge at this spot</span>
           <Swords size={14} aria-hidden="true" className="shrink-0" />
         </Link>
-        <Link
+        <Link prefetch={false}
           href={viewOnMapUrl}
           onClick={() => {
             setMapPreserveLocation();

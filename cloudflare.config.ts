@@ -67,7 +67,24 @@ export default defineConfig({
     assets: {
       htmlHandling: "none",
       notFoundHandling: "none",
-      runWorkerFirst: ["/*", "!/_next/static/*", "!/*/_next/static/*"],
+      // Every request that runs this Worker counts against the plan's daily
+      // request quota. Files from public/ are served by Static Assets without
+      // running the Worker (free and unmetered). A path with no matching asset
+      // still falls through to the Worker, so generated routes like
+      // opengraph-image work.
+      runWorkerFirst: [
+        "/*",
+        "!/_next/static/*",
+        "!/*/_next/static/*",
+        "!/favicon.ico",
+        "!/*.png",
+        "!/*.jpg",
+        "!/*.jpeg",
+        "!/*.gif",
+        "!/*.webp",
+        "!/*.svg",
+        "!/og/*",
+      ],
     },
     env: {
       ...responseStore.applicationWorker.env,

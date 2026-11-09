@@ -76,13 +76,13 @@ export function LeagueLanding({ featured, events }: LeagueLandingProps) {
         <div className="flex flex-wrap items-center gap-2">
           <JoinByCodeEntry variant="onWash" />
           {user ? (
-            <Link href={CONTEST_NEW_PATH} className={controlClass("onWashDark")}>
+            <Link prefetch={false} href={CONTEST_NEW_PATH} className={controlClass("onWashDark")}>
               <Plus size={14} aria-hidden="true" />
               Create a contest
             </Link>
           ) : null}
           {user ? (
-            <Link href={LEAGUE_RANKING_PATH} className={controlClass("onWash")}>
+            <Link prefetch={false} href={LEAGUE_RANKING_PATH} className={controlClass("onWash")}>
               <Medal size={14} aria-hidden="true" />
               Ranking
             </Link>

@@ -35,6 +35,15 @@ export const metadata: Metadata = {
   description:
     "Is a directory and activity board for riders to maintain a consistent training routine and discover new spots to ride.",
   applicationName: "Open Spot League",
+  // Static files from public/: served by Static Assets without running the
+  // Worker (generated icon routes cost a Worker request on every page view).
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   keywords: [
     "skatepark",
     "skateparks",

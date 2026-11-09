@@ -34,7 +34,7 @@ function GameCard({ game }: { game: ProfileGame }) {
   ].filter(Boolean);
 
   return (
-    <Link
+    <Link prefetch={false}
       href={`/games/${game.id}`}
       className="group flex items-center gap-3 rounded-inner border border-outline-variant bg-surface-container-lowest p-3 transition-[background-color,border-color,transform] hover:border-outline hover:bg-surface-container-low focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:translate-y-px"
     >
@@ -101,7 +101,7 @@ function EmptyGames({ mode }: { mode: GameMode | null }) {
     <div className={EMPTY_STATE}>
       <p className="font-display text-sm font-bold uppercase tracking-dense">No {noun} yet</p>
       <p className={`mt-1 ${BODY}`}>Start one from Games and it shows up here.</p>
-      <Link href={ROUTES.games} className={`mt-3 ${controlClass("primary")}`}>
+      <Link prefetch={false} href={ROUTES.games} className={`mt-3 ${controlClass("primary")}`}>
         Go to Games
       </Link>
     </div>

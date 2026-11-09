@@ -19,7 +19,7 @@ export function ProfileLeagueCard({ summary }: { summary: ProfileSummary }) {
         <h2 id="profile-league" className={CARD_TITLE}>
           League
         </h2>
-        <Link href={LEAGUE_RANKING_PATH} className={controlClass("outline")}>
+        <Link prefetch={false} href={LEAGUE_RANKING_PATH} className={controlClass("outline")}>
           <Medal size={14} aria-hidden="true" /> Ranking
         </Link>
       </div>
@@ -36,7 +36,7 @@ export function ProfileLeagueCard({ summary }: { summary: ProfileSummary }) {
       {history.length === 0 ? (
         <p className={`mt-3 ${BODY}`}>
           Your contest results show up here once organizers publish them.{" "}
-          <Link href={ROUTES.league} className="font-semibold text-on-surface underline">
+          <Link prefetch={false} href={ROUTES.league} className="font-semibold text-on-surface underline">
             Find a contest
           </Link>
         </p>
@@ -44,7 +44,7 @@ export function ProfileLeagueCard({ summary }: { summary: ProfileSummary }) {
         <ul className="mt-3 space-y-1.5" aria-label="Recent contest results">
           {history.map((item) => (
             <li key={`${item.contestSlug}-${item.divisionLabel}`}>
-              <Link
+              <Link prefetch={false}
                 href={buildContestResultUrl(item.contestSlug, summary.user.id)}
                 className="flex items-center justify-between gap-3 rounded-inner px-3 py-2 hover:bg-surface-container"
               >

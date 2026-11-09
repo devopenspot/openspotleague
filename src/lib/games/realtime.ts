@@ -103,9 +103,26 @@ export function createRefreshCoordinator({
   }
 }
 
-const POLL_INITIAL_DELAY_MS = 2_000
-const POLL_MAX_DELAY_MS = 30_000
+export const POLL_INITIAL_DELAY_MS = 2_000
+/** Cap while polls succeed but nothing changed. */
+export const POLL_IDLE_MAX_DELAY_MS = 15_000
+/** Cap while polls fail. */
+export const POLL_MAX_DELAY_MS = 30_000
 const FALLBACK_GRACE_MS = 5_000
+
+export type PollOutcome = "changed" | "unchanged" | "failed"
+
+/**
+ * Next polling-fallback delay. Every poll is a Worker request that counts
+ * against the plan's daily quota, so a quiet game must not poll at the
+ * initial rate forever: only a version change resets to the fast cadence,
+ * an unchanged poll backs off gently, and a failure backs off harder.
+ */
+export function nextPollDelayMs(previousMs: number, outcome: PollOutcome): number {
+  if (outcome === "changed") return POLL_INITIAL_DELAY_MS
+  if (outcome === "failed") return Math.min(POLL_MAX_DELAY_MS, previousMs * 2)
+  return Math.min(POLL_IDLE_MAX_DELAY_MS, Math.round(previousMs * 1.5))
+}
 
 export function subscribeToGame<T extends VersionedGameState>(options: {
   gameId: string
@@ -143,11 +160,15 @@ export function subscribeToGame<T extends VersionedGameState>(options: {
       pollTimer = null
       if (stopped || (typeof document !== "undefined" && document.visibilityState === "hidden")) return
       pollInFlight = true
+      const versionBefore = current?.version
       try {
         await coordinator.refresh()
-        pollDelayMs = POLL_INITIAL_DELAY_MS
+        pollDelayMs = nextPollDelayMs(
+          pollDelayMs,
+          current?.version !== versionBefore ? "changed" : "unchanged",
+        )
       } catch {
-        pollDelayMs = Math.min(POLL_MAX_DELAY_MS, pollDelayMs * 2)
+        pollDelayMs = nextPollDelayMs(pollDelayMs, "failed")
       } finally {
         pollInFlight = false
         schedulePolling()
@@ -167,6 +188,16 @@ export function subscribeToGame<T extends VersionedGameState>(options: {
       if (accepted && accepted !== current) {
         current = accepted
         options.onState(accepted)
+        // A new version from outside the poll loop (own action, tab focus)
+        // means play resumed: return to the fast cadence so the next reply
+        // shows quickly. An in-flight poll applies its own "changed" outcome.
+        if (pollingFallback && !pollInFlight && pollDelayMs !== POLL_INITIAL_DELAY_MS) {
+          pollDelayMs = POLL_INITIAL_DELAY_MS
+          if (pollTimer) {
+            stopPolling()
+            schedulePolling()
+          }
+        }
       }
     },
     onSuccess: () => {

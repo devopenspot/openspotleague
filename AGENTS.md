@@ -105,6 +105,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 
 - `docs/architecture.md`: request lifecycle, layers, repositories, write path, deletion lifecycle, error mapping, security headers.
 - `docs/caching-and-egress.md`: Cache Components, invalidation, the Supabase egress budget, RSC payloads, polling.
+- `docs/cloudflare-security.md`: Workers request quota, dashboard bot settings, WAF custom and rate-limit rules, Workers Paid limits, incident checklist.
 - `docs/database.md`: environment, migrations, seeding, RBAC/RLS, realtime, storage.
 - `docs/league.md`: League contests — routes, the contest hub, divisions and video contests, the Article 9 rating, leaderboards, public listing rule, plans and payment gate, covers, contest curation, write path, errors.
 - `docs/og-cards.md`: share (Open Graph) images — generated vs static, the `design/og-cards/` card sheet, export, shipping a card, scaling to generated images.

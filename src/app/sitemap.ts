@@ -13,7 +13,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/`, lastModified: now, changeFrequency: 'daily', priority: 1 },
     { url: `${BASE_URL}/explore`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${BASE_URL}/map`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${BASE_URL}/saved`, lastModified: now, changeFrequency: 'never', priority: 0.3 },
     { url: `${BASE_URL}/league`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${BASE_URL}/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
@@ -34,11 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     [] as readonly string[],
     'listSpotShuffleIds',
   );
+  // No lastModified on spots: stamping all of them with `now` told crawlers
+  // every spot changed on every fetch, so they re-crawled the whole list
+  // (each URL is a Worker request against the daily quota).
   const spotEntries: MetadataRoute.Sitemap = spotIds.map(id => ({
     url: `${BASE_URL}/spots/${id}`,
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.7,
+    changeFrequency: 'monthly',
+    priority: 0.6,
   }));
 
   return [...staticEntries, ...spotEntries];
