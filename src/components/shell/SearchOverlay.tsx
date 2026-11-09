@@ -10,7 +10,12 @@ import {
   useState,
 } from "react";
 import { Search, X } from "lucide-react";
-import { useSearchParams, useRouter, usePathname, type ReadonlyURLSearchParams } from "next/navigation";
+import {
+  useSearchParams,
+  useRouter,
+  usePathname,
+  type ReadonlyURLSearchParams,
+} from "next/navigation";
 import { Overlay } from "@/components/feedback/Overlay";
 import { SEARCH_FOCUS_DELAY_MS } from "@/lib/config/constants";
 import { ROUTES } from "@/lib/navigation/nav";
@@ -489,7 +494,7 @@ export function SearchOverlay({
           </h2>
           <div className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-lg border-2 border-wire-border bg-wire-border px-4 focus-within:outline-2 focus-within:outline-white focus-within:outline-offset-2">
             <label htmlFor={inputId} className="visually-hidden">
-              Search spots by name, city, or type
+              Search spots by name or city
             </label>
             <Search
               size={18}
@@ -505,8 +510,8 @@ export function SearchOverlay({
               autoComplete="off"
               placeholder={
                 isForcedGate
-                  ? "Search city or spot, or select below"
-                  : "Search cities or spots"
+                  ? "Search spots or select below"
+                  : "Search spots by city or name"
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
