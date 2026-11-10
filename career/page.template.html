@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>OpenSpot Career Kit</title>
+<style>
+:root {
+  --bg: #f6f6f4; --surface: #ffffff; --ink: #141414; --muted: #5f5f5a; --line: #e2e2dd;
+  --accent: #2f5bff; --accent-ink: #ffffff; --code: #f1f1ee; --ok: #1f8a4c; --warn: #b4540a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e10; --surface: #17171a; --ink: #f1f1ef; --muted: #a2a29c; --line: #2a2a2e;
+    --accent: #7d97ff; --accent-ink: #0e0e10; --code: #1f1f23; --ok: #4fc483; --warn: #f0a35e;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e10; --surface: #17171a; --ink: #f1f1ef; --muted: #a2a29c; --line: #2a2a2e;
+  --accent: #7d97ff; --accent-ink: #0e0e10; --code: #1f1f23; --ok: #4fc483; --warn: #f0a35e;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+header h1 { font-size: 26px; line-height: 1.2; margin: 0 0 4px; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); }
+.bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 12px 0; margin: 16px 0 8px;
+  display: flex; flex-wrap: wrap; gap: 8px 12px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 14px;
+  padding: 6px 14px; border-radius: 999px; cursor: pointer; min-height: 36px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible, .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); align-self: center; }
+.group { display: inline-flex; gap: 8px; align-items: center; }
+article h1 { display: none; }
+article section { background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  padding: 20px; margin: 16px 0; overflow-wrap: anywhere; }
+article h2 { font-size: 19px; margin: 0 0 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+article h3 { font-size: 16px; margin: 18px 0 6px; }
+article p, article li { color: var(--ink); }
+article ul { padding-left: 20px; }
+article a { color: var(--accent); }
+code { background: var(--code); border-radius: 6px; padding: 1px 5px; font-size: .9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.block { position: relative; background: var(--code); border-radius: 12px; padding: 14px 14px 10px; margin: 12px 0; }
+.block pre { margin: 0; white-space: pre-wrap; font: 14px/1.55 ui-sans-serif, system-ui, sans-serif; color: var(--ink); }
+.block .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.count.over { color: var(--warn); font-weight: 600; }
+.count.fits { color: var(--ok); }
+.copy { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px;
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; white-space: nowrap; }
+.copy.done { color: var(--ok); border-color: var(--ok); }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+.hidden { display: none !important; }
+.note { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>OpenSpot League · Career kit</h1>
+    <p id="sub">Copy-ready text for LinkedIn, résumé and CV. Private page, not linked from the site.</p>
+  </header>
+
+  <div class="bar" role="toolbar">
+    <div class="seg" id="tabs">
+      <button data-tab="linkedin" aria-pressed="true">LinkedIn</button>
+      <button data-tab="resume" aria-pressed="false">Résumé</button>
+      <button data-tab="cv" aria-pressed="false">CV</button>
+      <button data-tab="brief" aria-pressed="false">Brief</button>
+      <button data-tab="guide" aria-pressed="false">Guide</button>
+    </div>
+    <div class="group">
+      <div class="seg" id="lang">
+        <button data-lang="en" aria-pressed="true">EN</button>
+        <button data-lang="es" aria-pressed="false">ES</button>
+      </div>
+      <div class="seg" id="framing" title="Experience or Project framing">
+        <button data-frame="A" aria-pressed="true">Experience</button>
+        <button data-frame="B" aria-pressed="false">Project</button>
+      </div>
+    </div>
+  </div>
+
+  <article id="out"></article>
+</div>
+
+<script>
+const DOCS = /*__DOCS__*/null;
+
+const LIMITS = [
+  { re: /headline|titular/i, max: 220 },
+  { re: /about|acerca/i, max: 2600 },
+  { re: /option a|opción a/i, max: 2000 },
+  { re: /option b|opción b/i, max: 2000 },
+  // Brief tab: target lengths for job-portal fields, not hard platform limits.
+  { re: /one-liner|una línea/i, max: 160 },
+  { re: /short description|descripción corta/i, max: 400 },
+  { re: /standard description|descripción estándar/i, max: 800 },
+];
+
+const UI = {
+  en: { copy: "Copy", copied: "Copied", chars: "characters", sub: "Copy-ready text for LinkedIn, résumé and CV. Private page, not linked from the site.", exp: "Experience", proj: "Project", guideNote: "The guide is in English." },
+  es: { copy: "Copiar", copied: "Copiado", chars: "caracteres", sub: "Texto listo para copiar en LinkedIn, currículum y CV. Página privada, sin enlace desde la web.", exp: "Experiencia", proj: "Proyecto", guideNote: "La guía está en inglés." },
+};
+
+const state = { tab: "linkedin", lang: "en", frame: "A" };
+try {
+  const saved = JSON.parse(localStorage.getItem("career-kit") || "{}");
+  Object.assign(state, saved);
+} catch (_) {}
+
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function inline(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>` : t)
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+}
+
+// Small markdown renderer: headings, paragraphs, lists, tables, fenced blocks.
+function render(md) {
+  const lines = md.replace(/\r/g, "").split("\n");
+  const html = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("```")) {
+      const buf = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) buf.push(lines[i++]);
+      i++;
+      html.push({ type: "block", text: buf.join("\n") });
+      continue;
+    }
+    const h = line.match(/^(#{1,3}) (.*)$/);
+    if (h) { html.push({ type: "h" + h[1].length, text: h[2] }); i++; continue; }
+    if (/^\|/.test(line)) {
+      const rows = [];
+      while (i < lines.length && /^\|/.test(lines[i])) rows.push(lines[i++]);
+      const cells = (r) => r.slice(1, -1).split("|").map((c) => c.trim());
+      const head = cells(rows[0]);
+      const body = rows.slice(2).map(cells);
+      html.push({ type: "raw", html: `<div class="table"><table><thead><tr>${head.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${body.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` });
+      continue;
+    }
+    if (/^\s*[-•] /.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-•] /.test(lines[i])) {
+        let item = lines[i++].replace(/^\s*[-•] /, "");
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !/^\s*[-•] /.test(lines[i])) item += " " + lines[i++].trim();
+        items.push(item.replace(/^\[ \] /, "☐ "));
+      }
+      html.push({ type: "raw", html: `<ul>${items.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>`, text: items.map((t) => "• " + t.replace(/\*\*|`/g, "")).join("\n") });
+      continue;
+    }
+    if (/^\d+\. /.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        let item = lines[i++].replace(/^\d+\. /, "");
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i])) item += " " + lines[i++].trim();
+        items.push(item);
+      }
+      html.push({ type: "raw", html: `<ol>${items.map((t) => `<li>${inline(t)}</li>`).join("")}</ol>` });
+      continue;
+    }
+    if (line.trim() === "") { i++; continue; }
+    const buf = [line];
+    i++;
+    while (i < lines.length && lines[i].trim() !== "" && !/^(#|```|\||\s*[-•] |\d+\. )/.test(lines[i])) buf.push(lines[i++]);
+    html.push({ type: "raw", html: `<p>${inline(buf.join(" "))}</p>`, text: buf.join(" ").replace(/\*\*|\*|`/g, "") });
+  }
+  return html;
+}
+
+function frameOf(title) {
+  if (/(option|opción|version|versión) a\b/i.test(title)) return "A";
+  if (/(option|opción|version|versión) b\b/i.test(title)) return "B";
+  return null;
+}
+
+function limitFor(title) {
+  const l = LIMITS.find((x) => x.re.test(title));
+  return l ? l.max : null;
+}
+
+function copyButton(getText) {
+  const b = document.createElement("button");
+  b.className = "copy";
+  b.textContent = UI[state.lang].copy;
+  b.addEventListener("click", async () => {
+    const text = getText();
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (_) {}
+      ta.remove();
+    }
+    b.textContent = UI[state.lang].copied; b.classList.add("done");
+    setTimeout(() => { b.textContent = UI[state.lang].copy; b.classList.remove("done"); }, 1400);
+  });
+  return b;
+}
+
+function draw() {
+  const ui = UI[state.lang];
+  document.documentElement.lang = state.lang;
+  document.getElementById("sub").textContent = ui.sub;
+  const fb = document.querySelectorAll("#framing button");
+  fb[0].textContent = ui.exp; fb[1].textContent = ui.proj;
+  for (const [id, key] of [["tabs", "tab"], ["lang", "lang"], ["framing", "frame"]]) {
+    document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset[key === "frame" ? "frame" : key] === state[key])));
+  }
+  document.getElementById("framing").classList.toggle("hidden", state.tab === "guide" || state.tab === "cv" || state.tab === "brief");
+
+  const md = state.tab === "guide" ? DOCS.guide : DOCS[state.lang][state.tab];
+  const nodes = render(md);
+  const out = document.getElementById("out");
+  out.innerHTML = "";
+  if (state.tab === "guide" && state.lang === "es") {
+    const n = document.createElement("p"); n.className = "note"; n.textContent = ui.guideNote; out.appendChild(n);
+  }
+
+  let section = null, sectionTitle = "", texts = [];
+  const intro = document.createElement("section");
+  const open = (title) => {
+    section = document.createElement("section");
+    sectionTitle = title; texts = [];
+    const h = document.createElement("h2");
+    const span = document.createElement("span"); span.innerHTML = inline(title);
+    h.appendChild(span);
+    const myTexts = texts;
+    if (state.tab !== "guide") h.appendChild(copyButton(() => myTexts.join("\n\n")));
+    section.appendChild(h);
+    const f = frameOf(title);
+    if (f && f !== state.frame && state.tab !== "cv") section.classList.add("hidden");
+    out.appendChild(section);
+  };
+
+  for (const n of nodes) {
+    if (n.type === "h1") continue;
+    if (n.type === "h2") { open(n.text); continue; }
+    const target = section || intro;
+    if (!section && !intro.isConnected) out.appendChild(intro);
+    if (n.type === "h3") {
+      const h = document.createElement("h3"); h.innerHTML = inline(n.text); target.appendChild(h);
+      texts.push(n.text); continue;
+    }
+    if (n.type === "block") {
+      const box = document.createElement("div"); box.className = "block";
+      const pre = document.createElement("pre"); pre.textContent = n.text; box.appendChild(pre);
+      const meta = document.createElement("div"); meta.className = "meta";
+      const count = document.createElement("span"); count.className = "count";
+      const max = limitFor(sectionTitle);
+      const len = [...n.text].length;
+      count.textContent = max ? `${len.toLocaleString()} / ${max.toLocaleString()} ${ui.chars}` : `${len.toLocaleString()} ${ui.chars}`;
+      if (max) count.classList.add(len > max ? "over" : "fits");
+      meta.appendChild(count);
+      meta.appendChild(copyButton(() => n.text));
+      box.appendChild(meta);
+      target.appendChild(box);
+      texts.push(n.text); continue;
+    }
+    const tmp = document.createElement("div"); tmp.innerHTML = n.html;
+    while (tmp.firstChild) target.appendChild(tmp.firstChild);
+    if (n.text) texts.push(n.text);
+  }
+}
+
+function bind(id, key) {
+  document.getElementById(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    state[key] = b.dataset[key === "tab" ? "tab" : key === "lang" ? "lang" : "frame"];
+    try { localStorage.setItem("career-kit", JSON.stringify(state)); } catch (_) {}
+    draw();
+  });
+}
+bind("tabs", "tab"); bind("lang", "lang"); bind("framing", "frame");
+draw();
+</script>
+</body>
+</html>

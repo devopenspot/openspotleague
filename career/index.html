@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>OpenSpot Career Kit</title>
+<style>
+:root {
+  --bg: #f6f6f4; --surface: #ffffff; --ink: #141414; --muted: #5f5f5a; --line: #e2e2dd;
+  --accent: #2f5bff; --accent-ink: #ffffff; --code: #f1f1ee; --ok: #1f8a4c; --warn: #b4540a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e10; --surface: #17171a; --ink: #f1f1ef; --muted: #a2a29c; --line: #2a2a2e;
+    --accent: #7d97ff; --accent-ink: #0e0e10; --code: #1f1f23; --ok: #4fc483; --warn: #f0a35e;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e10; --surface: #17171a; --ink: #f1f1ef; --muted: #a2a29c; --line: #2a2a2e;
+  --accent: #7d97ff; --accent-ink: #0e0e10; --code: #1f1f23; --ok: #4fc483; --warn: #f0a35e;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+header h1 { font-size: 26px; line-height: 1.2; margin: 0 0 4px; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); }
+.bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 12px 0; margin: 16px 0 8px;
+  display: flex; flex-wrap: wrap; gap: 8px 12px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 14px;
+  padding: 6px 14px; border-radius: 999px; cursor: pointer; min-height: 36px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible, .copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); align-self: center; }
+.group { display: inline-flex; gap: 8px; align-items: center; }
+article h1 { display: none; }
+article section { background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  padding: 20px; margin: 16px 0; overflow-wrap: anywhere; }
+article h2 { font-size: 19px; margin: 0 0 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+article h3 { font-size: 16px; margin: 18px 0 6px; }
+article p, article li { color: var(--ink); }
+article ul { padding-left: 20px; }
+article a { color: var(--accent); }
+code { background: var(--code); border-radius: 6px; padding: 1px 5px; font-size: .9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.block { position: relative; background: var(--code); border-radius: 12px; padding: 14px 14px 10px; margin: 12px 0; }
+.block pre { margin: 0; white-space: pre-wrap; font: 14px/1.55 ui-sans-serif, system-ui, sans-serif; color: var(--ink); }
+.block .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: var(--muted); }
+.count.over { color: var(--warn); font-weight: 600; }
+.count.fits { color: var(--ok); }
+.copy { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px;
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; white-space: nowrap; }
+.copy.done { color: var(--ok); border-color: var(--ok); }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+.hidden { display: none !important; }
+.note { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>OpenSpot League · Career kit</h1>
+    <p id="sub">Copy-ready text for LinkedIn, résumé and CV. Private page, not linked from the site.</p>
+  </header>
+
+  <div class="bar" role="toolbar">
+    <div class="seg" id="tabs">
+      <button data-tab="linkedin" aria-pressed="true">LinkedIn</button>
+      <button data-tab="resume" aria-pressed="false">Résumé</button>
+      <button data-tab="cv" aria-pressed="false">CV</button>
+      <button data-tab="brief" aria-pressed="false">Brief</button>
+      <button data-tab="guide" aria-pressed="false">Guide</button>
+    </div>
+    <div class="group">
+      <div class="seg" id="lang">
+        <button data-lang="en" aria-pressed="true">EN</button>
+        <button data-lang="es" aria-pressed="false">ES</button>
+      </div>
+      <div class="seg" id="framing" title="Experience or Project framing">
+        <button data-frame="A" aria-pressed="true">Experience</button>
+        <button data-frame="B" aria-pressed="false">Project</button>
+      </div>
+    </div>
+  </div>
+
+  <article id="out"></article>
+</div>
+
+<script>
+const DOCS = {"en":{"linkedin":"# LinkedIn — English\n\nProfile: https://www.linkedin.com/in/gabriel-alfonso-bernal/\n\n## Headline (≤ 220 characters)\n\n```\nFull-Stack Engineer · Founder of OpenSpot League | Next.js · React · TypeScript · PostgreSQL/PostGIS · Supabase · Cloudflare Workers\n```\n\n## About (≤ 2,600 characters)\n\nAdd your own first paragraph (years of experience, past roles, what you are looking for), then:\n\n```\n[1–2 sentences about you: years of experience, the kind of products you build, what you are looking for.]\n\nI'm the founder and sole engineer of OpenSpot League (openspotleague.com), a platform for the action sports community: an interactive map of skate spots, contests with real judging, multiplayer trick games and action sports TV for skateboard, BMX, scooter and roller riders.\n\nI designed and built it end to end — product, UI system, architecture, database and deployment — on Next.js 16, React 19 and TypeScript, running on Cloudflare Workers with Supabase (PostgreSQL + PostGIS, Auth, Realtime). It's live in pre-launch, ahead of a public release.\n\nWhat I enjoy most: turning messy real-world rules into clean, tested domain logic (like a contest rating engine based on the World Skate criteria), building real-time features that stay correct under concurrency, and keeping production fast and cheap with good caching.\n\nStack: TypeScript · Next.js · React · Node.js · PostgreSQL · PostGIS · Supabase · Drizzle ORM · Cloudflare Workers / R2 · AWS (CDK, Lambda, SQS, SES, SNS, DynamoDB, EventBridge) · Tailwind CSS · Vitest\n```\n\n## Option A — Experience entry\n\n| Field | Value |\n| --- | --- |\n| Title | Founder & Full-Stack Engineer |\n| Employment type | Self-employed |\n| Company | OpenSpot League |\n| Dates | [Month] 2026 – Present |\n| Location | [City, Country] · Remote |\n| Skills (pick 5) | Next.js · TypeScript · React · PostgreSQL · Cloudflare Workers |\n| Media | Screenshot of the map, of a contest page, link to openspotleague.com |\n\nDescription (≤ 2,000 characters):\n\n```\nOpenSpot League (openspotleague.com) is a web platform for the action sports community — skateboard, BMX, scooter and roller. I designed, built and operate it end to end. It is live on its production domain in pre-launch, ahead of a public release.\n\n• Built an interactive map of skate spots with geospatial search (PostGIS) and user-submitted spots.\n• Built the League: organizers create contests with divisions, QR/link invites and live or video judging, scored by a rating engine I implemented from the World Skate criteria (five criteria, 0–10 scale, trimmed-mean judge panel, division rankings and global league points).\n• Built real-time multiplayer trick-challenge games with optimistic concurrency control, idempotent writes and Supabase Realtime.\n• Built an event-driven email notification pipeline on AWS for contest updates, reminders and results: transactional outbox → SQS FIFO (with dead-letter queue) → Lambda → SES, idempotency in DynamoDB, bounce handling through SNS, scheduled digests with EventBridge Scheduler, all defined as code with AWS CDK.\n• Architected a layered Next.js 16 / React 19 app (pages → services → repositories) deployed to Cloudflare Workers, with PostgreSQL through Hyperdrive and media on Cloudflare R2.\n• Kept hosting costs low with server-side caching (Next.js Cache Components, shared remote cache), post-commit cache invalidation and a database egress budget.\n• Secured the platform with role-based access control, PostgreSQL row-level security, per-IP rate limiting and strict security headers.\n• Kept quality high with strict TypeScript, ~270 automated test files (Vitest) and a token-based design system.\n```\n\n## Option B — Projects section entry\n\n| Field | Value |\n| --- | --- |\n| Project name | OpenSpot League |\n| Dates | [Month] 2026 – Present (\"I am currently working on this project\") |\n| Associated with | (leave empty, or your current position) |\n| Project URL | https://openspotleague.com |\n| Skills | Next.js · TypeScript · PostgreSQL · Supabase · Cloudflare Workers |\n\nDescription:\n\n```\nFull-stack platform for action sports riders (skateboard, BMX, scooter, roller), built solo and live in pre-launch at openspotleague.com.\n\n• Interactive spot map with geospatial search (PostGIS).\n• Contests with live or video judging, scored by a rating engine based on the World Skate criteria.\n• Real-time multiplayer trick games (Supabase Realtime, optimistic concurrency).\n• Event-driven email notifications on AWS (CDK, SQS, Lambda, SES, DynamoDB, EventBridge).\n• Next.js 16 + React 19 on Cloudflare Workers, PostgreSQL via Drizzle and Hyperdrive, media on R2; ~270 test files.\n```\n\n## Featured link\n\n- URL: `https://openspotleague.com`\n- Title: `OpenSpot League — spots, contests and games for action sports`\n- Description: `A platform I founded and built solo: skate spot map, judged contests, multiplayer trick games and action sports TV. In pre-launch.`\n\n## Skills to add\n\nNext.js · React · TypeScript · JavaScript · Node.js · PostgreSQL · PostGIS · Supabase · Drizzle ORM · SQL ·\nCloudflare Workers · AWS · AWS Lambda · Amazon SQS · Amazon SES · AWS CDK · DynamoDB · Serverless · Event-driven architecture · Tailwind CSS · Vitest · Real-time systems · System design · Web performance ·\nCaching · REST APIs · Product development · UI design\n","resume":"# Résumé (1 page) — English\n\nKeep it to 4–6 bullets; drop the least relevant one for each job. Use **one** of the two versions, never both.\n\n## Version A — Experience section\n\n**Founder & Full-Stack Engineer** — OpenSpot League (self-employed) · [City, Country] / Remote · [Mon] 2026 – Present\n*Action sports platform (spot map, judged contests, multiplayer games) · live in pre-launch at openspotleague.com*\n\n- Designed, built and deployed the full product solo: Next.js 16 / React 19 / TypeScript on Cloudflare Workers, Supabase PostgreSQL + PostGIS, Cloudflare R2.\n- Implemented a contest rating engine from the World Skate judging criteria (five criteria, trimmed-mean judge panel, division rankings, league points), with live and video judging.\n- Built real-time multiplayer trick games using optimistic concurrency control, idempotent writes and Supabase Realtime.\n- Built an event-driven email notification pipeline on AWS (SQS FIFO → Lambda → SES, DynamoDB idempotency, EventBridge schedules), defined with AWS CDK.\n- Architected a layered service/repository backend with role-based access control, row-level security, rate limiting and security headers.\n- Reduced database egress and hosting cost with server caching (Next.js Cache Components, remote cache) and post-commit invalidation; ~270 automated test files.\n\n## Version B — Projects section\n\n**OpenSpot League** — openspotleague.com · [Mon] 2026 – Present\n*Solo full-stack project · Next.js, React, TypeScript, PostgreSQL/PostGIS, Supabase, Cloudflare Workers*\n\n- Action sports platform with a geospatial spot map, judged contests and real-time multiplayer games; live in pre-launch.\n- Built a rating engine based on World Skate criteria and real-time games with optimistic concurrency and Supabase Realtime.\n- Event-driven email notifications on AWS (CDK, SQS, Lambda, SES, DynamoDB, EventBridge).\n- Deployed to Cloudflare Workers with server caching, RBAC + row-level security and ~270 test files.\n\n## Skills line\n\n**Languages & frameworks:** TypeScript, JavaScript, SQL, React 19, Next.js 16, Node.js, Tailwind CSS\n**Data & infrastructure:** PostgreSQL, PostGIS, Supabase (Auth, Realtime), Drizzle ORM, Cloudflare Workers, R2, Hyperdrive, AWS (CDK, Lambda, SQS, SES, SNS, DynamoDB, EventBridge)\n**Practices:** system design, event-driven architecture, infrastructure as code, caching, real-time systems, automated testing (Vitest), security (RBAC, RLS)\n\n## Tips\n\n- Put the most relevant bullet first for each job (backend role → architecture/caching; frontend → UI system/map; product → League).\n- When you have users, replace the last bullet with a traction bullet (see `../README.md`).\n","cv":"# CV (long form) — English\n\n## Founder & Full-Stack Engineer — OpenSpot League\nSelf-employed · [City, Country] / Remote · [Month] 2026 – Present · https://openspotleague.com\n\n### Overview\nOpenSpot League is a web platform for the action sports community (skateboard, BMX, scooter and roller).\nIt combines an interactive map of spots, a competition system (\"the League\") with real judging,\nmultiplayer trick-challenge games and curated action sports TV. I founded the project and am its only\nengineer: I own product, design, architecture, development, deployment and operations. The platform is\nlive on its production domain in pre-launch, ahead of a public release.\n\n### Responsibilities\n- Product definition, roadmap and UX for riders, contest organizers and judges.\n- Full-stack development: UI, API routes, domain logic, database schema and migrations.\n- Infrastructure, deployment, monitoring of database usage and cost.\n- Security, access control and data protection (privacy policy and terms pages).\n\n### Main features\n- **Spot map.** Interactive Leaflet map of spots with geospatial queries in PostGIS, filters by discipline and\n  spot type, spot pages, saved spots and user-submitted spots.\n- **The League (contests).** Organizers create contests with divisions (discipline × format), invite riders by\n  QR code or link, and judge runs live or from submitted videos. A rating engine implements the World Skate\n  criteria (Park, Street and Vert formats; five criteria; required elements per discipline; 0–10 scores;\n  trimmed-mean judge panel; division rankings). Results publish to standings, shareable result cards and a\n  global ranking with league points. Riders only see panel totals until results are published.\n- **Plans and listing.** Free contests stay unlisted (invite only); public listing requires a paid plan, with\n  admin tools for plans, quotas and payments.\n- **Multiplayer games.** Real-time trick-challenge games built as pure state machines, with versioned\n  (optimistic concurrency) and idempotent writes and Supabase Realtime signals.\n- **Notifications.** In-app notifications over Supabase Realtime plus an event-driven email pipeline on AWS:\n  a transactional outbox hands jobs to an SQS FIFO queue (per-user ordering, deduplication, dead-letter queue),\n  a Lambda sends through SES v2 with one-click unsubscribe and DynamoDB idempotency, SES bounces and complaints\n  flow back through SNS to suppress addresses, and EventBridge Scheduler drives reminders and digests. Requests\n  to AWS are SigV4-signed from the Worker; callbacks to the app are HMAC-signed. Infrastructure defined with AWS CDK.\n- **Action sports TV**, profiles, notifications, admin and curation tools, and generated Open Graph share images.\n\n### Architecture and engineering\n- Next.js 16 App Router with React 19 and Cache Components, built with Vite (vinext) and deployed to\n  Cloudflare Workers; PostgreSQL reached through Cloudflare Hyperdrive; media on Cloudflare R2.\n- Layered design: pages and route handlers → services (orchestration, single writers) → repositories (Drizzle ORM).\n  Domain engines (games, league, rating) are pure, IO-free and unit-tested.\n- Transactional write path with optimistic concurrency, request fingerprints for idempotency, and post-commit\n  cache invalidation.\n- Caching strategy (shared remote cache for public reads, private cache for user data) designed around a\n  database egress budget; build that runs without a database; RSC payload limits.\n- Security: Supabase Auth, role-based access control, PostgreSQL row-level security, per-IP rate limiting,\n  request IDs, strict security headers.\n- Quality: strict TypeScript, ESLint, ~270 Vitest test files across ~1,070 source files, hand-written SQL\n  migrations, a token-based design system (`DESIGN.md`) and written architecture documentation.\n\n### Technologies\nTypeScript · React 19 · Next.js 16 · Vite · Node.js · Tailwind CSS 4 · Leaflet · Zustand · Zod ·\nPostgreSQL · PostGIS · Supabase (Auth, Realtime) · Drizzle ORM · Cloudflare Workers · Hyperdrive · R2 ·\nAWS (CDK, Lambda, SQS, SES, SNS, DynamoDB, EventBridge Scheduler) · Vitest ·\nTesting Library\n","brief":"# Brief version — online CVs (English)\n\nFor job portals and short forms (Indeed, Glassdoor, Wellfound, Welcome to the Jungle, InfoJobs, Computrabajo,\nLinkedIn Easy Apply, Upwork…). Plain text, no formatting, so it pastes cleanly into any field.\nPick the longest one the field accepts.\n\n## Job title\n\n```\nFounder & Full-Stack Engineer\n```\n\n## Company / project\n\n```\nOpenSpot League (self-employed) · openspotleague.com\n```\n\n## One-liner (≈ 150 characters)\n\n```\nFounded and built OpenSpot League solo: an action sports platform (spot map, judged contests, live games) on Next.js, TypeScript and Cloudflare.\n```\n\n## Short description (≈ 350 characters)\n\n```\nFounded and built OpenSpot League (openspotleague.com) on my own, an action sports platform with a skate spot map, judged contests and real-time multiplayer games. Full-stack development with Next.js, React, TypeScript, PostgreSQL/PostGIS and Supabase, deployed on Cloudflare Workers. Live in pre-launch.\n```\n\n## Standard description (≈ 700 characters)\n\n```\nFounded, designed and built OpenSpot League (openspotleague.com) on my own, a web platform for skateboard, BMX, scooter and roller riders. Built an interactive spot map with geospatial search, a contest system with live and video judging scored by a rating engine based on the World Skate criteria, and real-time multiplayer trick games. Stack: Next.js 16, React 19, TypeScript, PostgreSQL/PostGIS, Supabase, Drizzle ORM, Cloudflare Workers and R2, with email notifications on AWS (Lambda, SQS, SES). Applied a layered architecture, server-side caching, role-based access control and automated testing (~270 test files). Currently live in pre-launch, ahead of a public release.\n```\n\n## Keywords / skills field\n\n```\nNext.js, React, TypeScript, JavaScript, Node.js, PostgreSQL, PostGIS, Supabase, Drizzle ORM, SQL, Cloudflare Workers, AWS (Lambda, SQS, SES, CDK), Tailwind CSS, Vitest, real-time systems, system design, caching, REST APIs\n```\n"},"es":{"linkedin":"# LinkedIn — Español\n\nPerfil: https://www.linkedin.com/in/gabriel-alfonso-bernal/\n\nLinkedIn permite tener el perfil en dos idiomas (*Añadir perfil en otro idioma*). Usa este texto en el perfil en español.\n\n## Titular (≤ 220 caracteres)\n\n```\nIngeniero Full-Stack · Fundador de OpenSpot League | Next.js · React · TypeScript · PostgreSQL/PostGIS · Supabase · Cloudflare Workers\n```\n\n## Acerca de (≤ 2.600 caracteres)\n\n```\n[1–2 frases sobre ti: años de experiencia, el tipo de productos que construyes, qué buscas.]\n\nSoy fundador y único ingeniero de OpenSpot League (openspotleague.com), una plataforma para la comunidad de deportes de acción: un mapa interactivo de spots, competiciones con jueceo real, juegos multijugador de trucos y TV de deportes de acción para riders de skateboard, BMX, scooter y patines.\n\nLa diseñé y construí de principio a fin —producto, sistema de UI, arquitectura, base de datos y despliegue— con Next.js 16, React 19 y TypeScript, sobre Cloudflare Workers y Supabase (PostgreSQL + PostGIS, Auth, Realtime). Está en línea en fase de pre-lanzamiento, antes de su lanzamiento oficial.\n\nLo que más disfruto: convertir reglas complejas del mundo real en lógica de dominio limpia y probada (como un motor de puntuación de competiciones basado en los criterios de World Skate), construir funciones en tiempo real que se mantienen correctas con concurrencia, y mantener producción rápida y barata con una buena estrategia de caché.\n\nStack: TypeScript · Next.js · React · Node.js · PostgreSQL · PostGIS · Supabase · Drizzle ORM · Cloudflare Workers / R2 · AWS (CDK, Lambda, SQS, SES, SNS, DynamoDB, EventBridge) · Tailwind CSS · Vitest\n```\n\n## Opción A — Experiencia\n\n| Campo | Valor |\n| --- | --- |\n| Cargo | Fundador e Ingeniero Full-Stack |\n| Tipo de empleo | Autónomo |\n| Empresa | OpenSpot League |\n| Fechas | [Mes] 2026 – actualidad |\n| Ubicación | [Ciudad, País] · En remoto |\n| Aptitudes (elige 5) | Next.js · TypeScript · React · PostgreSQL · Cloudflare Workers |\n| Contenido multimedia | Captura del mapa, de una página de competición, enlace a openspotleague.com |\n\nDescripción (≤ 2.000 caracteres):\n\n```\nOpenSpot League (openspotleague.com) es una plataforma web para la comunidad de deportes de acción: skateboard, BMX, scooter y patines. La diseñé, construí y opero de principio a fin. Está en línea en su dominio de producción en fase de pre-lanzamiento, antes de su lanzamiento oficial.\n\n• Construí un mapa interactivo de spots con búsqueda geoespacial (PostGIS) y spots aportados por los usuarios.\n• Construí la Liga: los organizadores crean competiciones con divisiones, invitaciones por QR o enlace y jueceo en vivo o por vídeo, puntuadas por un motor que implementé a partir de los criterios de World Skate (cinco criterios, escala 0–10, panel de jueces con media recortada, clasificaciones por división y puntos de liga globales).\n• Desarrollé juegos multijugador de trucos en tiempo real con control de concurrencia optimista, escrituras idempotentes y Supabase Realtime.\n• Construí un sistema de notificaciones por email orientado a eventos en AWS para cambios de competición, recordatorios y resultados: outbox transaccional → SQS FIFO (con cola de mensajes fallidos) → Lambda → SES, idempotencia en DynamoDB, gestión de rebotes con SNS y resúmenes programados con EventBridge Scheduler, todo definido como código con AWS CDK.\n• Diseñé una arquitectura por capas en Next.js 16 / React 19 (páginas → servicios → repositorios) desplegada en Cloudflare Workers, con PostgreSQL vía Hyperdrive y multimedia en Cloudflare R2.\n• Reduje los costes de alojamiento con caché en servidor (Next.js Cache Components, caché remota compartida), invalidación tras el commit y un presupuesto de tráfico de base de datos.\n• Protegí la plataforma con control de acceso por roles, seguridad a nivel de fila en PostgreSQL, límites de peticiones por IP y cabeceras de seguridad estrictas.\n• Mantuve la calidad con TypeScript estricto, ~270 archivos de tests automatizados (Vitest) y un sistema de diseño basado en tokens.\n```\n\n## Opción B — Sección Proyectos\n\n| Campo | Valor |\n| --- | --- |\n| Nombre del proyecto | OpenSpot League |\n| Fechas | [Mes] 2026 – actualidad |\n| Asociado con | (vacío, o tu puesto actual) |\n| URL del proyecto | https://openspotleague.com |\n| Aptitudes | Next.js · TypeScript · PostgreSQL · Supabase · Cloudflare Workers |\n\nDescripción:\n\n```\nPlataforma full-stack para riders de deportes de acción (skateboard, BMX, scooter, patines), desarrollada en solitario y en pre-lanzamiento en openspotleague.com.\n\n• Mapa de spots con búsqueda geoespacial (PostGIS).\n• Competiciones con jueceo en vivo o por vídeo, puntuadas por un motor basado en los criterios de World Skate.\n• Juegos multijugador de trucos en tiempo real (Supabase Realtime, concurrencia optimista).\n• Notificaciones por email orientadas a eventos en AWS (CDK, SQS, Lambda, SES, DynamoDB, EventBridge).\n• Next.js 16 + React 19 en Cloudflare Workers, PostgreSQL con Drizzle y Hyperdrive, multimedia en R2; ~270 archivos de tests.\n```\n\n## Enlace destacado\n\n- URL: `https://openspotleague.com`\n- Título: `OpenSpot League — spots, competiciones y juegos de deportes de acción`\n- Descripción: `Plataforma que fundé y construí en solitario: mapa de spots, competiciones con jueces, juegos multijugador de trucos y TV de deportes de acción. En pre-lanzamiento.`\n\n## Aptitudes\n\nNext.js · React · TypeScript · JavaScript · Node.js · PostgreSQL · PostGIS · Supabase · Drizzle ORM · SQL ·\nCloudflare Workers · AWS · AWS Lambda · Amazon SQS · Amazon SES · AWS CDK · DynamoDB · Serverless · Arquitectura orientada a eventos · Tailwind CSS · Vitest · Sistemas en tiempo real · Diseño de sistemas ·\nRendimiento web · Caché · APIs REST · Desarrollo de producto · Diseño de interfaces\n","resume":"# Currículum (1 página) — Español\n\nMáximo 4–6 viñetas; quita la menos relevante para cada puesto. Usa **una** de las dos versiones, nunca ambas.\n\n## Versión A — Experiencia\n\n**Fundador e Ingeniero Full-Stack** — OpenSpot League (autónomo) · [Ciudad, País] / Remoto · [Mes] 2026 – actualidad\n*Plataforma de deportes de acción (mapa de spots, competiciones con jueces, juegos multijugador) · en pre-lanzamiento en openspotleague.com*\n\n- Diseñé, desarrollé y desplegué el producto completo en solitario: Next.js 16 / React 19 / TypeScript en Cloudflare Workers, Supabase PostgreSQL + PostGIS, Cloudflare R2.\n- Implementé un motor de puntuación de competiciones según los criterios de World Skate (cinco criterios, panel de jueces con media recortada, clasificaciones por división, puntos de liga), con jueceo en vivo y por vídeo.\n- Construí juegos multijugador de trucos en tiempo real con concurrencia optimista, escrituras idempotentes y Supabase Realtime.\n- Construí un sistema de notificaciones por email orientado a eventos en AWS (SQS FIFO → Lambda → SES, idempotencia en DynamoDB, programación con EventBridge), definido con AWS CDK.\n- Diseñé un backend por capas (servicios/repositorios) con control de acceso por roles, seguridad a nivel de fila, límites de peticiones y cabeceras de seguridad.\n- Reduje el tráfico de base de datos y el coste de alojamiento con caché en servidor (Next.js Cache Components, caché remota) e invalidación tras el commit; ~270 archivos de tests automatizados.\n\n## Versión B — Proyectos\n\n**OpenSpot League** — openspotleague.com · [Mes] 2026 – actualidad\n*Proyecto full-stack individual · Next.js, React, TypeScript, PostgreSQL/PostGIS, Supabase, Cloudflare Workers*\n\n- Plataforma de deportes de acción con mapa geoespacial de spots, competiciones con jueces y juegos multijugador en tiempo real; en pre-lanzamiento.\n- Motor de puntuación basado en los criterios de World Skate y juegos en tiempo real con concurrencia optimista y Supabase Realtime.\n- Notificaciones por email orientadas a eventos en AWS (CDK, SQS, Lambda, SES, DynamoDB, EventBridge).\n- Desplegada en Cloudflare Workers con caché en servidor, RBAC + seguridad a nivel de fila y ~270 archivos de tests.\n\n## Línea de aptitudes\n\n**Lenguajes y frameworks:** TypeScript, JavaScript, SQL, React 19, Next.js 16, Node.js, Tailwind CSS\n**Datos e infraestructura:** PostgreSQL, PostGIS, Supabase (Auth, Realtime), Drizzle ORM, Cloudflare Workers, R2, Hyperdrive, AWS (CDK, Lambda, SQS, SES, SNS, DynamoDB, EventBridge)\n**Prácticas:** diseño de sistemas, arquitectura orientada a eventos, infraestructura como código, caché, sistemas en tiempo real, tests automatizados (Vitest), seguridad (RBAC, RLS)\n\n## Consejos\n\n- Pon primero la viñeta más relevante para cada puesto (backend → arquitectura/caché; frontend → sistema de UI/mapa; producto → la Liga).\n- Cuando tengas usuarios, cambia la última viñeta por una de tracción (ver `../README.md`).\n","cv":"# CV (versión extendida) — Español\n\n## Fundador e Ingeniero Full-Stack — OpenSpot League\nAutónomo · [Ciudad, País] / Remoto · [Mes] 2026 – actualidad · https://openspotleague.com\n\n### Resumen\nOpenSpot League es una plataforma web para la comunidad de deportes de acción (skateboard, BMX, scooter y\npatines). Reúne un mapa interactivo de spots, un sistema de competiciones (\"la Liga\") con jueceo real, juegos\nmultijugador de retos de trucos y TV de deportes de acción. Fundé el proyecto y soy su único ingeniero: me\nencargo del producto, el diseño, la arquitectura, el desarrollo, el despliegue y la operación. La plataforma\nestá en línea en su dominio de producción en fase de pre-lanzamiento, antes de su lanzamiento oficial.\n\n### Responsabilidades\n- Definición de producto, hoja de ruta y experiencia de usuario para riders, organizadores y jueces.\n- Desarrollo full-stack: interfaz, rutas de API, lógica de dominio, esquema de base de datos y migraciones.\n- Infraestructura, despliegue y seguimiento del uso y coste de la base de datos.\n- Seguridad, control de acceso y protección de datos (páginas de privacidad y términos).\n\n### Funcionalidades principales\n- **Mapa de spots.** Mapa interactivo (Leaflet) con consultas geoespaciales en PostGIS, filtros por disciplina\n  y tipo de spot, páginas de spot, spots guardados y spots aportados por los usuarios.\n- **La Liga (competiciones).** Los organizadores crean competiciones con divisiones (disciplina × formato),\n  invitan a riders por QR o enlace y juzgan las rondas en vivo o a partir de vídeos. Un motor de puntuación\n  implementa los criterios de World Skate (formatos Park, Street y Vert; cinco criterios; elementos obligatorios\n  por disciplina; notas de 0 a 10; panel de jueces con media recortada; clasificaciones por división). Los\n  resultados se publican en clasificaciones, tarjetas de resultado para compartir y un ranking global con puntos\n  de liga. Los riders solo ven los totales del panel hasta que se publican los resultados.\n- **Planes y visibilidad.** Las competiciones gratuitas son privadas (solo por invitación); para listarlas\n  públicamente se necesita un plan de pago, con herramientas de administración de planes, cuotas y pagos.\n- **Juegos multijugador.** Retos de trucos en tiempo real diseñados como máquinas de estados puras, con\n  escrituras versionadas (concurrencia optimista) e idempotentes y señales de Supabase Realtime.\n- **Notificaciones.** Notificaciones en la app con Supabase Realtime y un sistema de email orientado a eventos en AWS:\n  un outbox transaccional envía los trabajos a una cola SQS FIFO (orden por usuario, deduplicación, cola de mensajes\n  fallidos), una Lambda envía con SES v2 con baja en un clic e idempotencia en DynamoDB, los rebotes y quejas de SES\n  vuelven por SNS para suprimir direcciones, y EventBridge Scheduler gestiona recordatorios y resúmenes. Las peticiones\n  a AWS se firman con SigV4 desde el Worker y las respuestas a la app con HMAC. Infraestructura definida con AWS CDK.\n- **TV de deportes de acción**, perfiles, notificaciones, herramientas de administración y curación, e imágenes\n  Open Graph generadas para compartir.\n\n### Arquitectura e ingeniería\n- Next.js 16 App Router con React 19 y Cache Components, compilado con Vite (vinext) y desplegado en\n  Cloudflare Workers; PostgreSQL a través de Cloudflare Hyperdrive; multimedia en Cloudflare R2.\n- Diseño por capas: páginas y rutas → servicios (orquestación, escritor único) → repositorios (Drizzle ORM).\n  Los motores de dominio (juegos, liga, puntuación) son puros, sin E/S y con tests unitarios.\n- Escrituras transaccionales con concurrencia optimista, huellas de petición para idempotencia e invalidación\n  de caché tras el commit.\n- Estrategia de caché (caché remota compartida para lecturas públicas, caché privada para datos de usuario)\n  diseñada en torno a un presupuesto de tráfico de base de datos; compilación sin base de datos; límites de\n  tamaño de las respuestas RSC.\n- Seguridad: Supabase Auth, control de acceso por roles, seguridad a nivel de fila en PostgreSQL, límites de\n  peticiones por IP, identificadores de petición y cabeceras de seguridad estrictas.\n- Calidad: TypeScript estricto, ESLint, ~270 archivos de tests con Vitest sobre ~1.070 archivos de código,\n  migraciones SQL escritas a mano, un sistema de diseño basado en tokens y documentación de arquitectura.\n\n### Tecnologías\nTypeScript · React 19 · Next.js 16 · Vite · Node.js · Tailwind CSS 4 · Leaflet · Zustand · Zod ·\nPostgreSQL · PostGIS · Supabase (Auth, Realtime) · Drizzle ORM · Cloudflare Workers · Hyperdrive · R2 ·\nAWS (CDK, Lambda, SQS, SES, SNS, DynamoDB, EventBridge Scheduler) · Vitest ·\nTesting Library\n","brief":"# Versión breve — CV en portales de empleo (Español)\n\nPara portales de empleo y formularios cortos (InfoJobs, Computrabajo, Indeed, Bumeran, LinkedIn Solicitud\nsencilla, Upwork…). Texto plano, sin formato, para pegarlo en cualquier campo.\nElige la versión más larga que admita el campo.\n\n## Cargo\n\n```\nFundador e Ingeniero Full-Stack\n```\n\n## Empresa / proyecto\n\n```\nOpenSpot League (autónomo) · openspotleague.com\n```\n\n## Una línea (≈ 150 caracteres)\n\n```\nFundé y desarrollé en solitario OpenSpot League: plataforma de deportes de acción (mapa de spots, competiciones, juegos en vivo) con Next.js y TypeScript.\n```\n\n## Descripción corta (≈ 350 caracteres)\n\n```\nFundé y desarrollé en solitario OpenSpot League (openspotleague.com), una plataforma de deportes de acción con mapa de spots, competiciones con jueces y juegos multijugador en tiempo real. Desarrollo full-stack con Next.js, React, TypeScript, PostgreSQL/PostGIS y Supabase, desplegado en Cloudflare Workers. En pre-lanzamiento.\n```\n\n## Descripción estándar (≈ 700 caracteres)\n\n```\nFundé, diseñé y desarrollé en solitario OpenSpot League (openspotleague.com), una plataforma web para riders de skateboard, BMX, scooter y patines. Construí un mapa interactivo de spots con búsqueda geoespacial, un sistema de competiciones con jueceo en vivo y por vídeo puntuado por un motor basado en los criterios de World Skate, y juegos multijugador de trucos en tiempo real. Stack: Next.js 16, React 19, TypeScript, PostgreSQL/PostGIS, Supabase, Drizzle ORM, Cloudflare Workers y R2, con notificaciones por email en AWS (Lambda, SQS, SES). Apliqué arquitectura por capas, caché en servidor, control de acceso por roles y tests automatizados (~270 archivos). Actualmente en pre-lanzamiento, antes de su lanzamiento oficial.\n```\n\n## Palabras clave / aptitudes\n\n```\nNext.js, React, TypeScript, JavaScript, Node.js, PostgreSQL, PostGIS, Supabase, Drizzle ORM, SQL, Cloudflare Workers, AWS (Lambda, SQS, SES, CDK), Tailwind CSS, Vitest, sistemas en tiempo real, diseño de sistemas, caché, APIs REST\n```\n"},"guide":"# OpenSpot League — career kit\n\nCopy-ready text for putting OpenSpot League on LinkedIn, a résumé and a CV, in English (`en/`) and Spanish (`es/`).\nOpen [`index.html`](index.html) in a browser for the same content with copy buttons.\n\nThis folder is private: it sits outside `src/` and `public/`, so it is never built, deployed or linked from the app.\n\n| File | Use it for |\n| --- | --- |\n| `en/linkedin.md`, `es/linkedin.md` | Headline, About, Experience entry, Projects entry, Skills, Featured link |\n| `en/resume.md`, `es/resume.md` | 1-page résumé: short entry with 4–5 bullets |\n| `en/cv.md`, `es/cv.md` | Long-form CV: full description, architecture, features, stack |\n| `en/brief.md`, `es/brief.md` | Online CVs and job portals: plain-text one-liner, short and standard descriptions, keywords |\n\nFill every `[placeholder]` before publishing.\n\n## Two framings — pick one per application\n\n**A. Experience (recommended).** List it as a job you hold:\n*Founder & Full-Stack Engineer · OpenSpot League · Self-employed · [Month] 2026 – Present.*\nUse it when you want it to count as professional experience (and to fill a gap in your timeline).\nIt is honest because you designed, built, deployed and run a production product on its own domain.\n\n**B. Project.** List it under *Projects* when the application already has a strong Experience section,\nor when the role asks specifically for \"personal projects / portfolio\".\n\nDo not use both on the same résumé. On LinkedIn you can have the Experience entry and *also*\na Featured link to openspotleague.com.\n\n## How to describe the stage (honest wording)\n\nThe site is live on openspotleague.com but not publicly launched. Say:\n\n- EN: \"Live at openspotleague.com in pre-launch (public beta), ahead of a public release.\"\n- ES: \"En línea en openspotleague.com en fase de pre-lanzamiento (beta pública), antes del lanzamiento oficial.\"\n\n**Do not quote user numbers yet.** 5 sign-ups (3 real people) reads as small and recruiters may treat it as a red flag;\ninflating it would be dishonest and is easy to check. Sell the engineering scope instead — it is real and verifiable:\n\n- a production deployment on Cloudflare Workers with a real domain\n- ~1,070 TypeScript source files, ~270 test files, strict TypeScript\n- a rating engine, real-time multiplayer games, geospatial search, RBAC + row-level security\n\nIf asked in an interview: \"It's in pre-launch with a handful of early testers; I'm finishing the contest flow before marketing it.\"\nThat is a strong, truthful answer.\n\n### Metrics to add after launch\n\nReplace the scope bullets with traction as soon as you have it (track these from day one):\n\n- [ ] registered riders / monthly active users\n- [ ] spots on the map, and how many were submitted by users\n- [ ] contests created and runs judged\n- [ ] cities / countries with activity\n- [ ] page performance (e.g. Lighthouse score, p95 response time) and monthly infrastructure cost\n\nA bullet like \"Grew to 1,200 riders across 14 cities in 3 months\" beats any technical bullet.\n\n## Dates\n\nThe git history of this repository starts on 18 Oct 2026. If you started designing or building earlier\n(prototype, previous repo), use that earlier month. Write \"– Present\" while you are still working on it.\n\n## LinkedIn step by step\n\n1. **Company page (optional but recommended).** LinkedIn → *For Business* → *Create a Company Page* →\n   name \"OpenSpot League\", URL openspotleague.com, industry \"Software Development\" (or \"Spectator Sports\"),\n   logo from `public/`. Without a page, the Experience entry shows a grey placeholder logo.\n2. **Experience.** Profile → *Add profile section* → *Position*. Fields: Title, Employment type *Self-employed*,\n   Company *OpenSpot League*, Location, *Remote*, start date, \"I am currently working in this role\",\n   description (from `linkedin.md`), skills (up to 5), media: a screenshot of the map and of a contest page.\n3. **Featured.** *Add featured* → *Link* → `https://openspotleague.com`, title and description from `linkedin.md`.\n4. **Headline and About.** Update both; the headline is the first thing recruiters read.\n5. **Skills.** Add the list from `linkedin.md` and pin the top 3 that match the jobs you want.\n6. **Open to work / Providing services** as you prefer. Posting a short launch post when you go public helps a lot.\n\nLinkedIn limits: headline 220 characters, About 2,600, position description 2,000. The texts in `linkedin.md` fit.\n"};
+
+const LIMITS = [
+  { re: /headline|titular/i, max: 220 },
+  { re: /about|acerca/i, max: 2600 },
+  { re: /option a|opción a/i, max: 2000 },
+  { re: /option b|opción b/i, max: 2000 },
+  // Brief tab: target lengths for job-portal fields, not hard platform limits.
+  { re: /one-liner|una línea/i, max: 160 },
+  { re: /short description|descripción corta/i, max: 400 },
+  { re: /standard description|descripción estándar/i, max: 800 },
+];
+
+const UI = {
+  en: { copy: "Copy", copied: "Copied", chars: "characters", sub: "Copy-ready text for LinkedIn, résumé and CV. Private page, not linked from the site.", exp: "Experience", proj: "Project", guideNote: "The guide is in English." },
+  es: { copy: "Copiar", copied: "Copiado", chars: "caracteres", sub: "Texto listo para copiar en LinkedIn, currículum y CV. Página privada, sin enlace desde la web.", exp: "Experiencia", proj: "Proyecto", guideNote: "La guía está en inglés." },
+};
+
+const state = { tab: "linkedin", lang: "en", frame: "A" };
+try {
+  const saved = JSON.parse(localStorage.getItem("career-kit") || "{}");
+  Object.assign(state, saved);
+} catch (_) {}
+
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function inline(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, t, u) => /^https?:/.test(u) ? `<a href="${u}" target="_blank" rel="noopener">${t}</a>` : t)
+    .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+}
+
+// Small markdown renderer: headings, paragraphs, lists, tables, fenced blocks.
+function render(md) {
+  const lines = md.replace(/\r/g, "").split("\n");
+  const html = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("```")) {
+      const buf = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) buf.push(lines[i++]);
+      i++;
+      html.push({ type: "block", text: buf.join("\n") });
+      continue;
+    }
+    const h = line.match(/^(#{1,3}) (.*)$/);
+    if (h) { html.push({ type: "h" + h[1].length, text: h[2] }); i++; continue; }
+    if (/^\|/.test(line)) {
+      const rows = [];
+      while (i < lines.length && /^\|/.test(lines[i])) rows.push(lines[i++]);
+      const cells = (r) => r.slice(1, -1).split("|").map((c) => c.trim());
+      const head = cells(rows[0]);
+      const body = rows.slice(2).map(cells);
+      html.push({ type: "raw", html: `<div class="table"><table><thead><tr>${head.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead><tbody>${body.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` });
+      continue;
+    }
+    if (/^\s*[-•] /.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-•] /.test(lines[i])) {
+        let item = lines[i++].replace(/^\s*[-•] /, "");
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !/^\s*[-•] /.test(lines[i])) item += " " + lines[i++].trim();
+        items.push(item.replace(/^\[ \] /, "☐ "));
+      }
+      html.push({ type: "raw", html: `<ul>${items.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>`, text: items.map((t) => "• " + t.replace(/\*\*|`/g, "")).join("\n") });
+      continue;
+    }
+    if (/^\d+\. /.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        let item = lines[i++].replace(/^\d+\. /, "");
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i])) item += " " + lines[i++].trim();
+        items.push(item);
+      }
+      html.push({ type: "raw", html: `<ol>${items.map((t) => `<li>${inline(t)}</li>`).join("")}</ol>` });
+      continue;
+    }
+    if (line.trim() === "") { i++; continue; }
+    const buf = [line];
+    i++;
+    while (i < lines.length && lines[i].trim() !== "" && !/^(#|```|\||\s*[-•] |\d+\. )/.test(lines[i])) buf.push(lines[i++]);
+    html.push({ type: "raw", html: `<p>${inline(buf.join(" "))}</p>`, text: buf.join(" ").replace(/\*\*|\*|`/g, "") });
+  }
+  return html;
+}
+
+function frameOf(title) {
+  if (/(option|opción|version|versión) a\b/i.test(title)) return "A";
+  if (/(option|opción|version|versión) b\b/i.test(title)) return "B";
+  return null;
+}
+
+function limitFor(title) {
+  const l = LIMITS.find((x) => x.re.test(title));
+  return l ? l.max : null;
+}
+
+function copyButton(getText) {
+  const b = document.createElement("button");
+  b.className = "copy";
+  b.textContent = UI[state.lang].copy;
+  b.addEventListener("click", async () => {
+    const text = getText();
+    try { await navigator.clipboard.writeText(text); }
+    catch (_) {
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (_) {}
+      ta.remove();
+    }
+    b.textContent = UI[state.lang].copied; b.classList.add("done");
+    setTimeout(() => { b.textContent = UI[state.lang].copy; b.classList.remove("done"); }, 1400);
+  });
+  return b;
+}
+
+function draw() {
+  const ui = UI[state.lang];
+  document.documentElement.lang = state.lang;
+  document.getElementById("sub").textContent = ui.sub;
+  const fb = document.querySelectorAll("#framing button");
+  fb[0].textContent = ui.exp; fb[1].textContent = ui.proj;
+  for (const [id, key] of [["tabs", "tab"], ["lang", "lang"], ["framing", "frame"]]) {
+    document.querySelectorAll(`#${id} button`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset[key === "frame" ? "frame" : key] === state[key])));
+  }
+  document.getElementById("framing").classList.toggle("hidden", state.tab === "guide" || state.tab === "cv" || state.tab === "brief");
+
+  const md = state.tab === "guide" ? DOCS.guide : DOCS[state.lang][state.tab];
+  const nodes = render(md);
+  const out = document.getElementById("out");
+  out.innerHTML = "";
+  if (state.tab === "guide" && state.lang === "es") {
+    const n = document.createElement("p"); n.className = "note"; n.textContent = ui.guideNote; out.appendChild(n);
+  }
+
+  let section = null, sectionTitle = "", texts = [];
+  const intro = document.createElement("section");
+  const open = (title) => {
+    section = document.createElement("section");
+    sectionTitle = title; texts = [];
+    const h = document.createElement("h2");
+    const span = document.createElement("span"); span.innerHTML = inline(title);
+    h.appendChild(span);
+    const myTexts = texts;
+    if (state.tab !== "guide") h.appendChild(copyButton(() => myTexts.join("\n\n")));
+    section.appendChild(h);
+    const f = frameOf(title);
+    if (f && f !== state.frame && state.tab !== "cv") section.classList.add("hidden");
+    out.appendChild(section);
+  };
+
+  for (const n of nodes) {
+    if (n.type === "h1") continue;
+    if (n.type === "h2") { open(n.text); continue; }
+    const target = section || intro;
+    if (!section && !intro.isConnected) out.appendChild(intro);
+    if (n.type === "h3") {
+      const h = document.createElement("h3"); h.innerHTML = inline(n.text); target.appendChild(h);
+      texts.push(n.text); continue;
+    }
+    if (n.type === "block") {
+      const box = document.createElement("div"); box.className = "block";
+      const pre = document.createElement("pre"); pre.textContent = n.text; box.appendChild(pre);
+      const meta = document.createElement("div"); meta.className = "meta";
+      const count = document.createElement("span"); count.className = "count";
+      const max = limitFor(sectionTitle);
+      const len = [...n.text].length;
+      count.textContent = max ? `${len.toLocaleString()} / ${max.toLocaleString()} ${ui.chars}` : `${len.toLocaleString()} ${ui.chars}`;
+      if (max) count.classList.add(len > max ? "over" : "fits");
+      meta.appendChild(count);
+      meta.appendChild(copyButton(() => n.text));
+      box.appendChild(meta);
+      target.appendChild(box);
+      texts.push(n.text); continue;
+    }
+    const tmp = document.createElement("div"); tmp.innerHTML = n.html;
+    while (tmp.firstChild) target.appendChild(tmp.firstChild);
+    if (n.text) texts.push(n.text);
+  }
+}
+
+function bind(id, key) {
+  document.getElementById(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    state[key] = b.dataset[key === "tab" ? "tab" : key === "lang" ? "lang" : "frame"];
+    try { localStorage.setItem("career-kit", JSON.stringify(state)); } catch (_) {}
+    draw();
+  });
+}
+bind("tabs", "tab"); bind("lang", "lang"); bind("framing", "frame");
+draw();
+</script>
+</body>
+</html>
