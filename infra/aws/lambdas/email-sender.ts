@@ -1,22 +1,27 @@
 /**
  * SQS FIFO → SES v2. One record = one EmailJob (see the shared contract).
+ * The batch loop lives in `src/lib/notifications/delivery/sender-batch.ts`
+ * (unit-tested there); this file wires it to SES and DynamoDB.
  *
  * - Idempotent on `job.key` (Powertools + DynamoDB, 24 h TTL): SQS is
  *   at-least-once and the Worker may re-enqueue a stale job, so the same key
- *   never sends twice — a repeat returns the stored SES message id.
- * - FIFO partial failures: once a record fails, it and every later record
- *   are returned as failures so per-user order holds; already-sent ones are
- *   skipped on retry by the idempotency record.
- * - Permanent problems (bad payload, SES rejects the message) are reported
- *   `failed` and not retried; throttling and 5xx are retried, then the DLQ.
+ *   never sends twice — a repeat returns the stored SES message id. The
+ *   Lambda context is registered so a timeout mid-send does not leave a
+ *   record that blocks the retry.
+ * - Permanent: only what is wrong with this one email (`MessageRejected`,
+ *   `BadRequestException`). Those are reported `failed` and not retried.
+ * - Everything else retries, then lands in the DLQ and raises the alarm.
+ *   That includes account-wide problems (sending paused, account suspended,
+ *   MAIL FROM not verified): they must alert, not silently fail every email.
  * - Outcomes go back to the app in one signed report per batch.
  */
 
 import { IdempotencyConfig, makeIdempotent } from "@aws-lambda-powertools/idempotency"
 import { DynamoDBPersistenceLayer } from "@aws-lambda-powertools/idempotency/dynamodb"
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2"
-import type { SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda"
-import { EmailJobSchema, type DeliveryReport, type EmailJob } from "../../../src/lib/notifications/delivery/contract"
+import type { Context, SQSBatchResponse, SQSEvent } from "aws-lambda"
+import type { EmailJob } from "../../../src/lib/notifications/delivery/contract"
+import { PermanentSendError, processEmailBatch } from "../../../src/lib/notifications/delivery/sender-batch"
 import { reportDelivery } from "./shared/app-client"
 
 const ses = new SESv2Client({})
@@ -25,16 +30,9 @@ const persistenceStore = new DynamoDBPersistenceLayer({
   tableName: process.env.IDEMPOTENCY_TABLE ?? "",
 })
 
-const PERMANENT_SES_ERRORS = new Set([
-  "MessageRejected",
-  "BadRequestException",
-  "NotFoundException",
-  "AccountSuspendedException",
-  "SendingPausedException",
-  "MailFromDomainNotVerifiedException",
-])
+const PERMANENT_SES_ERRORS = new Set(["MessageRejected", "BadRequestException"])
 
-class PermanentError extends Error {}
+const replyTo = process.env.REPLY_TO?.trim()
 
 async function sendJob(job: EmailJob): Promise<{ messageId: string }> {
   try {
@@ -42,6 +40,7 @@ async function sendJob(job: EmailJob): Promise<{ messageId: string }> {
       new SendEmailCommand({
         FromEmailAddress: process.env.FROM_ADDRESS,
         Destination: { ToAddresses: [job.to] },
+        ...(replyTo ? { ReplyToAddresses: [replyTo] } : {}),
         ConfigurationSetName: process.env.CONFIGURATION_SET,
         EmailTags: [{ Name: "category", Value: job.category }],
         Content: {
@@ -62,66 +61,29 @@ async function sendJob(job: EmailJob): Promise<{ messageId: string }> {
     return { messageId: result.MessageId ?? "" }
   } catch (error) {
     const name = (error as { name?: string }).name ?? ""
-    if (PERMANENT_SES_ERRORS.has(name)) {
-      throw new PermanentError(`${name}: ${(error as Error).message}`)
-    }
+    // The name only: the SES message can contain the recipient address.
+    if (PERMANENT_SES_ERRORS.has(name)) throw new PermanentSendError(name)
     throw error
   }
 }
 
-const idempotentSend = makeIdempotent(sendJob, {
-  persistenceStore,
-  config: new IdempotencyConfig({
-    eventKeyJmesPath: "key",
-    expiresAfterSeconds: 24 * 60 * 60,
-  }),
+const idempotency = new IdempotencyConfig({
+  eventKeyJmesPath: "key",
+  expiresAfterSeconds: 24 * 60 * 60,
 })
 
-function parseRecord(record: SQSRecord): EmailJob | null {
-  try {
-    const parsed = EmailJobSchema.safeParse(JSON.parse(record.body))
-    return parsed.success ? parsed.data : null
-  } catch {
-    return null
-  }
-}
+const idempotentSend = makeIdempotent(sendJob, { persistenceStore, config: idempotency })
 
-export async function handler(event: SQSEvent): Promise<SQSBatchResponse> {
-  const failures: string[] = []
-  const reports: DeliveryReport["reports"] = []
-  let halted = false
-
-  for (const record of event.Records) {
-    if (halted) {
-      failures.push(record.messageId)
-      continue
-    }
-    const job = parseRecord(record)
-    if (!job) {
-      // Unparseable: retrying cannot help. Ids are unknown, so log and drop.
-      console.error("invalid email job", record.messageId)
-      continue
-    }
-    try {
-      const { messageId } = await idempotentSend(job)
-      reports.push({ kind: "job", notificationIds: job.notificationIds, status: "sent", sesMessageId: messageId })
-    } catch (error) {
-      if (error instanceof PermanentError) {
-        console.warn("email permanently failed", job.key, error.message)
-        reports.push({
-          kind: "job",
-          notificationIds: job.notificationIds,
-          status: "failed",
-          reason: error.message.slice(0, 500),
-        })
-        continue
-      }
-      console.warn("email send will retry", job.key, error instanceof Error ? error.message : error)
-      failures.push(record.messageId)
-      halted = true
-    }
-  }
-
+export async function handler(event: SQSEvent, context: Context): Promise<SQSBatchResponse> {
+  idempotency.registerLambdaContext(context)
+  const { failedMessageIds, reports } = await processEmailBatch(
+    event.Records.map((record) => ({
+      messageId: record.messageId,
+      body: record.body,
+      groupId: record.attributes.MessageGroupId ?? record.messageId,
+    })),
+    idempotentSend,
+  )
   if (reports.length > 0) await reportDelivery(reports)
-  return { batchItemFailures: failures.map((itemIdentifier) => ({ itemIdentifier })) }
+  return { batchItemFailures: failedMessageIds.map((itemIdentifier) => ({ itemIdentifier })) }
 }

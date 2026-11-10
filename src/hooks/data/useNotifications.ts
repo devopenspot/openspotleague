@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NotificationPayload } from "@/types/league";
+import { shouldRefreshOnChange } from "@/lib/notifications/realtime";
 import {
   createSupabaseBrowserClient,
   uniqueChannelTopic,
@@ -99,7 +100,8 @@ export function useUnreadNotificationCount(userId: string | null): number {
               table: "user_notifications",
               filter: `user_id=eq.${userId}`,
             },
-            () => {
+            (change) => {
+              if (!shouldRefreshOnChange(change)) return;
               if (debounceRef.current) clearTimeout(debounceRef.current);
               debounceRef.current = setTimeout(() => {
                 debounceRef.current = null;
@@ -289,7 +291,8 @@ export function useNotificationList(userId: string | null): {
               table: "user_notifications",
               filter: `user_id=eq.${userId}`,
             },
-            () => {
+            (change) => {
+              if (!shouldRefreshOnChange(change)) return;
               if (debounceRef.current) clearTimeout(debounceRef.current);
               debounceRef.current = setTimeout(() => {
                 debounceRef.current = null;

@@ -85,24 +85,37 @@ export default function NotificationsTab() {
               Emails are paused because your inbox rejected one. Turn a category on to resume.
             </p>
           ) : null}
-          <div className="flex flex-wrap gap-2">
+          {user?.email ? (
+            <p className="mb-4 text-sm text-secondary">
+              Sent to <span className="break-all text-on-surface">{user.email}</span>
+            </p>
+          ) : null}
+          <ul className="flex flex-col gap-3">
             {EMAIL_CATEGORY_OPTIONS.map((option) => {
               const on = preferences[option.key] && !preferences.suppressed;
+              const hintId = `email-category-${option.key}-hint`;
               return (
-                <button
+                <li
                   key={option.key}
-                  type="button"
-                  disabled={saving}
-                  aria-pressed={on}
-                  title={option.hint}
-                  onClick={() => void setCategory(option.key, !on)}
-                  className={chipClass(on)}
+                  className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-3"
                 >
-                  {option.label}
-                </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    aria-pressed={on}
+                    aria-describedby={hintId}
+                    onClick={() => void setCategory(option.key, !on)}
+                    className={chipClass(on)}
+                  >
+                    {option.label}
+                  </button>
+                  <p id={hintId} className="text-sm text-secondary">
+                    {option.hint}
+                  </p>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </section>
       ) : null}
       {saveError ? (

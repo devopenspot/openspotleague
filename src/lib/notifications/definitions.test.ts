@@ -120,4 +120,13 @@ describe("new notification copy", () => {
       }).body,
     ).toContain("Nov 6");
   });
+
+  it("shows the deadline in the contest time zone, falling back to UTC", () => {
+    const base = { eventName: "Night Jam", dueAt: "2026-11-06T02:00:00.000Z" };
+    const body = (timeZone?: string) =>
+      renderNotification("league_video_deadline_reminder", { ...base, timeZone }).body;
+    expect(body()).toContain("Nov 6, 2:00 AM UTC");
+    expect(body("America/Bogota")).toContain("Nov 5, 9:00 PM");
+    expect(body("Not/AZone")).toContain("Nov 6, 2:00 AM UTC");
+  });
 });

@@ -41,6 +41,7 @@ function setup(input: {
   const store: DeliveryStore = {
     claimPending: vi.fn(async () => input.claimed),
     claimStaleQueued: vi.fn(async () => []),
+    expirePending: vi.fn(async () => 0),
     expireStale: vi.fn(async () => 0),
     setStatus: vi.fn(async (ids: readonly string[], status: string) => {
       statuses[status] = [...(statuses[status] ?? []), ...ids]
@@ -133,5 +134,45 @@ describe("dispatcher", () => {
     expect(store.claimStaleQueued).toHaveBeenCalledWith(
       expect.objectContaining({ queuedBefore: new Date(NOW.getTime() - 60 * 60 * 1000) }),
     )
+  })
+
+  it("drops pending rows past their max age before claiming, in both tick paths", async () => {
+    const { dispatcher, store } = setup({ claimed: [], recipients: [] })
+    vi.mocked(store.expirePending).mockResolvedValueOnce(4)
+    const backstop = await dispatcher.runBackstop()
+    expect(backstop.expired).toBe(4)
+    const bounds = {
+      immediateBefore: new Date(NOW.getTime() - 6 * 60 * 60 * 1000),
+      digestBefore: new Date(NOW.getTime() - 24 * 60 * 60 * 1000),
+    }
+    expect(store.expirePending).toHaveBeenCalledWith(bounds)
+    expect(vi.mocked(store.expirePending).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(store.claimPending).mock.invocationCallOrder[0]!,
+    )
+    await dispatcher.dispatchDigests()
+    expect(store.expirePending).toHaveBeenCalledTimes(2)
+  })
+
+  it("releases the claim when a read fails before anything is enqueued", async () => {
+    const a = row({})
+    const { dispatcher, store, sender, statuses } = setup({ claimed: [a], recipients: [recipient(U1)] })
+    vi.mocked(store.loadRecipients).mockRejectedValueOnce(new Error("db down"))
+    await expect(dispatcher.dispatchImmediate([a.id])).rejects.toThrow("db down")
+    expect(statuses.pending).toEqual([a.id])
+    expect(sender.send).not.toHaveBeenCalled()
+  })
+
+  it("caps a long digest and still marks every row", async () => {
+    const rows = Array.from({ length: 15 }, () =>
+      row({ type: "league_video_submitted", urgency: "digest", payload: { eventName: "Night Jam", eventSlug: "night-jam" } }),
+    )
+    const { dispatcher, sent } = setup({ claimed: rows, recipients: [recipient(U1)] })
+    await dispatcher.dispatchDigests()
+    expect(sent).toHaveLength(1)
+    const job = sent[0]!.job
+    expect(job.notificationIds).toHaveLength(15)
+    expect(job.html.match(/Open in OpenSpot/g)).toHaveLength(12)
+    expect(job.html).toContain("and 3 more")
+    expect(job.text).toContain("and 3 more")
   })
 })

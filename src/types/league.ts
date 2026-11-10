@@ -92,13 +92,15 @@ export interface NotificationPayload {
   changes?: ContestChangeField[];
   /** Deadline-style reminders: the instant being warned about (ISO). */
   dueAt?: string;
+  /** IANA zone of the contest, to show `dueAt` in local time. */
+  timeZone?: string;
   /** `league_judging_reminder`: runs waiting for this judge. */
   pendingCount?: number;
   /** `league_payment_gate_reminder`: what happens tomorrow. */
   gateStep?: "lock" | "disable";
 }
 
-/** Email outbox state on a notification row (0008). */
+/** Email outbox state on a notification row (migration 0009). */
 export type NotificationEmailStatus =
   | "pending"
   | "queued"

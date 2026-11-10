@@ -42,5 +42,6 @@ export async function handler(event: SNSEvent): Promise<void> {
       console.warn("unparseable SES event", record.Sns.MessageId)
     }
   }
-  if (reports.length > 0) await reportDelivery(reports)
+  // Throwing makes Lambda retry the SNS delivery; reporting twice is harmless.
+  if (reports.length > 0) await reportDelivery(reports, { throwOnFailure: true })
 }

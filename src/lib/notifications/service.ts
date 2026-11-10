@@ -42,22 +42,26 @@ export interface NotificationDraft {
  * Inserts the rows (skipping duplicate `dedupeKey`s) and queues the
  * immediate-urgency ones for email after the transaction commits. Returns
  * the ids actually inserted.
+ *
+ * Rows enter the email outbox only while delivery is configured. Otherwise
+ * they stay in-app only, so turning email on later never sends old mail.
  */
 export async function createNotifications(
   tx: Tx,
   drafts: readonly NotificationDraft[],
 ): Promise<string[]> {
   if (drafts.length === 0) return []
+  const emailOn = isEmailDeliveryConfigured()
   const rows: NewUserNotificationRow[] = drafts.map((draft) => {
-    const policy = emailPolicyFor(draft.type)
+    const urgency = emailOn ? emailPolicyFor(draft.type).urgency : null
     return {
       userId: draft.userId,
       type: draft.type,
       payload: draft.payload ?? {},
       eventId: draft.eventId ?? null,
       dedupeKey: draft.dedupeKey ?? null,
-      emailStatus: policy.urgency ? "pending" : null,
-      emailUrgency: policy.urgency,
+      emailStatus: urgency ? "pending" : null,
+      emailUrgency: urgency,
     }
   })
   const inserted: { id: string; urgency: string | null }[] = []

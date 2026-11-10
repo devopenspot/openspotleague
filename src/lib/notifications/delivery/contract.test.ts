@@ -12,9 +12,11 @@ const NOW = new Date("2026-11-05T12:00:00.000Z")
 
 describe("internal request signing", () => {
   const body = JSON.stringify({ hello: "world" })
-  const headers = signedHeaders(SECRET, body, NOW)
+  const path = "/api/internal/notifications/tick"
+  const headers = signedHeaders(SECRET, path, body, NOW)
   const base = {
     secret: SECRET,
+    path,
     body,
     timestamp: headers[TIMESTAMP_HEADER] ?? null,
     signature: headers[SIGNATURE_HEADER] ?? null,
@@ -35,6 +37,12 @@ describe("internal request signing", () => {
   it("rejects a tampered body or wrong secret", () => {
     expect(verifySignature({ ...base, body: `${body} `, now: NOW })).toBe("invalid")
     expect(verifySignature({ ...base, secret: "other", now: NOW })).toBe("invalid")
+  })
+
+  it("rejects a request replayed against another route", () => {
+    expect(
+      verifySignature({ ...base, path: "/api/internal/notifications/delivery", now: NOW }),
+    ).toBe("invalid")
   })
 })
 

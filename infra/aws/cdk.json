@@ -4,6 +4,7 @@
     "region": "us-east-1",
     "sendingDomain": "",
     "fromAddress": "",
+    "replyTo": "",
     "appUrl": "",
     "alertEmail": "",
     "monthlyBudgetUsd": 1

@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { categoryLabel, escapeHtml } from "@/lib/notifications/delivery/templates"
-import { unsubscribeByToken } from "@/lib/notifications/delivery/service"
+import { readUnsubscribeCategory, unsubscribeByToken } from "@/lib/notifications/delivery/service"
 import { log } from "@/lib/utils/log"
 
 /**
  * One-click unsubscribe target for League emails (RFC 8058).
- * - GET (a person clicking the footer link) only shows a confirm button,
- *   so link scanners and prefetchers cannot unsubscribe anyone.
+ * - GET (a person clicking the footer link) only shows a confirm button
+ *   naming the category, so link scanners and prefetchers cannot unsubscribe
+ *   anyone.
  * - POST (the button, or a mail client's `List-Unsubscribe-Post`) turns the
  *   token's category off. The token is HMAC-signed; no session needed.
  */
@@ -34,11 +35,13 @@ const INVALID = () =>
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token")
-  if (!token) return INVALID()
+  // Verified here too, so a broken link says so instead of offering a button.
+  const category = readUnsubscribeCategory(token)
+  if (!token || !category) return INVALID()
   const action = `/api/notifications/unsubscribe?token=${encodeURIComponent(token)}`
   return page(
     "Unsubscribe",
-    `<p style="font-size:15px;line-height:1.5;color:#44474a">Stop this kind of League email? You'll still see it in your in-app notifications.</p>
+    `<p style="font-size:15px;line-height:1.5;color:#44474a">Stop ${escapeHtml(categoryLabel(category))} emails from OpenSpot League? You'll still see them in your in-app notifications.</p>
 <form method="post" action="${escapeHtml(action)}"><button type="submit" style="height:44px;padding:0 24px;border:1px solid #0a0a0a;border-radius:999px;background:#0a0a0a;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Unsubscribe</button></form>`,
   )
 }

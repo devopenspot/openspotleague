@@ -9,6 +9,7 @@ import "server-only"
 
 import {
   env,
+  getNotificationsInternalSecret,
   getNotificationsUnsubscribeSecret,
   getNotifyAwsConfig,
 } from "@/lib/config/env"
@@ -18,15 +19,24 @@ import { createDispatcher, type Dispatcher } from "./dispatcher"
 import { createSqsSender } from "./sqs"
 import { deliveryStore } from "./store"
 
+/**
+ * All three parts must be present: the queue credentials, the unsubscribe
+ * secret, and the internal secret the Lambdas sign their reports with.
+ * Without the last one emails would send but never be marked `sent`.
+ */
 export function isEmailDeliveryConfigured(): boolean {
-  return getNotifyAwsConfig() !== null && getNotificationsUnsubscribeSecret() !== null
+  return (
+    getNotifyAwsConfig() !== null &&
+    getNotificationsUnsubscribeSecret() !== null &&
+    getNotificationsInternalSecret() !== null
+  )
 }
 
 /** The live dispatcher, or null while delivery is not configured. */
 export function getDispatcher(): Dispatcher | null {
   const aws = getNotifyAwsConfig()
   const unsubscribeSecret = getNotificationsUnsubscribeSecret()
-  if (!aws || !unsubscribeSecret) return null
+  if (!aws || !unsubscribeSecret || !isEmailDeliveryConfigured()) return null
   return createDispatcher({
     store: deliveryStore,
     sender: createSqsSender(aws),

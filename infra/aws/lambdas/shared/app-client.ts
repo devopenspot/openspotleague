@@ -33,7 +33,7 @@ export async function postToApp(path: string, payload: unknown): Promise<Respons
   const url = new URL(path, required("APP_URL"))
   const response = await fetch(url, {
     method: "POST",
-    headers: signedHeaders(await internalSecret(), body),
+    headers: signedHeaders(await internalSecret(), url.pathname, body),
     body,
     signal: AbortSignal.timeout(25_000),
   })
@@ -41,17 +41,27 @@ export async function postToApp(path: string, payload: unknown): Promise<Respons
   return response
 }
 
-/** Best effort: a lost report is recovered by the Worker's stale-queued backstop. */
-export async function reportDelivery(reports: DeliveryReport["reports"]): Promise<void> {
+/**
+ * Posts outcomes to the app. By default a failure only logs: a lost `sent`
+ * report is recovered by the Worker's stale-queued backstop. Bounce and
+ * complaint feedback has no such backstop, so that caller passes
+ * `throwOnFailure` and lets Lambda retry the invocation.
+ */
+export async function reportDelivery(
+  reports: DeliveryReport["reports"],
+  options: { throwOnFailure?: boolean } = {},
+): Promise<void> {
   for (let index = 0; index < reports.length; index += 100) {
     const chunk = reports.slice(index, index + 100)
+    let failure: string | null = null
     try {
       const response = await postToApp("/api/internal/notifications/delivery", { reports: chunk })
-      if (!response.ok) {
-        console.warn("delivery report rejected", response.status, (await response.text()).slice(0, 300))
-      }
+      if (!response.ok) failure = `rejected ${response.status}`
     } catch (error) {
-      console.warn("delivery report failed", error instanceof Error ? error.message : error)
+      failure = error instanceof Error ? error.name : "UnknownError"
     }
+    if (!failure) continue
+    console.warn("delivery report failed", failure)
+    if (options.throwOnFailure) throw new Error(`delivery report failed: ${failure}`)
   }
 }

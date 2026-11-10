@@ -37,14 +37,11 @@ function eventPayload(event: ReminderEvent): NotificationPayload {
   return { eventId: event.id, eventSlug: event.slug, eventName: event.name }
 }
 
-/** UTC calendar day, used to cap a reminder to once per day. */
-export function utcDay(now: Date): string {
-  return now.toISOString().slice(0, 10)
-}
-
 // ---------- video deadline ----------
 
 export interface VideoDeadlineCandidate extends ReminderEvent {
+  /** IANA zone of the contest, so the email shows local time. */
+  timeZone?: string | null
   deadline: Date
   /** Riders with at least one run still `scheduled` (no video yet). */
   riderIdsMissingVideo: readonly string[]
@@ -63,9 +60,14 @@ export function selectVideoDeadlineReminders(
       drafts.push({
         userId,
         type: "league_video_deadline_reminder",
-        payload: { ...eventPayload(event), dueAt: event.deadline.toISOString() },
+        payload: {
+          ...eventPayload(event),
+          dueAt: event.deadline.toISOString(),
+          ...(event.timeZone ? { timeZone: event.timeZone } : {}),
+        },
         eventId: event.id,
-        dedupeKey: `vdl24:${event.id}:${userId}`,
+        // The deadline is part of the key: moving it reminds again.
+        dedupeKey: `vdl24:${event.id}:${userId}:${event.deadline.getTime()}`,
       })
     }
   }
@@ -80,30 +82,37 @@ export interface JudgingCandidate extends ReminderEvent {
   submittedRuns: readonly { submittedAt: Date; scoredBy: readonly string[] }[]
 }
 
+/** Whole days a judge's oldest waiting video has been in: remind on these, then stop. */
+export const JUDGING_REMINDER_DAYS: readonly number[] = [1, 3, 7]
+
 /**
- * Judges with submitted runs unscored for over a day, once per UTC day per
- * contest, with how many runs are waiting for them.
+ * Judges with submitted runs unscored for over a day. Each judge is reminded
+ * on day 1, 3 and 7 of their oldest waiting video, then left alone; scoring
+ * it restarts the count from the next oldest. The key carries that video's
+ * time and the day, so a day is never sent twice.
  */
 export function selectJudgingReminders(
   candidates: readonly JudgingCandidate[],
   now: Date,
 ): ReminderDraft[] {
   const drafts: ReminderDraft[] = []
-  const day = utcDay(now)
   for (const event of candidates) {
     const stale = event.submittedRuns.filter(
       (run) => now.getTime() - run.submittedAt.getTime() >= JUDGING_STALE_MS,
     )
     if (stale.length === 0) continue
     for (const judgeId of new Set(event.judgeIds)) {
-      const pendingCount = stale.filter((run) => !run.scoredBy.includes(judgeId)).length
-      if (pendingCount === 0) continue
+      const waiting = stale.filter((run) => !run.scoredBy.includes(judgeId))
+      if (waiting.length === 0) continue
+      const oldest = Math.min(...waiting.map((run) => run.submittedAt.getTime()))
+      const day = Math.floor((now.getTime() - oldest) / DAY_MS)
+      if (!JUDGING_REMINDER_DAYS.includes(day)) continue
       drafts.push({
         userId: judgeId,
         type: "league_judging_reminder",
-        payload: { ...eventPayload(event), pendingCount },
+        payload: { ...eventPayload(event), pendingCount: waiting.length },
         eventId: event.id,
-        dedupeKey: `jdg:${event.id}:${judgeId}:${day}`,
+        dedupeKey: `jdg:${event.id}:${judgeId}:${oldest}:${day}`,
       })
     }
   }

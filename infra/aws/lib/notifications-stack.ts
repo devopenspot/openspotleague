@@ -10,6 +10,8 @@
  *
  * Everything here sits in the AWS always-free tier at League scale except
  * SES (3,000 msgs/month free for the first 12 months, then $0.10 / 1,000).
+ * The idempotency table is provisioned, not on-demand, for that reason:
+ * 25 provisioned read and write units are always free, on-demand is not.
  * Secrets are not in this template: the internal HMAC secret is an SSM
  * SecureString created by hand, and the Worker's access key is created by
  * hand for the `osl-worker-notify` user.
@@ -53,7 +55,9 @@ export interface NotificationsStackProps extends StackProps {
   fromAddress: string
   /** Public Worker origin the Lambdas call back. */
   appUrl: string
-  /** Receives DLQ alarms and the budget alert. */
+  /** Optional inbox for replies; without it a reply to `fromAddress` bounces. */
+  replyTo?: string
+  /** Receives the alarms and the budget alert. */
   alertEmail: string
   monthlyBudgetUsd: number
 }
@@ -68,6 +72,7 @@ export class NotificationsStack extends Stack {
       fifo: true,
       retentionPeriod: Duration.days(14),
       encryption: sqs.QueueEncryption.SQS_MANAGED,
+      enforceSSL: true,
     })
     const queue = new sqs.Queue(this, "EmailQueue", {
       queueName: "osl-notify-email.fifo",
@@ -77,6 +82,7 @@ export class NotificationsStack extends Stack {
       visibilityTimeout: Duration.seconds(180),
       retentionPeriod: Duration.days(4),
       encryption: sqs.QueueEncryption.SQS_MANAGED,
+      enforceSSL: true,
       deadLetterQueue: { queue: dlq, maxReceiveCount: 5 },
     })
 
@@ -84,13 +90,20 @@ export class NotificationsStack extends Stack {
     const idempotency = new dynamodb.Table(this, "EmailIdempotency", {
       tableName: "osl-notify-email-idempotency",
       partitionKey: { name: "id", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      // Each send is two small writes. Five units plus DynamoDB's burst
+      // allowance cover a few hundred emails at once; the SDK retries beyond.
+      billingMode: dynamodb.BillingMode.PROVISIONED,
+      readCapacity: 5,
+      writeCapacity: 5,
       timeToLiveAttribute: "expiration",
       removalPolicy: RemovalPolicy.DESTROY,
     })
 
     // ---------- SES ----------
-    const feedbackTopic = new sns.Topic(this, "SesFeedback", { topicName: "osl-notify-ses-feedback" })
+    const feedbackTopic = new sns.Topic(this, "SesFeedback", {
+      topicName: "osl-notify-ses-feedback",
+      enforceSSL: true,
+    })
     const configurationSet = new ses.ConfigurationSet(this, "ConfigSet", {
       configurationSetName: "osl-notify",
       reputationMetrics: true,
@@ -153,6 +166,7 @@ export class NotificationsStack extends Stack {
       environment: {
         ...common.environment,
         FROM_ADDRESS: props.fromAddress,
+        ...(props.replyTo ? { REPLY_TO: props.replyTo } : {}),
         CONFIGURATION_SET: configurationSet.configurationSetName,
         IDEMPOTENCY_TABLE: idempotency.tableName,
       },
@@ -220,8 +234,24 @@ export class NotificationsStack extends Stack {
     )
 
     // ---------- alarms + budget ----------
+    // No `enforceSSL` here: it only takes effect once the topic has its own
+    // policy, and adding one would replace the default policy that lets this
+    // account's CloudWatch alarms publish. The topic carries alarm text only.
     const alerts = new sns.Topic(this, "Alerts", { topicName: "osl-notify-alerts" })
     alerts.addSubscription(new subscriptions.EmailSubscription(props.alertEmail))
+    // Without the tick there are no reminders, digests or retries, and
+    // nothing else would say so. One failed run can be a blip; three in an
+    // hour (of four) means the Worker is unreachable or the secret is wrong.
+    const tickAlarm = new cloudwatch.Alarm(this, "TickFailing", {
+      alarmName: "osl-notify-tick-failing",
+      alarmDescription: "The 15-minute notification tick is failing (docs/notifications.md runbook).",
+      metric: tick.metricErrors({ period: Duration.hours(1), statistic: "Sum" }),
+      threshold: 3,
+      comparisonOperator: cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+      evaluationPeriods: 1,
+      treatMissingData: cloudwatch.TreatMissingData.NOT_BREACHING,
+    })
+    tickAlarm.addAlarmAction(new cwActions.SnsAction(alerts))
     const dlqAlarm = new cloudwatch.Alarm(this, "DlqNotEmpty", {
       alarmName: "osl-notify-email-dlq-not-empty",
       alarmDescription: "Emails failed 5 times and landed in the DLQ (docs/notifications.md runbook).",

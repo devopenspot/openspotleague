@@ -80,6 +80,13 @@ export async function applyDeliveryReports(report: DeliveryReport): Promise<{ ap
   return { applied }
 }
 
+/** The category a link unsubscribes from, or null for a link that is not ours. Changes nothing. */
+export function readUnsubscribeCategory(token: string | null): NotificationEmailCategory | null {
+  const secret = getNotificationsUnsubscribeSecret()
+  if (!secret) return null
+  return readUnsubscribeToken(secret, token)?.category ?? null
+}
+
 export async function unsubscribeByToken(
   token: string | null,
 ): Promise<{ category: NotificationEmailCategory } | null> {

@@ -40,6 +40,17 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;")
 }
 
+/** A digest lists this many notifications; the rest are a count and a link. */
+export const DIGEST_ITEM_LIMIT = 12
+
+/**
+ * Contest names are user input. A line break or other control character in a
+ * subject makes SES reject the whole email, so they collapse to spaces.
+ */
+function cleanSubject(value: string): string {
+  return value.replace(/\p{Cc}+/gu, " ").replace(/\s+/g, " ").trim().slice(0, 200)
+}
+
 function absolute(appUrl: string, path: string | null): string {
   return new URL(path ?? "/notifications", appUrl).toString()
 }
@@ -58,9 +69,15 @@ function toItem(appUrl: string, notification: TemplateNotification): Item {
   }
 }
 
+function moreLine(more: number): string {
+  return `and ${more} more in your inbox`
+}
+
 function layout(input: {
   heading: string
   items: readonly Item[]
+  /** Notifications left out of `items` (digest over the limit). */
+  more?: number
   appUrl: string
   category: NotificationEmailCategory
   unsubscribeUrl: string
@@ -76,16 +93,25 @@ function layout(input: {
     )
     .join("")
   const settings = absolute(input.appUrl, "/notifications")
+  const more = input.more
+    ? `
+        <tr><td style="padding:16px 0;border-top:1px solid #e1e5e9">
+          <a href="${escapeHtml(settings)}" style="font-size:15px;font-weight:600;color:#121212">${escapeHtml(moreLine(input.more))}</a>
+        </td></tr>`
+    : ""
+  // Hidden preview text: mail clients show it next to the subject.
+  const preheader = input.items[0]?.body ?? ""
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(input.heading)}</title></head>
 <body style="margin:0;background:#f7f9fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;color:transparent">${escapeHtml(preheader)}</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f9fb"><tr><td align="center" style="padding:24px 16px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;padding:24px">
       <tr><td style="padding-bottom:8px">
         <p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#74777a">OpenSpot League</p>
         <h1 style="margin:4px 0 0;font-size:22px;color:#121212">${escapeHtml(input.heading)}</h1>
       </td></tr>
-      ${rows}
+      ${rows}${more}
     </table>
     <p style="max-width:560px;margin:16px auto 0;font-size:12px;line-height:1.5;color:#74777a">
       You get these because you take part in OpenSpot League contests.
@@ -96,12 +122,20 @@ function layout(input: {
 </body></html>`
 }
 
-function textBody(heading: string, items: readonly Item[], category: NotificationEmailCategory, unsubscribe: string): string {
-  const lines = [heading, ""]
-  for (const item of items) {
+function textBody(input: {
+  heading: string
+  items: readonly Item[]
+  more?: number
+  appUrl: string
+  category: NotificationEmailCategory
+  unsubscribeUrl: string
+}): string {
+  const lines = [input.heading, ""]
+  for (const item of input.items) {
     lines.push(item.title, item.body, item.href, "")
   }
-  lines.push(`Unsubscribe from ${categoryLabel(category)}: ${unsubscribe}`)
+  if (input.more) lines.push(`${moreLine(input.more)}: ${absolute(input.appUrl, "/notifications")}`, "")
+  lines.push(`Unsubscribe from ${categoryLabel(input.category)}: ${input.unsubscribeUrl}`)
   return lines.join("\n")
 }
 
@@ -116,11 +150,14 @@ export function renderSingleEmail(input: {
   const subject = input.notification.payload.eventName
     ? `${item.title} · ${input.notification.payload.eventName}`
     : item.title
-  return {
-    subject: subject.slice(0, 200),
-    html: layout({ heading: item.title, items: [item], appUrl: input.appUrl, category: input.category, unsubscribeUrl: input.unsubscribeUrl }),
-    text: textBody(item.title, [item], input.category, input.unsubscribeUrl),
+  const content = {
+    heading: item.title,
+    items: [item],
+    appUrl: input.appUrl,
+    category: input.category,
+    unsubscribeUrl: input.unsubscribeUrl,
   }
+  return { subject: cleanSubject(subject), html: layout(content), text: textBody(content) }
 }
 
 /** Several digest-urgency notifications for one user and category. */
@@ -133,11 +170,22 @@ export function renderDigestEmail(input: {
   if (input.notifications.length === 1) {
     return renderSingleEmail({ ...input, notification: input.notifications[0]! })
   }
-  const items = input.notifications.map((notification) => toItem(input.appUrl, notification))
-  const heading = `${items.length} League updates`
+  const total = input.notifications.length
+  const items = input.notifications
+    .slice(0, DIGEST_ITEM_LIMIT)
+    .map((notification) => toItem(input.appUrl, notification))
+  const heading = `${total} League updates`
+  const content = {
+    heading,
+    items,
+    more: total - items.length,
+    appUrl: input.appUrl,
+    category: input.category,
+    unsubscribeUrl: input.unsubscribeUrl,
+  }
   return {
-    subject: `${heading}: ${items[0]!.title}`.slice(0, 200),
-    html: layout({ heading, items, appUrl: input.appUrl, category: input.category, unsubscribeUrl: input.unsubscribeUrl }),
-    text: textBody(heading, items, input.category, input.unsubscribeUrl),
+    subject: cleanSubject(`${heading}: ${items[0]!.title}`),
+    html: layout(content),
+    text: textBody(content),
   }
 }

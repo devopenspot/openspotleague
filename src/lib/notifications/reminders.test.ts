@@ -16,9 +16,25 @@ describe("selectVideoDeadlineReminders", () => {
       [{ ...EVENT, deadline: new Date(NOW.getTime() + 23 * HOUR_MS), riderIdsMissingVideo: ["r1", "r2", "r1"] }],
       NOW,
     )
+    const deadline = new Date(NOW.getTime() + 23 * HOUR_MS)
     expect(drafts.map((d) => d.userId)).toEqual(["r1", "r2"])
-    expect(drafts[0]?.dedupeKey).toBe("vdl24:e1:r1")
-    expect(drafts[0]?.payload.dueAt).toBe(new Date(NOW.getTime() + 23 * HOUR_MS).toISOString())
+    expect(drafts[0]?.dedupeKey).toBe(`vdl24:e1:r1:${deadline.getTime()}`)
+    expect(drafts[0]?.payload.dueAt).toBe(deadline.toISOString())
+    expect(drafts[0]?.payload.timeZone).toBeUndefined()
+  })
+
+  it("reminds again when the deadline moves, and carries the contest time zone", () => {
+    const candidate = { ...EVENT, timeZone: "America/Bogota", riderIdsMissingVideo: ["r1"] }
+    const [first] = selectVideoDeadlineReminders(
+      [{ ...candidate, deadline: new Date(NOW.getTime() + 20 * HOUR_MS) }],
+      NOW,
+    )
+    const [moved] = selectVideoDeadlineReminders(
+      [{ ...candidate, deadline: new Date(NOW.getTime() + 22 * HOUR_MS) }],
+      NOW,
+    )
+    expect(first?.dedupeKey).not.toBe(moved?.dedupeKey)
+    expect(first?.payload.timeZone).toBe("America/Bogota")
   })
 
   it("skips deadlines too far out or already passed", () => {
@@ -37,7 +53,43 @@ describe("selectJudgingReminders", () => {
   const stale = new Date(NOW.getTime() - DAY_MS - HOUR_MS)
   const fresh = new Date(NOW.getTime() - HOUR_MS)
 
-  it("counts stale runs each judge has not scored, keyed per day", () => {
+  it("reminds on day 1, 3 and 7 of the oldest waiting video, then stops", () => {
+    const submittedAt = new Date("2026-11-01T12:00:00.000Z")
+    const candidate = { ...EVENT, judgeIds: ["j1"], submittedRuns: [{ submittedAt, scoredBy: [] }] }
+    const sentOn: number[] = []
+    const keys = new Set<string>()
+    // Every 15-minute tick for ten days.
+    for (let tick = 0; tick < 10 * 24 * 4; tick += 1) {
+      const now = new Date(submittedAt.getTime() + tick * 15 * 60 * 1000)
+      for (const draft of selectJudgingReminders([candidate], now)) {
+        if (keys.has(draft.dedupeKey)) continue
+        keys.add(draft.dedupeKey)
+        sentOn.push(Math.floor((now.getTime() - submittedAt.getTime()) / DAY_MS))
+      }
+    }
+    expect(sentOn).toEqual([1, 3, 7])
+  })
+
+  it("restarts the count from the next oldest video once the oldest is scored", () => {
+    const first = new Date(NOW.getTime() - 3 * DAY_MS - HOUR_MS)
+    const second = new Date(NOW.getTime() - DAY_MS - HOUR_MS)
+    const [draft] = selectJudgingReminders(
+      [
+        {
+          ...EVENT,
+          judgeIds: ["j1"],
+          submittedRuns: [
+            { submittedAt: first, scoredBy: ["j1"] },
+            { submittedAt: second, scoredBy: [] },
+          ],
+        },
+      ],
+      NOW,
+    )
+    expect(draft?.dedupeKey).toBe(`jdg:e1:j1:${second.getTime()}:1`)
+  })
+
+  it("counts stale runs each judge has not scored", () => {
     const drafts = selectJudgingReminders(
       [
         {
@@ -53,7 +105,11 @@ describe("selectJudgingReminders", () => {
       NOW,
     )
     expect(drafts).toEqual([
-      expect.objectContaining({ userId: "j1", payload: expect.objectContaining({ pendingCount: 1 }), dedupeKey: "jdg:e1:j1:2026-11-05" }),
+      expect.objectContaining({
+        userId: "j1",
+        payload: expect.objectContaining({ pendingCount: 1 }),
+        dedupeKey: `jdg:e1:j1:${stale.getTime()}:1`,
+      }),
       expect.objectContaining({ userId: "j2", payload: expect.objectContaining({ pendingCount: 2 }) }),
     ])
   })

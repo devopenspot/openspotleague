@@ -88,7 +88,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 ### Notifications (`docs/notifications.md`)
 
 - Create notifications only through `createNotifications(tx, …)` inside the write transaction. Email goes out after commit; never call SQS or SES from inside a transaction.
-- `src/lib/notifications/delivery/contract.ts` is imported by the Lambdas by relative path: no `@/` imports there.
+- `src/lib/notifications/delivery/contract.ts` and `sender-batch.ts` are imported by the Lambdas by relative path: no `@/` imports there.
 - AWS never connects to Postgres. Lambdas reach the app only through the signed `/api/internal/notifications/*` routes.
 
 ### Database (`docs/database.md`)

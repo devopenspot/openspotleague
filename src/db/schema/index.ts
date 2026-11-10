@@ -1967,9 +1967,9 @@ export const userNotifications = pgTable(
       onDelete: "set null",
     }),
     readAt: timestamp("read_at", { withTimezone: true }),
-    /** Sent time, reported by the sender Lambda (0008). */
+    /** Sent time, reported by the sender Lambda (0009). */
     emailedAt: timestamp("emailed_at", { withTimezone: true }),
-    /** Outbox state (0008): null = in-app only. */
+    /** Outbox state (0009): null = in-app only. */
     emailStatus: text("email_status").$type<NotificationEmailStatus>(),
     emailUrgency: text("email_urgency").$type<NotificationEmailUrgency>(),
     emailQueuedAt: timestamp("email_queued_at", { withTimezone: true }),
@@ -2008,7 +2008,7 @@ export const userEmailPreferences = pgTable(
     userId: uuid("user_id")
       .primaryKey()
       .references(() => authUsers.id, { onDelete: "cascade" }),
-    /** @deprecated Backfilled into the category columns by 0008; unread, dropped later. */
+    /** @deprecated Backfilled into the category columns by 0009; unread, dropped later. */
     emailDigestsEnabled: boolean("email_digests_enabled").notNull().default(true),
     contestUpdates: boolean("contest_updates").notNull().default(true),
     reminders: boolean("reminders").notNull().default(true),

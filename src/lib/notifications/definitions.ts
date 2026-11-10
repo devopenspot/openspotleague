@@ -109,18 +109,26 @@ function changesLabel(changes: readonly ContestChangeField[] | undefined): strin
   return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
 }
 
-function dueLabel(dueAt: string | undefined): string {
+/** "on Nov 6, 1:00 PM GMT-5": the contest's own time zone, or UTC without one. */
+function dueLabel(dueAt: string | undefined, timeZone?: string): string {
   if (!dueAt) return "soon";
   const due = new Date(dueAt);
   if (Number.isNaN(due.getTime())) return "soon";
-  return `on ${due.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short",
-  })}`;
+  const format = (zone: string) =>
+    due.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZone: zone,
+      timeZoneName: "short",
+    });
+  try {
+    return `on ${format(timeZone || "UTC")}`;
+  } catch {
+    // An unknown zone name throws RangeError.
+    return `on ${format("UTC")}`;
+  }
 }
 
 function roleLabel(role: NotificationPayload["role"]): string {
@@ -239,8 +247,8 @@ export function renderNotification(
       };
     case "league_video_deadline_reminder":
       return {
-        title: "Video deadline in 24 hours",
-        body: `Submit your run video for ${event} — the deadline is ${dueLabel(payload.dueAt)}.`,
+        title: "Video deadline coming up",
+        body: `Submit your run video for ${event} — the deadline is ${dueLabel(payload.dueAt, payload.timeZone)}.`,
       };
     case "league_judging_reminder": {
       const count = payload.pendingCount ?? 0;

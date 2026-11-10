@@ -16,6 +16,7 @@ new NotificationsStack(app, "OpenSpotNotifications", {
   sendingDomain: context("sendingDomain"),
   fromAddress: context("fromAddress"),
   appUrl: context("appUrl"),
+  replyTo: String(app.node.tryGetContext("replyTo") ?? "").trim() || undefined,
   alertEmail: context("alertEmail"),
   monthlyBudgetUsd: Number(app.node.tryGetContext("monthlyBudgetUsd") ?? 1),
   description: "OpenSpot League email notifications: SQS FIFO → Lambda → SES, 15-min tick (docs/notifications.md)",

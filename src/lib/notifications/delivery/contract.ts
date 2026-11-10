@@ -6,8 +6,9 @@
  * - `EmailJob`: one SQS message = one email (single or digest).
  * - `DeliveryReport`: Lambdas → `POST /api/internal/notifications/delivery`.
  * - Signed requests: `x-osl-timestamp` + `x-osl-signature`, an HMAC-SHA256
- *   over `${timestamp}.${body}` with NOTIFICATIONS_INTERNAL_SECRET, valid
- *   for five minutes either side.
+ *   over `${timestamp}.${path}.${body}` with NOTIFICATIONS_INTERNAL_SECRET,
+ *   valid for five minutes either side. The path is signed so a captured
+ *   request cannot be replayed against the other internal route.
  */
 
 import { createHmac, timingSafeEqual } from "node:crypto"
@@ -33,9 +34,6 @@ export const EmailJobSchema = z.object({
   unsubscribeUrl: z.string().url(),
 })
 export type EmailJob = z.infer<typeof EmailJobSchema>
-
-export const DeliveryStatusSchema = z.enum(["sent", "failed", "bounced", "complained"])
-export type DeliveryStatus = z.infer<typeof DeliveryStatusSchema>
 
 export const DeliveryReportSchema = z.object({
   reports: z
@@ -68,13 +66,15 @@ export const SIGNATURE_HEADER = "x-osl-signature"
 export const TIMESTAMP_HEADER = "x-osl-timestamp"
 export const SIGNATURE_TOLERANCE_MS = 5 * 60 * 1000
 
-export function signBody(secret: string, timestamp: string, body: string): string {
-  return createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("hex")
+/** `path` is the URL pathname the request is sent to, e.g. `/api/internal/notifications/tick`. */
+export function signBody(secret: string, timestamp: string, path: string, body: string): string {
+  return createHmac("sha256", secret).update(`${timestamp}.${path}.${body}`).digest("hex")
 }
 
-/** Headers for a signed internal request. */
+/** Headers for a signed internal request to `path`. */
 export function signedHeaders(
   secret: string,
+  path: string,
   body: string,
   now: Date = new Date(),
 ): Record<string, string> {
@@ -82,7 +82,7 @@ export function signedHeaders(
   return {
     "content-type": "application/json",
     [TIMESTAMP_HEADER]: timestamp,
-    [SIGNATURE_HEADER]: signBody(secret, timestamp, body),
+    [SIGNATURE_HEADER]: signBody(secret, timestamp, path, body),
   }
 }
 
@@ -90,6 +90,7 @@ export type SignatureCheck = "ok" | "missing" | "expired" | "invalid"
 
 export function verifySignature(input: {
   secret: string
+  path: string
   body: string
   timestamp: string | null
   signature: string | null
@@ -101,7 +102,7 @@ export function verifySignature(input: {
   if (!Number.isFinite(sentAt) || Math.abs(now - sentAt) > SIGNATURE_TOLERANCE_MS) {
     return "expired"
   }
-  const expected = signBody(input.secret, input.timestamp, input.body)
+  const expected = signBody(input.secret, input.timestamp, input.path, input.body)
   const given = input.signature.trim().toLowerCase()
   if (given.length !== expected.length) return "invalid"
   return timingSafeEqual(Buffer.from(given), Buffer.from(expected)) ? "ok" : "invalid"

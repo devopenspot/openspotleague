@@ -13,7 +13,7 @@
 
 import "server-only"
 
-import { and, eq, inArray, isNotNull, lt, sql, type SQL } from "drizzle-orm"
+import { and, eq, inArray, isNotNull, lt, or, sql, type SQL } from "drizzle-orm"
 import { getDbClient, withDbRead, withDbWrite } from "@/lib/db/client"
 import {
   eventMemberships,
@@ -121,6 +121,36 @@ export const deliveryStore = {
     )
   },
 
+  /**
+   * Pending rows too old to be worth sending (email was off, or an outage
+   * outlasted them) become `skipped`, so a recovery never sends stale mail.
+   */
+  async expirePending(input: { immediateBefore: Date; digestBefore: Date }): Promise<number> {
+    const { db } = getDbClient()
+    return withDbWrite("notifications.expirePending", async () => {
+      const rows = await db
+        .update(userNotifications)
+        .set({ emailStatus: "skipped" })
+        .where(
+          and(
+            eq(userNotifications.emailStatus, "pending"),
+            or(
+              and(
+                eq(userNotifications.emailUrgency, "immediate"),
+                lt(userNotifications.createdAt, input.immediateBefore),
+              ),
+              and(
+                eq(userNotifications.emailUrgency, "digest"),
+                lt(userNotifications.createdAt, input.digestBefore),
+              ),
+            ),
+          ),
+        )
+        .returning({ id: userNotifications.id })
+      return rows.length
+    })
+  },
+
   /** Rows queued for over a day with no report: give up. */
   async expireStale(input: { createdBefore: Date }): Promise<number> {
     const { db } = getDbClient()
@@ -224,6 +254,7 @@ export const deliveryStore = {
           id: sportEvents.id,
           slug: sportEvents.slug,
           name: sportEvents.name,
+          timeZone: sportEvents.timezone,
           deadline: sportEvents.submissionDeadlineAt,
           riderId: eventRuns.userId,
         })
@@ -254,6 +285,7 @@ export const deliveryStore = {
         id: row.id,
         slug: row.slug,
         name: row.name,
+        timeZone: row.timeZone,
         deadline: row.deadline,
         riderIdsMissingVideo: [],
       }
@@ -367,5 +399,11 @@ export const deliveryStore = {
 
 export type DeliveryStore = Pick<
   typeof deliveryStore,
-  "claimPending" | "claimStaleQueued" | "expireStale" | "setStatus" | "loadRecipients" | "suppressAddress"
+  | "claimPending"
+  | "claimStaleQueued"
+  | "expirePending"
+  | "expireStale"
+  | "setStatus"
+  | "loadRecipients"
+  | "suppressAddress"
 >

@@ -27,6 +27,12 @@ export const BACKSTOP_GRACE_MS = 2 * 60 * 1000
 export const STALE_QUEUED_MS = 60 * 60 * 1000
 /** Rows still unreported after this are marked `failed`. */
 export const GIVE_UP_MS = 24 * 60 * 60 * 1000
+/**
+ * Pending rows older than this are `skipped`, never sent: an "event started"
+ * email a day late is worse than none. Covers outages and switching email on.
+ */
+export const IMMEDIATE_MAX_AGE_MS = 6 * 60 * 60 * 1000
+export const DIGEST_MAX_AGE_MS = 24 * 60 * 60 * 1000
 
 export interface DispatcherDeps {
   store: DeliveryStore
@@ -99,12 +105,7 @@ export function createDispatcher(deps: DispatcherDeps) {
         continue
       }
       if ((row.urgency ?? policy.urgency) === "immediate") {
-        const rendered = renderSingleEmail({
-          appUrl: deps.appUrl,
-          notification: row,
-          category,
-          unsubscribeUrl: unsubscribeFor(row.userId, category),
-        })
+        const unsubscribe = unsubscribeFor(row.userId, category)
         jobs.push({
           groupId: row.userId,
           job: {
@@ -114,8 +115,13 @@ export function createDispatcher(deps: DispatcherDeps) {
             notificationIds: [row.id],
             to: recipient.email,
             category,
-            unsubscribeUrl: unsubscribeFor(row.userId, category),
-            ...rendered,
+            unsubscribeUrl: unsubscribe,
+            ...renderSingleEmail({
+              appUrl: deps.appUrl,
+              notification: row,
+              category,
+              unsubscribeUrl: unsubscribe,
+            }),
           },
         })
         continue
@@ -154,9 +160,18 @@ export function createDispatcher(deps: DispatcherDeps) {
 
   async function deliver(rows: readonly ClaimedNotification[]): Promise<DispatchCounts> {
     if (rows.length === 0) return EMPTY
-    const recipients = await deps.store.loadRecipients(rows.map((row) => row.userId))
-    const { jobs, skippedIds } = plan(rows, recipients)
-    await deps.store.setStatus(skippedIds, "skipped")
+    let planned: ReturnType<typeof plan>
+    try {
+      const recipients = await deps.store.loadRecipients(rows.map((row) => row.userId))
+      planned = plan(rows, recipients)
+      await deps.store.setStatus(planned.skippedIds, "skipped")
+    } catch (error) {
+      // Nothing reached SQS yet: release the claim so the next tick retries,
+      // instead of leaving the rows `queued` for an hour.
+      await deps.store.setStatus(rows.map((row) => row.id), "pending").catch(() => undefined)
+      throw error
+    }
+    const { jobs, skippedIds } = planned
 
     const messages: QueueMessage[] = jobs.map((pending, index) => ({
       id: batchId(index),
@@ -178,6 +193,15 @@ export function createDispatcher(deps: DispatcherDeps) {
     }
   }
 
+  /** Drops pending rows past their max age before anything is claimed. */
+  function expireOld(): Promise<number> {
+    const at = now().getTime()
+    return deps.store.expirePending({
+      immediateBefore: new Date(at - IMMEDIATE_MAX_AGE_MS),
+      digestBefore: new Date(at - DIGEST_MAX_AGE_MS),
+    })
+  }
+
   return {
     plan,
 
@@ -189,6 +213,7 @@ export function createDispatcher(deps: DispatcherDeps) {
 
     /** Tick: every pending digest row, grouped per user and category. */
     async dispatchDigests(): Promise<DispatchCounts> {
+      await expireOld()
       const rows = await deps.store.claimPending({ urgency: "digest", createdBefore: now(), limit: DISPATCH_LIMIT })
       return deliver(rows)
     },
@@ -196,6 +221,7 @@ export function createDispatcher(deps: DispatcherDeps) {
     /** Tick: immediate rows the push missed, and queued rows never reported. */
     async runBackstop(): Promise<DispatchCounts & { expired: number }> {
       const at = now().getTime()
+      const tooOld = await expireOld()
       const missed = await deps.store.claimPending({
         urgency: "immediate",
         createdBefore: new Date(at - BACKSTOP_GRACE_MS),
@@ -206,9 +232,9 @@ export function createDispatcher(deps: DispatcherDeps) {
         notBefore: new Date(at - GIVE_UP_MS),
         limit: DISPATCH_LIMIT,
       })
-      const expired = await deps.store.expireStale({ createdBefore: new Date(at - GIVE_UP_MS) })
+      const gaveUp = await deps.store.expireStale({ createdBefore: new Date(at - GIVE_UP_MS) })
       const counts = add(await deliver(missed), await deliver(stale))
-      return { ...counts, expired }
+      return { ...counts, expired: tooOld + gaveUp }
     },
   }
 }

@@ -21,15 +21,22 @@ export async function readSignedBody(
   if (!secret) {
     return { response: NextResponse.json({ error: "NOT_CONFIGURED" }, { status: 503 }) }
   }
+  const timestamp = request.headers.get(TIMESTAMP_HEADER)
+  const signature = request.headers.get(SIGNATURE_HEADER)
+  // Unsigned traffic is turned away before its body is read.
+  if (!timestamp || !signature) {
+    return { response: NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 }) }
+  }
   const body = await request.text()
   if (body.length > MAX_BODY_BYTES) {
     return { response: NextResponse.json({ error: "TOO_LARGE" }, { status: 413 }) }
   }
   const check = verifySignature({
     secret,
+    path: request.nextUrl.pathname,
     body,
-    timestamp: request.headers.get(TIMESTAMP_HEADER),
-    signature: request.headers.get(SIGNATURE_HEADER),
+    timestamp,
+    signature,
   })
   if (check !== "ok") {
     return { response: NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 }) }
