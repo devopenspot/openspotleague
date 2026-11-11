@@ -1,0 +1,173 @@
+# Promote a commit that is already live on develop to production.
+# docs/ci-cd.md §6–7. Secrets: GitHub environment "production", which has
+# required reviewers, so the release job waits for an approval.
+name: release-production
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit SHA or tag. Empty: the commit last deployed to develop."
+        required: false
+        default: ""
+      rollback:
+        description: "Rollback: redeploy an earlier release tag (ref), skipping migrations."
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-production
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+      tag: ${{ steps.resolve.outputs.tag }}
+      previous: ${{ steps.resolve.outputs.previous }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: resolve
+        name: Resolve and verify the commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ inputs.ref }}
+          ROLLBACK: ${{ inputs.rollback }}
+          RUN_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          previous=$(git tag --list 'v*' --sort=-creatordate | head -n1)
+
+          if [ "$ROLLBACK" = "true" ]; then
+            case "$REF" in v*) ;; *) echo "::error::A rollback needs a release tag (v…) in ref."; exit 1 ;; esac
+            sha=$(git rev-parse "$REF^{commit}")
+            echo "sha=$sha" >> "$GITHUB_OUTPUT"
+            echo "tag=" >> "$GITHUB_OUTPUT"
+            echo "previous=$previous" >> "$GITHUB_OUTPUT"
+            echo "### Rollback to $REF ($sha)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Commits that passed the whole develop pipeline, newest first.
+          green=$(gh run list --workflow deploy-develop.yml --branch main --status success --limit 100 --json headSha --jq '.[].headSha')
+
+          if [ -z "$REF" ]; then
+            sha=$(echo "$green" | head -n1)
+            [ -n "$sha" ] || { echo "::error::No successful develop deploy found."; exit 1; }
+          else
+            sha=$(git rev-parse "$REF^{commit}")
+          fi
+
+          case "$RUN_BRANCH" in
+            hotfix/*)
+              # Hotfix: a branch cut from a release tag (docs/ci-cd.md §7).
+              git merge-base --is-ancestor "$sha" "origin/$RUN_BRANCH" \
+                || { echo "::error::$sha is not on $RUN_BRANCH."; exit 1; }
+              ;;
+            main)
+              git merge-base --is-ancestor "$sha" origin/main \
+                || { echo "::error::$sha is not on main."; exit 1; }
+              echo "$green" | grep -qx "$sha" \
+                || { echo "::error::$sha has no successful develop deploy. Only commits proven on develop go to production."; exit 1; }
+              ;;
+            *)
+              echo "::error::Run this workflow from main (or a hotfix/* branch)."; exit 1 ;;
+          esac
+
+          today=$(date -u +%Y.%m.%d)
+          n=$(( $(git tag --list "v$today-*" | wc -l) + 1 ))
+          tag="v$today-$n"
+
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Release $tag"
+            echo "Commit \`$sha\`, previous release \`${previous:-none}\`."
+            echo
+            echo "#### New migrations (applied before the deploy)"
+            if [ -n "$previous" ]; then
+              git diff --name-only --diff-filter=A "$previous" "$sha" -- supabase/migrations/ | sed 's/^/- /' || true
+            else
+              echo "- all (first release)"
+            fi
+            echo
+            echo "#### Changes"
+            if [ -n "$previous" ]; then git log --format='- %s (%h)' "$previous..$sha"; else echo "- first release"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  release:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    environment:
+      name: production
+      url: https://openspotleague.com
+    env:
+      OPENSPOT_ENV: production
+      # Email is on once the AWS stack serves production (docs/notifications.md):
+      # set the environment variable EMAIL_ENABLED=true on "production".
+      OPENSPOT_NOTIFICATIONS: ${{ vars.EMAIL_ENABLED == 'true' && '1' || '' }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: ./.github/actions/setup
+
+      - name: Migrate production
+        if: ${{ !inputs.rollback }}
+        env:
+          SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_MIGRATION_URL }}
+        run: pnpm db:apply
+
+      - name: Build
+        run: pnpm build:production
+
+      - name: Deploy
+        env:
+          GITHUB_SHA: ${{ needs.prepare.outputs.sha }}
+          DEPLOY_MESSAGE: ${{ inputs.rollback && format('rollback to {0}', inputs.ref) || needs.prepare.outputs.tag }}
+          ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+          API_KEY_WEATHER: ${{ secrets.API_KEY_WEATHER }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          AWS_NOTIFY_ACCESS_KEY_ID: ${{ secrets.AWS_NOTIFY_ACCESS_KEY_ID }}
+          AWS_NOTIFY_SECRET_ACCESS_KEY: ${{ secrets.AWS_NOTIFY_SECRET_ACCESS_KEY }}
+          AWS_NOTIFY_REGION: ${{ secrets.AWS_NOTIFY_REGION }}
+          NOTIFICATIONS_INTERNAL_SECRET: ${{ secrets.NOTIFICATIONS_INTERNAL_SECRET }}
+          NOTIFICATIONS_UNSUBSCRIBE_SECRET: ${{ secrets.NOTIFICATIONS_UNSUBSCRIBE_SECRET }}
+          NOTIFY_EMAIL_QUEUE_URL: ${{ secrets.NOTIFY_EMAIL_QUEUE_URL }}
+        run: pnpm deploy:production
+
+      - name: Smoke
+        run: pnpm smoke production
+
+      - name: Tag and publish the release
+        if: ${{ !inputs.rollback }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          SHA: ${{ needs.prepare.outputs.sha }}
+          PREVIOUS: ${{ needs.prepare.outputs.previous }}
+        run: |
+          args=(--target "$SHA" --title "$TAG" --generate-notes)
+          [ -n "$PREVIOUS" ] && args+=(--notes-start-tag "$PREVIOUS")
+          gh release create "$TAG" "${args[@]}"

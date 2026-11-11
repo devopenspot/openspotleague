@@ -1,0 +1,72 @@
+# One-off database tasks, run from main (docs/ci-cd.md §8). Production runs
+# wait for the same approval as a release. Destructive tasks exist only for
+# develop, and src/db/target.ts refuses them on production anyway.
+name: db-task
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        type: choice
+        options: [develop, production]
+        default: develop
+      task:
+        description: Task
+        type: choice
+        options:
+          - health
+          - seed
+          - seed-tv
+          - seed-tricks
+          - bootstrap-admins
+          - fresh-seed (develop only, erases data)
+        default: health
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-task-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+    env:
+      OPENSPOT_ENV: ${{ inputs.environment }}
+      SUPABASE_DIRECT_URL: ${{ secrets.SUPABASE_MIGRATION_URL }}
+      SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_MIGRATION_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      ADMIN_EMAILS: ${{ secrets.ADMIN_EMAILS }}
+      TASK: ${{ inputs.task }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+      - name: Run ${{ inputs.task }} on ${{ inputs.environment }}
+        run: |
+          set -euo pipefail
+          case "$TASK" in
+            health)       pnpm db:health ;;
+            seed)         pnpm db:seed ;;
+            seed-tv)      pnpm db:seed-tv ;;
+            seed-tricks)  pnpm db:seed-tricks ;;
+            bootstrap-admins)
+              # The repository is public: emails come from the ADMIN_EMAILS
+              # secret, never from an input, and each one is masked in the log.
+              IFS=',' read -ra emails <<< "$ADMIN_EMAILS"
+              for email in "${emails[@]}"; do
+                email=$(echo "$email" | xargs)
+                [ -n "$email" ] || continue
+                echo "::add-mask::$email"
+                pnpm db:bootstrap-admin "$email"
+              done
+              ;;
+            fresh-seed*)
+              if [ "$OPENSPOT_ENV" != "develop" ]; then echo "::error::fresh-seed is develop only."; exit 1; fi
+              pnpm db:fresh:seed
+              ;;
+            *) echo "::error::Unknown task $TASK"; exit 1 ;;
+          esac

@@ -4,9 +4,10 @@ name: ci
 
 on:
   pull_request:
-  push:
-    branches: [main]
   merge_group:
+  # Pushes to main run this through deploy-develop.yml, which deploys only
+  # when it passes.
+  workflow_call:
 
 permissions:
   contents: read
@@ -27,8 +28,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
-      # DB-free by design (AGENTS.md). Proves the Worker bundle builds.
-      - run: pnpm build
+      # DB-free by design (AGENTS.md). Proves the develop Worker bundle builds.
+      - run: pnpm build:develop
 
   migrations:
     name: migrations
