@@ -1,0 +1,12 @@
+# Reviewers GitHub requests automatically. Review from a code owner is not
+# required by the ruleset (one approval from anyone else is), so a sole owner
+# can still merge their own pull requests after someone reviews them.
+
+/supabase/migrations/   @devopenspot
+/src/db/                @devopenspot
+/infra/                 @devopenspot
+/cloudflare.config.ts   @devopenspot
+/.env.develop           @devopenspot
+/.env.production        @devopenspot
+/.github/               @devopenspot
+/scripts/deploy*.ts     @devopenspot
