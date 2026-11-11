@@ -144,7 +144,7 @@ This AWS account is on the **Free plan**, which ends on **2027-03-22**. AWS then
 6. **Resend webhook.** Create one for `email.bounced` and `email.complained` pointing at the stack output `ResendWebhookUrl`. Save its signing secret as SSM SecureString `/openspot/notifications/resend-webhook-secret`.
 7. Confirm the alarm subscription email (it also receives the zero-cost guard notice).
 8. Create an access key for the `osl-worker-notify` IAM user (its only permission is `sqs:SendMessage` on the queue).
-9. Put these in `.env.local`, then deploy the Worker with `OPENSPOT_NOTIFICATIONS=1 pnpm deploy:secrets`:
+9. Put these in `.env.local`, then deploy the Worker with `OPENSPOT_NOTIFICATIONS=1` (the production release workflow sets it; break-glass: `OPENSPOT_NOTIFICATIONS=1 pnpm build:production && OPENSPOT_NOTIFICATIONS=1 pnpm deploy:production`):
    - `AWS_NOTIFY_ACCESS_KEY_ID`, `AWS_NOTIFY_SECRET_ACCESS_KEY`, `AWS_NOTIFY_REGION` (us-east-1)
    - `NOTIFY_EMAIL_QUEUE_URL` (stack output `QueueUrl`)
    - `NOTIFICATIONS_INTERNAL_SECRET` (same value as the SSM parameter)

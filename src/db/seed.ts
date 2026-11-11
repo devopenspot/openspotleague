@@ -41,6 +41,9 @@ import {
 import { migrateSpots } from "./seed-data/spots-migration"
 import { seedTvVideos } from "./seed-tv"
 import { seedChallengeCatalogs } from "./seed-data/challenge-catalogs"
+import { guardDbScript } from "./target"
+
+guardDbScript("write")
 
 type Db = ReturnType<typeof getDbClient>["db"]
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0]

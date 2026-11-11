@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "vite build",
-    "start": "vite preview",
+    "build": "pnpm build:develop",
+    "build:develop": "tsx scripts/build.ts develop",
+    "build:production": "tsx scripts/build.ts production",
+    "start": "vite preview --mode develop",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -24,6 +26,7 @@
     "db:bootstrap-admin": "tsx scripts/bootstrap-admin.ts",
     "db:verify-cdn": "tsx scripts/verify-cdn-assets.ts",
     "og:check": "tsx scripts/og-check.ts",
+    "smoke": "tsx scripts/smoke.ts",
     "db:verify-game-lifecycle": "tsx scripts/verify-challenge-game-lifecycle.ts",
     "db:check-pool": "tsx src/db/pool-check-cli.ts",
     "db:apply": "tsx src/db/apply-sql.ts",
@@ -33,14 +36,13 @@
     "db:fresh:seed": "pnpm db:reset && pnpm db:apply && pnpm db:seed && pnpm db:seed-tv && pnpm db:seed-tricks",
     "db:migrate-spots": "tsx scripts/migrate-spots.ts",
     "db:curate-cities": "tsx scripts/curate-cities.ts",
-    "deploy": "vinext-cloudflare deploy",
-    "deploy:secrets": "vite build && tsx scripts/deploy-with-secrets.ts",
+    "deploy:develop": "tsx scripts/deploy.ts develop",
+    "deploy:production": "tsx scripts/deploy.ts production",
     "aws:install": "pnpm --dir infra/aws install --ignore-workspace",
     "aws:typecheck": "pnpm --dir infra/aws exec tsc --noEmit",
     "aws:synth": "pnpm --dir infra/aws exec cdk synth",
     "aws:diff": "pnpm --dir infra/aws exec cdk diff",
-    "aws:deploy": "pnpm --dir infra/aws exec cdk deploy",
-    "deploy:response-store": "cf deploy --prebuilt --mode production --worker open-spot-response-store"
+    "aws:deploy": "pnpm --dir infra/aws exec cdk deploy"
   },
   "packageManager": "pnpm@12.16.1",
   "dependencies": {

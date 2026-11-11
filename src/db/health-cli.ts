@@ -1,5 +1,8 @@
 import "./load-env"
 import { runDbHealthCheck } from "../lib/services/profile/health"
+import { guardDbScript } from "./target"
+
+guardDbScript("read")
 
 async function main() {
   const result = await runDbHealthCheck()

@@ -25,9 +25,9 @@ pnpm dev
 
 | Command | Purpose |
 | --- | --- |
-| `pnpm dev` / `pnpm build` / `pnpm start` | Vite dev server, production build (needs no DB), and production preview in `workerd` |
-| `pnpm deploy` / `pnpm deploy:secrets` | Deploy to Cloudflare; the second also uploads the declared secrets from `.env.local` |
-| `pnpm deploy:response-store` | Deploy the cache Worker |
+| `pnpm dev` / `pnpm start` | Vite dev server, and a preview of the last build in `workerd` |
+| `pnpm build:develop` / `pnpm build:production` | Build the Worker for one environment (needs no DB); `pnpm build` is `build:develop` |
+| `pnpm deploy:develop` / `pnpm deploy:production` | Deploy that build; normally run by the workflows (see [docs/ci-cd.md](docs/ci-cd.md)) |
 | `pnpm lint` | ESLint on `src` |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` / `pnpm test:watch` | Vitest |

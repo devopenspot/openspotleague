@@ -20,12 +20,11 @@ Delivery is trunk-based: short branch → pull request (Conventional Commit titl
 - `pnpm typecheck`: `tsc --noEmit`, strict, with `noUncheckedIndexedAccess`, `noUnusedLocals`, and `noUnusedParameters`.
 - `pnpm test`: `vitest run` in `happy-dom` with globals. It only picks up `src/**/*.{test,spec}.{ts,tsx}`, aliases `@` to `src`, and stubs `server-only`.
   - Single file: `pnpm test src/path/file.test.ts`. By name: add `-t "name"`. Watch mode: `pnpm test:watch`.
-- `pnpm build`: `vite build`. It must stay DB-free.
+- `pnpm build:develop` / `pnpm build:production` (`scripts/build.ts`): `vite build --mode <env>` with the committed `.env.<env>` pinned, because `NEXT_PUBLIC_*` values are baked in. `pnpm build` is `build:develop`. Builds must stay DB-free.
 - `pnpm dev`: `vite dev --port 3000`. `pnpm start`: `vite preview`, which runs the production build in `workerd`.
   - Both reach Postgres only through `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`. Without a working connection, pages return 200 with empty fallbacks, so a 200 does not prove a data path works.
   - Never point `.env.local` at the production pooler (see `docs/caching-and-egress.md`).
-- `pnpm deploy`: deploy to Cloudflare. `pnpm deploy:response-store`: deploy the cache Worker.
-- `pnpm deploy:secrets`: deploy and upload the declared secrets from `.env.local`. It is needed for the first deploy and whenever a value changes. Never pass `.env.local` to `cf deploy --secrets-file`: it uploads every key in the file, including `CLOUDFLARE_API_TOKEN` and the pooler URLs.
+- `pnpm deploy:develop` / `pnpm deploy:production` (`scripts/deploy.ts`): deploy the matching build (response-store Worker, then the app) with only the declared secrets, read from the process environment or `.env.<env>.local`, never `.env.local`. The workflows run these; from a laptop they are break-glass only. Never pass an env file to `cf deploy --secrets-file` directly.
 - `pnpm db:check-migrations <base-sha>`: the CI migration rule (only new, sequentially numbered files).
 - Database: `pnpm db:apply` (migrations), `pnpm db:fresh:seed` (reset, migrate, and seed everything), `pnpm db:health`, `pnpm db:check-pool`, `pnpm egress:snapshot`. Full list in `docs/database.md`.
   - These scripts load `.env.local` with `override: true`, so a connection URL exported in the shell is ignored. Check `.env.local` before running anything destructive.
@@ -36,7 +35,9 @@ Delivery is trunk-based: short branch → pull request (Conventional Commit titl
 | --- | --- |
 | `src/proxy.ts` | Next 16 proxy (replaces `middleware.ts`). Handles request ids, per-IP rate limits, the seed cookie, Supabase session refresh, and security headers. |
 | `src/worker.ts` | Workers entry. Opens the request scope around vinext's handler. |
-| `cloudflare.config.ts` | Worker config. A server env var must be declared here or the Worker never sees it, and every declared name must have a value at deploy time. |
+| `cloudflare.config.ts` | Worker config per environment (`ENVIRONMENTS`: Worker name, Hyperdrive id, domains). A server env var must be declared here (`SECRET_NAMES` or `RUNTIME_VARIABLE_NAMES`) or the Worker never sees it, and every declared secret must have a value at deploy time. |
+| `.env.develop`, `.env.production` | Committed, non-secret values per environment; they become Worker text variables and the baked `NEXT_PUBLIC_*` values. |
+| `src/db/target.ts` | Detects which Supabase project a CLI script targets and refuses destructive work on production. |
 | `src/lib/config/env.ts` | Env schema and defaults. Import config from here. |
 | `src/app/**` | Pages and route handlers. They only call services. |
 | `src/lib/services/*` | Orchestration and the single writers. |

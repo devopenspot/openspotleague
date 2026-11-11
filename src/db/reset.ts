@@ -2,6 +2,9 @@ import "./load-env"
 import postgres from "postgres"
 import { getDirectDatabaseUrl } from "../lib/config/env"
 import { getPostgresOptions } from "../lib/db/postgres-options"
+import { guardDbScript } from "./target"
+
+guardDbScript("destructive")
 
 const APPLICATION_TABLES = [
   "short_links",

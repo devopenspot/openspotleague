@@ -9,6 +9,9 @@ import { closeDb, getDbClient } from "@/lib/db/client"
 import { tvVideos } from "@/db/schema"
 import { log } from "@/lib/utils/log"
 import { SPORT_DISCIPLINE_SEED } from "./seed-data/taxonomy"
+import { guardDbScript } from "./target"
+
+guardDbScript("write")
 
 type Db = ReturnType<typeof getDbClient>["db"]
 
