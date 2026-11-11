@@ -27,6 +27,7 @@
     "db:verify-game-lifecycle": "tsx scripts/verify-challenge-game-lifecycle.ts",
     "db:check-pool": "tsx src/db/pool-check-cli.ts",
     "db:apply": "tsx src/db/apply-sql.ts",
+    "db:check-migrations": "tsx scripts/check-migrations.ts",
     "egress:snapshot": "tsx src/db/egress-snapshot.ts",
     "db:fresh": "pnpm db:reset && pnpm db:apply",
     "db:fresh:seed": "pnpm db:reset && pnpm db:apply && pnpm db:seed && pnpm db:seed-tv && pnpm db:seed-tricks",

@@ -1,0 +1,22 @@
+name: Setup
+description: Install pnpm and Node from the repository's pins (packageManager, .nvmrc) and install dependencies.
+inputs:
+  install-infra:
+    description: Also install the infra/aws package.
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1 (version from packageManager)
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: .nvmrc
+        cache: pnpm
+        cache-dependency-path: |
+          pnpm-lock.yaml
+          infra/aws/pnpm-lock.yaml
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+    - if: inputs.install-infra == 'true'
+      run: pnpm --dir infra/aws install --ignore-workspace --frozen-lockfile
+      shell: bash

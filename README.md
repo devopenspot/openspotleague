@@ -33,7 +33,11 @@ pnpm dev
 | `pnpm test` / `pnpm test:watch` | Vitest |
 | `pnpm db:*` | Migrations, seeding, and diagnostics; see [docs/database.md](docs/database.md) |
 
-CI is not set up yet (see Pending work), so run `pnpm lint && pnpm typecheck && pnpm test` before pushing. See [AGENTS.md](AGENTS.md#commands) for the full command reference.
+Run `pnpm lint && pnpm typecheck && pnpm test` before pushing; CI runs the same gate on every pull request. See [AGENTS.md](AGENTS.md#commands) for the full command reference.
+
+## Delivery
+
+Trunk-based: short branch → pull request → squash merge to `main` → automatic deploy to develop (`dev.openspotleague.com`) → manual, approved release to production (`openspotleague.com`). Details: [docs/ci-cd.md](docs/ci-cd.md), [docs/environments.md](docs/environments.md), [docs/feature-flags.md](docs/feature-flags.md).
 
 ## Project layout
 
@@ -55,13 +59,14 @@ supabase/migrations/  SQL migrations
 
 ## Pending work
 
-- Set up CI that runs the local gate (`pnpm lint && pnpm typecheck && pnpm test`) on pull requests.
-- Remove or repurpose the leftover Vercel GitHub integration, whose check fails on pull requests.
+- Finish the environment rollout in [docs/environments.md](docs/environments.md#one-time-setup) (develop Worker, production cut-over).
+- Remove the leftover Vercel GitHub integration, whose check fails on pull requests.
 - Review the drafted required-element lists for Skateboard, BMX and Scooter (`src/lib/league/rating/elements.ts`, `REVIEW_PENDING`).
 
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): rules for coding agents and contributors
+- [docs/ci-cd.md](docs/ci-cd.md), [docs/environments.md](docs/environments.md), [docs/feature-flags.md](docs/feature-flags.md)
 - [docs/architecture.md](docs/architecture.md)
 - [docs/caching-and-egress.md](docs/caching-and-egress.md)
 - [docs/league.md](docs/league.md)

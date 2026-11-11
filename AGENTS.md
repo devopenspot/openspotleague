@@ -8,13 +8,13 @@ This file keeps the commands, the map, and the hard rules. Detailed explanations
 
 ## Commands
 
-**CI is not set up yet (pending task).** Until it exists, the local gate is the only verification:
+The local gate, the same one CI runs on every pull request (`.github/workflows/ci.yml`, required check `ci-ok`):
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm test
 ```
 
-The Vercel GitHub check that runs on pull requests is a leftover integration. It does not build this app (the app deploys to Cloudflare Workers) and it is not a gate, so ignore its result until the CI work replaces or removes it.
+Delivery is trunk-based: short branch → pull request (Conventional Commit title, green CI, one approval) → squash merge to `main` → automatic deploy to **develop** → manual, approved release to **production**. See `docs/ci-cd.md` and `docs/environments.md`. The Vercel GitHub check on pull requests is a leftover integration that does not build this app; ignore it until it is removed.
 
 - `pnpm lint`: `eslint src` (flat config).
 - `pnpm typecheck`: `tsc --noEmit`, strict, with `noUncheckedIndexedAccess`, `noUnusedLocals`, and `noUnusedParameters`.
@@ -26,6 +26,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
   - Never point `.env.local` at the production pooler (see `docs/caching-and-egress.md`).
 - `pnpm deploy`: deploy to Cloudflare. `pnpm deploy:response-store`: deploy the cache Worker.
 - `pnpm deploy:secrets`: deploy and upload the declared secrets from `.env.local`. It is needed for the first deploy and whenever a value changes. Never pass `.env.local` to `cf deploy --secrets-file`: it uploads every key in the file, including `CLOUDFLARE_API_TOKEN` and the pooler URLs.
+- `pnpm db:check-migrations <base-sha>`: the CI migration rule (only new, sequentially numbered files).
 - Database: `pnpm db:apply` (migrations), `pnpm db:fresh:seed` (reset, migrate, and seed everything), `pnpm db:health`, `pnpm db:check-pool`, `pnpm egress:snapshot`. Full list in `docs/database.md`.
   - These scripts load `.env.local` with `override: true`, so a connection URL exported in the shell is ignored. Check `.env.local` before running anything destructive.
 
@@ -51,6 +52,15 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 | `DESIGN.md` | Design tokens and UI system. |
 
 ## Hard rules
+
+### Delivery (`docs/ci-cd.md`, `docs/environments.md`, `docs/feature-flags.md`)
+
+- `main` is the only long-lived branch. Never create `develop`, `staging` or release branches; "develop" is an environment fed by `main`.
+- Deploys and migrations on develop and production run from the workflows, not from a laptop (break-glass only, `docs/environments.md`).
+- Every migration must work with the code that is live when it is applied: migrations run before the deploy and are never rolled back. Breaking changes use expand/contract over separate releases.
+- Code that depends on the environment reads `APP_ENV` (`local`, `develop`, `production`), never `NODE_ENV` or the hostname.
+- Feature flags are only for big features (several pull requests, staged rollout, kill switch). Each has an owner and a `removeBy` date. Plans and capabilities in `src/lib/league` are entitlements, not flags.
+- Never commit a secret: the repository is public. Non-secret per-environment values go in `.env.develop` / `.env.production`; secrets go in the GitHub environments.
 
 ### Architecture (`docs/architecture.md`)
 
@@ -113,6 +123,9 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 
 ## Docs
 
+- `docs/ci-cd.md`: trunk-based flow, pull requests, the develop and production pipelines, releases, rollback, hotfix, migration policy.
+- `docs/environments.md`: the develop/production matrix, where configuration and secrets live, guards, one-time setup.
+- `docs/feature-flags.md`: when to use a flag, how flags are evaluated and toggled, lifecycle.
 - `docs/architecture.md`: request lifecycle, layers, repositories, write path, deletion lifecycle, error mapping, security headers.
 - `docs/caching-and-egress.md`: Cache Components, invalidation, the Supabase egress budget, RSC payloads, polling.
 - `docs/cloudflare-security.md`: Workers request quota, dashboard bot settings, WAF custom and rate-limit rules, Workers Paid limits, incident checklist.
