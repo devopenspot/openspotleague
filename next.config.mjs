@@ -14,12 +14,9 @@ const nextConfig = {
         hostname: 'i.ytimg.com',
       },
       {
+        // spots., events. and the develop spots-dev., events-dev. buckets.
         protocol: 'https',
-        hostname: 'spots.cdn.openspotleague.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'events.cdn.openspotleague.com',
+        hostname: '*.cdn.openspotleague.com',
       },
     ],
   },
@@ -38,7 +35,7 @@ const nextConfig = {
       { key: "Cross-Origin-Resource-Policy", value: "same-site" },
       { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
     ]
-    const cspReportOnly = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com https://cloudflareinsights.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://i.ytimg.com https://spots.cdn.openspotleague.com https://events.cdn.openspotleague.com; font-src 'self' data:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
+    const cspReportOnly = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com https://cloudflareinsights.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://i.ytimg.com https://*.cdn.openspotleague.com; font-src 'self' data:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; frame-ancestors 'none'; form-action 'self'; base-uri 'self'"
     const securityHeaders = [...baseHeaders, { key: "Content-Security-Policy-Report-Only", value: cspReportOnly }]
     const tvHeaders = [
       { key: "X-Content-Type-Options", value: "nosniff" },
@@ -47,6 +44,12 @@ const nextConfig = {
       { key: "X-XSS-Protection", value: "0" },
       { key: "Content-Security-Policy", value: "frame-ancestors *" },
     ];
+    // Develop stays out of search engines (src/lib/security/headers.ts NOINDEX_HEADER).
+    if (process.env.APP_ENV === "develop") {
+      const noindex = { key: "X-Robots-Tag", value: "noindex, nofollow" };
+      securityHeaders.push(noindex);
+      tvHeaders.push(noindex);
+    }
     // HSTS is set via proxy in production; also declare here for static responses
     if (process.env.NODE_ENV === "production") {
       const hsts = {

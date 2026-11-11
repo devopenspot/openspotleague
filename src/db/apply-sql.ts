@@ -9,6 +9,9 @@ import {
   pendingHashRebaselines,
   pendingMigrationFiles,
 } from "./migration-runner"
+import { guardDbScript } from "./target"
+
+guardDbScript("write")
 
 const MIGRATIONS_DIR = path.join(process.cwd(), "supabase", "migrations")
 

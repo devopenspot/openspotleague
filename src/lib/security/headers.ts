@@ -9,6 +9,16 @@ export const securityHeaders = [
   { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
 ] as const
 
+/**
+ * Develop is for the team only (docs/environments.md): search engines stay
+ * out. next.config.mjs adds the same header to static responses.
+ */
+export const NOINDEX_HEADER = { key: "X-Robots-Tag", value: "noindex, nofollow" } as const
+
+export function isIndexableEnvironment(appEnv: string | undefined): boolean {
+  return appEnv !== "develop"
+}
+
 export function cspValue(nonce?: string): string {
   const scriptSrc = nonce
     ? `'self' 'nonce-${nonce}' https://static.cloudflareinsights.com`
@@ -18,7 +28,7 @@ export function cspValue(nonce?: string): string {
     `script-src ${scriptSrc}`,
     `style-src 'self' 'unsafe-inline'`,
     `connect-src 'self' https://*.supabase.co https://api.openweathermap.org https://nominatim.openstreetmap.org https://*.pooler.supabase.com https://cloudflareinsights.com`,
-    `img-src 'self' data: blob: https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://i.ytimg.com https://spots.cdn.openspotleague.com https://events.cdn.openspotleague.com`,
+    `img-src 'self' data: blob: https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://i.ytimg.com https://*.cdn.openspotleague.com`,
     `font-src 'self' data:`,
     `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com`,
     `frame-ancestors 'none'`,

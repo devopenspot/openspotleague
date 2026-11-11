@@ -6,6 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+# Committed, non-secret per-environment values (docs/environments.md).
+!.env.develop
+!.env.production
 .next/
 .agents/skills/
 tsconfig.tsbuildinfo

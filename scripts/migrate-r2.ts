@@ -25,6 +25,9 @@ import { getR2PublicDomainEvents, getR2PublicDomainSpots, isR2Configured } from 
 
 import { variantPathsList as variantPaths } from "../src/lib/storage/variants"
 import { buildCacheTag as cacheTagFor } from "../src/lib/storage/cache-tag"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript("write")
 
 async function downloadFromSupabase(supabaseBucket: string, key: string): Promise<Buffer | null> {
   const supabase = getSupabaseAdminClient()

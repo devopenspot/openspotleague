@@ -1,5 +1,8 @@
 import "../src/db/load-env"
 import postgres from "postgres"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript("read")
 
 async function testConnection(name: string, url: string | undefined) {
   console.log(`\n--- Testing ${name} ---`)

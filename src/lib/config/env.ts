@@ -59,6 +59,9 @@ export function resolvePaypalSupportUrl(
   return DEFAULT_PAYPAL_SUPPORT_URL;
 }
 
+export const APP_ENVIRONMENTS = ["local", "develop", "production"] as const
+export type AppEnvironment = (typeof APP_ENVIRONMENTS)[number]
+
 const EnvSchema = z
   .object({
     // Public origin (used by metadataBase, sitemap, robots).
@@ -243,6 +246,12 @@ const EnvSchema = z
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+
+    // Which deployment this is (docs/environments.md). Both deployed
+    // environments run NODE_ENV=production; code that must differ between
+    // them reads APP_ENV, never NODE_ENV or the hostname.
+    APP_ENV: z.preprocess(emptyToUndefined, z.enum(APP_ENVIRONMENTS).default("local")),
+    NEXT_PUBLIC_APP_ENV: z.preprocess(emptyToUndefined, z.enum(APP_ENVIRONMENTS).optional()),
   })
   .passthrough();
 

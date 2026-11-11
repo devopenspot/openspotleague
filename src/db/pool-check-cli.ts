@@ -1,6 +1,9 @@
 import "./load-env"
 import { runDbConnectivityCheck } from "../lib/services/profile/health"
 import { getDbPoolMax } from "../lib/db/client"
+import { guardDbScript } from "./target"
+
+guardDbScript("read")
 
 const PARALLEL = Math.max(getDbPoolMax() * 2, 2)
 

@@ -1,5 +1,7 @@
 # Deploy guide: production database and email notifications
 
+> **Superseded in part (2026-11-12).** Env-file copying (§0.2), `pnpm deploy:secrets` and stage 3 are replaced by the environment-aware build, the guards and the release workflow: see [`environments.md`](environments.md) and [`ci-cd.md`](ci-cd.md). Read `pnpm deploy:secrets` below as "the release workflow". Stages 4–7 (AWS, Resend, switching email on) still apply.
+
 A step-by-step guide to take the notifications module live. It also covers the first production database setup, because the two happen together. For how the module works, see [`notifications.md`](notifications.md). For database commands, see [`database.md`](database.md).
 
 Written 2026-11-10 for branch `claude/contest-notification-module-eccf29` (migrations `0009_notification_delivery`, `0010_event_signal_trigger_deferred` and `0011_notification_email_budget`). Updated 2026-11-11: email moved from SES to Resend's free plan, so the whole stack stays at $0.

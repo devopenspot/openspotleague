@@ -2,6 +2,9 @@ import "../src/db/load-env"
 import fs from "node:fs"
 import path from "node:path"
 import { cdnUrlToVariantUrl } from "@/lib/storage/variants"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript("read")
 
 interface SpotJsonItem {
   id: string

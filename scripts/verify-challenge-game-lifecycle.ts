@@ -1,5 +1,8 @@
 import "../src/db/load-env"
 import { cancelGame, createGame, getGameState, joinGame, startGame } from "../src/lib/services/games"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript("write")
 
 const suffix = crypto.randomUUID().replaceAll("-", "").slice(0, 18)
 const creator = {
