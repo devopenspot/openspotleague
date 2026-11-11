@@ -625,7 +625,7 @@ describe("TvGrid searching and filtering", () => {
     renderGrid([row([card("v1", "Sample", "skateboard")])], "all");
 
     expect(
-      screen.getByPlaceholderText("Search riders or tricks"),
+      screen.getByPlaceholderText("Type your search..."),
     ).toBeDefined();
     expect(
       screen.getByRole("combobox", { name: /filter by category/i }),
