@@ -14,6 +14,8 @@ Written 2026-11-10 for branch `claude/contest-notification-module-eccf29` (migra
 | Migrations 0009 and 0010 | Not applied anywhere. |
 | AWS stack `OpenSpotNotifications` | Not deployed. |
 
+**Progress (2026-11-10).** Stage 1 is done: develop has 0009 and 0010, the gate and the League chain test passed, the Worker runs the branch code, and the 0010 signal check passed. Stage 4 is nearly done: CDK is bootstrapped, the SSM secret exists, the stack is deployed with `appUrl` on `workers.dev` and the tick paused, the DNS records are in Cloudflare, and SES shows DKIM and MAIL FROM verified. The SES production access request was sent (review pending). Still waiting: SES approval and the alarm subscription confirmation. CDK ran with the root user's credentials; replace them with an admin user and delete the root access key.
+
 Two facts shape the order below:
 
 - **0009 cannot be undone.** It drops the retired pg_cron email sweep.
@@ -255,7 +257,7 @@ Run from the repo root with AWS credentials for the account in your shell. Full 
    aws ssm put-parameter --name /openspot/notifications/internal-secret --type SecureString --value <random value>
    ```
 
-4. Review, then deploy the stack. Use the same `-c` values for both commands. `appUrl` is the public site URL. `replyTo` is an inbox someone reads; without it, replies bounce.
+4. Review, then deploy the stack. Use the same `-c` values for both commands. `appUrl` is the address the Lambdas call: the Worker's `workers.dev` address (`https://open-spot.devopenspot.workers.dev`) while the zone runs Bot Fight Mode (see below). `replyTo` is an inbox someone reads; without it, replies bounce.
 
    ```bash
    pnpm aws:diff -c sendingDomain=mail.<domain> -c fromAddress="OpenSpot League <no-reply@mail.<domain>>" -c appUrl=https://<site> -c alertEmail=<you> -c replyTo=<inbox>
@@ -265,10 +267,20 @@ Run from the repo root with AWS credentials for the account in your shell. Full 
    pnpm aws:deploy -c sendingDomain=mail.<domain> -c fromAddress="OpenSpot League <no-reply@mail.<domain>>" -c appUrl=https://<site> -c alertEmail=<you> -c replyTo=<inbox>
    ```
 
-5. Add the DNS records from the stack outputs in Cloudflare, all as **DNS only** (not proxied):
+   Right after the deploy, pause the tick until stage 5. Until the Worker has the internal secret, every tick gets `503 NOT_CONFIGURED`, and `osl-notify-tick-failing` fires within an hour.
+
+   ```bash
+   aws scheduler update-schedule --name osl-notify-tick --state DISABLED --schedule-expression "rate(15 minutes)" --flexible-time-window Mode=OFF --target '<the current target JSON from get-schedule>'
+   ```
+
+   `update-schedule` replaces the whole schedule, so pass the target from `aws scheduler get-schedule --name osl-notify-tick` unchanged.
+
+   Cloudflare answered every non-browser request to `openspotleague.com` with a 403 on 2026-11-10, while the `workers.dev` address reached the Worker. The Lambdas are non-browser clients. On the Free plan this is Bot Fight Mode, and Cloudflare documents that **Bot Fight Mode cannot be skipped by WAF custom rules** (only Super Bot Fight Mode, Pro and up, can). So use `appUrl=https://open-spot.devopenspot.workers.dev`. `appUrl` is used only for the Lambdas' calls, which are HMAC-signed; links in emails come from the Worker's `APP_URL`. Keep `workers.dev` enabled for the Worker (Workers → open-spot → Settings → Domains & Routes), or the tick breaks. The only other way is turning Bot Fight Mode off for the whole site.
+
+5. Add the DNS records from the stack outputs in Cloudflare (the zone's **DNS → Records** page), all as **DNS only** (grey cloud; an orange, proxied CNAME breaks DKIM). Enter the **short name**, for example `bounce.mail` or `<token>._domainkey.mail`: Cloudflare appends the zone name itself, and pasting the full name gives `….openspotleague.com.openspotleague.com`. Save each record separately. Check with `dig +short CNAME <name> @<one of the zone's name servers>`, which skips caches:
    - three DKIM CNAME records (`DkimRecord1` to `DkimRecord3`)
    - the `bounce.` MX record and SPF TXT record (`MailFromRecords`)
-   - `_dmarc.<domain>` TXT: `v=DMARC1; p=none; rua=mailto:<you>`
+   - DMARC: first check what exists (`dig +short TXT _dmarc.<domain>`). `openspotleague.com` already has `p=reject; sp=reject; adkim=s; aspf=s`, which covers `mail.` as well. Keep it and add nothing: SES signs DKIM as the sending domain, which matches the From domain exactly, so strict alignment passes. Add `v=DMARC1; p=none; rua=mailto:<you>` only on a domain that has no DMARC record at all; on a domain with a stricter policy, a `p=none` record would weaken it.
 6. Confirm the alarm subscription email from AWS.
 7. Request SES production access in the SES console. Say that the mail is transactional (contest updates for registered participants), that every email has one-click unsubscribe, and that bounces and complaints suppress the address automatically. The review takes about a day. Until it is approved, SES delivers only to verified addresses.
 8. Create an access key for the IAM user `osl-worker-notify` (output `WorkerUserName`). Its only permission is sending to the queue.
@@ -294,6 +306,7 @@ Run from the repo root with AWS credentials for the account in your shell. Full 
    ```
 
 3. Copy the develop file back.
+4. Turn the tick back on (paused in stage 4): the same `update-schedule` command with `--state ENABLED`.
 
 Until the names are moved into `secretNames` (stage 7), **every** production deploy needs `OPENSPOT_NOTIFICATIONS=1`. A deploy without it leaves the six variables undeclared, and email goes off.
 

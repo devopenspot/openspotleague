@@ -59,9 +59,15 @@ describe.skipIf(!RUN)("league chain smoke (RUN_DB_SMOKE=1)", () => {
       const eventId = created.id;
 
       try {
-        const invite = await createEventInvite(organizerId, {
+        // Code-join requires registration_open, so open it before inviting.
+        const opened = await openEventRegistration(organizerId, {
           eventId,
           expectedVersion: created.version,
+          idempotencyKey: crypto.randomUUID(),
+        });
+        const invite = await createEventInvite(organizerId, {
+          eventId,
+          expectedVersion: opened.version,
           idempotencyKey: crypto.randomUUID(),
           role: "rider",
         });
@@ -82,14 +88,9 @@ describe.skipIf(!RUN)("league chain smoke (RUN_DB_SMOKE=1)", () => {
         });
 
         const row = await sql`select version, status from sport_events where id = ${eventId}`;
-        const opened = await openEventRegistration(organizerId, {
-          eventId,
-          expectedVersion: row[0]!.version,
-          idempotencyKey: crypto.randomUUID(),
-        });
         const closed = await closeEventRegistration(organizerId, {
           eventId,
-          expectedVersion: opened.version,
+          expectedVersion: row[0]!.version,
           idempotencyKey: crypto.randomUUID(),
         });
         const scheduled = await generateEventSchedule(organizerId, {
