@@ -41,6 +41,11 @@ export interface DbHealth {
     actualMs: number | null
     serverValue: string | null
     serverDefaultValue: string | null
+    /**
+     * Whether the timeout applies OUTSIDE a transaction (startup parameter
+     * honored by the pooler). Informational: transaction-free reads rely on it.
+     */
+    serverDefaultOk: boolean
   }
   postgis?: DbHealthComponent & { version: string | null }
   migration?: DbHealthComponent & {
@@ -232,12 +237,15 @@ export async function runDbHealthCheck(): Promise<DbHealth> {
     const serverDefaultValue = timeoutProbe.value?.statement_timeout ?? null
     const serverValue = effectiveTimeoutProbe.value?.statement_timeout ?? null
     const actualMs = serverValue === null ? null : parsePostgresDurationMs(serverValue)
+    const serverDefaultMs =
+      serverDefaultValue === null ? null : parsePostgresDurationMs(serverDefaultValue)
     const statementTimeout = {
       ok: actualMs === dbRuntimeConfig.statementTimeoutMs,
       configuredMs: dbRuntimeConfig.statementTimeoutMs,
       actualMs,
       serverValue,
       serverDefaultValue,
+      serverDefaultOk: !timeoutProbe.error && serverDefaultMs === dbRuntimeConfig.statementTimeoutMs,
       ...(effectiveTimeoutProbe.error ? { error: effectiveTimeoutProbe.error } : {}),
     }
     if (effectiveTimeoutProbe.error) statementTimeout.ok = false
