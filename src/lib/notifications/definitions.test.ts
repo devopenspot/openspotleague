@@ -1,8 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  EMAIL_DIGEST_TYPES,
+  EMAIL_CATEGORIES,
+  EMAIL_POLICY,
   NOTIFICATION_TYPES,
   notificationHref,
   renderNotification,
@@ -62,28 +61,72 @@ describe("notificationHref", () => {
   });
 });
 
-describe("EMAIL_DIGEST_TYPES", () => {
-  it("is a strict subset of the emit types", () => {
-    for (const type of EMAIL_DIGEST_TYPES) {
-      expect(NOTIFICATION_TYPES.has(type)).toBe(true);
+describe("EMAIL_POLICY", () => {
+  it("gives every emailed type a category", () => {
+    for (const [type, policy] of Object.entries(EMAIL_POLICY)) {
+      if (policy.urgency !== null) {
+        expect(policy.category, `${type} needs a category`).not.toBeNull();
+        expect(EMAIL_CATEGORIES).toContain(policy.category);
+      }
     }
   });
 
-  it("matches the digest whitelist in the sweep migration (drift guard)", () => {
-    const migrationPath = [
-      path.join(process.cwd(), "supabase", "migrations", "0032_email_sweep_hardening.sql"),
-      path.join(process.cwd(), "supabase", "migrations_archive", "0032_email_sweep_hardening.sql"),
-    ].find((candidate) => existsSync(candidate));
-    const sql = readFileSync(migrationPath!, "utf8");
-    const start = sql.indexOf("digest_types text[] := array[");
-    const end = sql.indexOf("];", start);
-    const whitelist = sql.slice(start, end);
-    for (const type of EMAIL_DIGEST_TYPES) {
-      expect(whitelist, `${type} missing from sweep digest list`).toContain(type);
-    }
-    const listed = [...whitelist.matchAll(/'((?:league|payment)_\w+)'/g)].map(
-      (match) => match[1],
-    );
-    expect(listed).toHaveLength(EMAIL_DIGEST_TYPES.length);
+  it("emails urgent contest moments immediately", () => {
+    expect(EMAIL_POLICY.league_event_cancelled.urgency).toBe("immediate");
+    expect(EMAIL_POLICY.league_results_published.urgency).toBe("immediate");
+    expect(EMAIL_POLICY.league_video_deadline_reminder.urgency).toBe("immediate");
+  });
+
+  it("keeps points and bookkeeping in-app only", () => {
+    expect(EMAIL_POLICY.league_points_earned.urgency).toBeNull();
+    expect(EMAIL_POLICY.league_payment_pending_admin.urgency).toBeNull();
+    expect(EMAIL_POLICY.league_member_removed.urgency).toBeNull();
+  });
+});
+
+describe("new notification copy", () => {
+  it("lists changed contest fields", () => {
+    expect(
+      renderNotification("league_contest_updated", {
+        eventName: "Night Jam",
+        changes: ["schedule", "location", "deadline"],
+      }).body,
+    ).toContain("schedule, location and video deadline");
+  });
+
+  it("pluralizes pending judging runs", () => {
+    expect(
+      renderNotification("league_judging_reminder", { eventName: "Night Jam", pendingCount: 1 }).body,
+    ).toContain("1 run in Night Jam is waiting");
+    expect(
+      renderNotification("league_judging_reminder", { eventName: "Night Jam", pendingCount: 3 }).body,
+    ).toContain("3 runs in Night Jam are waiting");
+  });
+
+  it("distinguishes the payment gate steps", () => {
+    expect(
+      renderNotification("league_payment_gate_reminder", { gateStep: "lock" }).title,
+    ).toContain("locks");
+    expect(
+      renderNotification("league_payment_gate_reminder", { gateStep: "disable" }).title,
+    ).toContain("disables");
+  });
+
+  it("formats the video deadline", () => {
+    expect(
+      renderNotification("league_video_deadline_reminder", {
+        eventName: "Night Jam",
+        dueAt: "2026-11-06T18:00:00.000Z",
+      }).body,
+    ).toContain("Nov 6");
+  });
+
+  it("shows the deadline in the contest time zone, falling back to UTC", () => {
+    const base = { eventName: "Night Jam", dueAt: "2026-11-06T02:00:00.000Z" };
+    const body = (timeZone?: string) =>
+      renderNotification("league_video_deadline_reminder", { ...base, timeZone }).body;
+    expect(body()).toContain("Nov 6, 2:00 AM UTC");
+    expect(body("America/Bogota")).toContain("Nov 5, 9:00 PM");
+    expect(body("Not/AZone")).toContain("Nov 6, 2:00 AM UTC");
   });
 });

@@ -3,6 +3,7 @@ import {
   bigint,
   check,
   customType,
+  date,
   foreignKey,
   index,
   integer,
@@ -24,7 +25,7 @@ import type {
   SpotTypeSnapshot,
 } from "@/lib/schemas/game";
 import type { LeagueMutationResponse } from "@/lib/schemas/league";
-import type { EventLifecycleStatus, EventMembershipStatus, EventPaymentStatus, EventRole, EventRunStatus, EventSignalType, EventVisibility, NotificationPayload, NotificationType } from "@/types/league";
+import type { EventLifecycleStatus, EventMembershipStatus, EventPaymentStatus, EventRole, EventRunStatus, EventSignalType, EventVisibility, NotificationEmailStatus, NotificationEmailUrgency, NotificationPayload, NotificationType } from "@/types/league";
 
 const geographyPoint = customType<{
   data: { lat: number; lon: number };
@@ -1967,7 +1968,14 @@ export const userNotifications = pgTable(
       onDelete: "set null",
     }),
     readAt: timestamp("read_at", { withTimezone: true }),
+    /** Sent time, reported by the sender Lambda (0009). */
     emailedAt: timestamp("emailed_at", { withTimezone: true }),
+    /** Outbox state (0009): null = in-app only. */
+    emailStatus: text("email_status").$type<NotificationEmailStatus>(),
+    emailUrgency: text("email_urgency").$type<NotificationEmailUrgency>(),
+    emailQueuedAt: timestamp("email_queued_at", { withTimezone: true }),
+    /** Idempotency key for tick-created reminders (unique when present). */
+    dedupeKey: text("dedupe_key"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -1975,9 +1983,23 @@ export const userNotifications = pgTable(
     index("user_notifications_user_unread_idx").on(t.userId).where(sql`${t.readAt} is null`),
     index("user_notifications_event_idx").on(t.eventId),
     index("user_notifications_email_pending_idx")
-      .on(t.createdAt)
-      .where(sql`${t.emailedAt} is null and ${t.type} in
-        ('league_invite_received','league_registration_confirmed','league_schedule_published','league_event_started','league_event_cancelled','league_results_published','league_points_earned')`),
+      .on(t.emailUrgency, t.createdAt)
+      .where(sql`${t.emailStatus} = 'pending'`),
+    uniqueIndex("user_notifications_dedupe_key_idx")
+      .on(t.dedupeKey)
+      .where(sql`${t.dedupeKey} is not null`),
+    check(
+      "user_notifications_email_status_check",
+      sql`${t.emailStatus} is null or ${t.emailStatus} in ('pending','queued','sent','skipped','bounced','failed')`,
+    ),
+    check(
+      "user_notifications_email_urgency_check",
+      sql`${t.emailUrgency} is null or ${t.emailUrgency} in ('immediate','digest')`,
+    ),
+    check(
+      "user_notifications_dedupe_key_check",
+      sql`${t.dedupeKey} is null or length(${t.dedupeKey}) between 1 and 200`,
+    ),
   ],
 );
 
@@ -1987,10 +2009,38 @@ export const userEmailPreferences = pgTable(
     userId: uuid("user_id")
       .primaryKey()
       .references(() => authUsers.id, { onDelete: "cascade" }),
+    /** @deprecated Backfilled into the category columns by 0009; unread, dropped later. */
     emailDigestsEnabled: boolean("email_digests_enabled").notNull().default(true),
+    contestUpdates: boolean("contest_updates").notNull().default(true),
+    reminders: boolean("reminders").notNull().default(true),
+    judging: boolean("judging").notNull().default(true),
+    results: boolean("results").notNull().default(true),
+    /** Set on hard bounce / complaint (email provider feedback); blocks all email. */
+    suppressedAt: timestamp("suppressed_at", { withTimezone: true }),
+    suppressedReason: text("suppressed_reason").$type<"bounce" | "complaint">(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
+  (t) => [
+    check(
+      "user_email_preferences_suppressed_reason_check",
+      sql`${t.suppressedReason} is null or ${t.suppressedReason} in ('bounce','complaint')`,
+    ),
+  ],
+);
+
+/**
+ * Emails handed to the queue per UTC day (0011). Caps the free email plan;
+ * written only by `deliveryStore.reserveEmailBudget` / `exhaustEmailBudget`.
+ */
+export const notificationEmailBudget = pgTable(
+  "notification_email_budget",
+  {
+    day: date("day", { mode: "string" }).primaryKey(),
+    sent: integer("sent").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [check("notification_email_budget_sent_check", sql`${t.sent} >= 0`)],
 );
 
 export const userEmailPreferencesRelations = relations(
@@ -2001,27 +2051,6 @@ export const userEmailPreferencesRelations = relations(
       references: [authUsers.id],
     }),
   }),
-);
-
-/**
- * Email-dedup ledger written by the pg_cron sweep (0030). RLS is enabled
- * with zero policies — only the privileged service connection touches it.
- */
-export const leagueEmailLog = pgTable(
-  "league_email_log",
-  {
-    eventId: uuid("event_id")
-      .notNull()
-      .references((): AnyPgColumn => sportEvents.id, { onDelete: "cascade" }),
-    kind: text("kind").notNull(),
-    day: integer("day").notNull(),
-    recipients: text("recipients")
-      .array()
-      .notNull()
-      .default(sql`'{}'`),
-    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [primaryKey({ columns: [t.eventId, t.kind, t.day] })],
 );
 
 export const eventDisciplines = pgTable(
@@ -2713,8 +2742,6 @@ export type EventRealtimeSignalRow = typeof eventRealtimeSignals.$inferSelect;
 export type NewEventRealtimeSignalRow = typeof eventRealtimeSignals.$inferInsert;
 export type UserNotificationRow = typeof userNotifications.$inferSelect;
 export type NewUserNotificationRow = typeof userNotifications.$inferInsert;
-export type LeagueEmailLogRow = typeof leagueEmailLog.$inferSelect;
-export type NewLeagueEmailLogRow = typeof leagueEmailLog.$inferInsert;
 export type EventDisciplineRow = typeof eventDisciplines.$inferSelect;
 export type NewEventDisciplineRow = typeof eventDisciplines.$inferInsert;
 

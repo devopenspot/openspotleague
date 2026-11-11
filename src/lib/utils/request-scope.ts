@@ -6,13 +6,34 @@ export const isWorkerRuntime =
 /** The Workers static assets binding, narrowed to what the app calls. */
 export type AssetFetcher = { fetch(input: URL): Promise<Response> }
 
-type RequestScope = { assets?: AssetFetcher; values: Map<object, unknown> }
+/** The Workers execution context, narrowed to what the app calls. */
+export type WaitUntil = (promise: Promise<unknown>) => void
+
+type RequestScope = { assets?: AssetFetcher; waitUntil?: WaitUntil; values: Map<object, unknown> }
 
 const storage = new AsyncLocalStorage<RequestScope>()
 
 /** Opened once per request by `src/worker.ts`. Never entered on Node. */
-export function runInRequestScope<T>(assets: AssetFetcher | undefined, fn: () => T): T {
-  return storage.run({ assets, values: new Map() }, fn)
+export function runInRequestScope<T>(
+  assets: AssetFetcher | undefined,
+  fn: () => T,
+  waitUntil?: WaitUntil,
+): T {
+  return storage.run({ assets, waitUntil, values: new Map() }, fn)
+}
+
+/**
+ * Runs post-response work. On Workers it is handed to `ctx.waitUntil` so
+ * the response is not held; elsewhere (Node dev, tests) it is awaited.
+ * Errors are the caller's to handle — pass a promise that never rejects.
+ */
+export async function runAfterResponse(task: () => Promise<void>): Promise<void> {
+  const waitUntil = storage.getStore()?.waitUntil
+  if (waitUntil) {
+    waitUntil(task())
+    return
+  }
+  await task()
 }
 
 export function isRequestScoped(): boolean {

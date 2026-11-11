@@ -66,7 +66,18 @@ export type NotificationType =
   | "league_results_published"
   | "league_points_earned"
   | "league_payment_registered"
-  | "league_payment_pending_admin";
+  | "league_payment_pending_admin"
+  | "league_registration_opened"
+  | "league_registration_closed"
+  | "league_contest_updated"
+  | "league_video_submitted"
+  | "league_scoring_complete"
+  | "league_video_deadline_reminder"
+  | "league_judging_reminder"
+  | "league_payment_gate_reminder";
+
+/** Contest fields whose change triggers `league_contest_updated`. */
+export type ContestChangeField = "schedule" | "location" | "deadline";
 
 export interface NotificationPayload {
   eventId?: string;
@@ -77,7 +88,35 @@ export interface NotificationPayload {
   rank?: number;
   actorName?: string;
   planSlug?: string;
+  /** `league_contest_updated`: which fields changed. */
+  changes?: ContestChangeField[];
+  /** Deadline-style reminders: the instant being warned about (ISO). */
+  dueAt?: string;
+  /** IANA zone of the contest, to show `dueAt` in local time. */
+  timeZone?: string;
+  /** `league_judging_reminder`: runs waiting for this judge. */
+  pendingCount?: number;
+  /** `league_payment_gate_reminder`: what happens tomorrow. */
+  gateStep?: "lock" | "disable";
 }
+
+/** Email outbox state on a notification row (migration 0009). */
+export type NotificationEmailStatus =
+  | "pending"
+  | "queued"
+  | "sent"
+  | "skipped"
+  | "bounced"
+  | "failed";
+
+export type NotificationEmailUrgency = "immediate" | "digest";
+
+/** Email preference categories (one toggle each). */
+export type NotificationEmailCategory =
+  | "contest_updates"
+  | "reminders"
+  | "judging"
+  | "results";
 
 export interface ContestLocation {
   city: string;

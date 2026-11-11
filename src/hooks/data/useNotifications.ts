@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { NotificationPayload } from "@/types/league";
+import { shouldRefreshOnChange } from "@/lib/notifications/realtime";
 import {
   createSupabaseBrowserClient,
   uniqueChannelTopic,
@@ -99,7 +100,8 @@ export function useUnreadNotificationCount(userId: string | null): number {
               table: "user_notifications",
               filter: `user_id=eq.${userId}`,
             },
-            () => {
+            (change) => {
+              if (!shouldRefreshOnChange(change)) return;
               if (debounceRef.current) clearTimeout(debounceRef.current);
               debounceRef.current = setTimeout(() => {
                 debounceRef.current = null;
@@ -289,7 +291,8 @@ export function useNotificationList(userId: string | null): {
               table: "user_notifications",
               filter: `user_id=eq.${userId}`,
             },
-            () => {
+            (change) => {
+              if (!shouldRefreshOnChange(change)) return;
               if (debounceRef.current) clearTimeout(debounceRef.current);
               debounceRef.current = setTimeout(() => {
                 debounceRef.current = null;
@@ -359,19 +362,25 @@ export function useNotificationList(userId: string | null): {
   };
 }
 
+export type EmailCategoryKey = "contest_updates" | "reminders" | "judging" | "results";
+
+export type EmailPreferencesState = Record<EmailCategoryKey, boolean> & {
+  suppressed: boolean;
+};
+
 /**
- * Email-digest preference (default on) with delivery feature detection:
- * `deliveryAvailable === null` means unknown/anonymous — the UI hides the
- * toggle unless it is explicitly true. Toggle via PUT.
+ * Per-category email preferences (default on) with delivery feature
+ * detection: `deliveryAvailable === null` means unknown/anonymous — the UI
+ * hides the toggles unless it is explicitly true. Toggle via PUT.
  */
-export function useEmailDigests(userId: string | null): {
-  enabled: boolean | null;
+export function useEmailPreferences(userId: string | null): {
+  preferences: EmailPreferencesState | null;
   deliveryAvailable: boolean | null;
   saving: boolean;
   saveError: string | null;
-  setEnabled: (value: boolean) => Promise<void>;
+  setCategory: (category: EmailCategoryKey, value: boolean) => Promise<void>;
 } {
-  const [enabled, setEnabledState] = useState<boolean | null>(null);
+  const [preferences, setPreferences] = useState<EmailPreferencesState | null>(null);
   const [deliveryAvailable, setDeliveryAvailable] = useState<boolean | null>(
     null,
   );
@@ -384,7 +393,7 @@ export function useEmailDigests(userId: string | null): {
     let cancelled = false;
     void (async () => {
       if (!userId) {
-        setEnabledState(null);
+        setPreferences(null);
         return;
       }
       try {
@@ -398,14 +407,14 @@ export function useEmailDigests(userId: string | null): {
         if (cancelled) return;
         if (!response.ok) return;
         const data = (await response.json()) as {
-          emailDigests: boolean;
+          preferences: EmailPreferencesState;
           deliveryAvailable?: boolean;
         };
         if (cancelled) return;
-        setEnabledState(data.emailDigests);
+        setPreferences(data.preferences);
         setDeliveryAvailable(data.deliveryAvailable ?? null);
       } catch {
-        if (!cancelled) setEnabledState(null);
+        if (!cancelled) setPreferences(null);
       }
     })();
     return () => {
@@ -414,30 +423,36 @@ export function useEmailDigests(userId: string | null): {
     };
   }, [userId]);
 
-  const setEnabled = useCallback(async (value: boolean) => {
-    setSaving(true);
-    setSaveError(null);
-    try {
-      const response = await fetchWithTimeout(
-        "/api/notifications/email-preferences",
-        {
-          method: "PUT",
-          timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ emailDigests: value }),
-        },
-      );
-      if (response.ok) {
-        if (aliveRef.current) setEnabledState(value);
-      } else {
+  const setCategory = useCallback(
+    async (category: EmailCategoryKey, value: boolean) => {
+      setSaving(true);
+      setSaveError(null);
+      try {
+        const response = await fetchWithTimeout(
+          "/api/notifications/email-preferences",
+          {
+            method: "PUT",
+            timeoutMs: DEFAULT_MUTATION_TIMEOUT_MS,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ [category]: value }),
+          },
+        );
+        if (response.ok) {
+          const data = (await response.json()) as {
+            preferences: EmailPreferencesState;
+          };
+          if (aliveRef.current) setPreferences(data.preferences);
+        } else {
+          setSaveError("Could not update the email preference");
+        }
+      } catch {
         setSaveError("Could not update the email preference");
+      } finally {
+        if (aliveRef.current) setSaving(false);
       }
-    } catch {
-      setSaveError("Could not update the email preference");
-    } finally {
-      if (aliveRef.current) setSaving(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
-  return { enabled, deliveryAvailable, saving, saveError, setEnabled };
+  return { preferences, deliveryAvailable, saving, saveError, setCategory };
 }

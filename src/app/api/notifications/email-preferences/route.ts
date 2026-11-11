@@ -8,27 +8,27 @@ import {
 import { getSessionUser } from "@/lib/auth/server"
 import { leagueErrorResponse } from "../../league/errors"
 import {
-  getEmailDigestsEnabled,
+  getEmailPreferences,
   isEmailDeliveryAvailable,
-  setEmailDigests,
+  setEmailPreferences,
 } from "@/lib/notifications/service"
 import { emailPreferencesInputSchema } from "@/lib/schemas/league"
 
 /**
- * Email-digest preference for the signed-in user (default on) plus a
- * deliveryAvailable flag (feature detection): the UI hides the toggle
- * while Resend is unconfigured; the daily pg_cron sweep no-ops meanwhile.
+ * Per-category email preferences for the signed-in user (default on) plus a
+ * deliveryAvailable flag (feature detection): the UI hides the toggles while
+ * the AWS delivery env is unset (docs/notifications.md).
  */
 export async function GET() {
   const user = await getSessionUser()
   if (!user) return leagueUnauthorized()
   try {
-    const [prefs, deliveryAvailable] = await Promise.all([
-      getEmailDigestsEnabled(user.id),
+    const [preferences, deliveryAvailable] = await Promise.all([
+      getEmailPreferences(user.id),
       isEmailDeliveryAvailable(),
     ])
     return NextResponse.json(
-      { emailDigests: prefs.emailDigests, deliveryAvailable },
+      { preferences, deliveryAvailable },
       { headers: privateNoCache() },
     )
   } catch (error) {
@@ -50,7 +50,10 @@ export async function PUT(request: NextRequest) {
     return leagueInvalidBody(parsed.error)
   }
   try {
-    return NextResponse.json(await setEmailDigests(user.id, parsed.data.emailDigests))
+    return NextResponse.json(
+      { preferences: await setEmailPreferences(user.id, parsed.data) },
+      { headers: privateNoCache() },
+    )
   } catch (error) {
     return leagueErrorResponse(error)
   }

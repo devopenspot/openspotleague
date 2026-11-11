@@ -410,9 +410,17 @@ export type NotificationReadInput = z.infer<typeof notificationReadInputSchema>;
 
 // ---------- email preferences ----------
 
-export const emailPreferencesInputSchema = z.object({
-  emailDigests: z.boolean(),
-});
+export const emailPreferencesInputSchema = z
+  .object({
+    contest_updates: z.boolean().optional(),
+    reminders: z.boolean().optional(),
+    judging: z.boolean().optional(),
+    results: z.boolean().optional(),
+  })
+  .strict()
+  .refine((input) => Object.values(input).some((value) => typeof value === "boolean"), {
+    message: "Provide at least one category",
+  });
 
 export type EmailPreferencesInput = z.infer<typeof emailPreferencesInputSchema>;
 

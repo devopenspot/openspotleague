@@ -137,7 +137,12 @@ import type {
   LeagueMutationResponse,
   LeaguePaymentInput,
 } from "@/lib/schemas/league";
-import type { ContestCategory, ContestEnriched, EventPaymentStatus, EventRole, EventSignalType, NotificationType } from "@/types/league";
+import type { ContestCategory, ContestChangeField, ContestEnriched, EventPaymentStatus, EventRole, EventSignalType, NotificationType } from "@/types/league";
+import {
+  detectContestChanges,
+  LOCATION_PATCH_KEYS,
+  type ContestChangeSnapshot,
+} from "@/lib/notifications/contest-changes";
 import { log } from "@/lib/utils/log";
 import { profileTag } from "@/lib/services/profile/profile";
 import { rankContestDivisions, ledgerDivisionRankKey } from "@/lib/league/rating/contest-ranking";
@@ -1333,6 +1338,63 @@ export interface UpdateLeagueConfigInput {
   patch: LeagueConfigPatch & { featured?: boolean };
 }
 
+/**
+ * Member-facing fields (schedule, location, video deadline) this config edit
+ * changes. Reads the location snapshot only when the patch can touch it; the
+ * row is already locked `FOR UPDATE`.
+ */
+async function detectConfigChanges(
+  tx: Tx,
+  locked: LockedEventRow,
+  patchKeys: readonly string[],
+  setValues: Partial<NewSportEventRow>,
+): Promise<ContestChangeField[]> {
+  const touchesLocation =
+    patchKeys.some((key) => LOCATION_PATCH_KEYS.has(key)) || patchKeys.includes("timezone");
+  let snapshot: Omit<ContestChangeSnapshot, "startAt" | "endAt" | "submissionDeadlineAt"> = {
+    timezone: null,
+    city: null,
+    address: null,
+    venue: null,
+    countryCode: locked.countryCode,
+    location: null,
+  };
+  if (touchesLocation) {
+    const [row] = await tx
+      .select({
+        timezone: sportEvents.timezone,
+        city: sportEvents.city,
+        address: sportEvents.address,
+        venue: sportEvents.venue,
+        countryCode: sportEvents.countryCode,
+        location: sportEvents.location,
+      })
+      .from(sportEvents)
+      .where(eq(sportEvents.id, locked.id))
+      .limit(1);
+    if (row) snapshot = row;
+  }
+  return detectContestChanges(
+    {
+      ...snapshot,
+      startAt: locked.startAt,
+      endAt: locked.endAt,
+      submissionDeadlineAt: locked.submissionDeadlineAt,
+    },
+    {
+      startAt: setValues.startAt,
+      endAt: setValues.endAt,
+      submissionDeadlineAt: setValues.submissionDeadlineAt,
+      timezone: setValues.timezone,
+      city: setValues.city,
+      address: setValues.address,
+      venue: setValues.venue,
+      countryCode: setValues.countryCode,
+      location: setValues.location,
+    },
+  );
+}
+
 export async function updateLeagueEventConfig(
   userId: string,
   input: UpdateLeagueConfigInput,
@@ -1500,6 +1562,8 @@ export async function updateLeagueEventConfig(
         await replaceContestDivisions(tx, locked.id, patch.divisions);
       }
 
+      const contestChanges = await detectConfigChanges(tx, locked, patchKeys, setValues);
+
       const [updated] = await tx
         .update(sportEvents)
         .set(setValues)
@@ -1548,6 +1612,14 @@ export async function updateLeagueEventConfig(
         version: updated.version,
         signalType: "event_state_changed",
       });
+      if (contestChanges.length > 0) {
+        await notifyAllMembers(tx, {
+          locked,
+          type: "league_contest_updated",
+          payloadExtra: { changes: contestChanges },
+          excludeUserIds: [userId],
+        });
+      }
       queueEventTags(locked.id);
       return response;
     }),
@@ -3041,6 +3113,36 @@ async function notifyAllMembers(
   );
 }
 
+/**
+ * Tells organizers once that every run is scored or skipped (ready to
+ * complete). Safe to call after any run status change: the per-organizer
+ * `dedupe_key` makes repeat calls no-ops.
+ */
+async function notifyIfScoringComplete(tx: Tx, locked: LockedEventRow): Promise<void> {
+  const [counts] = await tx
+    .select({
+      total: sql<number>`count(*)::int`,
+      open: sql<number>`count(*) filter (where ${eventRuns.status} not in ('scored','skipped'))::int`,
+    })
+    .from(eventRuns)
+    .where(eq(eventRuns.eventId, locked.id));
+  if (!counts || Number(counts.total) === 0 || Number(counts.open) > 0) return;
+  const organizerIds = await resolveEventRecipients(tx, {
+    eventId: locked.id,
+    roles: ["main_organizer", "organizer"],
+  });
+  await createNotifications(
+    tx,
+    organizerIds.map((organizerId) => ({
+      userId: organizerId,
+      type: "league_scoring_complete",
+      payload: { eventId: locked.id, eventSlug: locked.slug, eventName: locked.name },
+      eventId: locked.id,
+      dedupeKey: `scored:${locked.id}:${organizerId}`,
+    })),
+  );
+}
+
 interface LifecycleMutationInput {
   eventId: string;
   expectedVersion: number;
@@ -3098,6 +3200,11 @@ export async function openEventRegistration(
         version: response.version,
         signalType: "registration_changed",
       });
+      await notifyAllMembers(tx, {
+        locked,
+        type: "league_registration_opened",
+        excludeUserIds: [userId],
+      });
       queueEventTags(locked.id);
       return response;
     }),
@@ -3148,6 +3255,11 @@ export async function closeEventRegistration(
         eventId: locked.id,
         version: response.version,
         signalType: "registration_changed",
+      });
+      await notifyAllMembers(tx, {
+        locked,
+        type: "league_registration_closed",
+        excludeUserIds: [userId],
       });
       queueEventTags(locked.id);
       return response;
@@ -3809,6 +3921,13 @@ export async function publishEventResults(
           };
         }),
       );
+      // Judges, organizers and unranked members hear the results are out
+      // (no placement in their payload).
+      await notifyAllMembers(tx, {
+        locked,
+        type: "league_results_published",
+        excludeUserIds: ranked.map((entry) => entry.userId),
+      });
       // Points-ledger trigger (api.spec): every ranked rider also gets the
       // earned-points row so the digest reflects totals, not just placement.
       await createNotifications(
@@ -3972,6 +4091,7 @@ export async function setRunWindow(
         signalType:
           input.mode === "open" ? "run_started" : "event_state_changed",
       });
+      if (input.mode === "close") await notifyIfScoringComplete(tx, locked);
       queueEventTags(locked.id);
       return response;
     }),
@@ -4130,6 +4250,9 @@ export async function submitRunScore(
         version: response.version,
         signalType: "score_submitted",
       });
+      if (locked.submissionMode === "video" && run.status !== "scored") {
+        await notifyIfScoringComplete(tx, locked);
+      }
       queueEventTags(locked.id);
       return response;
     }),
@@ -4283,6 +4406,30 @@ export async function submitRunVideo(
         version: response.version,
         signalType: "event_state_changed",
       });
+      const [rider] = await tx
+        .select({ displayName: profiles.displayName })
+        .from(profiles)
+        .where(eq(profiles.id, userId))
+        .limit(1);
+      const judgeIds = await resolveEventRecipients(tx, {
+        eventId: locked.id,
+        roles: ["judge"],
+        excludeUserIds: [userId],
+      });
+      await createNotifications(
+        tx,
+        judgeIds.map((judgeId) => ({
+          userId: judgeId,
+          type: "league_video_submitted",
+          payload: {
+            eventId: locked.id,
+            eventSlug: locked.slug,
+            eventName: locked.name,
+            actorName: rider?.displayName ?? undefined,
+          },
+          eventId: locked.id,
+        })),
+      );
       queueEventTags(locked.id);
       revalidateProfileTagsFor(userId);
       return response;

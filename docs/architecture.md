@@ -43,6 +43,8 @@ page / route handler ──► src/lib/services/* ──► src/lib/repositories
   - checks `expectedVersion` (optimistic concurrency);
   - is replayed idempotently using a canonical-JSON `requestFingerprint`, stored in `game_action_requests` or `event_action_requests`;
   - writes a realtime signal row to `game_realtime_signals` or `event_realtime_signals`.
+- **Post-commit work.** `withDbWrite` flushes two queues only after the write succeeds (`src/lib/cache/deferred.ts`): tag invalidations (`queueTagRevalidate`) and side effects (`queueAfterCommit`). On Workers the side effects run in `ctx.waitUntil` (`runAfterResponse`, `src/lib/utils/request-scope.ts`), so the response is not held; a failure is logged and must have its own recovery path. Notification email uses it to hand rows to SQS (`docs/notifications.md`).
+- **Internal routes.** `/api/internal/notifications/{tick,delivery}` are called only by the AWS notification Lambdas and are authenticated by an HMAC signature over the route path and the body (`src/lib/notifications/delivery/contract.ts`), not by a session.
 - **Deprecated shims.** One-line `@deprecated — moved to …` re-export files remain in `src/lib` (see `AGENTS.md`). Always import the canonical path that the shim names.
 
 ## Repositories: `src/lib/repositories/index.ts`

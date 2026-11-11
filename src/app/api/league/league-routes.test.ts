@@ -39,8 +39,8 @@ const serviceMocks = vi.hoisted(() => ({
   removeEventMember: vi.fn(),
   listNotifications: vi.fn(),
   markNotificationsRead: vi.fn(),
-  getEmailDigestsEnabled: vi.fn(),
-  setEmailDigests: vi.fn(),
+  getEmailPreferences: vi.fn(),
+  setEmailPreferences: vi.fn(),
   isEmailDeliveryAvailable: vi.fn(),
 }))
 
@@ -81,8 +81,8 @@ vi.mock("@/lib/services/league", () => ({
 vi.mock("@/lib/notifications/service", () => ({
   listNotifications: serviceMocks.listNotifications,
   markNotificationsRead: serviceMocks.markNotificationsRead,
-  getEmailDigestsEnabled: serviceMocks.getEmailDigestsEnabled,
-  setEmailDigests: serviceMocks.setEmailDigests,
+  getEmailPreferences: serviceMocks.getEmailPreferences,
+  setEmailPreferences: serviceMocks.setEmailPreferences,
   isEmailDeliveryAvailable: serviceMocks.isEmailDeliveryAvailable,
 }))
 
@@ -645,16 +645,15 @@ describe("notifications", () => {
 })
 
 describe("email preferences", () => {
-  it("returns the digest preference + delivery detection for the signed-in user", async () => {
-    serviceMocks.getEmailDigestsEnabled.mockResolvedValue({ emailDigests: true })
+  const PREFS = { contest_updates: true, reminders: true, judging: true, results: true, suppressed: false }
+
+  it("returns category preferences + delivery detection for the signed-in user", async () => {
+    serviceMocks.getEmailPreferences.mockResolvedValue(PREFS)
     serviceMocks.isEmailDeliveryAvailable.mockResolvedValue(false)
     const response = await getEmailPreferences()
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
-      emailDigests: true,
-      deliveryAvailable: false,
-    })
-    expect(serviceMocks.getEmailDigestsEnabled).toHaveBeenCalledWith(USER.id)
+    expect(await response.json()).toEqual({ preferences: PREFS, deliveryAvailable: false })
+    expect(serviceMocks.getEmailPreferences).toHaveBeenCalledWith(USER.id)
     expect(serviceMocks.isEmailDeliveryAvailable).toHaveBeenCalledTimes(1)
   })
 
@@ -664,21 +663,23 @@ describe("email preferences", () => {
     expect(response.status).toBe(401)
   })
 
-  it("saves via PUT and echoes the value", async () => {
-    serviceMocks.setEmailDigests.mockResolvedValue({ emailDigests: false })
+  it("saves one category via PUT and echoes the preferences", async () => {
+    serviceMocks.setEmailPreferences.mockResolvedValue({ ...PREFS, judging: false })
     const response = await putEmailPreferences(
-      jsonRequest("/api/notifications/email-preferences", { emailDigests: false }, "PUT"),
+      jsonRequest("/api/notifications/email-preferences", { judging: false }, "PUT"),
     )
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ emailDigests: false })
-    expect(serviceMocks.setEmailDigests).toHaveBeenCalledWith(USER.id, false)
+    expect(await response.json()).toEqual({ preferences: { ...PREFS, judging: false } })
+    expect(serviceMocks.setEmailPreferences).toHaveBeenCalledWith(USER.id, { judging: false })
   })
 
-  it("rejects non-boolean payloads with 400", async () => {
-    const response = await putEmailPreferences(
-      jsonRequest("/api/notifications/email-preferences", { emailDigests: "yes" }, "PUT"),
-    )
-    expect(response.status).toBe(400)
+  it("rejects non-boolean, unknown or empty payloads with 400", async () => {
+    for (const body of [{ judging: "yes" }, { emailDigests: false }, {}]) {
+      const response = await putEmailPreferences(
+        jsonRequest("/api/notifications/email-preferences", body, "PUT"),
+      )
+      expect(response.status).toBe(400)
+    }
   })
 })
 

@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks"
 import { revalidateTag } from "next/cache"
+import { runAfterResponse } from "@/lib/utils/request-scope"
+import { log } from "@/lib/utils/log"
 
 /**
  * Deferred cache invalidation for DB write paths.
@@ -21,7 +23,41 @@ interface DeferredInvalidation {
   profile: Parameters<typeof revalidateTag>[1]
 }
 
-const storage = new AsyncLocalStorage<{ queue: DeferredInvalidation[] }>()
+type AfterCommitTask = { label: string; run: () => Promise<void> }
+
+const storage = new AsyncLocalStorage<{
+  queue: DeferredInvalidation[]
+  afterCommit: AfterCommitTask[]
+}>()
+
+/**
+ * Side effects that must only happen once the write committed (e.g. handing
+ * notification ids to the email queue). Runs after the response on Workers
+ * (`ctx.waitUntil`). A failure is logged, never thrown: callers must have a
+ * recovery path (the notification tick re-enqueues anything left pending).
+ * Outside a deferred scope the task runs immediately.
+ */
+export function queueAfterCommit(label: string, run: () => Promise<void>): void {
+  const store = storage.getStore()
+  if (!store) {
+    void runAfterCommitTask({ label, run })
+    return
+  }
+  store.afterCommit.push({ label, run })
+}
+
+async function runAfterCommitTask(task: AfterCommitTask): Promise<void> {
+  await runAfterResponse(async () => {
+    try {
+      await task.run()
+    } catch (error) {
+      log.warn("after_commit.failed", {
+        label: task.label,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
+  })
+}
 
 export function queueTagRevalidate(tag: string, profile: Parameters<typeof revalidateTag>[1]): void {
   const store = storage.getStore()
@@ -42,9 +78,10 @@ function flushEntry(entry: DeferredInvalidation): void {
 }
 
 export async function runWithDeferredCacheInvalidation<T>(fn: () => Promise<T>): Promise<T> {
-  const store = { queue: [] as DeferredInvalidation[] }
+  const store = { queue: [] as DeferredInvalidation[], afterCommit: [] as AfterCommitTask[] }
   const result = await storage.run(store, fn)
   // Flushed only on success — a rolled-back transaction must not invalidate.
   for (const entry of store.queue) flushEntry(entry)
+  for (const task of store.afterCommit) await runAfterCommitTask(task)
   return result
 }

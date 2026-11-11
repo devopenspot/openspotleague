@@ -201,20 +201,23 @@ AS $$
 BEGIN
   IF NEW.version IS NOT DISTINCT FROM OLD.version THEN RETURN NEW; END IF;
   INSERT INTO public.event_realtime_signals (event_id, version, signal_type)
-  VALUES (
+  SELECT
     NEW.id,
     NEW.version,
     CASE NEW.status
       WHEN 'cancelled' THEN 'event_cancelled'
       ELSE 'event_state_changed'
     END
-  )
+  WHERE EXISTS (SELECT 1 FROM public.sport_events WHERE id = NEW.id)
   ON CONFLICT (event_id, version) DO NOTHING;
   RETURN NEW;
 END;
 $$;`,
-    `CREATE TRIGGER "sport_events_realtime_signal_trigger"
+    // Deferred (0009): fires at commit, after the League service recorded its
+    // specific signal type, so the generic row only fills gaps.
+    `CREATE CONSTRAINT TRIGGER "sport_events_realtime_signal_trigger"
 AFTER UPDATE OF version ON "sport_events"
+DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW
 EXECUTE FUNCTION public.emit_event_realtime_signal();`,
     `CREATE OR REPLACE FUNCTION public.enforce_game_session_catalog_definition()

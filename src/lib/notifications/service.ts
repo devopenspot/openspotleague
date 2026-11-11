@@ -1,15 +1,18 @@
 /**
  * Notification fan-out — writes `user_notifications` rows inside the same
- * transaction as the triggering league mutation (no queue, no PGMQ; see
- * plan.league.spec.md decisions). Realtime delivery rides the
- * `supabase_realtime` publication on the per-user channel.
+ * transaction as the triggering league mutation. Realtime in-app delivery
+ * rides the `supabase_realtime` publication on the per-user channel. The
+ * same rows are the email outbox: email-eligible types are inserted
+ * `pending`, and immediate ones are handed to the SQS queue after commit
+ * (see docs/notifications.md).
  */
 
 import "server-only"
 
 import { and, desc, eq, inArray, lt, sql } from "drizzle-orm"
 import { getDbClient, withDbRead, withDbWrite } from "@/lib/db/client"
-import { renderNotification } from "@/lib/notifications/definitions"
+import { EMAIL_CATEGORIES, emailPolicyFor, renderNotification } from "@/lib/notifications/definitions"
+import { isEmailDeliveryConfigured, queueImmediateEmails } from "@/lib/notifications/delivery"
 import {
   eventMemberships,
   permissions,
@@ -19,7 +22,7 @@ import {
   userRoles,
   type NewUserNotificationRow,
 } from "@/db/schema"
-import type { EventRole, NotificationPayload, NotificationType } from "@/types/league"
+import type { EventRole, NotificationEmailCategory, NotificationPayload, NotificationType } from "@/types/league"
 
 type Db = ReturnType<typeof getDbClient>["db"]
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0]
@@ -31,22 +34,47 @@ export interface NotificationDraft {
   type: NotificationType
   payload?: NotificationPayload
   eventId?: string | null
+  /** Idempotency key (unique): a repeat insert with the same key is dropped. */
+  dedupeKey?: string
 }
 
+/**
+ * Inserts the rows (skipping duplicate `dedupeKey`s) and queues the
+ * immediate-urgency ones for email after the transaction commits. Returns
+ * the ids actually inserted.
+ *
+ * Rows enter the email outbox only while delivery is configured. Otherwise
+ * they stay in-app only, so turning email on later never sends old mail.
+ */
 export async function createNotifications(
   tx: Tx,
   drafts: readonly NotificationDraft[],
-): Promise<void> {
-  if (drafts.length === 0) return
-  const rows: NewUserNotificationRow[] = drafts.map((draft) => ({
-    userId: draft.userId,
-    type: draft.type,
-    payload: draft.payload ?? {},
-    eventId: draft.eventId ?? null,
-  }))
+): Promise<string[]> {
+  if (drafts.length === 0) return []
+  const emailOn = isEmailDeliveryConfigured()
+  const rows: NewUserNotificationRow[] = drafts.map((draft) => {
+    const urgency = emailOn ? emailPolicyFor(draft.type).urgency : null
+    return {
+      userId: draft.userId,
+      type: draft.type,
+      payload: draft.payload ?? {},
+      eventId: draft.eventId ?? null,
+      dedupeKey: draft.dedupeKey ?? null,
+      emailStatus: urgency ? "pending" : null,
+      emailUrgency: urgency,
+    }
+  })
+  const inserted: { id: string; urgency: string | null }[] = []
   for (let index = 0; index < rows.length; index += INSERT_CHUNK) {
-    await tx.insert(userNotifications).values(rows.slice(index, index + INSERT_CHUNK))
+    const chunk = await tx
+      .insert(userNotifications)
+      .values(rows.slice(index, index + INSERT_CHUNK))
+      .onConflictDoNothing()
+      .returning({ id: userNotifications.id, urgency: userNotifications.emailUrgency })
+    inserted.push(...chunk)
   }
+  queueImmediateEmails(inserted.filter((row) => row.urgency === "immediate").map((row) => row.id))
+  return inserted.map((row) => row.id)
 }
 
 /**
@@ -232,59 +260,82 @@ export async function markNotificationsRead(
 }
 
 /**
- * Feature detection for the email surface (0031): boolean presence of a
- * usable resend_api_key in Vault — never exposes the value. The UI hides
- * the digest toggle while this is false; everything else is unaffected.
+ * Whether email delivery is wired (AWS + unsubscribe secrets present). The
+ * UI hides the email toggles while this is false; in-app is unaffected.
  */
 export async function isEmailDeliveryAvailable(): Promise<boolean> {
-  const { db } = getDbClient()
-  return withDbRead("notifications.emailDeliveryStatus", () =>
-    db.transaction(async (tx): Promise<boolean> => {
-      const [row] = await tx
-        .select({
-          available: sql<boolean>`league_email_delivery_available()`,
-        })
-        .from(sql`(select 1) as probe`)
-      return Boolean(row?.available)
-    }),
-  )
+  return isEmailDeliveryConfigured()
 }
+
+export type EmailPreferences = Record<NotificationEmailCategory, boolean> & {
+  /** Set after a hard bounce or complaint: no email is sent at all. */
+  suppressed: boolean
+}
+
+const DEFAULT_PREFERENCES: EmailPreferences = {
+  contest_updates: true,
+  reminders: true,
+  judging: true,
+  results: true,
+  suppressed: false,
+}
+
+/** Per-category email preferences (an absent row means all on). */
+export async function getEmailPreferences(userId: string): Promise<EmailPreferences> {
+  const { db } = getDbClient()
+  return withDbRead("notifications.emailPrefs", async () => {
+    const [row] = await db
+      .select({
+        contestUpdates: userEmailPreferences.contestUpdates,
+        reminders: userEmailPreferences.reminders,
+        judging: userEmailPreferences.judging,
+        results: userEmailPreferences.results,
+        suppressedAt: userEmailPreferences.suppressedAt,
+      })
+      .from(userEmailPreferences)
+      .where(eq(userEmailPreferences.userId, userId))
+      .limit(1)
+    if (!row) return { ...DEFAULT_PREFERENCES }
+    return {
+      contest_updates: row.contestUpdates,
+      reminders: row.reminders,
+      judging: row.judging,
+      results: row.results,
+      suppressed: row.suppressedAt !== null,
+    }
+  })
+}
+
+const PREFERENCE_COLUMNS = {
+  contest_updates: "contestUpdates",
+  reminders: "reminders",
+  judging: "judging",
+  results: "results",
+} as const satisfies Record<NotificationEmailCategory, string>
 
 /**
- * Email-digest preference (default on): the daily pg_cron sweep reads
- * `user_email_preferences` before sending, so an absent row means enabled.
+ * Updates the given categories. Turning anything on also lifts a suppression,
+ * so a user whose mailbox bounced once can opt back in.
  */
-export async function getEmailDigestsEnabled(
+export async function setEmailPreferences(
   userId: string,
-): Promise<{ emailDigests: boolean }> {
+  patch: Partial<Record<NotificationEmailCategory, boolean>>,
+): Promise<EmailPreferences> {
   const { db } = getDbClient()
-  return withDbRead("notifications.emailPrefs", () =>
-    db.transaction(async (tx): Promise<{ emailDigests: boolean }> => {
-      const [row] = await tx
-        .select({ enabled: userEmailPreferences.emailDigestsEnabled })
-        .from(userEmailPreferences)
-        .where(eq(userEmailPreferences.userId, userId))
-        .limit(1)
-      return { emailDigests: row?.enabled ?? true }
-    }),
+  const set: Partial<typeof userEmailPreferences.$inferInsert> = { updatedAt: new Date() }
+  for (const category of EMAIL_CATEGORIES) {
+    const value = patch[category]
+    if (typeof value === "boolean") set[PREFERENCE_COLUMNS[category]] = value
+  }
+  if (Object.values(patch).some((value) => value === true)) {
+    set.suppressedAt = null
+    set.suppressedReason = null
+  }
+  await withDbWrite("notifications.setEmailPrefs", () =>
+    db
+      .insert(userEmailPreferences)
+      .values({ userId, ...set })
+      .onConflictDoUpdate({ target: userEmailPreferences.userId, set }),
   )
-}
-
-export async function setEmailDigests(
-  userId: string,
-  emailDigests: boolean,
-): Promise<{ emailDigests: boolean }> {
-  const { db } = getDbClient()
-  return withDbWrite("notifications.setEmailDigests", () =>
-    db.transaction(async (tx): Promise<{ emailDigests: boolean }> => {
-      await tx
-        .insert(userEmailPreferences)
-        .values({ userId, emailDigestsEnabled: emailDigests })
-        .onConflictDoUpdate({
-          target: userEmailPreferences.userId,
-          set: { emailDigestsEnabled: emailDigests, updatedAt: new Date() },
-        })
-      return { emailDigests }
-    }),
-  )
+  return getEmailPreferences(userId)
 }

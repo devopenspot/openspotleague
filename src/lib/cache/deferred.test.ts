@@ -6,7 +6,7 @@ vi.mock("next/cache", () => ({
   revalidateTag: (...args: unknown[]) => revalidateTagMock(...args),
 }))
 
-import { queueTagRevalidate, runWithDeferredCacheInvalidation } from "./deferred"
+import { queueAfterCommit, queueTagRevalidate, runWithDeferredCacheInvalidation } from "./deferred"
 
 const PROFILE = { revalidate: 60, stale: 300, expire: 3600 } as const
 
@@ -49,5 +49,36 @@ describe("deferred cache invalidation", () => {
     await expect(runWithDeferredCacheInvalidation(async () => {
       queueTagRevalidate("b", PROFILE)
     })).resolves.toBeUndefined()
+  })
+
+  it("runs after-commit tasks only once the write succeeds", async () => {
+    const task = vi.fn(async () => undefined)
+    await runWithDeferredCacheInvalidation(async () => {
+      queueAfterCommit("test", task)
+      expect(task).not.toHaveBeenCalled()
+    })
+    expect(task).toHaveBeenCalledTimes(1)
+  })
+
+  it("drops after-commit tasks when the write throws", async () => {
+    const task = vi.fn(async () => undefined)
+    await expect(
+      runWithDeferredCacheInvalidation(async () => {
+        queueAfterCommit("test", task)
+        throw new Error("rolled back")
+      }),
+    ).rejects.toThrow("rolled back")
+    expect(task).not.toHaveBeenCalled()
+  })
+
+  it("logs instead of throwing when an after-commit task fails", async () => {
+    await expect(
+      runWithDeferredCacheInvalidation(async () => {
+        queueAfterCommit("test", async () => {
+          throw new Error("queue down")
+        })
+        return "ok"
+      }),
+    ).resolves.toBe("ok")
   })
 })
