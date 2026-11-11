@@ -6,14 +6,19 @@
  * Per claimed row:
  *   - no address / suppressed / category toggled off  → `skipped`
  *   - immediate → one job per row; digest → one job per user and category
+ *   - over today's email budget (free email plan) → back to `pending`, held
  *   - enqueue failed → back to `pending` (the tick retries)
+ * Digests go out once a day: each tick claims only digest rows created before
+ * the latest `DIGEST_HOUR_UTC` boundary, so a user gets at most one digest
+ * per category per day.
  * Job keys are stable for the same row set, so a re-enqueue is deduped by
- * SQS FIFO (5 min) and by the sender's DynamoDB idempotency (24 h).
+ * SQS FIFO (5 min) and by the sender's idempotency (DynamoDB and Resend, 24 h).
  */
 
 import { createHash } from "node:crypto"
 import { emailPolicyFor } from "@/lib/notifications/definitions"
 import type { NotificationEmailCategory } from "@/types/league"
+import { DEFAULT_EMAIL_CAPS, type EmailCaps } from "./budget"
 import { EMAIL_JOB_VERSION, type EmailJob } from "./contract"
 import type { QueueMessage, SqsSender } from "./sqs"
 import type { ClaimedNotification, DeliveryStore, Recipient } from "./store"
@@ -32,13 +37,24 @@ export const GIVE_UP_MS = 24 * 60 * 60 * 1000
  * email a day late is worse than none. Covers outages and switching email on.
  */
 export const IMMEDIATE_MAX_AGE_MS = 6 * 60 * 60 * 1000
-export const DIGEST_MAX_AGE_MS = 24 * 60 * 60 * 1000
+/** Two days: a digest held back by the budget still gets the next day's run. */
+export const DIGEST_MAX_AGE_MS = 48 * 60 * 60 * 1000
+/** Daily digest boundary, 17:00 UTC (about noon in Colombia). */
+export const DIGEST_HOUR_UTC = 17
+
+/** The latest daily digest boundary at or before `now`. */
+export function digestCutoff(now: Date): Date {
+  const cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), DIGEST_HOUR_UTC))
+  if (cutoff.getTime() > now.getTime()) cutoff.setUTCDate(cutoff.getUTCDate() - 1)
+  return cutoff
+}
 
 export interface DispatcherDeps {
   store: DeliveryStore
   sender: SqsSender
   appUrl: string
   unsubscribeSecret: string
+  caps?: EmailCaps
   now?: () => Date
 }
 
@@ -47,9 +63,11 @@ export interface DispatchCounts {
   queued: number
   skipped: number
   retry: number
+  /** Over the email budget: left `pending` for a later run. */
+  held: number
 }
 
-const EMPTY: DispatchCounts = { claimed: 0, queued: 0, skipped: 0, retry: 0 }
+const EMPTY: DispatchCounts = { claimed: 0, queued: 0, skipped: 0, retry: 0, held: 0 }
 
 function add(a: DispatchCounts, b: DispatchCounts): DispatchCounts {
   return {
@@ -57,12 +75,14 @@ function add(a: DispatchCounts, b: DispatchCounts): DispatchCounts {
     queued: a.queued + b.queued,
     skipped: a.skipped + b.skipped,
     retry: a.retry + b.retry,
+    held: a.held + b.held,
   }
 }
 
 interface PendingJob {
   job: EmailJob
   groupId: string
+  kind: "immediate" | "digest"
 }
 
 function jobKey(prefix: string, ids: readonly string[]): string {
@@ -76,6 +96,7 @@ function batchId(index: number): string {
 
 export function createDispatcher(deps: DispatcherDeps) {
   const now = deps.now ?? (() => new Date())
+  const caps = deps.caps ?? DEFAULT_EMAIL_CAPS
 
   function unsubscribeFor(userId: string, category: NotificationEmailCategory): string {
     return unsubscribeUrl(deps.appUrl, createUnsubscribeToken(deps.unsubscribeSecret, userId, category))
@@ -108,6 +129,7 @@ export function createDispatcher(deps: DispatcherDeps) {
         const unsubscribe = unsubscribeFor(row.userId, category)
         jobs.push({
           groupId: row.userId,
+          kind: "immediate",
           job: {
             v: EMAIL_JOB_VERSION,
             channel: "email",
@@ -138,6 +160,7 @@ export function createDispatcher(deps: DispatcherDeps) {
       const unsubscribe = unsubscribeFor(group.recipient.userId, group.category)
       jobs.push({
         groupId: group.recipient.userId,
+        kind: "digest",
         job: {
           v: EMAIL_JOB_VERSION,
           channel: "email",
@@ -161,17 +184,21 @@ export function createDispatcher(deps: DispatcherDeps) {
   async function deliver(rows: readonly ClaimedNotification[]): Promise<DispatchCounts> {
     if (rows.length === 0) return EMPTY
     let planned: ReturnType<typeof plan>
+    let jobs: PendingJob[]
+    let heldIds: string[]
     try {
       const recipients = await deps.store.loadRecipients(rows.map((row) => row.userId))
       planned = plan(rows, recipients)
       await deps.store.setStatus(planned.skippedIds, "skipped")
+      ;({ jobs, heldIds } = await withinBudget(planned.jobs))
+      await deps.store.setStatus(heldIds, "pending")
     } catch (error) {
       // Nothing reached SQS yet: release the claim so the next tick retries,
       // instead of leaving the rows `queued` for an hour.
       await deps.store.setStatus(rows.map((row) => row.id), "pending").catch(() => undefined)
       throw error
     }
-    const { jobs, skippedIds } = planned
+    const { skippedIds } = planned
 
     const messages: QueueMessage[] = jobs.map((pending, index) => ({
       id: batchId(index),
@@ -187,10 +214,30 @@ export function createDispatcher(deps: DispatcherDeps) {
     await deps.store.setStatus(retryIds, "pending")
     return {
       claimed: rows.length,
-      queued: rows.length - skippedIds.length - retryIds.length,
+      queued: rows.length - skippedIds.length - retryIds.length - heldIds.length,
       skipped: skippedIds.length,
       retry: retryIds.length,
+      held: heldIds.length,
     }
+  }
+
+  /**
+   * Keeps the jobs today's budget allows, immediate first, in plan order.
+   * Budget spent on a job whose enqueue then fails is not refunded: the
+   * error is on the safe side of the free quota.
+   */
+  async function withinBudget(planned: readonly PendingJob[]): Promise<{ jobs: PendingJob[]; heldIds: string[] }> {
+    if (planned.length === 0) return { jobs: [], heldIds: [] }
+    const immediate = planned.filter((pending) => pending.kind === "immediate")
+    const digest = planned.filter((pending) => pending.kind === "digest")
+    const allowed = await deps.store.reserveEmailBudget({
+      caps,
+      request: { immediate: immediate.length, digest: digest.length },
+      now: now(),
+    })
+    const kept = [...immediate.slice(0, allowed.immediate), ...digest.slice(0, allowed.digest)]
+    const held = [...immediate.slice(allowed.immediate), ...digest.slice(allowed.digest)]
+    return { jobs: kept, heldIds: held.flatMap((pending) => pending.job.notificationIds) }
   }
 
   /** Drops pending rows past their max age before anything is claimed. */
@@ -211,10 +258,17 @@ export function createDispatcher(deps: DispatcherDeps) {
       return deliver(rows)
     },
 
-    /** Tick: every pending digest row, grouped per user and category. */
+    /**
+     * Tick: pending digest rows created before the latest daily boundary,
+     * grouped per user and category (at most one digest a day each).
+     */
     async dispatchDigests(): Promise<DispatchCounts> {
       await expireOld()
-      const rows = await deps.store.claimPending({ urgency: "digest", createdBefore: now(), limit: DISPATCH_LIMIT })
+      const rows = await deps.store.claimPending({
+        urgency: "digest",
+        createdBefore: digestCutoff(now()),
+        limit: DISPATCH_LIMIT,
+      })
       return deliver(rows)
     },
 

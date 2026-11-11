@@ -2,7 +2,7 @@
   "name": "openspot-aws-notifications",
   "private": true,
   "type": "module",
-  "description": "AWS stack for OpenSpot League email notifications (SQS, Lambda, SES, Scheduler). See docs/notifications.md. Reuses the app's esbuild and tsx (repo root node_modules), so install the root first.",
+  "description": "AWS stack for OpenSpot League email notifications (SQS, Lambda, Scheduler; email through Resend). See docs/notifications.md. Reuses the app's esbuild and tsx (repo root node_modules), so install the root first.",
   "scripts": {
     "synth": "cdk synth",
     "diff": "cdk diff",
@@ -12,7 +12,6 @@
   "dependencies": {
     "@aws-lambda-powertools/idempotency": "2.36.0",
     "@aws-sdk/client-dynamodb": "3.699.0",
-    "@aws-sdk/client-sesv2": "3.699.0",
     "@aws-sdk/client-ssm": "3.699.0",
     "@aws-sdk/lib-dynamodb": "3.699.0",
     "zod": "4.4.3"

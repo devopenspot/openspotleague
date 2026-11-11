@@ -2,7 +2,6 @@
   "app": "../../node_modules/.bin/tsx bin/app.ts",
   "context": {
     "region": "us-east-1",
-    "sendingDomain": "",
     "fromAddress": "",
     "replyTo": "",
     "appUrl": "",

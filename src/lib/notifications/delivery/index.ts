@@ -9,6 +9,7 @@ import "server-only"
 
 import {
   env,
+  getEmailCaps,
   getNotificationsInternalSecret,
   getNotificationsUnsubscribeSecret,
   getNotifyAwsConfig,
@@ -42,6 +43,7 @@ export function getDispatcher(): Dispatcher | null {
     sender: createSqsSender(aws),
     appUrl: env.APP_URL,
     unsubscribeSecret,
+    caps: getEmailCaps(),
   })
 }
 

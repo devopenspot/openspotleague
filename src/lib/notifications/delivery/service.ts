@@ -2,15 +2,16 @@
  * Orchestration behind the internal notification routes:
  * - `runNotificationTick`: the 15-minute EventBridge tick — reminders first
  *   (so their immediate emails ride the same run), then the backstop and the
- *   digests.
- * - `applyDeliveryReports`: outcomes from the sender and SES feedback.
+ *   daily digests.
+ * - `applyDeliveryReports`: outcomes from the sender and Resend bounce /
+ *   complaint feedback.
  * - `unsubscribeByToken`: the one-click unsubscribe target.
  */
 
 import "server-only"
 
 import { getDbClient, withDbWrite } from "@/lib/db/client"
-import { getNotificationsUnsubscribeSecret } from "@/lib/config/env"
+import { getEmailCaps, getNotificationsUnsubscribeSecret } from "@/lib/config/env"
 import { createNotifications, setEmailPreferences } from "@/lib/notifications/service"
 import {
   JUDGING_STALE_MS,
@@ -23,6 +24,7 @@ import {
 import { PAYMENT_DISABLE_AFTER_DAYS } from "@/lib/league/definitions"
 import type { NotificationEmailCategory } from "@/types/league"
 import type { DeliveryReport } from "./contract"
+import type { DispatchCounts } from "./dispatcher"
 import { getDispatcher } from "./index"
 import { deliveryStore } from "./store"
 import { readUnsubscribeToken } from "./unsubscribe"
@@ -31,8 +33,8 @@ const DAY_MS = 24 * 60 * 60 * 1000
 
 export interface TickResult {
   reminders: number
-  backstop: { claimed: number; queued: number; skipped: number; retry: number; expired: number } | null
-  digests: { claimed: number; queued: number; skipped: number; retry: number } | null
+  backstop: (DispatchCounts & { expired: number }) | null
+  digests: DispatchCounts | null
 }
 
 async function insertReminders(drafts: readonly ReminderDraft[]): Promise<number> {
@@ -64,11 +66,25 @@ export async function runNotificationTick(now: Date = new Date()): Promise<TickR
   return { reminders, backstop, digests }
 }
 
-export async function applyDeliveryReports(report: DeliveryReport): Promise<{ applied: number }> {
+export async function applyDeliveryReports(
+  report: DeliveryReport,
+  now: Date = new Date(),
+): Promise<{ applied: number }> {
   let applied = 0
+  let quotaClosed = false
   for (const entry of report.reports) {
     if (entry.kind === "job") {
-      await deliveryStore.setStatus(entry.notificationIds, entry.status)
+      if (entry.status === "deferred") {
+        // The provider's free quota is gone: hand the rows back and stop
+        // queueing more until the next UTC day.
+        await deliveryStore.setStatus(entry.notificationIds, "pending")
+        if (!quotaClosed) {
+          await deliveryStore.exhaustEmailBudget({ dailyCap: getEmailCaps().daily, now })
+          quotaClosed = true
+        }
+      } else {
+        await deliveryStore.setStatus(entry.notificationIds, entry.status)
+      }
       applied += entry.notificationIds.length
       continue
     }

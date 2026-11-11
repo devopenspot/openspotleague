@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import type { EmailJob } from "./contract"
-import { PermanentSendError, processEmailBatch, type BatchRecord } from "./sender-batch"
+import { PermanentSendError, QuotaExceededError, processEmailBatch, type BatchRecord } from "./sender-batch"
 
 const quiet = { warn: vi.fn(), error: vi.fn() }
 
@@ -26,14 +26,14 @@ function record(groupId: string, overrides: Partial<EmailJob> = {}): BatchRecord
 describe("processEmailBatch", () => {
   it("reports every sent email", async () => {
     const records = [record("u1"), record("u2")]
-    const outcome = await processEmailBatch(records, async () => ({ messageId: "ses-1" }), quiet)
+    const outcome = await processEmailBatch(records, async () => ({ messageId: "re-1" }), quiet)
     expect(outcome.failedMessageIds).toEqual([])
     expect(outcome.reports).toEqual(
       records.map((r) => ({
         kind: "job",
         notificationIds: r.job.notificationIds,
         status: "sent",
-        sesMessageId: "ses-1",
+        messageId: "re-1",
       })),
     )
   })
@@ -64,7 +64,27 @@ describe("processEmailBatch", () => {
     expect(outcome.failedMessageIds).toEqual([])
     expect(outcome.reports).toEqual([
       { kind: "job", notificationIds: bad!.job.notificationIds, status: "failed", reason: "MessageRejected" },
-      { kind: "job", notificationIds: next!.job.notificationIds, status: "sent", sesMessageId: "ok" },
+      { kind: "job", notificationIds: next!.job.notificationIds, status: "sent", messageId: "ok" },
+    ])
+  })
+
+  it("on a quota error defers that email and every later one, unsent and not retried", async () => {
+    const [first, hit, later, other] = [record("a"), record("b"), record("a"), record("c")]
+    const send = vi.fn(async (job: EmailJob) => {
+      if (job.key === hit!.job.key) throw new QuotaExceededError("daily_quota_exceeded")
+      return { messageId: "ok" }
+    })
+    const outcome = await processEmailBatch([first!, hit!, later!, other!], send, quiet)
+    expect(outcome.failedMessageIds).toEqual([])
+    expect(send).toHaveBeenCalledTimes(2)
+    expect(outcome.reports).toEqual([
+      { kind: "job", notificationIds: first!.job.notificationIds, status: "sent", messageId: "ok" },
+      ...[hit!, later!, other!].map((r) => ({
+        kind: "job",
+        notificationIds: r.job.notificationIds,
+        status: "deferred",
+        reason: "daily_quota_exceeded",
+      })),
     ])
   })
 

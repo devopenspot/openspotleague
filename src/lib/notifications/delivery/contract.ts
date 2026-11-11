@@ -4,7 +4,8 @@
  * self-contained: zod and node:crypto only, no `@/` aliases, no app config.
  *
  * - `EmailJob`: one SQS message = one email (single or digest).
- * - `DeliveryReport`: Lambdas → `POST /api/internal/notifications/delivery`.
+ * - `DeliveryReport`: Lambdas → `POST /api/internal/notifications/delivery`
+ *   (send outcomes, and Resend bounce / complaint feedback).
  * - Signed requests: `x-osl-timestamp` + `x-osl-signature`, an HMAC-SHA256
  *   over `${timestamp}.${path}.${body}` with NOTIFICATIONS_INTERNAL_SECRET,
  *   valid for five minutes either side. The path is signed so a captured
@@ -40,14 +41,16 @@ export const DeliveryReportSchema = z.object({
     .array(
       z.union([
         // From the sender: outcome for the rows an EmailJob carried.
+        // `deferred`: the email provider's free quota is used up; the rows
+        // go back to `pending` and today's budget is closed.
         z.object({
           kind: z.literal("job"),
           notificationIds: z.array(z.string().uuid()).min(1).max(200),
-          status: z.enum(["sent", "failed"]),
-          sesMessageId: z.string().max(200).optional(),
+          status: z.enum(["sent", "failed", "deferred"]),
+          messageId: z.string().max(200).optional(),
           reason: z.string().max(500).optional(),
         }),
-        // From SES feedback: a recipient address that must stop receiving.
+        // From provider feedback: a recipient address that must stop receiving.
         z.object({
           kind: z.literal("feedback"),
           email: z.string().email(),

@@ -43,7 +43,7 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 | `src/lib/games/*`, `src/lib/league/*` | Pure domain engines (state machines, scoring, capabilities). No DB or IO, except `src/lib/league/realtime.ts` (Supabase browser channel); unit-tested. |
 | `src/lib/league/rating/*` | League rating engine from Article 9 (Res. 082/2026): Park/Street/Vert formats, the five criteria, required elements per discipline, 0–10 scoring, trimmed-mean panel, division ranking. |
 | `src/lib/notifications/*` | Notification writer, `EMAIL_POLICY`, reminders, and email delivery (`delivery/`: outbox dispatcher, SQS producer, signed Lambda contract). |
-| `infra/aws/` | Separate CDK package: SQS FIFO, SES, three Lambdas, the 15-minute Scheduler tick. See `docs/notifications.md`. |
+| `infra/aws/` | Separate CDK package: SQS FIFO, three Lambdas (sender via Resend, tick, Resend webhook), the 15-minute Scheduler tick, the zero-cost guard. See `docs/notifications.md`. |
 | `src/lib/db/client.ts` | `withDbRead`, `withDbWrite`, `withDbRetry`, pool configuration, global concurrency gate. |
 | `src/lib/cache/` | `lifetimes.ts` (cache profiles), `deferred.ts` (post-commit invalidation). |
 | `src/db/schema.ts` | Schema source of truth: re-exports `src/db/schema/index.ts`, which holds every table (League tables included). `auth`, `spots`, `games` and `taxonomy` are per-domain barrels over it. Migrations live in `supabase/migrations/`. |
@@ -87,7 +87,8 @@ The Vercel GitHub check that runs on pull requests is a leftover integration. It
 
 ### Notifications (`docs/notifications.md`)
 
-- Create notifications only through `createNotifications(tx, …)` inside the write transaction. Email goes out after commit; never call SQS or SES from inside a transaction.
+- Create notifications only through `createNotifications(tx, …)` inside the write transaction. Email goes out after commit; never call SQS or the email provider from inside a transaction.
+- Email must stay free: it goes through Resend's free plan only, every send passes the daily budget (`deliveryStore.reserveEmailBudget`), and AWS resources stay inside the always-free tier (the `osl-notify-zero-cost` guard stops the stack on any charge).
 - `src/lib/notifications/delivery/contract.ts` and `sender-batch.ts` are imported by the Lambdas by relative path: no `@/` imports there.
 - AWS never connects to Postgres. Lambdas reach the app only through the signed `/api/internal/notifications/*` routes.
 

@@ -1,20 +1,24 @@
 /**
  * OpenSpot League email notifications (docs/notifications.md).
  *
- *   Worker ──SendMessage──▶ SQS FIFO ──▶ email-sender λ ──▶ SES v2
- *                              │ 5 tries                     │ bounce/complaint
+ *   Worker ──SendMessage──▶ SQS FIFO ──▶ email-sender λ ──▶ Resend (free plan)
+ *                              │ 5 tries                     │ bounce/complaint webhook
  *                              ▼                             ▼
  *                             DLQ ──▶ alarm ──▶ SNS ──▶ admin email
- *                                               SNS ──▶ ses-events λ ──▶ Worker
+ *                                     resend-events λ (Function URL) ──▶ Worker
  *   EventBridge Scheduler (15 min) ──▶ tick λ ──▶ Worker /api/internal/notifications/tick
  *
- * Everything here sits in the AWS always-free tier at League scale except
- * SES (3,000 msgs/month free for the first 12 months, then $0.10 / 1,000).
- * The idempotency table is provisioned, not on-demand, for that reason:
- * 25 provisioned read and write units are always free, on-demand is not.
- * Secrets are not in this template: the internal HMAC secret is an SSM
- * SecureString created by hand, and the Worker's access key is created by
- * hand for the `osl-worker-notify` user.
+ * Strictly free: everything here sits in the AWS always-free tier at League
+ * scale (docs/notifications.md#cost), and email goes through Resend's free
+ * plan, which refuses over quota instead of billing. SES is not used: it has
+ * no free tier for this account. The idempotency table is provisioned, not
+ * on-demand, for the same reason: 25 provisioned units are always free.
+ * The zero-cost guard: any actual charge (credits not counted) makes AWS
+ * Budgets attach a deny-all policy to every identity of this stack, which
+ * stops it until someone removes the policy by hand.
+ * Secrets are not in this template: the internal HMAC secret, the Resend API
+ * key and the Resend webhook secret are SSM SecureStrings created by hand,
+ * and the Worker's access key is created by hand for `osl-worker-notify`.
  */
 
 import * as path from "node:path"
@@ -32,11 +36,10 @@ import * as cwActions from "aws-cdk-lib/aws-cloudwatch-actions"
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb"
 import * as iam from "aws-cdk-lib/aws-iam"
 import * as lambda from "aws-cdk-lib/aws-lambda"
-import { SqsEventSource, SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources"
+import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources"
 import * as nodejs from "aws-cdk-lib/aws-lambda-nodejs"
 import * as logs from "aws-cdk-lib/aws-logs"
 import * as scheduler from "aws-cdk-lib/aws-scheduler"
-import * as ses from "aws-cdk-lib/aws-ses"
 import * as sns from "aws-cdk-lib/aws-sns"
 import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions"
 import * as sqs from "aws-cdk-lib/aws-sqs"
@@ -47,17 +50,17 @@ const INFRA_ROOT = path.resolve(HERE, "..")
 const REPO_ROOT = path.resolve(INFRA_ROOT, "../..")
 
 export const INTERNAL_SECRET_PARAM = "/openspot/notifications/internal-secret"
+export const RESEND_API_KEY_PARAM = "/openspot/notifications/resend-api-key"
+export const RESEND_WEBHOOK_SECRET_PARAM = "/openspot/notifications/resend-webhook-secret"
 
 export interface NotificationsStackProps extends StackProps {
-  /** Verified SES domain, e.g. `mail.openspotleague.com`. */
-  sendingDomain: string
-  /** `OpenSpot League <no-reply@mail.openspotleague.com>` */
+  /** `OpenSpot League <no-reply@mail.openspotleague.com>`, on a domain verified in Resend. */
   fromAddress: string
   /** Public Worker origin the Lambdas call back. */
   appUrl: string
   /** Optional inbox for replies; without it a reply to `fromAddress` bounces. */
   replyTo?: string
-  /** Receives the alarms and the budget alert. */
+  /** Receives the alarms, the budget alert and the zero-cost guard notice. */
   alertEmail: string
   monthlyBudgetUsd: number
 }
@@ -99,36 +102,12 @@ export class NotificationsStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     })
 
-    // ---------- SES ----------
-    const feedbackTopic = new sns.Topic(this, "SesFeedback", {
-      topicName: "osl-notify-ses-feedback",
-      enforceSSL: true,
-    })
-    const configurationSet = new ses.ConfigurationSet(this, "ConfigSet", {
-      configurationSetName: "osl-notify",
-      reputationMetrics: true,
-      suppressionReasons: ses.SuppressionReasons.BOUNCES_AND_COMPLAINTS,
-    })
-    configurationSet.addEventDestination("Feedback", {
-      destination: ses.EventDestination.snsTopic(feedbackTopic),
-      events: [ses.EmailSendingEvent.BOUNCE, ses.EmailSendingEvent.COMPLAINT],
-    })
-    const identity = new ses.EmailIdentity(this, "Domain", {
-      identity: ses.Identity.domain(props.sendingDomain),
-      mailFromDomain: `bounce.${props.sendingDomain}`,
-      configurationSet,
-    })
-
     // ---------- functions ----------
-    const internalSecretArn = Stack.of(this).formatArn({
-      service: "ssm",
-      resource: "parameter",
-      resourceName: INTERNAL_SECRET_PARAM.replace(/^\//, ""),
-    })
-    const readSecret = new iam.PolicyStatement({
-      actions: ["ssm:GetParameter"],
-      resources: [internalSecretArn],
-    })
+    const parameterArn = (name: string) =>
+      Stack.of(this).formatArn({ service: "ssm", resource: "parameter", resourceName: name.replace(/^\//, "") })
+    const readParameters = (...names: string[]) =>
+      new iam.PolicyStatement({ actions: ["ssm:GetParameter"], resources: names.map(parameterArn) })
+    const readSecret = readParameters(INTERNAL_SECRET_PARAM)
     const common: Omit<nodejs.NodejsFunctionProps, "entry"> = {
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
@@ -167,8 +146,8 @@ export class NotificationsStack extends Stack {
         ...common.environment,
         FROM_ADDRESS: props.fromAddress,
         ...(props.replyTo ? { REPLY_TO: props.replyTo } : {}),
-        CONFIGURATION_SET: configurationSet.configurationSetName,
         IDEMPOTENCY_TABLE: idempotency.tableName,
+        RESEND_API_KEY_PARAM,
       },
     })
     sender.addEventSource(
@@ -180,17 +159,7 @@ export class NotificationsStack extends Stack {
       }),
     )
     idempotency.grantReadWriteData(sender)
-    sender.addToRolePolicy(readSecret)
-    sender.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["ses:SendEmail"],
-        resources: [
-          `arn:aws:ses:${this.region}:${this.account}:identity/${props.sendingDomain}`,
-          `arn:aws:ses:${this.region}:${this.account}:configuration-set/${configurationSet.configurationSetName}`,
-        ],
-      }),
-    )
-    sender.node.addDependency(identity)
+    sender.addToRolePolicy(readParameters(INTERNAL_SECRET_PARAM, RESEND_API_KEY_PARAM))
 
     const tick = new nodejs.NodejsFunction(this, "Tick", {
       ...common,
@@ -201,14 +170,18 @@ export class NotificationsStack extends Stack {
     })
     tick.addToRolePolicy(readSecret)
 
-    const sesEvents = new nodejs.NodejsFunction(this, "SesEvents", {
+    // Resend bounce / complaint webhook. A Function URL is free and sits
+    // outside Cloudflare, so Bot Fight Mode never blocks Resend's requests.
+    // The Svix signature is checked in the function.
+    const resendEvents = new nodejs.NodejsFunction(this, "ResendEvents", {
       ...common,
-      functionName: "osl-notify-ses-events",
-      entry: path.join(INFRA_ROOT, "lambdas/ses-events.ts"),
-      logGroup: logGroup("ses-events"),
+      functionName: "osl-notify-resend-events",
+      entry: path.join(INFRA_ROOT, "lambdas/resend-events.ts"),
+      logGroup: logGroup("resend-events"),
+      environment: { ...common.environment, WEBHOOK_SECRET_PARAM: RESEND_WEBHOOK_SECRET_PARAM },
     })
-    sesEvents.addToRolePolicy(readSecret)
-    sesEvents.addEventSource(new SnsEventSource(feedbackTopic))
+    resendEvents.addToRolePolicy(readParameters(INTERNAL_SECRET_PARAM, RESEND_WEBHOOK_SECRET_PARAM))
+    const webhookUrl = resendEvents.addFunctionUrl({ authType: lambda.FunctionUrlAuthType.NONE })
 
     // ---------- 15-minute tick ----------
     const schedulerRole = new iam.Role(this, "TickSchedulerRole", {
@@ -263,6 +236,61 @@ export class NotificationsStack extends Stack {
     })
     dlqAlarm.addAlarmAction(new cwActions.SnsAction(alerts))
 
+    // Zero-cost guard. Credits are excluded, so usage beyond the always-free
+    // limits trips it even while credits would pay. Budgets data lags up to
+    // about 12 hours. The deny policy stays attached until removed by hand
+    // (docs/notifications.md runbook). The first two action budgets are free.
+    const zeroCostBudgetName = "osl-notify-zero-cost"
+    const zeroCostBudget = new budgets.CfnBudget(this, "ZeroCostBudget", {
+      budget: {
+        budgetName: zeroCostBudgetName,
+        budgetType: "COST",
+        timeUnit: "MONTHLY",
+        budgetLimit: { amount: 1, unit: "USD" },
+        costTypes: { includeCredit: false, includeRefund: false },
+      },
+    })
+    const stopAll = new iam.ManagedPolicy(this, "ZeroCostStop", {
+      managedPolicyName: "osl-notify-zero-cost-stop",
+      description: "Attached by the osl-notify-zero-cost budget action: stops the notification stack.",
+      statements: [new iam.PolicyStatement({ effect: iam.Effect.DENY, actions: ["*"], resources: ["*"] })],
+    })
+    const guardedRoles = [sender.role!, tick.role!, resendEvents.role!, schedulerRole]
+    const guardRole = new iam.Role(this, "ZeroCostGuardRole", {
+      assumedBy: new iam.ServicePrincipal("budgets.amazonaws.com"),
+    })
+    guardRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["iam:AttachRolePolicy", "iam:DetachRolePolicy"],
+        resources: guardedRoles.map((role) => role.roleArn),
+        conditions: { ArnEquals: { "iam:PolicyARN": stopAll.managedPolicyArn } },
+      }),
+    )
+    guardRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["iam:AttachUserPolicy", "iam:DetachUserPolicy"],
+        resources: [workerUser.userArn],
+        conditions: { ArnEquals: { "iam:PolicyARN": stopAll.managedPolicyArn } },
+      }),
+    )
+    const guardAction = new budgets.CfnBudgetsAction(this, "ZeroCostGuard", {
+      budgetName: zeroCostBudgetName,
+      actionType: "APPLY_IAM_POLICY",
+      actionThreshold: { type: "ABSOLUTE_VALUE", value: 0.01 },
+      notificationType: "ACTUAL",
+      approvalModel: "AUTOMATIC",
+      executionRoleArn: guardRole.roleArn,
+      definition: {
+        iamActionDefinition: {
+          policyArn: stopAll.managedPolicyArn,
+          roles: guardedRoles.map((role) => role.roleName),
+          users: [workerUser.userName],
+        },
+      },
+      subscribers: [{ type: "EMAIL", address: props.alertEmail }],
+    })
+    guardAction.addDependency(zeroCostBudget)
+
     new budgets.CfnBudget(this, "MonthlyBudget", {
       budget: {
         budgetName: "osl-notify-monthly",
@@ -292,15 +320,9 @@ export class NotificationsStack extends Stack {
       value: workerUser.userName,
       description: "Create an access key for this user: AWS_NOTIFY_ACCESS_KEY_ID / AWS_NOTIFY_SECRET_ACCESS_KEY",
     })
-    identity.dkimRecords.forEach((record, index) => {
-      new CfnOutput(this, `DkimRecord${index + 1}`, {
-        value: `CNAME ${record.name} → ${record.value}`,
-        description: "Add in Cloudflare DNS (DNS only, not proxied)",
-      })
-    })
-    new CfnOutput(this, "MailFromRecords", {
-      value: `MX bounce.${props.sendingDomain} → 10 feedback-smtp.${this.region}.amazonses.com ; TXT bounce.${props.sendingDomain} → "v=spf1 include:amazonses.com ~all"`,
-      description: "Custom MAIL FROM records (Cloudflare DNS, DNS only)",
+    new CfnOutput(this, "ResendWebhookUrl", {
+      value: webhookUrl.url,
+      description: "Resend webhook endpoint (events: email.bounced, email.complained)",
     })
   }
 }

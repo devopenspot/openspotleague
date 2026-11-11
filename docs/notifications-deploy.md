@@ -2,7 +2,7 @@
 
 A step-by-step guide to take the notifications module live. It also covers the first production database setup, because the two happen together. For how the module works, see [`notifications.md`](notifications.md). For database commands, see [`database.md`](database.md).
 
-Written 2026-11-10 for branch `claude/contest-notification-module-eccf29` (migrations `0009_notification_delivery` and `0010_event_signal_trigger_deferred`).
+Written 2026-11-10 for branch `claude/contest-notification-module-eccf29` (migrations `0009_notification_delivery`, `0010_event_signal_trigger_deferred` and `0011_notification_email_budget`). Updated 2026-11-11: email moved from SES to Resend's free plan, so the whole stack stays at $0.
 
 ## Where things stand
 
@@ -11,10 +11,12 @@ Written 2026-11-10 for branch `claude/contest-notification-module-eccf29` (migra
 | Deployed Worker `open-spot` | Its Hyperdrive config `open-spot-db` points at the **develop** Supabase project. The live site runs on the develop database. |
 | Production Supabase project | New. No schema, no data, not connected to any Worker. |
 | `.env.local` | Points at develop. |
-| Migrations 0009 and 0010 | Not applied anywhere. |
+| Migrations 0009, 0010, 0011 | Not applied anywhere. |
 | AWS stack `OpenSpotNotifications` | Not deployed. |
 
-**Progress (2026-11-10).** Stage 1 is done: develop has 0009 and 0010, the gate and the League chain test passed, the Worker runs the branch code, and the 0010 signal check passed. Stage 4 is nearly done: CDK is bootstrapped, the SSM secret exists, the stack is deployed with `appUrl` on `workers.dev` and the tick paused, the DNS records are in Cloudflare, and SES shows DKIM and MAIL FROM verified. The SES production access request was sent (review pending). Still waiting: SES approval and the alarm subscription confirmation. CDK ran with the root user's credentials; replace them with an admin user and delete the root access key.
+**Progress (2026-11-10).** Stage 1 is done: develop has 0009 and 0010, the gate and the League chain test passed, the Worker runs the branch code, and the 0010 signal check passed. Stage 4 is nearly done: CDK is bootstrapped, the SSM secret exists, the stack is deployed with `appUrl` on `workers.dev` and the tick paused, the DNS records are in Cloudflare, and SES shows DKIM and MAIL FROM verified. SES production access is granted (50,000 emails a day, 14 a second).
+
+**Change (2026-11-11).** SES has no free tier for this account, so email now goes through Resend's free plan (3,000 a month, 100 a day, no card), with an app-side daily cap and a zero-cost guard (see [`notifications.md`](notifications.md#cost)). Stage 4 below is the Resend version; the SES identity, configuration set and DNS records are removed. Still waiting: the alarm subscription confirmation and the Resend account. CDK ran with the root user's credentials; replace them with an admin user and delete the root access key.
 
 Two facts shape the order below:
 
@@ -29,12 +31,12 @@ Two facts shape the order below:
 | 1 | Develop: apply the migrations, test, deploy the new code on develop | The new code is proven on the live URL, email still off |
 | 2 | Merge to `main` | One source of truth |
 | 3 | Production database: schema, seed, sign-in, connect the Worker | The live site runs on production, email still off |
-| 4 | AWS: stack, DNS, SES approval | Email infrastructure ready |
+| 4 | AWS stack and Resend: domain, DNS, keys, webhook | Email infrastructure ready, at $0 |
 | 5 | Switch email on | Notifications send email |
 | 6 | Verify | Proof that each part works |
 | 7 | After: cleanup, rotation, rollback notes | Operations |
 
-Stages 1 to 3 need no AWS. Stage 4 can wait a day for the SES review without blocking anything.
+Stages 1 to 3 need no AWS. Stage 4 does not block them.
 
 ## Stage 0: prepare
 
@@ -235,57 +237,49 @@ The Worker reaches Postgres only through Hyperdrive, and the config id is a cons
 
 **Rollback for this stage:** restore the old `HYPERDRIVE_ID`, activate the develop file and deploy. The site is back on develop. Nothing in the production project needs undoing.
 
-## Stage 4: AWS
+## Stage 4: AWS and Resend
 
 Run from the repo root with AWS credentials for the account in your shell. Full background is in [`notifications.md`](notifications.md#setup).
 
-1. Install the infra package.
+1. **Resend.** Create a free account (no card). Add the domain `mail.<domain>` and add the records Resend shows in Cloudflare (the zone's **DNS → Records** page), all **DNS only**: the DKIM TXT `resend._domainkey.mail`, and the MX and SPF TXT on `send.mail`. Enter the **short name** (Cloudflare appends the zone itself; pasting the full name gives `….openspotleague.com.openspotleague.com`) and save each record separately. Check with `dig +short TXT resend._domainkey.mail.<domain> @<one of the zone's name servers>`, then press Verify in Resend.
+   - DMARC: keep what exists. `openspotleague.com` has `p=reject; sp=reject; adkim=s; aspf=s`; Resend signs DKIM as `mail.<domain>`, the From domain, so strict alignment passes. Never add a `p=none` record over a stricter one.
+2. **API key.** In Resend, create a key with **sending access** limited to that domain. Store it as an SSM SecureString `/openspot/notifications/resend-api-key` (AWS console → Systems Manager → Parameter Store). Never paste it into chat or an env file.
+3. Install the infra package, and once per account and region bootstrap CDK.
 
    ```bash
    pnpm aws:install
    ```
 
-2. Once per account and region, bootstrap CDK.
-
    ```bash
    pnpm --dir infra/aws exec cdk bootstrap
    ```
 
-3. Create the internal secret. Use a random value of 32 bytes or more and keep it for stage 5. It is never written into the template.
+   Then add a lifecycle rule to the bootstrap bucket (`cdk-hnb659fds-assets-<account>-<region>`) that expires current and noncurrent objects after 1 day, so deployed bundles do not sit in S3.
+
+4. Create the internal secret as SSM SecureString `/openspot/notifications/internal-secret`: random, 32 bytes or more. Keep it for stage 5; it is never written into the template.
+5. Review, then deploy the stack. Use the same `-c` values for both commands. `appUrl` is the address the Lambdas call: the Worker's `workers.dev` address (`https://open-spot.devopenspot.workers.dev`), see below. `replyTo` is an inbox someone reads; without it, replies bounce.
 
    ```bash
-   aws ssm put-parameter --name /openspot/notifications/internal-secret --type SecureString --value <random value>
-   ```
-
-4. Review, then deploy the stack. Use the same `-c` values for both commands. `appUrl` is the address the Lambdas call: the Worker's `workers.dev` address (`https://open-spot.devopenspot.workers.dev`) while the zone runs Bot Fight Mode (see below). `replyTo` is an inbox someone reads; without it, replies bounce.
-
-   ```bash
-   pnpm aws:diff -c sendingDomain=mail.<domain> -c fromAddress="OpenSpot League <no-reply@mail.<domain>>" -c appUrl=https://<site> -c alertEmail=<you> -c replyTo=<inbox>
+   pnpm aws:diff -c fromAddress="OpenSpot League <no-reply@mail.<domain>>" -c appUrl=https://<worker>.workers.dev -c alertEmail=<you> -c replyTo=<inbox>
    ```
 
    ```bash
-   pnpm aws:deploy -c sendingDomain=mail.<domain> -c fromAddress="OpenSpot League <no-reply@mail.<domain>>" -c appUrl=https://<site> -c alertEmail=<you> -c replyTo=<inbox>
+   pnpm aws:deploy -c fromAddress="OpenSpot League <no-reply@mail.<domain>>" -c appUrl=https://<worker>.workers.dev -c alertEmail=<you> -c replyTo=<inbox>
    ```
 
-   Right after the deploy, pause the tick until stage 5. Until the Worker has the internal secret, every tick gets `503 NOT_CONFIGURED`, and `osl-notify-tick-failing` fires within an hour.
+   Right after the first deploy, pause the tick until stage 5. Until the Worker has the internal secret, every tick gets `503 NOT_CONFIGURED`, and `osl-notify-tick-failing` fires within an hour. `update-schedule` replaces the whole schedule, so pass the target from `get-schedule` unchanged:
 
    ```bash
    aws scheduler update-schedule --name osl-notify-tick --state DISABLED --schedule-expression "rate(15 minutes)" --flexible-time-window Mode=OFF --target '<the current target JSON from get-schedule>'
    ```
 
-   `update-schedule` replaces the whole schedule, so pass the target from `aws scheduler get-schedule --name osl-notify-tick` unchanged.
+   Cloudflare answered every non-browser request to `openspotleague.com` with a 403 on 2026-11-10, while the `workers.dev` address reached the Worker. On the Free plan this is Bot Fight Mode, and **Bot Fight Mode cannot be skipped by WAF custom rules**. So `appUrl` is the `workers.dev` address. It is used only for the Lambdas' HMAC-signed calls; links in emails come from the Worker's `APP_URL`. Keep `workers.dev` enabled for the Worker (Workers → open-spot → Settings → Domains & Routes), or the tick breaks.
 
-   Cloudflare answered every non-browser request to `openspotleague.com` with a 403 on 2026-11-10, while the `workers.dev` address reached the Worker. The Lambdas are non-browser clients. On the Free plan this is Bot Fight Mode, and Cloudflare documents that **Bot Fight Mode cannot be skipped by WAF custom rules** (only Super Bot Fight Mode, Pro and up, can). So use `appUrl=https://open-spot.devopenspot.workers.dev`. `appUrl` is used only for the Lambdas' calls, which are HMAC-signed; links in emails come from the Worker's `APP_URL`. Keep `workers.dev` enabled for the Worker (Workers → open-spot → Settings → Domains & Routes), or the tick breaks. The only other way is turning Bot Fight Mode off for the whole site.
-
-5. Add the DNS records from the stack outputs in Cloudflare (the zone's **DNS → Records** page), all as **DNS only** (grey cloud; an orange, proxied CNAME breaks DKIM). Enter the **short name**, for example `bounce.mail` or `<token>._domainkey.mail`: Cloudflare appends the zone name itself, and pasting the full name gives `….openspotleague.com.openspotleague.com`. Save each record separately. Check with `dig +short CNAME <name> @<one of the zone's name servers>`, which skips caches:
-   - three DKIM CNAME records (`DkimRecord1` to `DkimRecord3`)
-   - the `bounce.` MX record and SPF TXT record (`MailFromRecords`)
-   - DMARC: first check what exists (`dig +short TXT _dmarc.<domain>`). `openspotleague.com` already has `p=reject; sp=reject; adkim=s; aspf=s`, which covers `mail.` as well. Keep it and add nothing: SES signs DKIM as the sending domain, which matches the From domain exactly, so strict alignment passes. Add `v=DMARC1; p=none; rua=mailto:<you>` only on a domain that has no DMARC record at all; on a domain with a stricter policy, a `p=none` record would weaken it.
-6. Confirm the alarm subscription email from AWS.
-7. Request SES production access in the SES console. Say that the mail is transactional (contest updates for registered participants), that every email has one-click unsubscribe, and that bounces and complaints suppress the address automatically. The review takes about a day. Until it is approved, SES delivers only to verified addresses.
+6. **Webhook.** In Resend, create a webhook for `email.bounced` and `email.complained` pointing at the stack output `ResendWebhookUrl` (a Lambda Function URL, outside Cloudflare). Store its signing secret as SSM SecureString `/openspot/notifications/resend-webhook-secret`.
+7. Confirm the alarm subscription email from AWS. The same address gets the zero-cost guard notice.
 8. Create an access key for the IAM user `osl-worker-notify` (output `WorkerUserName`). Its only permission is sending to the queue.
 
-**Go on when:** the SES identity shows as verified with DKIM passing, the custom MAIL FROM domain is verified, and the alarm subscription is confirmed. You can do stage 5 before SES approves production access, but then only verified addresses receive mail.
+**Go on when:** Resend shows the domain verified, the three SSM parameters exist, and the alarm subscription is confirmed.
 
 ## Stage 5: switch email on
 
@@ -334,15 +328,17 @@ Rows created before this deploy were never marked for email, so nothing old is s
    limit 10;
    ```
 
-6. **Bounce path (optional).** From the SES console, send a test email from the verified identity to `bounce@simulator.amazonses.com` using the configuration set `osl-notify`. The log group `/aws/lambda/osl-notify-ses-events` should show the event.
-7. **Alarms.** `osl-notify-tick-failing` and `osl-notify-email-dlq-not-empty` are in the OK state.
+6. **Bounce path (optional).** Send one queue job to Resend's test address `bounced@resend.dev`. The webhook delivery shows in Resend, the log group `/aws/lambda/osl-notify-resend-events` shows a verified event, and the address appears in `user_email_preferences.suppressed_at` (only if a profile has that address).
+7. **Email budget.** `select * from notification_email_budget order by day desc limit 3` shows today's count.
+8. **Alarms.** `osl-notify-tick-failing` and `osl-notify-email-dlq-not-empty` are in the OK state.
 
 ## Stage 7: after
 
 - **Make email permanent.** Move the six names from `notificationSecretNames` into `secretNames` in `cloudflare.config.ts` and drop the flag, so a plain deploy cannot switch email off. The develop file then needs the six variables too; leave develop pointing at no queue only if you accept that deploys must come from the production file.
 - **Develop cleanup.** In the develop project, delete the unused Vault secrets `resend_api_key` and `email_from`. They belonged to the old sweep. The production project never had them.
-- **Rotation.** Rotate the `osl-worker-notify` access key every 90 days, and at once if an env file may have leaked. Rotate the internal secret in SSM and on the Worker together.
-- **Budget.** The stack creates a monthly budget of $1 with an alert at 50%. SES is free for the account's first 12 months (3,000 emails a month), then $0.10 per 1,000.
+- **Rotation.** Rotate the `osl-worker-notify` access key every 90 days, and at once if an env file may have leaked. Rotate the internal secret in SSM and on the Worker together. Rotate the Resend key in SSM, then revoke the old one in Resend.
+- **AWS account plan (deadline 2027-03-22).** The account is on the AWS Free plan, which ends on 2027-03-22. On that date AWS suspends the account, so email, the tick and the alarms stop, and deletes it 90 days later. Before then, open Billing and Cost Management → **Upgrade to Paid plan**. The remaining credits carry over automatically. On the Paid plan the always-free limits still apply, and the stack's zero-cost guard stops everything if a real charge ever appears. Full costs are in [`notifications.md`](notifications.md#cost).
+- **Budgets.** `osl-notify-zero-cost` (credits excluded) stops the stack at any actual charge above $0.01; `osl-notify-monthly` ($1, alert at 50%) is the early warning. Resend's free plan cannot bill (no card); the app caps email at 95 a day and 2,900 a month.
 - **Runbook.** Alarm handling is in [`notifications.md`](notifications.md#runbook).
 
 ## Stopping and rolling back
@@ -350,7 +346,7 @@ Rows created before this deploy were never marked for email, so nothing old is s
 | Need | Do |
 | --- | --- |
 | Stop all email now | Deploy production without `OPENSPOT_NOTIFICATIONS=1`, or disable the `osl-notify-tick` schedule and the queue's Lambda trigger in AWS. In-app notifications keep working. |
-| Undo the AWS stack | `pnpm --dir infra/aws exec cdk destroy`, then remove the DNS records. |
+| Undo the AWS stack | `pnpm --dir infra/aws exec cdk destroy`, then remove the Resend domain records from DNS. |
 | Go back to the develop database | Restore the old `HYPERDRIVE_ID` and deploy with the develop file. |
 | Undo 0009 | Not possible. The old email sweep is gone. The new code does not need it. |
 | Undo 0010 | Not needed. It only changes when the signal trigger fires. |

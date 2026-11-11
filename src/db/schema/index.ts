@@ -3,6 +3,7 @@ import {
   bigint,
   check,
   customType,
+  date,
   foreignKey,
   index,
   integer,
@@ -2014,7 +2015,7 @@ export const userEmailPreferences = pgTable(
     reminders: boolean("reminders").notNull().default(true),
     judging: boolean("judging").notNull().default(true),
     results: boolean("results").notNull().default(true),
-    /** Set on hard bounce / complaint (SES feedback); blocks all email. */
+    /** Set on hard bounce / complaint (email provider feedback); blocks all email. */
     suppressedAt: timestamp("suppressed_at", { withTimezone: true }),
     suppressedReason: text("suppressed_reason").$type<"bounce" | "complaint">(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -2026,6 +2027,20 @@ export const userEmailPreferences = pgTable(
       sql`${t.suppressedReason} is null or ${t.suppressedReason} in ('bounce','complaint')`,
     ),
   ],
+);
+
+/**
+ * Emails handed to the queue per UTC day (0011). Caps the free email plan;
+ * written only by `deliveryStore.reserveEmailBudget` / `exhaustEmailBudget`.
+ */
+export const notificationEmailBudget = pgTable(
+  "notification_email_budget",
+  {
+    day: date("day", { mode: "string" }).primaryKey(),
+    sent: integer("sent").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [check("notification_email_budget_sent_check", sql`${t.sent} >= 0`)],
 );
 
 export const userEmailPreferencesRelations = relations(

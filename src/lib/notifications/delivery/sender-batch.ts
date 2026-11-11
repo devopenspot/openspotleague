@@ -7,6 +7,9 @@
  *   - unparseable                → logged and dropped (a retry cannot fix it)
  *   - sent                       → reported `sent`
  *   - `PermanentSendError`       → reported `failed`, not retried
+ *   - `QuotaExceededError`       → reported `deferred`, and so is every later
+ *                                  record in the batch, unsent: the free quota
+ *                                  is gone until the next UTC day
  *   - any other error            → returned to SQS for a retry
  * A retry stops the rest of that record's message group only, so one user's
  * emails stay in order and a failure never spends other users' retries.
@@ -23,6 +26,9 @@ export interface BatchRecord {
 
 /** Thrown by `send` for a problem with this one email that a retry cannot fix. */
 export class PermanentSendError extends Error {}
+
+/** Thrown by `send` when the provider's free quota is used up. */
+export class QuotaExceededError extends Error {}
 
 export interface BatchOutcome {
   /** Message ids SQS must deliver again. */
@@ -53,6 +59,7 @@ export async function processEmailBatch(
   const failedMessageIds: string[] = []
   const reports: DeliveryReport["reports"] = []
   const haltedGroups = new Set<string>()
+  let quotaReason: string | null = null
 
   for (const record of records) {
     if (haltedGroups.has(record.groupId)) {
@@ -64,11 +71,21 @@ export async function processEmailBatch(
       logger.error("invalid email job", record.messageId)
       continue
     }
+    if (quotaReason) {
+      reports.push({ kind: "job", notificationIds: job.notificationIds, status: "deferred", reason: quotaReason })
+      continue
+    }
     try {
       const { messageId } = await send(job)
-      reports.push({ kind: "job", notificationIds: job.notificationIds, status: "sent", sesMessageId: messageId })
+      reports.push({ kind: "job", notificationIds: job.notificationIds, status: "sent", messageId })
     } catch (error) {
-      // Error names only: SES messages can contain the recipient address.
+      // Error names only: provider messages can contain the recipient address.
+      if (error instanceof QuotaExceededError) {
+        quotaReason = error.message.slice(0, 500) || "quota_exceeded"
+        logger.warn("email quota exhausted, deferring the rest of the batch", job.key)
+        reports.push({ kind: "job", notificationIds: job.notificationIds, status: "deferred", reason: quotaReason })
+        continue
+      }
       if (error instanceof PermanentSendError) {
         logger.warn("email permanently failed", job.key, error.message)
         reports.push({

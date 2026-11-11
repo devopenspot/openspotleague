@@ -1,6 +1,7 @@
 /**
  * Database side of email delivery: the `user_notifications` outbox, recipient
- * preferences, SES feedback, and the reminder candidate reads. Same layer as
+ * preferences, the daily email budget, bounce / complaint feedback, and the
+ * reminder candidate reads. Same layer as
  * `src/lib/notifications/service.ts` (the notification single writer).
  *
  * Claiming is an atomic `UPDATE … WHERE id IN (SELECT … FOR UPDATE SKIP
@@ -20,6 +21,7 @@ import {
   eventPayments,
   eventRuns,
   eventScores,
+  notificationEmailBudget,
   profiles,
   sportEvents,
   userEmailPreferences,
@@ -37,6 +39,7 @@ import type {
   PaymentGateCandidate,
   VideoDeadlineCandidate,
 } from "@/lib/notifications/reminders"
+import { allowEmails, utcDay, utcMonthStart, type EmailCaps, type EmailRequest } from "./budget"
 
 export interface ClaimedNotification {
   id: string
@@ -220,7 +223,68 @@ export const deliveryStore = {
     return result
   },
 
-  /** SES hard bounce / complaint: stop all email to that address. */
+  /**
+   * Reserves room in today's email budget (0011) and returns how many of each
+   * kind fit. Today's row is locked, so concurrent dispatches never overspend;
+   * the month total includes today.
+   */
+  async reserveEmailBudget(input: { caps: EmailCaps; request: EmailRequest; now: Date }): Promise<EmailRequest> {
+    if (input.request.immediate + input.request.digest <= 0) return { immediate: 0, digest: 0 }
+    const { db } = getDbClient()
+    const today = utcDay(input.now)
+    return withDbWrite("notifications.reserveEmailBudget", () =>
+      db.transaction(async (tx) => {
+        await tx.insert(notificationEmailBudget).values({ day: today, sent: 0 }).onConflictDoNothing()
+        const [row] = await tx
+          .select({ sent: notificationEmailBudget.sent })
+          .from(notificationEmailBudget)
+          .where(eq(notificationEmailBudget.day, today))
+          .for("update")
+        const [month] = await tx
+          .select({ sent: sql<number>`coalesce(sum(${notificationEmailBudget.sent}), 0)::int` })
+          .from(notificationEmailBudget)
+          .where(
+            and(
+              sql`${notificationEmailBudget.day} >= ${utcMonthStart(input.now)}::date`,
+              sql`${notificationEmailBudget.day} <= ${today}::date`,
+            ),
+          )
+        const allowed = allowEmails(
+          { today: row?.sent ?? 0, month: Number(month?.sent ?? 0) },
+          input.caps,
+          input.request,
+        )
+        const total = allowed.immediate + allowed.digest
+        if (total > 0) {
+          await tx
+            .update(notificationEmailBudget)
+            .set({ sent: sql`${notificationEmailBudget.sent} + ${total}`, updatedAt: input.now })
+            .where(eq(notificationEmailBudget.day, today))
+        }
+        return allowed
+      }),
+    )
+  },
+
+  /** The provider refused for quota: nothing more is queued until the next UTC day. */
+  async exhaustEmailBudget(input: { dailyCap: number; now: Date }): Promise<void> {
+    const { db } = getDbClient()
+    const today = utcDay(input.now)
+    await withDbWrite("notifications.exhaustEmailBudget", () =>
+      db
+        .insert(notificationEmailBudget)
+        .values({ day: today, sent: input.dailyCap, updatedAt: input.now })
+        .onConflictDoUpdate({
+          target: notificationEmailBudget.day,
+          set: {
+            sent: sql`greatest(${notificationEmailBudget.sent}, ${input.dailyCap})`,
+            updatedAt: input.now,
+          },
+        }),
+    )
+  },
+
+  /** Hard bounce / complaint from the email provider: stop all email to that address. */
   async suppressAddress(email: string, reason: "bounce" | "complaint"): Promise<number> {
     const { db } = getDbClient()
     return withDbWrite("notifications.suppress", () =>
@@ -406,4 +470,6 @@ export type DeliveryStore = Pick<
   | "setStatus"
   | "loadRecipients"
   | "suppressAddress"
+  | "reserveEmailBudget"
+  | "exhaustEmailBudget"
 >

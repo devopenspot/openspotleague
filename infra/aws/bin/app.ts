@@ -13,11 +13,10 @@ function context(name: string): string {
 
 new NotificationsStack(app, "OpenSpotNotifications", {
   env: { region: context("region"), account: process.env.CDK_DEFAULT_ACCOUNT },
-  sendingDomain: context("sendingDomain"),
   fromAddress: context("fromAddress"),
   appUrl: context("appUrl"),
   replyTo: String(app.node.tryGetContext("replyTo") ?? "").trim() || undefined,
   alertEmail: context("alertEmail"),
   monthlyBudgetUsd: Number(app.node.tryGetContext("monthlyBudgetUsd") ?? 1),
-  description: "OpenSpot League email notifications: SQS FIFO → Lambda → SES, 15-min tick (docs/notifications.md)",
+  description: "OpenSpot League email notifications: SQS FIFO → Lambda → Resend free plan, 15-min tick (docs/notifications.md)",
 })
