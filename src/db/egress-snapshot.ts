@@ -3,6 +3,9 @@ import { getDatabaseUrl } from "../lib/config/env"
 import fs from "node:fs"
 import path from "node:path"
 import postgres from "postgres"
+import { guardDbScript } from "./target"
+
+guardDbScript("read")
 
 interface StatementSnapshot {
   id: string

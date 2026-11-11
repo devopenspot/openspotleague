@@ -7,6 +7,9 @@ import {
   type MigrateSpotsResult,
   type ValidateSpotsResult,
 } from "@/db/seed-data/spots-migration"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript(process.argv.includes("--dry-run") ? "read" : "write")
 
 export {
   migrateSpots,

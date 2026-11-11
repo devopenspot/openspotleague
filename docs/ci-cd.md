@@ -92,13 +92,13 @@ Details, secrets and setup: [`environments.md`](environments.md).
 
 ## 5. Deploy to develop (automatic)
 
-`.github/workflows/deploy-develop.yml` runs on every push to `main`, after `ci` passes, one run at a time (later runs queue; a running deploy is never cancelled).
+`.github/workflows/deploy-develop.yml` runs on every push to `main`. It first runs the whole `ci` workflow on that commit, then deploys, one run at a time: a running deploy is never cancelled, and a newer push replaces one that is still queued, so develop always moves to the newest commit.
 
 1. **Migrate.** `pnpm db:apply` against the develop database.
 2. **Build.** `pnpm build:develop` bakes the develop public values into the bundle.
 3. **Deploy.** `pnpm deploy:develop` uploads the Worker with the develop secrets, tagged with the commit SHA.
-4. **Smoke.** `pnpm smoke` checks `/api/health`, the home page and the share images on the Worker's `workers.dev` address. (Bot Fight Mode and the WAF block GitHub runners on the custom domain, and no rule can skip Bot Fight Mode.)
-5. **Record.** A GitHub Deployment for `develop` marks the commit as live. The release workflow trusts only commits with a successful develop deployment.
+4. **Smoke.** `pnpm smoke develop` (`scripts/smoke.ts`) checks `/api/health`, the home page and the `noindex` header on the Worker's `workers.dev` address, retrying for a minute. (Bot Fight Mode and the WAF block GitHub runners on the custom domain, and no rule can skip Bot Fight Mode.) Share images are checked by hand with `pnpm og:check` when they change ([`og-cards.md`](og-cards.md)).
+5. **Record.** A green `deploy-develop` run marks the commit as proven. The release workflow accepts only commits with one.
 
 If a step fails, `main` is still fine to merge into, but the failure is the team's first priority: fix forward with a new pull request, or revert the offending commit (`git revert`, as a pull request).
 
@@ -106,10 +106,10 @@ If a step fails, `main` is still fine to merge into, but the failure is the team
 
 Production gets only commits that are already live and checked on develop.
 
-1. Open **Actions → Release to production → Run workflow**. The default is the commit currently live on develop; you can enter an older SHA from `main`.
-2. The workflow checks that the commit is on `main` and has a successful develop deployment, and shows the pending migrations and the changes since the last release.
+1. Open **Actions → release-production → Run workflow** on `main`. Leave `ref` empty to release the last commit that passed `deploy-develop`, or enter an older SHA from `main`.
+2. The `prepare` job checks that the commit is on `main` and has a green `deploy-develop` run, and writes the new migrations and the changes since the last release into the run summary.
 3. A reviewer approves the `production` environment (GitHub asks the required reviewers).
-4. The workflow creates the tag `vYYYY.MM.DD-N` (UTC date, `N` counts releases that day), applies migrations to production, builds with the production values, deploys, runs the smoke check, and publishes a GitHub Release with notes generated from the merged pull request titles.
+4. The `release` job applies migrations to production, builds with the production values, deploys, runs `pnpm smoke production`, then publishes a GitHub Release tagged `vYYYY.MM.DD-N` (UTC date, `N` counts releases that day) with notes generated from the merged pull request titles. Email is included when the `production` environment variable `EMAIL_ENABLED` is `true`.
 
 When to release: whenever develop looks good. Small, frequent releases are safer than big ones; there is no fixed train. Avoid releasing right before you go offline.
 
@@ -122,9 +122,9 @@ Tags are calendar versions, `v2026.11.12-1`. They exist only to name what is in 
 | Situation | Do |
 | --- | --- |
 | Production is broken by the last release, now | Cloudflare dashboard → Workers → `open-spot` → Deployments → roll back to the previous version. It takes seconds and touches no data. Then follow up below. |
-| Durable rollback | Run **Release to production** with the previous tag and `rollback: true`. It redeploys that code and skips migrations. |
+| Durable rollback | Run **release-production** with the previous tag as `ref` and `rollback` ticked. It redeploys that code, skips migrations and creates no new tag. |
 | Bad code, fix is small | Fix forward: a normal pull request, merge, check on develop, release. This is the default. |
-| `main` holds unreleased work that must not ship yet and no flag covers it | Rare. Create `hotfix/<tag>` from the production tag, cherry-pick the fix, and run the release workflow on that branch. Merge the same fix to `main` too. |
+| `main` holds unreleased work that must not ship yet and no flag covers it | Rare. Create `hotfix/<tag>` from the production tag, cherry-pick the fix, push, and run **release-production** on that branch (it skips the develop check, so test the fix carefully). Merge the same fix to `main` too. |
 | A migration caused it | Migrations are never rolled back. Write a new migration that repairs the state, and release it. Expand/contract (section 8) is what keeps old code working while you do. |
 
 ## 8. Database migrations in the flow
@@ -143,7 +143,7 @@ The pipeline applies migrations; people do not run `db:apply` against develop or
 
    Dropping or renaming something the live code uses (as `0009` did with a function) is the one thing this rule forbids in a single release.
 4. **Same files, same order everywhere.** Develop gets a migration when it merges; production gets it on the next release.
-5. **Seeds and one-off tasks** run through **Actions → Database task** (`db-task.yml`): `health`, `seed`, `seed-tv`, `seed-tricks`, `bootstrap-admin`, and `fresh-seed` (develop only). Production tasks need the same approval as a release.
+5. **Seeds and one-off tasks** run through **Actions → db-task**: `health`, `seed`, `seed-tv`, `seed-tricks`, `bootstrap-admins` (grants admin to the addresses in the `ADMIN_EMAILS` secret; the repository is public, so emails are never typed as inputs), and `fresh-seed` (develop only). Production tasks need the same approval as a release. A nightly `smoke-db` run exercises the League chain on develop.
 6. Destructive scripts (`db:reset`, `db:fresh`, `db:fresh:seed`, `storage-gc --delete`) refuse to run against the production project, wherever they are started.
 
 ## 9. Infrastructure outside the Worker

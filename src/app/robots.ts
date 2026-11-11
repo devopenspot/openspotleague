@@ -49,6 +49,10 @@ const BLOCKED_AGENTS = [
 ];
 
 export default function robots(): MetadataRoute.Robots {
+  // Develop is for the team only (docs/environments.md).
+  if (env.APP_ENV === 'develop') {
+    return { rules: [{ userAgent: '*', disallow: '/' }] };
+  }
   return {
     rules: [
       { userAgent: BLOCKED_AGENTS, disallow: '/' },

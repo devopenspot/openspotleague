@@ -3,6 +3,9 @@ import { eq, sql } from "drizzle-orm"
 import { closeDb, getDbClient } from "@/lib/db/client"
 import { profiles, roles, userRoles } from "@/db/schema"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript("write")
 
 async function main() {
   const targetEmail = (process.argv[2] || "devopenspot@gmail.com").trim().toLowerCase()

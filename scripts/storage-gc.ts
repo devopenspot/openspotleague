@@ -4,6 +4,9 @@ import { getDirectDatabaseUrl, isR2Configured } from "../src/lib/config/env"
 import { getPostgresOptions } from "../src/lib/db/postgres-options"
 import { getSupabaseAdminClient } from "../src/lib/supabase/admin"
 import { r2Adapter } from "../src/lib/storage/r2"
+import { guardDbScript } from "../src/db/target"
+
+guardDbScript(process.argv.includes("--delete") ? "destructive" : "read")
 
 type StorageObject = { bucket_id: string; name: string }
 

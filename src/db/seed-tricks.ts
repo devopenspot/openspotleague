@@ -17,6 +17,9 @@ import {
   parseDisciplineSlug,
   seedChallengeCatalogForDiscipline,
 } from "./seed-data/challenge-catalogs"
+import { guardDbScript } from "./target"
+
+guardDbScript("write")
 
 const ALL_DISCIPLINES = Object.keys(GAME_DEFINITIONS) as DisciplineSlug[]
 const DISCIPLINES_LIST = ALL_DISCIPLINES.join(", ")

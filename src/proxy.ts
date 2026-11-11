@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 import { log } from "@/lib/utils/log"
 import { clientIp, isRateLimited, rateLimitedResponse, rateLimitKey } from "@/lib/api/rate-limit"
-import { securityHeaders, cspValue } from "@/lib/security/headers"
+import { NOINDEX_HEADER, cspValue, isIndexableEnvironment, securityHeaders } from "@/lib/security/headers"
 import { perRequest } from "@/lib/utils/request-scope"
 import { getCachedJwks } from "@/lib/supabase/jwks"
 
@@ -130,6 +130,9 @@ function applySecurityHeaders(response: NextResponse, request?: NextRequest): vo
     response.headers.set("Content-Security-Policy", "frame-ancestors *")
   } else {
     response.headers.set("Content-Security-Policy-Report-Only", cachedCspReportOnly)
+  }
+  if (!isIndexableEnvironment(process.env.APP_ENV)) {
+    response.headers.set(NOINDEX_HEADER.key, NOINDEX_HEADER.value)
   }
   // HSTS only in production – Cloudflare terminates TLS, so safe to send always in prod
   if (process.env.NODE_ENV === "production") {

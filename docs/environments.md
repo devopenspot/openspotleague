@@ -61,18 +61,18 @@ GitHub → Settings → Environments → `develop` / `production` → Environmen
 | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | yes | yes | Worker uploads |
 | `API_KEY_WEATHER` | yes | yes | Worker |
 | `ADMIN_EMAILS` | yes | yes | Worker, `db:seed` |
-| `AWS_NOTIFY_ACCESS_KEY_ID`, `AWS_NOTIFY_SECRET_ACCESS_KEY`, `NOTIFICATIONS_INTERNAL_SECRET`, `NOTIFICATIONS_UNSUBSCRIBE_SECRET`, `NOTIFY_EMAIL_QUEUE_URL` | — | yes | Worker email delivery |
+| `AWS_NOTIFY_ACCESS_KEY_ID`, `AWS_NOTIFY_SECRET_ACCESS_KEY`, `AWS_NOTIFY_REGION`, `NOTIFICATIONS_INTERNAL_SECRET`, `NOTIFICATIONS_UNSUBSCRIBE_SECRET`, `NOTIFY_EMAIL_QUEUE_URL` | — | yes | Worker email delivery |
 | `AWS_DEPLOY_ROLE_ARN` | — | yes | `infra-aws.yml` (GitHub OIDC; no AWS keys stored) |
 
-Repository variable (Settings → Variables): `CLOUDFLARE_ACCOUNT_ID`.
+Variables (not secret): repository variable `CLOUDFLARE_ACCOUNT_ID`; `production` environment variable `EMAIL_ENABLED` (`true` once the AWS stack serves production; until then the release deploys without the email secrets).
 
-Why the session pooler for migrations: GitHub-hosted runners have no IPv6, and Supabase's direct host (`db.<ref>.supabase.co`) is IPv6-only without the paid IPv4 add-on. The session pooler (`aws-0-<region>.pooler.supabase.com:5432`, user `postgres.<ref>`) speaks IPv4 and keeps session state, so the advisory lock in `src/db/apply-sql.ts` still works. Never use the transaction pooler (port 6543) for migrations.
+Why the session pooler for migrations: GitHub-hosted runners have no IPv6, and Supabase's direct host (`db.<ref>.supabase.co`) is IPv6-only without the paid IPv4 add-on. The session pooler (`aws-<n>-<region>.pooler.supabase.com:5432`, user `postgres.<ref>`) speaks IPv4 and keeps session state, so the advisory lock in `src/db/apply-sql.ts` still works. Never use the transaction pooler (port 6543) for migrations.
 
 Cloudflare API token permissions (Account → API Tokens → Create custom token): Account · Workers Scripts · Edit; Account · Workers R2 Storage · Edit (response-store bucket); Account · Hyperdrive · Read; Zone `openspotleague.com` · Workers Routes · Edit; Zone · DNS · Edit (custom domain records). Restrict it to the one account and zone.
 
 ## Guards
 
-Every database script prints its target before doing anything, for example `db target: develop (aws-0-us-east-1.pooler.supabase.com, ref vvmfgkphetdfyhnrrwar)`. The target is detected from the project ref in the connection URL (`src/db/target.ts`); refs are public, so they are written in the code.
+Every database script prints its target before doing anything, for example `db target: develop (aws-1-us-west-2.pooler.supabase.com:5432, ref vvmfgkphetdfyhnrrwar)`. The target is detected from the project ref in the connection URL (`src/db/target.ts`); refs are public, so they are written in the code.
 
 | Script | Develop | Production |
 | --- | --- | --- |
@@ -123,10 +123,12 @@ Merge the pull request that adds `deploy-develop.yml`. The run creates the `open
 
 Today the `open-spot` Worker still uses the develop database. The first release moves it to production:
 
-1. Run **Database task** → `production` → `health` (connectivity and PostGIS pass, migrations missing).
-2. Run **Release to production** on the commit live on develop. It applies every migration to the empty production database and deploys `open-spot` with the production Hyperdrive and values.
-3. Run **Database task** → `production` → `seed`, then `seed-tv`, then `seed-tricks`.
-4. Sign in once on `https://openspotleague.com` with the admin account, then run **Database task** → `production` → `bootstrap-admin` with that email.
+Before it: `ENVIRONMENTS.production.hyperdriveId` in `cloudflare.config.ts` and the production publishable key in `.env.production` are filled in (a production build refuses `__SET_ME__` and an empty id), merged through a normal pull request.
+
+1. Run **db-task** → `production` → `health` (connectivity and PostGIS pass, migrations missing).
+2. Run **release-production** on `main`. It applies every migration to the empty production database and deploys `open-spot` with the production Hyperdrive and values.
+3. Run **db-task** → `production` → `seed`, then `seed-tv`, then `seed-tricks`.
+4. Sign in once on `https://openspotleague.com` with each admin account, then run **db-task** → `production` → `bootstrap-admins`.
 
 Accounts and content created on develop are not carried over: sign-in is per Supabase project. This supersedes stage 3 of [`notifications-deploy.md`](notifications-deploy.md).
 

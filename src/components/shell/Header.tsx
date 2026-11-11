@@ -10,6 +10,7 @@ import { useSavedSpots } from "@/hooks/data/useSavedSpots";
 import { useUser } from "@/lib/contexts/user-context";
 import { useUIStore } from "@/stores/ui-store";
 import { BrandLogo } from "@/components/shell/BrandLogo";
+import { EnvironmentBadge } from "@/components/shell/EnvironmentBadge";
 import { iconButtonClass } from "@/components/ui/recipes";
 
 export interface HeaderProps {
@@ -36,11 +37,14 @@ export function Header({ image, imageAlt }: HeaderProps = {}) {
       className="sticky top-0 z-40 w-full border-b border-wire-border bg-primary px-5 md:px-10 py-3"
     >
       <div className="flex items-center justify-between gap-4">
-        <BrandLogo
-          image={resolvedImage}
-          alt={imageAlt}
-          className="transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
-        />
+        <div className="flex items-center gap-2">
+          <BrandLogo
+            image={resolvedImage}
+            alt={imageAlt}
+            className="transition-colors hover:bg-wire-border focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          />
+          <EnvironmentBadge />
+        </div>
 
         {/* Primary pill track (Map, League, TV). Hidden below md, where the
             bottom bar takes over. */}
