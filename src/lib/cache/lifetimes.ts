@@ -14,4 +14,6 @@ export const IMAGE_CACHE_LIFE = { revalidate: 3500, stale: 3600, expire: 3600 } 
 export const REPORT_CACHE_LIFE = { revalidate: 60, stale: 300, expire: 3600 } as const
 export const PROFILE_CACHE_LIFE = { revalidate: 60, stale: 300, expire: 3600 } as const
 export const AUTHZ_CACHE_LIFE = { revalidate: 60, stale: 300, expire: 3600 } as const
+/** Feature flag overrides: a toggle shows within a minute even if invalidation is missed. */
+export const FEATURE_FLAG_CACHE_LIFE = { revalidate: 60, stale: 60, expire: 300 } as const
 export const SHORT_LINK_CACHE_LIFE = { revalidate: 86400, stale: 604800, expire: 2592000 } as const

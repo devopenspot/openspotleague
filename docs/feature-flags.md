@@ -19,7 +19,7 @@ Keep about five flags live at most. Each one doubles the paths to test.
 A flag is declared in code with a default per environment; each environment's database can override it.
 
 ```ts
-// src/lib/flags/registry.ts
+// src/lib/flags/registry.ts  (defineFlag from ./definition)
 export const FLAGS = {
   leagueVideoJudging: defineFlag({
     description: "Video judging for League contests",
@@ -40,6 +40,15 @@ Each environment has its own database, so turning a flag on in develop never tou
 
 ### Using a flag
 
+```ts
+import { isEnabled, evaluateFlags } from "@/lib/services/flags/feature-flags"
+
+const on = await isEnabled("leagueVideoJudging", { userId: user?.id })
+const flags = await evaluateFlags(["leagueVideoJudging", "otherFlag"], { userId: user?.id })
+```
+
+Roles are loaded (cached) only when an override targets roles. If the flag table cannot be read, every flag falls back to its code default.
+
 - **Server only.** Call `isEnabled` in Server Components, route handlers and services. Pass the resulting booleans to Client Components; never send the flag table to the browser.
 - **One check per entry point.** Check at the top of the page, route or service method, not in every component.
 - **Both paths must work.** Tests cover the flag on and off.
@@ -47,7 +56,7 @@ Each environment has its own database, so turning a flag on in develop never tou
 
 ### Changing a flag
 
-Admins toggle flags in **Admin → Flags** (`/admin/flags`) for the environment they are signed in to. A change takes effect within a minute without a deploy: the overrides are read once into the shared cache (`"use cache: remote"`, tag `feature-flags`) and the toggle invalidates that tag after it commits. Each change records who made it and when.
+Admins toggle flags in **Admin → Feature flags** (`/admin/flags`) for the environment they are signed in to: code default, on (optionally admins only, or a rollout percentage), or off as a kill switch. The page calls `PUT`/`DELETE /api/admin/flags/<key>`; the API also accepts an allow-list of user ids. A change takes effect within a minute without a deploy: the overrides are read once into the shared cache (`"use cache: remote"`, tag `feature-flags`) and the toggle invalidates that tag after it commits. Each change records who made it and when.
 
 ## Lifecycle
 
@@ -62,6 +71,16 @@ Admins toggle flags in **Admin → Flags** (`/admin/flags`) for the environment 
 
 ## Existing flags
 
-`NEXT_PUBLIC_FEATURE_SHORT_LINKS` (`src/lib/config/feature-flags.ts`) and `NEXT_PUBLIC_MAP_DISTANCE` (`src/components/map/shared/map-feature-flags.ts`) are build-time switches from before this system. They move into the registry when the flag module lands; until then they are set per environment in `.env.develop` and `.env.production`.
+`NEXT_PUBLIC_FEATURE_SHORT_LINKS` (`src/lib/config/feature-flags.ts`) and `NEXT_PUBLIC_MAP_DISTANCE` (`src/components/map/shared/map-feature-flags.ts`) are build-time switches from before this system, read in client code. They stay build-time and are set per environment in `.env.develop` and `.env.production`; move one into the registry only if it needs a rollout or a kill switch.
+
+## Code map
+
+| File | Role |
+| --- | --- |
+| `src/lib/flags/registry.ts` | The declared flags |
+| `src/lib/flags/definition.ts`, `evaluate.ts` | Types and the pure evaluation (unit-tested) |
+| `src/lib/services/flags/feature-flags.ts` | `isEnabled`, `evaluateFlags`, admin reads and writes, caching |
+| `src/lib/repositories/flags/` | `feature_flags` table access (migration `0012_feature_flags.sql`) |
+| `src/app/admin/flags`, `src/app/api/admin/flags/[key]` | Admin page and API |
 
 `OPENSPOT_NOTIFICATIONS=1` is not a feature flag: it declares the email secrets on the Worker at deploy time and goes away once those names move into the regular secret list.

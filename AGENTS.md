@@ -44,6 +44,7 @@ Delivery is trunk-based: short branch → pull request (Conventional Commit titl
 | `src/lib/repositories/*` | Repository interfaces plus Drizzle implementations, resolved through `repositories/index.ts`. |
 | `src/lib/games/*`, `src/lib/league/*` | Pure domain engines (state machines, scoring, capabilities). No DB or IO, except `src/lib/league/realtime.ts` (Supabase browser channel); unit-tested. |
 | `src/lib/league/rating/*` | League rating engine from Article 9 (Res. 082/2026): Park/Street/Vert formats, the five criteria, required elements per discipline, 0–10 scoring, trimmed-mean panel, division ranking. |
+| `src/lib/flags/*`, `src/lib/services/flags/*` | Feature flags: registry in code, per-environment overrides in `feature_flags`, cached evaluation (`docs/feature-flags.md`). |
 | `src/lib/notifications/*` | Notification writer, `EMAIL_POLICY`, reminders, and email delivery (`delivery/`: outbox dispatcher, SQS producer, signed Lambda contract). |
 | `infra/aws/` | Separate CDK package: SQS FIFO, three Lambdas (sender via Resend, tick, Resend webhook), the 15-minute Scheduler tick, the zero-cost guard. See `docs/notifications.md`. |
 | `src/lib/db/client.ts` | `withDbRead`, `withDbWrite`, `withDbRetry`, pool configuration, global concurrency gate. |
