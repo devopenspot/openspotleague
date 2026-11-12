@@ -88,7 +88,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "@vitejs/plugin-rsc": "^0.5.39",
-    "cf": "1.0.0-beta.26",
+    "cf": "1.0.0-beta.28",
     "dotenv": "^17.4.2",
     "dotenv-expand": "^1000.0.0",
     "drizzle-kit": "^0.31.11",
