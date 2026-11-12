@@ -1,0 +1,59 @@
+# AWS notifications stack (infra/aws, docs/notifications.md). Production only:
+# develop sends no email. Manual, behind the production environment approval.
+# Authenticates with GitHub OIDC (no stored AWS keys): see
+# docs/environments.md → One-time setup → AWS. Pull requests only synth the
+# stack (ci.yml `infra` job), which needs no AWS access.
+name: infra-aws
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "diff shows the change set; deploy applies it"
+        type: choice
+        options: [diff, deploy]
+        default: diff
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: infra-aws
+  cancel-in-progress: false
+
+jobs:
+  cdk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      # Emails are secrets because the repository is public.
+      NOTIFY_FROM_ADDRESS: ${{ vars.NOTIFY_FROM_ADDRESS }}
+      NOTIFY_ALERT_EMAIL: ${{ secrets.NOTIFY_ALERT_EMAIL }}
+      NOTIFY_REPLY_TO: ${{ secrets.NOTIFY_REPLY_TO }}
+      # The Lambdas call the Worker's workers.dev address: Bot Fight Mode
+      # blocks them on the custom domain (docs/notifications-deploy.md).
+      NOTIFY_APP_URL: https://open-spot.devopenspot.workers.dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          install-infra: "true"
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - run: pnpm aws:typecheck
+      - name: cdk ${{ inputs.action }}
+        env:
+          ACTION: ${{ inputs.action }}
+        run: |
+          set -euo pipefail
+          ctx=(-c "fromAddress=$NOTIFY_FROM_ADDRESS" -c "appUrl=$NOTIFY_APP_URL" -c "alertEmail=$NOTIFY_ALERT_EMAIL")
+          if [ -n "$NOTIFY_REPLY_TO" ]; then ctx+=(-c "replyTo=$NOTIFY_REPLY_TO"); fi
+          if [ "$ACTION" = "deploy" ]; then
+            pnpm aws:deploy --require-approval never "${ctx[@]}"
+          else
+            pnpm aws:diff "${ctx[@]}"
+          fi
