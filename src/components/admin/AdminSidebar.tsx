@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import {
   ClipboardList,
   FileVideo,
+  Flag,
   Globe,
   MapPin,
   Medal,
@@ -55,6 +56,12 @@ const ADMIN_ITEMS: readonly SidebarItem[] = [
     href: "/admin/users",
     label: "Users & roles",
     Icon: Users,
+    adminOnly: true,
+  },
+  {
+    href: "/admin/flags",
+    label: "Feature flags",
+    Icon: Flag,
     adminOnly: true,
   },
 ]

@@ -2,7 +2,7 @@
 
 How code goes from a branch to `develop` and then to `production`. Environments, secrets and one-time setup are in [`environments.md`](environments.md). Feature flags are in [`feature-flags.md`](feature-flags.md).
 
-> **Rollout status.** This guide describes the target flow; it lands in steps. Live: `ci` on pull requests and `main`. Next: environment-aware build and guards, the develop pipeline, the production release, feature flags, the AWS pipeline. The order and the manual setup are in [`environments.md`](environments.md#one-time-setup). Update this note as each step lands.
+> **Rollout status.** This guide describes the target flow; it lands in steps. In the repository: `ci`, the environment-aware build and guards, the develop, release and database-task workflows, and feature flags. Waiting on one-time setup before they can run: the develop pipeline and the production release. Not built yet: the AWS pipeline. The order and the manual setup are in [`environments.md`](environments.md#one-time-setup). Update this note as each step lands.
 
 The flow in one line: **short branch → pull request with green CI and one review → squash merge to `main` → automatic deploy to develop → manual, approved release of that same commit to production.**
 
@@ -148,7 +148,7 @@ The pipeline applies migrations; people do not run `db:apply` against develop or
 
 ## 9. Infrastructure outside the Worker
 
-- **AWS notifications stack** (`infra/aws`): `cdk diff` runs on pull requests that touch `infra/**`; deploying is a manual workflow for production only, authenticated with GitHub OIDC (no stored AWS keys). Develop has no email stack.
+- **AWS notifications stack** (`infra/aws`): pull requests that touch `infra/**` get `aws:typecheck` and `cdk synth` in `ci` (no AWS access needed). **Actions → infra-aws** runs `cdk diff` or `cdk deploy` for production, behind the production approval, authenticated with GitHub OIDC (no stored AWS keys). Run `diff` first and read it in the log. Develop has no email stack.
 - **Cloudflare dashboard settings** (WAF, Bot Fight Mode, rate limits, Hyperdrive, R2, domains) are not in the repo. Record changes in [`cloudflare-security.md`](cloudflare-security.md) or [`environments.md`](environments.md) in the same pull request that depends on them.
 
 ## 10. Who does what

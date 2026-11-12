@@ -63,6 +63,7 @@ GitHub → Settings → Environments → `develop` / `production` → Environmen
 | `ADMIN_EMAILS` | yes | yes | Worker, `db:seed` |
 | `AWS_NOTIFY_ACCESS_KEY_ID`, `AWS_NOTIFY_SECRET_ACCESS_KEY`, `AWS_NOTIFY_REGION`, `NOTIFICATIONS_INTERNAL_SECRET`, `NOTIFICATIONS_UNSUBSCRIBE_SECRET`, `NOTIFY_EMAIL_QUEUE_URL` | — | yes | Worker email delivery |
 | `AWS_DEPLOY_ROLE_ARN` | — | yes | `infra-aws.yml` (GitHub OIDC; no AWS keys stored) |
+| `NOTIFY_ALERT_EMAIL`, `NOTIFY_REPLY_TO` | — | yes | `infra-aws.yml` CDK context |
 
 Variables (not secret): repository variable `CLOUDFLARE_ACCOUNT_ID`; `production` environment variable `EMAIL_ENABLED` (`true` once the AWS stack serves production; until then the release deploys without the email secrets).
 
@@ -136,7 +137,10 @@ Accounts and content created on develop are not carried over: sign-in is per Sup
 
 1. Create an IAM OIDC identity provider for `token.actions.githubusercontent.com` (audience `sts.amazonaws.com`).
 2. Create the role `osl-github-deploy`, trusted only for `repo:devopenspot/openspotleague:environment:production`, with the permissions CDK needs (`sts:AssumeRole` on the `cdk-hnb659fds-*` bootstrap roles is enough). Put its ARN in the `production` secret `AWS_DEPLOY_ROLE_ARN`.
-3. Delete the root user's access key that ran the first CDK deploy.
+3. On the `production` environment add the variable `NOTIFY_FROM_ADDRESS` (for example `OpenSpot League <no-reply@mail.openspotleague.com>`) and the secrets `NOTIFY_ALERT_EMAIL` and `NOTIFY_REPLY_TO` (emails are secrets because the repository is public).
+4. Run **infra-aws** → `diff`; when it shows no unexpected change against the stack deployed by hand, the workflow owns the stack from then on.
+5. Delete the root user's access key that ran the first CDK deploy.
+6. Once email works in production, set `EMAIL_ENABLED=true` on the `production` environment, then move the six names from `NOTIFICATION_SECRET_NAMES` into `SECRET_NAMES` for production in `cloudflare.config.ts` (stage 7 of [`notifications-deploy.md`](notifications-deploy.md)).
 
 ## Break-glass deploys from a laptop
 

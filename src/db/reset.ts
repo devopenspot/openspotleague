@@ -7,6 +7,7 @@ import { guardDbScript } from "./target"
 guardDbScript("destructive")
 
 const APPLICATION_TABLES = [
+  "feature_flags",
   "short_links",
   "user_email_preferences",
   "user_notifications",

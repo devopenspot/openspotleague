@@ -2771,3 +2771,26 @@ export type ShortLink = typeof shortLinks.$inferSelect;
 export type NewShortLink = typeof shortLinks.$inferInsert;
 export type ShortLinkRow = typeof shortLinks.$inferSelect;
 export type NewShortLinkRow = typeof shortLinks.$inferInsert;
+
+// Feature flag overrides (docs/feature-flags.md, migration 0012). Flags and
+// their per-environment defaults live in code (src/lib/flags/registry.ts);
+// a row here overrides the default in this environment's database only.
+export const featureFlags = pgTable(
+  "feature_flags",
+  {
+    key: text("key").primaryKey(),
+    enabled: boolean("enabled").notNull(),
+    rolloutPercent: integer("rollout_percent").notNull().default(100),
+    allowUserIds: uuid("allow_user_ids").array().notNull().default(sql`'{}'::uuid[]`),
+    allowRoles: text("allow_roles").array().notNull().default(sql`'{}'::text[]`),
+    updatedBy: uuid("updated_by"),
+    updatedAt: timestamp("updated_at", { withTimezone: true, precision: 3 }).notNull().defaultNow(),
+  },
+  (t) => [
+    check("feature_flags_key_check", sql`${t.key} ~ '^[a-z][a-zA-Z0-9]{1,63}$'`),
+    check("feature_flags_rollout_percent_check", sql`${t.rolloutPercent} between 0 and 100`),
+  ],
+);
+
+export type FeatureFlagRow = typeof featureFlags.$inferSelect;
+export type NewFeatureFlagRow = typeof featureFlags.$inferInsert;
